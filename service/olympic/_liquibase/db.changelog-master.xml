@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+
+    <include file="../../../modules/user-module/_liquibase/changes/changeset-2026-04-03.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/user-module/_liquibase/changes/changeset-2026-04-04.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/destination-module/_liquibase/changes/changeset-2026-04-03.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/wishlist/wishlist-module/_liquibase/changes/changeset-2026-04-03.xml"
+             relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

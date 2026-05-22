@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+    <createTable tableName="tp_user">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+
+        <column name="email" type="VARCHAR(100)">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="password" type="VARCHAR(100)">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="full_name" type="VARCHAR(100)">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="mobile_number" type="VARCHAR(20)">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="role" type="VARCHAR(50)">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="is_active" type="BOOLEAN">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="created_by_id" type="BIGINT">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="last_modified_by_id" type="BIGINT">
+            <constraints nullable="true"/>
+        </column>
+
+        <column name="created_on" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+            <constraints nullable="false"/>
+        </column>
+
+        <column name="last_modified_on" type="TIMESTAMP">
+            <constraints nullable="true"/>
+        </column>
+    </createTable>
+
+    <addForeignKeyConstraint
+            constraintName="fk_user_created_by"
+            baseTableName="tp_user"
+            baseColumnNames="created_by_id"
+            referencedTableName="tp_user"
+            referencedColumnNames="id"/>
+
+    <addForeignKeyConstraint
+            constraintName="fk_user_last_modified_by_id"
+            baseTableName="tp_user"
+            baseColumnNames="last_modified_by_id"
+            referencedTableName="tp_user"
+            referencedColumnNames="id"/>
+
+    </changeSet>
+</databaseChangeLog>
