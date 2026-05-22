@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>bs</groupId>
-	<artifactId>olympic.academy.management</artifactId>
+	<artifactId>olympic-academy-management</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
