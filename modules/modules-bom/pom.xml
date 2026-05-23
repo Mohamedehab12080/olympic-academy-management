@@ -19,9 +19,49 @@
     <properties>
         <bs.common-module.version>0.0.1</bs.common-module.version>
         <bs.user-module.version>0.0.1</bs.user-module.version>
+
         <bs.employee-model.version>0.0.1</bs.employee-model.version>
         <bs.employee-api.version>0.0.1</bs.employee-api.version>
         <bs.employee-core.version>0.0.1</bs.employee-core.version>
+        <bs.employee-repository.version>0.0.1</bs.employee-repository.version>
+        <bs.employee-proxy.version>0.0.1</bs.employee-proxy.version>
+
+        <bs.trainee-model.version>0.0.1</bs.trainee-model.version>
+        <bs.trainee-api.version>0.0.1</bs.trainee-api.version>
+        <bs.trainee-core.version>0.0.1</bs.trainee-core.version>
+        <bs.trainee-repository.version>0.0.1</bs.trainee-repository.version>
+        <bs.trainee-proxy.version>0.0.1</bs.trainee-proxy.version>
+
+        <bs.course-model.version>0.0.1</bs.course-model.version>
+        <bs.course-api.version>0.0.1</bs.course-api.version>
+        <bs.course-core.version>0.0.1</bs.course-core.version>
+        <bs.course-repository.version>0.0.1</bs.course-repository.version>
+        <bs.course-proxy.version>0.0.1</bs.course-proxy.version>
+
+        <bs.department-model.version>0.0.1</bs.department-model.version>
+        <bs.department-api.version>0.0.1</bs.department-api.version>
+        <bs.department-core.version>0.0.1</bs.department-core.version>
+        <bs.department-repository.version>0.0.1</bs.department-repository.version>
+        <bs.department-proxy.version>0.0.1</bs.department-proxy.version>
+
+        <bs.enrollment-model.version>0.0.1</bs.enrollment-model.version>
+        <bs.enrollment-api.version>0.0.1</bs.enrollment-api.version>
+        <bs.enrollment-core.version>0.0.1</bs.enrollment-core.version>
+        <bs.enrollment-repository.version>0.0.1</bs.enrollment-repository.version>
+        <bs.enrollment-proxy.version>0.0.1</bs.enrollment-proxy.version>
+
+        <bs.financial-model.version>0.0.1</bs.financial-model.version>
+        <bs.financial-api.version>0.0.1</bs.financial-api.version>
+        <bs.financial-core.version>0.0.1</bs.financial-core.version>
+        <bs.financial-repository.version>0.0.1</bs.financial-repository.version>
+        <bs.financial-proxy.version>0.0.1</bs.financial-proxy.version>
+
+        <bs.place-model.version>0.0.1</bs.place-model.version>
+        <bs.place-api.version>0.0.1</bs.place-api.version>
+        <bs.place-core.version>0.0.1</bs.place-core.version>
+        <bs.place-repository.version>0.0.1</bs.place-repository.version>
+        <bs.place-proxy.version>0.0.1</bs.place-proxy.version>
+
         <bs.swagger.version>0.0.1</bs.swagger.version>
         <bs.unit-test.version>0.0.1</bs.unit-test.version>
     </properties>
@@ -62,6 +102,199 @@
                 <groupId>bs.modules.employee</groupId>
                 <artifactId>employee-core</artifactId>
                 <version>${bs.employee-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.employee</groupId>
+                <artifactId>employee-repository</artifactId>
+                <version>${bs.employee-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.employee</groupId>
+                <artifactId>employee-proxy</artifactId>
+                <version>${bs.employee-proxy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainee</groupId>
+                <artifactId>trainee-model</artifactId>
+                <version>${bs.trainee-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainee</groupId>
+                <artifactId>trainee-api</artifactId>
+                <version>${bs.trainee-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainee</groupId>
+                <artifactId>trainee-core</artifactId>
+                <version>${bs.trainee-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainee</groupId>
+                <artifactId>trainee-repository</artifactId>
+                <version>${bs.trainee-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainee</groupId>
+                <artifactId>trainee-proxy</artifactId>
+                <version>${bs.trainee-proxy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.course</groupId>
+                <artifactId>course-model</artifactId>
+                <version>${bs.course-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.course</groupId>
+                <artifactId>course-api</artifactId>
+                <version>${bs.course-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.course</groupId>
+                <artifactId>course-core</artifactId>
+                <version>${bs.course-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.course</groupId>
+                <artifactId>course-repository</artifactId>
+                <version>${bs.course-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.course</groupId>
+                <artifactId>course-proxy</artifactId>
+                <version>${bs.course-proxy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.enrollment</groupId>
+                <artifactId>enrollment-model</artifactId>
+                <version>${bs.enrollment-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.enrollment</groupId>
+                <artifactId>enrollment-api</artifactId>
+                <version>${bs.enrollment-api.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>bs.modules.enrollment</groupId>
+                <artifactId>enrollment-core</artifactId>
+                <version>${bs.enrollment-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.enrollment</groupId>
+                <artifactId>enrollment-repository</artifactId>
+                <version>${bs.enrollment-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.enrollment</groupId>
+                <artifactId>enrollment-proxy</artifactId>
+                <version>${bs.enrollment-proxy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.place</groupId>
+                <artifactId>place-model</artifactId>
+                <version>${bs.place-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.place</groupId>
+                <artifactId>place-api</artifactId>
+                <version>${bs.place-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.place</groupId>
+                <artifactId>place-core</artifactId>
+                <version>${bs.place-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.place</groupId>
+                <artifactId>place-repository</artifactId>
+                <version>${bs.place-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.place</groupId>
+                <artifactId>place-proxy</artifactId>
+                <version>${bs.place-proxy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.department</groupId>
+                <artifactId>department-model</artifactId>
+                <version>${bs.department-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.department</groupId>
+                <artifactId>department-api</artifactId>
+                <version>${bs.department-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.department</groupId>
+                <artifactId>department-core</artifactId>
+                <version>${bs.department-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.department</groupId>
+                <artifactId>department-repository</artifactId>
+                <version>${bs.department-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.department</groupId>
+                <artifactId>department-proxy</artifactId>
+                <version>${bs.department-proxy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.financial</groupId>
+                <artifactId>financial-model</artifactId>
+                <version>${bs.financial-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.financial</groupId>
+                <artifactId>financial-api</artifactId>
+                <version>${bs.financial-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.financial</groupId>
+                <artifactId>financial-core</artifactId>
+                <version>${bs.financial-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.financial</groupId>
+                <artifactId>financial-repository</artifactId>
+                <version>${bs.financial-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.financial</groupId>
+                <artifactId>financial-proxy</artifactId>
+                <version>${bs.financial-proxy.version}</version>
             </dependency>
 
             <dependency>
