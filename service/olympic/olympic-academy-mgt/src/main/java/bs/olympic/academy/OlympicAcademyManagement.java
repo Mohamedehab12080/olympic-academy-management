@@ -10,22 +10,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @ComponentScan(basePackages = {"bs"})
 @EntityScan(basePackages = {
-        "bs.olympic.user.model.entity",
-        "bs.destination.model.entity",
-        "bs.wishlist.model.entity"
+        "bs.olympic.user.model.entity"
 })
 @EnableJpaRepositories(basePackages = {
-        "bs.olympic.user.repository",
-        "bs.destination.repository",
-        "bs.wishlist.repository"
+        "bs.olympic.user.repository"
 })
 @EnableScheduling
 public class OlympicAcademyManagement {
 
     public static void main(String[] args) {
-        SpringApplication.run(FawryTravelPlannerManagement.class, args);
+        SpringApplication.run(OlympicAcademyManagement.class, args);
         System.out.println("========================================");
-        System.out.println("Travel Destination Planner Started!");
+        System.out.println("Olympic Academy Management Started!");
         System.out.println("========================================");
     }
 }

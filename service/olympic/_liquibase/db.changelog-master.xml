@@ -12,10 +12,4 @@
     <include file="../../../modules/user-module/_liquibase/changes/changeset-2026-04-04.xml"
              relativeToChangelogFile="true"/>
 
-    <include file="../../../modules/destination-module/_liquibase/changes/changeset-2026-04-03.xml"
-             relativeToChangelogFile="true"/>
-
-    <include file="../../../modules/wishlist/wishlist-module/_liquibase/changes/changeset-2026-04-03.xml"
-             relativeToChangelogFile="true"/>
-
 </databaseChangeLog>

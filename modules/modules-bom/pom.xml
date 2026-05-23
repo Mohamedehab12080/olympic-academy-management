@@ -19,6 +19,9 @@
     <properties>
         <bs.common-module.version>0.0.1</bs.common-module.version>
         <bs.user-module.version>0.0.1</bs.user-module.version>
+        <bs.employee-model.version>0.0.1</bs.employee-model.version>
+        <bs.employee-api.version>0.0.1</bs.employee-api.version>
+        <bs.employee-core.version>0.0.1</bs.employee-core.version>
         <bs.swagger.version>0.0.1</bs.swagger.version>
         <bs.unit-test.version>0.0.1</bs.unit-test.version>
     </properties>
@@ -41,6 +44,24 @@
                 <groupId>bs.modules</groupId>
                 <artifactId>user-module</artifactId>
                 <version>${bs.user-module.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.employee</groupId>
+                <artifactId>employee-model</artifactId>
+                <version>${bs.employee-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.employee</groupId>
+                <artifactId>employee-api</artifactId>
+                <version>${bs.employee-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.employee</groupId>
+                <artifactId>employee-core</artifactId>
+                <version>${bs.employee-core.version}</version>
             </dependency>
 
             <dependency>
