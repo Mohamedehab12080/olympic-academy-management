@@ -62,6 +62,12 @@
         <bs.place-repository.version>0.0.1</bs.place-repository.version>
         <bs.place-proxy.version>0.0.1</bs.place-proxy.version>
 
+        <bs.trainer-model.version>0.0.1</bs.trainer-model.version>
+        <bs.trainer-api.version>0.0.1</bs.trainer-api.version>
+        <bs.trainer-core.version>0.0.1</bs.trainer-core.version>
+        <bs.trainer-repository.version>0.0.1</bs.trainer-repository.version>
+        <bs.trainer-proxy.version>0.0.1</bs.trainer-proxy.version>
+
         <bs.swagger.version>0.0.1</bs.swagger.version>
         <bs.unit-test.version>0.0.1</bs.unit-test.version>
     </properties>
@@ -296,6 +302,37 @@
                 <artifactId>financial-proxy</artifactId>
                 <version>${bs.financial-proxy.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainer</groupId>
+                <artifactId>trainer-model</artifactId>
+                <version>${bs.trainer-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainer</groupId>
+                <artifactId>trainer-api</artifactId>
+                <version>${bs.trainer-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainer</groupId>
+                <artifactId>trainer-core</artifactId>
+                <version>${bs.trainer-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainer</groupId>
+                <artifactId>trainer-repository</artifactId>
+                <version>${bs.trainer-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.trainer</groupId>
+                <artifactId>trainer-proxy</artifactId>
+                <version>${bs.trainer-proxy.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>bs.modules</groupId>

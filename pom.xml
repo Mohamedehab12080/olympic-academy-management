@@ -66,36 +66,49 @@
 		<module>modules/employee/employee-core</module>
 		<module>modules/employee/employee-proxy</module>
 		<module>modules/employee/employee-repository</module>
+
 		<module>modules/trainee/trainee-model</module>
 		<module>modules/trainee/trainee-api</module>
 		<module>modules/trainee/trainee-core</module>
 		<module>modules/trainee/trainee-proxy</module>
 		<module>modules/trainee/trainee-repository</module>
+
 		<module>modules/course/course-model</module>
 		<module>modules/course/course-api</module>
 		<module>modules/course/course-core</module>
 		<module>modules/course/course-proxy</module>
 		<module>modules/course/course-repository</module>
+
 		<module>modules/department/department-model</module>
 		<module>modules/department/department-api</module>
 		<module>modules/department/department-core</module>
 		<module>modules/department/department-proxy</module>
 		<module>modules/department/department-repository</module>
+
 		<module>modules/place/place-model</module>
 		<module>modules/place/place-api</module>
 		<module>modules/place/place-core</module>
 		<module>modules/place/place-proxy</module>
 		<module>modules/place/place-repository</module>
+
 		<module>modules/enrollment/enrollment-model</module>
 		<module>modules/enrollment/enrollment-api</module>
 		<module>modules/enrollment/enrollment-core</module>
 		<module>modules/enrollment/enrollment-proxy</module>
 		<module>modules/enrollment/enrollment-repository</module>
+
 		<module>modules/financial/financial-model</module>
 		<module>modules/financial/financial-api</module>
 		<module>modules/financial/financial-core</module>
 		<module>modules/financial/financial-proxy</module>
 		<module>modules/financial/financial-repository</module>
+
+		<module>modules/trainer/trainer-model</module>
+		<module>modules/trainer/trainer-api</module>
+		<module>modules/trainer/trainer-core</module>
+		<module>modules/trainer/trainer-proxy</module>
+		<module>modules/trainer/trainer-repository</module>
+
 		<module>service/service-bom</module>
 		<module>service/olympic/olympic-academy-mgt</module>
 		<module>service/olympic/olympic-test-adapter</module>

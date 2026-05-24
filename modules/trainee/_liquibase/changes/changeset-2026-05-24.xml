@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_trainee">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="full_name" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="national_id" type="varchar(20)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="academic_year" type="varchar(50)"/>
+            <column name="birth_date" type="date"/>
+            <column name="gender" type="varchar(100)"/>
+            <column name="address" type="text"/>
+            <column name="image_url" type="varchar(250)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_created_by"
+                baseTableName="oa_trainee"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_modified_by"
+                baseTableName="oa_trainee"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+        <changeSet id="2" author="mohamed.ehab">
+            <createTable tableName="oa_trainee_contact">
+                <column name="id" type="int" autoIncrement="true">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="trainee_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="contact_type" type="varchar(100)"/>
+                <column name="contact_value" type="varchar(255)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+                <column name="last_modified_on" type="timestamp"/>
+                <column name="created_by_id" type="int"/>
+                <column name="last_modified_by_id" type="int"/>
+                <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+            </createTable>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_trainee_contact_trainee"
+                    baseTableName="oa_trainee_contact"
+                    baseColumnNames="trainee_id"
+                    referencedTableName="oa_trainee"
+                    referencedColumnNames="id"
+                    onDelete="CASCADE"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_trainee_contact_created_by"
+                    baseTableName="oa_trainee_contact"
+                    baseColumnNames="created_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_trainee_contact_modified_by"
+                    baseTableName="oa_trainee_contact"
+                    baseColumnNames="last_modified_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+        </changeSet>
+
+
+        <changeSet id="3" author="mohamed.ehab">
+            <createTable tableName="oa_health_condition">
+                <column name="id" type="int" autoIncrement="true">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="trainee_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="condition_type" type="varchar(100)"/>
+                <column name="description" type="text"/>
+                <column name="medication" type="varchar(250)"/>
+                <column name="notes" type="text"/>
+                <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+                <column name="last_modified_on" type="timestamp"/>
+                <column name="created_by_id" type="int"/>
+                <column name="last_modified_by_id" type="int"/>
+                <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+            </createTable>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_health_condition_trainee"
+                    baseTableName="oa_health_condition"
+                    baseColumnNames="trainee_id"
+                    referencedTableName="oa_trainee"
+                    referencedColumnNames="id"
+                    onDelete="CASCADE"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_health_condition_created_by"
+                    baseTableName="oa_health_condition"
+                    baseColumnNames="created_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_health_condition_modified_by"
+                    baseTableName="oa_health_condition"
+                    baseColumnNames="last_modified_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+        </changeSet>
+
+        <changeSet id="4" author="mohamed.ehab">
+            <createTable tableName="oa_certificate">
+                <column name="id" type="int" autoIncrement="true">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="certificate_number" type="varchar(100)">
+                    <constraints nullable="false" unique="true"/>
+                </column>
+                <column name="title" type="varchar(255)">
+                    <constraints nullable="false" unique="true"/>
+                </column>
+                <column name="trainee_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="course_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="issue_date" type="date"/>
+                <column name="grade" type="varchar(50)"/>
+                <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+                <column name="last_modified_on" type="timestamp"/>
+                <column name="created_by_id" type="int"/>
+                <column name="last_modified_by_id" type="int"/>
+                <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+            </createTable>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_certificate_trainee"
+                    baseTableName="oa_certificate"
+                    baseColumnNames="trainee_id"
+                    referencedTableName="oa_trainee"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_certificate_course"
+                    baseTableName="oa_certificate"
+                    baseColumnNames="course_id"
+                    referencedTableName="oa_course"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_certificate_created_by"
+                    baseTableName="oa_certificate"
+                    baseColumnNames="created_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_certificate_modified_by"
+                    baseTableName="oa_certificate"
+                    baseColumnNames="last_modified_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+        </changeSet>
+
+</databaseChangeLog>

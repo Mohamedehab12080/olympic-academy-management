@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="10" author="mohamed.ehab">
+        <createTable tableName="oa_enrollment">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="enrollment_type" type="varchar(100)"/>
+            <column name="trainee_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="int"/>
+            <column name="start_date" type="date"/>
+            <column name="end_date" type="date"/>
+            <column name="enrollment_status" type="varchar(100)"/>
+            <column name="payment_status" type="varchar(100)"/>
+            <column name="subscription_value" type="decimal(10,2)"/>
+            <column name="discount_amount" type="integer" defaultValueNumeric="0"/>
+            <column name="discount_percentage" type="decimal(5,2)" defaultValueNumeric="0.00"/>
+            <column name="final_subscription_value" type="decimal(10,2)"/>
+            <column name="remained_subscription_value" type="decimal(10,2)"/>
+            <column name="notes" type="text"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addUniqueConstraint
+                constraintName="uq_trainee_course"
+                tableName="oa_enrollment"
+                columnNames="trainee_id, course_id, start_date"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_trainee"
+                baseTableName="oa_enrollment"
+                baseColumnNames="trainee_id"
+                referencedTableName="oa_trainee"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_course"
+                baseTableName="oa_enrollment"
+                baseColumnNames="course_id"
+                referencedTableName="oa_course"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_employee"
+                baseTableName="oa_enrollment"
+                baseColumnNames="employee_id"
+                referencedTableName="oa_employee"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_created_by"
+                baseTableName="oa_enrollment"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_modified_by"
+                baseTableName="oa_enrollment"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="chk_dates"
+                tableName="oa_enrollment"
+                checkCondition="end_date >= start_date OR end_date IS NULL OR start_date IS NULL"/>
+
+        <addCheckConstraint
+                constraintName="chk_discount_percentage"
+                tableName="oa_enrollment"
+                checkCondition="discount_percentage BETWEEN 0 AND 100"/>
+    </changeSet>
+
+</databaseChangeLog>

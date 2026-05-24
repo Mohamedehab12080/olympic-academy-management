@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="13" author="mohamed.ehab">
+        <createTable tableName="oa_trainer_course">
+            <column name="employee_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+                constraintName="pk_trainer_course"
+                tableName="oa_trainer_course"
+                columnNames="employee_id, course_id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainer_course_employee"
+                baseTableName="oa_trainer_course"
+                baseColumnNames="employee_id"
+                referencedTableName="oa_employee"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainer_course_course"
+                baseTableName="oa_trainer_course"
+                baseColumnNames="course_id"
+                referencedTableName="oa_course"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

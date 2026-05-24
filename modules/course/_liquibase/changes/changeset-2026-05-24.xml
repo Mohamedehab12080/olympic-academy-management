@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_course">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="department_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(200)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="text"/>
+            <column name="duration" type="int"/>
+            <column name="max_capacity" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="date"/>
+            <column name="end_date" type="date"/>
+            <column name="image_url" type="varchar(255)"/>
+            <column name="course_type" type="varchar(50)"/>
+            <column name="price" type="decimal(10,2)"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp" />
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_course_department"
+                baseTableName="oa_course"
+                baseColumnNames="department_id"
+                referencedTableName="oa_department"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_course_created_by"
+                baseTableName="oa_course"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_course_modified_by"
+                baseTableName="oa_course"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="chk_course_dates"
+                tableName="oa_course"
+                checkCondition="end_date >= start_date OR end_date IS NULL OR start_date IS NULL"/>
+
+        <addCheckConstraint
+                constraintName="chk_price"
+                tableName="oa_course"
+                checkCondition="price > 0 OR price IS NULL"/>
+    </changeSet>
+
+</databaseChangeLog>

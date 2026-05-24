@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_enrollment_payment">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="enrollment_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_date" type="date"/>
+            <column name="amount_paid" type="decimal(10,2)"/>
+            <column name="payment_method" type="varchar(100)"/>
+            <column name="image_url" type="varchar(250)"/>
+            <column name="notes" type="text"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_payment_enrollment"
+                baseTableName="oa_payment"
+                baseColumnNames="enrollment_id"
+                referencedTableName="oa_enrollment"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_payment_created_by"
+                baseTableName="oa_payment"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_payment_modified_by"
+                baseTableName="oa_payment"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="payment_chk_amount"
+                tableName="oa_payment"
+                checkCondition="amount_paid >= 0"/>
+    </changeSet>
+
+</databaseChangeLog>
