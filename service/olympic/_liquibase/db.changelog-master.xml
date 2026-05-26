@@ -30,9 +30,6 @@
     <include file="../../../modules/enrollment/_liquibase/changes/changeset-2026-05-24.xml"
              relativeToChangelogFile="true"/>
 
-    <include file="../../../modules/enrollment/_liquibase/changes/changeset-2026-05-24.xml"
-             relativeToChangelogFile="true"/>
-
     <include file="../../../modules/financial/_liquibase/changes/expenses/changeset-2026-05-24.xml"
              relativeToChangelogFile="true"/>
 

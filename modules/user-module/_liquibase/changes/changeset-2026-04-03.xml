@@ -6,8 +6,8 @@
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="1" author="mohamed.ehab">
-    <createTable tableName="tp_user">
-        <column name="id" type="BIGINT" autoIncrement="true">
+    <createTable tableName="oa_user">
+        <column name="id" type="INT" autoIncrement="true">
             <constraints primaryKey="true" nullable="false"/>
         </column>
 
@@ -35,11 +35,11 @@
             <constraints nullable="true"/>
         </column>
 
-        <column name="created_by_id" type="BIGINT">
+        <column name="created_by_id" type="INT">
             <constraints nullable="true"/>
         </column>
 
-        <column name="last_modified_by_id" type="BIGINT">
+        <column name="last_modified_by_id" type="INT">
             <constraints nullable="true"/>
         </column>
 
@@ -54,16 +54,16 @@
 
     <addForeignKeyConstraint
             constraintName="fk_user_created_by"
-            baseTableName="tp_user"
+            baseTableName="oa_user"
             baseColumnNames="created_by_id"
-            referencedTableName="tp_user"
+            referencedTableName="oa_user"
             referencedColumnNames="id"/>
 
     <addForeignKeyConstraint
             constraintName="fk_user_last_modified_by_id"
-            baseTableName="tp_user"
+            baseTableName="oa_user"
             baseColumnNames="last_modified_by_id"
-            referencedTableName="tp_user"
+            referencedTableName="oa_user"
             referencedColumnNames="id"/>
 
     </changeSet>

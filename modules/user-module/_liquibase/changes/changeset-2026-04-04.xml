@@ -6,9 +6,9 @@
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="1" author="mohamed.ehab">
-        <createTable tableName="tp_token">
+        <createTable tableName="oa_token">
 
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="INT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
@@ -20,7 +20,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="user_id" type="BIGINT">
+            <column name="user_id" type="INT">
                 <constraints nullable="true"/>
             </column>
 
@@ -36,9 +36,9 @@
 
         <addForeignKeyConstraint
                 constraintName="fk_user_token"
-                baseTableName="tp_token"
+                baseTableName="oa_token"
                 baseColumnNames="user_id"
-                referencedTableName="tp_user"
+                referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
     </changeSet>

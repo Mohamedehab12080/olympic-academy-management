@@ -100,15 +100,6 @@
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
-        <addCheckConstraint
-                constraintName="chk_dates"
-                tableName="oa_enrollment"
-                checkCondition="end_date >= start_date OR end_date IS NULL OR start_date IS NULL"/>
-
-        <addCheckConstraint
-                constraintName="chk_discount_percentage"
-                tableName="oa_enrollment"
-                checkCondition="discount_percentage BETWEEN 0 AND 100"/>
     </changeSet>
 
 </databaseChangeLog>

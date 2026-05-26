@@ -45,11 +45,6 @@
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
-
-        <addCheckConstraint
-                constraintName="employee_chk_salary"
-                tableName="oa_employee"
-                checkCondition="salary >= 0"/>
     </changeSet>
 
     <changeSet id="2" author="mohamed.ehab">

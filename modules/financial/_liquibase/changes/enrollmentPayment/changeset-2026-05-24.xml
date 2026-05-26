@@ -65,11 +65,6 @@
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
-
-        <addCheckConstraint
-                constraintName="enrollment_payment_chk_amount"
-                tableName="oa_enrollment_payment"
-                checkCondition="amount_paid >= 0"/>
     </changeSet>
 
     <changeSet id="3" author="mohamed.ehab">
@@ -121,11 +116,6 @@
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
-
-        <addCheckConstraint
-                constraintName="enrollment_refund_chk_amount"
-                tableName="oa_enrollment_refund"
-                checkCondition="amount_refunded >= 0"/>
     </changeSet>
 
 

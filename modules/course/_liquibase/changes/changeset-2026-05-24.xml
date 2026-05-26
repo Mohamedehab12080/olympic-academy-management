@@ -55,15 +55,6 @@
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
-        <addCheckConstraint
-                constraintName="chk_course_dates"
-                tableName="oa_course"
-                checkCondition="end_date >= start_date OR end_date IS NULL OR start_date IS NULL"/>
-
-        <addCheckConstraint
-                constraintName="chk_price"
-                tableName="oa_course"
-                checkCondition="price > 0 OR price IS NULL"/>
     </changeSet>
 
 </databaseChangeLog>

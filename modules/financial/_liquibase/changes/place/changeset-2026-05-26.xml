@@ -19,14 +19,13 @@
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="created_by_id" type="int"/>
             <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
-
-            <addForeignKeyConstraint
-                    constraintName="fk_rent_type_created_by"
-                    baseTableName="oa_rent_type"
-                    baseColumnNames="created_by_id"
-                    referencedTableName="oa_user"
-                    referencedColumnNames="id"/>
         </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_rent_type_created_by"
+                baseTableName="oa_rent_type"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
     </changeSet>
 
     <changeSet id="2" author="mohamed.ehab">

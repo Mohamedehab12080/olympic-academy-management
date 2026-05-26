@@ -74,10 +74,6 @@
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
-        <addCheckConstraint
-                constraintName="expense_chk_amount"
-                tableName="oa_expense"
-                checkCondition="amount_paid >= 0"/>
     </changeSet>
 
 </databaseChangeLog>

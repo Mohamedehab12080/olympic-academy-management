@@ -47,11 +47,6 @@
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
-
-        <addCheckConstraint
-                constraintName="salary_deduction_chk_amount"
-                tableName="oa_salary_deduction"
-                checkCondition="amount_deducted >= 0"/>
     </changeSet>
 
 </databaseChangeLog>

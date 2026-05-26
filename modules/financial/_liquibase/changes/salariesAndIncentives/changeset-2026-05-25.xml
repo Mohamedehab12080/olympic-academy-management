@@ -56,10 +56,6 @@
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
-        <addCheckConstraint
-                constraintName="salary_incentive_chk_amount"
-                tableName="oa_salary_incentive"
-                checkCondition="amount_withdrawn >= 0"/>
     </changeSet>
 
 </databaseChangeLog>
