@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_rent_type">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_rent_type_created_by"
+                    baseTableName="oa_rent_type"
+                    baseColumnNames="created_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="mohamed.ehab">
+
+        <createTable tableName="oa_place_rent_payment">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="place_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rent_amount" type="int"/>
+            <column name="rent_type_id" type="int"/>
+            <column name="payment_date" type="date"/>
+            <column name="payment_method" type="int"/>
+            <column name="status" type="varchar(100)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_place_rent_payment_rent_type"
+                baseTableName="oa_place_rent_payment"
+                baseColumnNames="rent_type_id"
+                referencedTableName="oa_rent_type"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_place_rent_payment_place"
+                baseTableName="oa_place_rent_payment"
+                baseColumnNames="place_id"
+                referencedTableName="oa_place"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_place_rent_payment_payment_method"
+                baseTableName="oa_place_rent_payment"
+                baseColumnNames="payment_method_id"
+                referencedTableName="oa_payment_method"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_place_rent_payment_created_by"
+                baseTableName="oa_place_rent_payment"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_place_rent_payment_modified_by"
+                baseTableName="oa_place_rent_payment"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

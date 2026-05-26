@@ -6,44 +6,33 @@
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="1" author="mohamed.ehab">
-        <createTable tableName="oa_trainer_course">
+        <createTable tableName="oa_trainer_department">
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="employee_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="course_id" type="int">
+            <column name="department_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
-            <column name="created_by_id" type="int"/>
-            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
         </createTable>
 
         <addForeignKeyConstraint
-                constraintName="fk_trainer_course_employee"
-                baseTableName="oa_trainer_course"
+                constraintName="fk_trainer_department_employee"
+                baseTableName="oa_trainer_department"
                 baseColumnNames="employee_id"
                 referencedTableName="oa_employee"
                 referencedColumnNames="id"
                 onDelete="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="fk_trainer_course_course"
-                baseTableName="oa_trainer_course"
-                baseColumnNames="course_id"
-                referencedTableName="oa_course"
+                constraintName="fk_trainer_department_department"
+                baseTableName="oa_trainer_department"
+                baseColumnNames="department_id"
+                referencedTableName="oa_department"
                 referencedColumnNames="id"
                 onDelete="CASCADE"/>
-
-        <addForeignKeyConstraint
-                constraintName="fk_trainer_course_created_by"
-                baseTableName="oa_trainer_course"
-                baseColumnNames="created_by_id"
-                referencedTableName="oa_user"
-                referencedColumnNames="id"/>
-
     </changeSet>
 
 </databaseChangeLog>

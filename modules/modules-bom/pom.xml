@@ -68,6 +68,12 @@
         <bs.trainer-repository.version>0.0.1</bs.trainer-repository.version>
         <bs.trainer-proxy.version>0.0.1</bs.trainer-proxy.version>
 
+        <bs.session-model.version>0.0.1</bs.session-model.version>
+        <bs.session-api.version>0.0.1</bs.session-api.version>
+        <bs.session-core.version>0.0.1</bs.session-core.version>
+        <bs.session-repository.version>0.0.1</bs.session-repository.version>
+        <bs.session-proxy.version>0.0.1</bs.session-proxy.version>
+
         <bs.swagger.version>0.0.1</bs.swagger.version>
         <bs.unit-test.version>0.0.1</bs.unit-test.version>
     </properties>
@@ -332,6 +338,38 @@
                 <artifactId>trainer-proxy</artifactId>
                 <version>${bs.trainer-proxy.version}</version>
             </dependency>
+
+
+            <dependency>
+                <groupId>bs.modules.session</groupId>
+                <artifactId>session-model</artifactId>
+                <version>${bs.session-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.session</groupId>
+                <artifactId>session-api</artifactId>
+                <version>${bs.session-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.session</groupId>
+                <artifactId>session-core</artifactId>
+                <version>${bs.session-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.session</groupId>
+                <artifactId>session-repository</artifactId>
+                <version>${bs.session-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.modules.session</groupId>
+                <artifactId>session-proxy</artifactId>
+                <version>${bs.session-proxy.version}</version>
+            </dependency>
+
 
 
             <dependency>

@@ -12,4 +12,55 @@
     <include file="../../../modules/user-module/_liquibase/changes/changeset-2026-04-04.xml"
              relativeToChangelogFile="true"/>
 
+    <include file="../../../modules/department/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/course/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/employee/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/trainer/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/trainee/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/enrollment/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/enrollment/_liquibase/changes/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/financial/_liquibase/changes/expenses/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/financial/_liquibase/changes/salariesAndIncentives/changeset-2026-05-25.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/financial/_liquibase/changes/salaryDeduction/changeset-2026-05-25.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/trainer/_liquibase/changes/changeset-2026-05-25.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/employee/_liquibase/changes/changeset-2026-05-26.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/place/_liquibase/changes/changeset-2026-05-26.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/session/_liquibase/changes/changeset-2026-05-26.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/trainee/_liquibase/changes/attendance/changeset-2026-05-26.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../modules/financial/_liquibase/changes/place/changeset-2026-05-26.xml"
+             relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

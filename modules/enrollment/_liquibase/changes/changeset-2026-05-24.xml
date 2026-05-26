@@ -5,19 +5,36 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-    <changeSet id="10" author="mohamed.ehab">
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_enrollment_type">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="mohamed.ehab">
         <createTable tableName="oa_enrollment">
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="enrollment_type" type="varchar(100)"/>
             <column name="trainee_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="course_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="employee_id" type="int"/>
+            <column name="employee_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enrollment_type_id" type="int"/>
             <column name="start_date" type="date"/>
             <column name="end_date" type="date"/>
             <column name="enrollment_status" type="varchar(100)"/>
@@ -28,6 +45,7 @@
             <column name="final_subscription_value" type="decimal(10,2)"/>
             <column name="remained_subscription_value" type="decimal(10,2)"/>
             <column name="notes" type="text"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>
             <column name="created_by_id" type="int"/>
@@ -38,7 +56,14 @@
         <addUniqueConstraint
                 constraintName="uq_trainee_course"
                 tableName="oa_enrollment"
-                columnNames="trainee_id, course_id, start_date"/>
+                columnNames="trainee_id,course_id,enrollment_type_id,start_date"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_type"
+                baseTableName="oa_enrollment"
+                baseColumnNames="enrollment_type_id"
+                referencedTableName="oa_enrollment_type"
+                referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_enrollment_trainee"

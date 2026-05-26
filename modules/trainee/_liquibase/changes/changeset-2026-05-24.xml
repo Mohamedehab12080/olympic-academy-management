@@ -86,7 +86,77 @@
         </changeSet>
 
 
-        <changeSet id="3" author="mohamed.ehab">
+    <changeSet id="3" author="mohamed.ehab">
+        <createTable tableName="oa_trainee_certificate">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="certificate_number" type="varchar(100)">
+                <constraints unique="true"/>
+            </column>
+            <column name="certificate_name" type="varchar(255)"/>
+            <column name="trainee_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="int"/>
+            <column name="issue_date" type="date"/>
+            <column name="grade" type="varchar(50)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_certificate_trainee"
+                baseTableName="oa_certificate"
+                baseColumnNames="trainee_id"
+                referencedTableName="oa_trainee"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_certificate_course"
+                baseTableName="oa_certificate"
+                baseColumnNames="course_id"
+                referencedTableName="oa_course"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_certificate_created_by"
+                baseTableName="oa_certificate"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_certificate_modified_by"
+                baseTableName="oa_certificate"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="4" author="mohamed.ehab">
+        <createTable tableName="oa_condition_type">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="certificate_name" type="varchar(250)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_certificate_created_by"
+                baseTableName="oa_certificate"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+        <changeSet id="5" author="mohamed.ehab">
             <createTable tableName="oa_health_condition">
                 <column name="id" type="int" autoIncrement="true">
                     <constraints primaryKey="true" nullable="false"/>
@@ -94,7 +164,9 @@
                 <column name="trainee_id" type="int">
                     <constraints nullable="false"/>
                 </column>
-                <column name="condition_type" type="varchar(100)"/>
+                <column name="condition_type_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
                 <column name="description" type="text"/>
                 <column name="medication" type="varchar(250)"/>
                 <column name="notes" type="text"/>
@@ -114,6 +186,13 @@
                     onDelete="CASCADE"/>
 
             <addForeignKeyConstraint
+                    constraintName="fk_health_condition_condition_type"
+                    baseTableName="oa_health_condition"
+                    baseColumnNames="condition_type_id"
+                    referencedTableName="oa_condition_type"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
                     constraintName="fk_health_condition_created_by"
                     baseTableName="oa_health_condition"
                     baseColumnNames="created_by_id"
@@ -123,61 +202,6 @@
             <addForeignKeyConstraint
                     constraintName="fk_health_condition_modified_by"
                     baseTableName="oa_health_condition"
-                    baseColumnNames="last_modified_by_id"
-                    referencedTableName="oa_user"
-                    referencedColumnNames="id"/>
-        </changeSet>
-
-        <changeSet id="4" author="mohamed.ehab">
-            <createTable tableName="oa_certificate">
-                <column name="id" type="int" autoIncrement="true">
-                    <constraints primaryKey="true" nullable="false"/>
-                </column>
-                <column name="certificate_number" type="varchar(100)">
-                    <constraints nullable="false" unique="true"/>
-                </column>
-                <column name="title" type="varchar(255)">
-                    <constraints nullable="false" unique="true"/>
-                </column>
-                <column name="trainee_id" type="int">
-                    <constraints nullable="false"/>
-                </column>
-                <column name="course_id" type="int">
-                    <constraints nullable="false"/>
-                </column>
-                <column name="issue_date" type="date"/>
-                <column name="grade" type="varchar(50)"/>
-                <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
-                <column name="last_modified_on" type="timestamp"/>
-                <column name="created_by_id" type="int"/>
-                <column name="last_modified_by_id" type="int"/>
-                <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
-            </createTable>
-
-            <addForeignKeyConstraint
-                    constraintName="fk_certificate_trainee"
-                    baseTableName="oa_certificate"
-                    baseColumnNames="trainee_id"
-                    referencedTableName="oa_trainee"
-                    referencedColumnNames="id"/>
-
-            <addForeignKeyConstraint
-                    constraintName="fk_certificate_course"
-                    baseTableName="oa_certificate"
-                    baseColumnNames="course_id"
-                    referencedTableName="oa_course"
-                    referencedColumnNames="id"/>
-
-            <addForeignKeyConstraint
-                    constraintName="fk_certificate_created_by"
-                    baseTableName="oa_certificate"
-                    baseColumnNames="created_by_id"
-                    referencedTableName="oa_user"
-                    referencedColumnNames="id"/>
-
-            <addForeignKeyConstraint
-                    constraintName="fk_certificate_modified_by"
-                    baseTableName="oa_certificate"
                     baseColumnNames="last_modified_by_id"
                     referencedTableName="oa_user"
                     referencedColumnNames="id"/>

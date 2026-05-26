@@ -6,17 +6,25 @@
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="1" author="mohamed.ehab">
-        <createTable tableName="oa_enrollment_payment">
+        <createTable tableName="oa_employee_attendance">
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="enrollment_id" type="int">
+            <column name="employee_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="payment_date" type="date"/>
-            <column name="amount_paid" type="decimal(10,2)"/>
-            <column name="payment_method" type="varchar(100)"/>
-            <column name="image_url" type="varchar(250)"/>
+            <column name="attendance_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+<!--            'present', 'absent', 'late', 'excused'-->
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="check_in_time" type="time"/>
+            <column name="check_out_time" type="time"/>
+            <column name="late_time" type="int">
+                <constraints nullable="true"/>
+            </column>
             <column name="notes" type="text"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>
@@ -26,31 +34,25 @@
         </createTable>
 
         <addForeignKeyConstraint
-                constraintName="fk_payment_enrollment"
-                baseTableName="oa_payment"
-                baseColumnNames="enrollment_id"
-                referencedTableName="oa_enrollment"
-                referencedColumnNames="id"
-                onDelete="CASCADE"/>
+                constraintName="fk_employee_attendance_employee"
+                baseTableName="oa_employee_attendance"
+                baseColumnNames="employee_id"
+                referencedTableName="oa_employee"
+                referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
-                constraintName="fk_payment_created_by"
-                baseTableName="oa_payment"
+                constraintName="fk_employee_attendance_created_by"
+                baseTableName="oa_employee_attendance"
                 baseColumnNames="created_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
-                constraintName="fk_payment_modified_by"
-                baseTableName="oa_payment"
+                constraintName="fk_employee_attendance_modified_by"
+                baseTableName="oa_employee_attendance"
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
-
-        <addCheckConstraint
-                constraintName="payment_chk_amount"
-                tableName="oa_payment"
-                checkCondition="amount_paid >= 0"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -6,44 +6,52 @@
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="1" author="mohamed.ehab">
-        <createTable tableName="oa_trainer_course">
+        <createTable tableName="oa_salary_deduction">
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="employee_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="course_id" type="int">
-                <constraints nullable="false"/>
-            </column>
+            <column name="deduction_date" type="date"/>
+            <column name="amount_deducted" type="decimal(10,2)"/>
+            <column name="image_url" type="varchar(250)"/>
+            <column name="reason" type="text"/>
+            <column name="salary_type" type="varchar(250)"/>
+            <column name="note" type="text"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
             <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
             <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
         </createTable>
 
         <addForeignKeyConstraint
-                constraintName="fk_trainer_course_employee"
-                baseTableName="oa_trainer_course"
+                constraintName="fk_salary_deduction_employee"
+                baseTableName="oa_salary_deduction"
                 baseColumnNames="employee_id"
                 referencedTableName="oa_employee"
                 referencedColumnNames="id"
                 onDelete="CASCADE"/>
 
         <addForeignKeyConstraint
-                constraintName="fk_trainer_course_course"
-                baseTableName="oa_trainer_course"
-                baseColumnNames="course_id"
-                referencedTableName="oa_course"
-                referencedColumnNames="id"
-                onDelete="CASCADE"/>
-
-        <addForeignKeyConstraint
-                constraintName="fk_trainer_course_created_by"
-                baseTableName="oa_trainer_course"
+                constraintName="fk_salary_deduction_created_by"
+                baseTableName="oa_salary_deduction"
                 baseColumnNames="created_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
+        <addForeignKeyConstraint
+                constraintName="fk_salary_deduction_modified_by"
+                baseTableName="oa_salary_deduction"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="salary_deduction_chk_amount"
+                tableName="oa_salary_deduction"
+                checkCondition="amount_deducted >= 0"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -109,6 +109,12 @@
 		<module>modules/trainer/trainer-proxy</module>
 		<module>modules/trainer/trainer-repository</module>
 
+		<module>modules/session/session-model</module>
+		<module>modules/session/session-api</module>
+		<module>modules/session/session-core</module>
+		<module>modules/session/session-proxy</module>
+		<module>modules/session/session-repository</module>
+
 		<module>service/service-bom</module>
 		<module>service/olympic/olympic-academy-mgt</module>
 		<module>service/olympic/olympic-test-adapter</module>

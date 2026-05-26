@@ -19,6 +19,8 @@
             <column name="birth_date" type="date"/>
             <column name="gender" type="varchar(100)"/>
             <column name="salary" type="decimal(10,2)"/>
+            <column name="remained_salary" type="decimal(10,2)"/>
+            <column name="salary_type" type="varchar(100)"/>
             <column name="employee_type" type="varchar(100)"/>
             <column name="image_url" type="varchar(255)"/>
             <column name="hire_date" type="date"/>

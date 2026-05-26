@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_payment_method">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(250)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by_id" type="int"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="mohamed.ehab">
+        <createTable tableName="oa_enrollment_payment">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="enrollment_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_date" type="date"/>
+            <column name="amount_paid" type="decimal(10,2)"/>
+            <column name="payment_method_id" type="int"/>
+            <column name="image_url" type="varchar(250)"/>
+            <column name="note" type="text"/>
+            <column name="status" type="varchar(100)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_payment_enrollment"
+                baseTableName="oa_enrollment_payment"
+                baseColumnNames="enrollment_id"
+                referencedTableName="oa_enrollment"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_payment_payment_method"
+                baseTableName="oa_enrollment_payment"
+                baseColumnNames="payment_method_id"
+                referencedTableName="oa_payment_method_id"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_payment_created_by"
+                baseTableName="oa_enrollment_payment"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_payment_modified_by"
+                baseTableName="oa_enrollment_payment"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="enrollment_payment_chk_amount"
+                tableName="oa_enrollment_payment"
+                checkCondition="amount_paid >= 0"/>
+    </changeSet>
+
+    <changeSet id="3" author="mohamed.ehab">
+        <createTable tableName="oa_enrollment_refund">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="enrollment_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="refund_date" type="date"/>
+            <column name="amount_refunded" type="decimal(10,2)"/>
+            <column name="payment_method_id" type="int"/>
+            <column name="image_url" type="varchar(250)"/>
+            <column name="note" type="text"/>
+            <column name="status" type="varchar(100)"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_refund_enrollment"
+                baseTableName="oa_enrollment_refund"
+                baseColumnNames="enrollment_id"
+                referencedTableName="oa_enrollment"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_refund_payment_method"
+                baseTableName="oa_enrollment_refund"
+                baseColumnNames="payment_method_id"
+                referencedTableName="oa_payment_method_id"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_refund_created_by"
+                baseTableName="oa_enrollment_refund"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_enrollment_refund_modified_by"
+                baseTableName="oa_enrollment_refund"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="enrollment_refund_chk_amount"
+                tableName="oa_enrollment_refund"
+                checkCondition="amount_refunded >= 0"/>
+    </changeSet>
+
+
+</databaseChangeLog>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+
+    <changeSet id="2" author="mohamed.ehab">
+        <createTable tableName="oa_salary_incentive">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="employee_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="withdraw_date" type="date"/>
+            <column name="amount_withdrawn" type="decimal(10,2)"/>
+            <column name="payment_method_id" type="int"/>
+            <column name="image_url" type="varchar(250)"/>
+            <column name="type" type="varchar(100)"/>
+            <column name="note" type="text"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="last_modified_on" type="timestamp"/>
+            <column name="created_by_id" type="int"/>
+            <column name="last_modified_by_id" type="int"/>
+            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_salary_incentive_employee"
+                baseTableName="oa_salary_incentive"
+                baseColumnNames="employee_id"
+                referencedTableName="oa_employee"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_salary_incentive_payment_method"
+                baseTableName="oa_salary_incentive"
+                baseColumnNames="payment_method_id"
+                referencedTableName="oa_payment_method"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_salary_incentive_created_by"
+                baseTableName="oa_salary_incentive"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_salary_incentive_modified_by"
+                baseTableName="oa_salary_incentive"
+                baseColumnNames="last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addCheckConstraint
+                constraintName="salary_incentive_chk_amount"
+                tableName="oa_salary_incentive"
+                checkCondition="amount_withdrawn >= 0"/>
+    </changeSet>
+
+</databaseChangeLog>
