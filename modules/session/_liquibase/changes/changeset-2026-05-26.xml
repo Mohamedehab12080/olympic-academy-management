@@ -41,14 +41,14 @@
 
         <addForeignKeyConstraint
                 constraintName="fk_session_created_by"
-                baseTableName="oa_session"
+                baseTableName="oa_course_session"
                 baseColumnNames="created_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_session_modified_by"
-                baseTableName="oa_session"
+                baseTableName="oa_course_session"
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>

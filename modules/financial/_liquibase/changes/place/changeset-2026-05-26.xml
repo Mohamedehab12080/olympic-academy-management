@@ -40,7 +40,7 @@
             <column name="rent_amount" type="int"/>
             <column name="rent_type_id" type="int"/>
             <column name="payment_date" type="date"/>
-            <column name="payment_method" type="int"/>
+            <column name="payment_method_id" type="int"/>
             <column name="status" type="varchar(100)"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>

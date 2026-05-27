@@ -110,28 +110,28 @@
 
         <addForeignKeyConstraint
                 constraintName="fk_certificate_trainee"
-                baseTableName="oa_certificate"
+                baseTableName="oa_trainee_certificate"
                 baseColumnNames="trainee_id"
                 referencedTableName="oa_trainee"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_certificate_course"
-                baseTableName="oa_certificate"
+                baseTableName="oa_trainee_certificate"
                 baseColumnNames="course_id"
                 referencedTableName="oa_course"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_certificate_created_by"
-                baseTableName="oa_certificate"
+                baseTableName="oa_trainee_certificate"
                 baseColumnNames="created_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_certificate_modified_by"
-                baseTableName="oa_certificate"
+                baseTableName="oa_trainee_certificate"
                 baseColumnNames="last_modified_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
@@ -149,8 +149,8 @@
         </createTable>
 
         <addForeignKeyConstraint
-                constraintName="fk_certificate_created_by"
-                baseTableName="oa_certificate"
+                constraintName="fk_condition_type_created_by"
+                baseTableName="oa_condition_type"
                 baseColumnNames="created_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>

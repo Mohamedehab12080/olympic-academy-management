@@ -49,7 +49,7 @@
                 constraintName="fk_enrollment_payment_payment_method"
                 baseTableName="oa_enrollment_payment"
                 baseColumnNames="payment_method_id"
-                referencedTableName="oa_payment_method_id"
+                referencedTableName="oa_payment_method"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
@@ -100,7 +100,7 @@
                 constraintName="fk_enrollment_refund_payment_method"
                 baseTableName="oa_enrollment_refund"
                 baseColumnNames="payment_method_id"
-                referencedTableName="oa_payment_method_id"
+                referencedTableName="oa_payment_method"
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint

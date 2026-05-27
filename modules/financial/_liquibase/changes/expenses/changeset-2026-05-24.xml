@@ -26,13 +26,6 @@
                 baseColumnNames="created_by_id"
                 referencedTableName="oa_user"
                 referencedColumnNames="id"/>
-
-        <addForeignKeyConstraint
-                constraintName="fk_expense_type_modified_by"
-                baseTableName="oa_expense_type"
-                baseColumnNames="last_modified_by_id"
-                referencedTableName="oa_user"
-                referencedColumnNames="id"/>
     </changeSet>
 
     <changeSet id="2" author="mohamed.ehab">
