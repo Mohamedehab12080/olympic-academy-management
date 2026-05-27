@@ -15,7 +15,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="withdraw_date" type="date"/>
-            <column name="amount_withdrawn" type="decimal(10,2)"/>
+            <column name="amount_withdrawn" type="Integer"/>
             <column name="payment_method_id" type="int"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="type" type="varchar(100)"/>

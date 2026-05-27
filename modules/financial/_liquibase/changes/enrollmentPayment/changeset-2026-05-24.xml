@@ -25,7 +25,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="payment_date" type="date"/>
-            <column name="amount_paid" type="decimal(10,2)"/>
+            <column name="amount_paid" type="Integer"/>
             <column name="payment_method_id" type="int"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="note" type="text"/>
@@ -76,7 +76,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="refund_date" type="date"/>
-            <column name="amount_refunded" type="decimal(10,2)"/>
+            <column name="amount_refunded" type="Integer"/>
             <column name="payment_method_id" type="int"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="note" type="text"/>

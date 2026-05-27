@@ -24,6 +24,12 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.modules.department</groupId>
+            <artifactId>department-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.modules</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>

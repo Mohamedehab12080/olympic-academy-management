@@ -39,12 +39,12 @@
             <column name="end_date" type="date"/>
             <column name="enrollment_status" type="varchar(100)"/>
             <column name="payment_status" type="varchar(100)"/>
-            <column name="subscription_value" type="decimal(10,2)"/>
+            <column name="subscription_value" type="Integer"/>
             <column name="discount_amount" type="integer" defaultValueNumeric="0"/>
             <column name="discount_percentage" type="decimal(5,2)" defaultValueNumeric="0.00"/>
-            <column name="final_subscription_value" type="decimal(10,2)"/>
-            <column name="remained_subscription_value" type="decimal(10,2)"/>
-            <column name="notes" type="text"/>
+            <column name="final_subscription_value" type="Integer"/>
+            <column name="remained_subscription_value" type="Integer"/>
+            <column name="note" type="text"/>
             <column name="is_active" type="boolean" defaultValueBoolean="true"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>

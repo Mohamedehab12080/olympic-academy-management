@@ -25,7 +25,7 @@
             <column name="late_time" type="int">
                 <constraints nullable="true"/>
             </column>
-            <column name="notes" type="text"/>
+            <column name="note" type="text"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>
             <column name="created_by_id" type="int"/>

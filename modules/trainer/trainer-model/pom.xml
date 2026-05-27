@@ -46,6 +46,16 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>bs.modules.employee</groupId>
+            <artifactId>employee-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>bs.modules.course</groupId>
+            <artifactId>course-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

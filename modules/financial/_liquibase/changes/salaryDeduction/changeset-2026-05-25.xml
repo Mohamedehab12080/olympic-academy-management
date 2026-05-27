@@ -14,7 +14,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="deduction_date" type="date"/>
-            <column name="amount_deducted" type="decimal(10,2)"/>
+            <column name="amount_deducted" type="Integer"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="reason" type="text"/>
             <column name="salary_type" type="varchar(250)"/>

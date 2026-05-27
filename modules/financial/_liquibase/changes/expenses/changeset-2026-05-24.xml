@@ -34,11 +34,11 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="expense_date" type="date"/>
-            <column name="amount_expensed" type="decimal(10,2)"/>
+            <column name="amount_expensed" type="Integer"/>
             <column name="payment_method_id" type="int"/>
             <column name="expense_type_id" type="int"/>
             <column name="images_urls" type="json"/>
-            <column name="notes" type="text"/>
+            <column name="note" type="text"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>
             <column name="created_by_id" type="int"/>
