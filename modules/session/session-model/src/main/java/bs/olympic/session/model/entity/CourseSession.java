@@ -1,6 +1,9 @@
-package bs.olympic.employee.model.entity;
+package bs.olympic.session.model.entity;
 
-import bs.olympic.employee.model.enums.EmployeeAttendanceStatus;
+import bs.olympic.course.model.entity.Course;
+import bs.olympic.employee.model.entity.Employee;
+import bs.olympic.place.model.entity.Place;
+import bs.olympic.session.model.enums.SessionStatus;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,36 +19,44 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "oa_employee_attendance")
-public class EmployeeAttendance {
+@Table(name = "oa_course_session")
+public class CourseSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
-
-    @Column(name = "attendance_date")
+    @Column(name = "title")
     @Basic
-    private LocalDate attendanceDate;
+    private String title;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    @ManyToOne
+    @JoinColumn(name = "trainer_id")
+    private Employee trainer;
+
+    @ManyToOne
+    @JoinColumn(name = "place_id")
+    private Place place;
+
+    @Column(name = "session_date")
+    @Basic
+    private LocalDate sessionDate;
+
+    @Column(name = "start_time")
+    @Basic
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    @Basic
+    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private EmployeeAttendanceStatus status;
-
-    @Column(name = "check_in_time")
-    @Basic
-    private LocalTime checkInTime;
-
-    @Column(name = "check_out_time")
-    @Basic
-    private LocalTime checkOutTime;
-
-    @Column(name = "late_time")
-    @Basic
-    private Integer lateTime;
+    private SessionStatus status;
 
     @Column(name = "note")
     @Basic

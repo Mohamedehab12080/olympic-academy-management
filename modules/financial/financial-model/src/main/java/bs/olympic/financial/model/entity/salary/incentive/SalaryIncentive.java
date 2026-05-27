@@ -1,6 +1,8 @@
-package bs.olympic.employee.model.entity;
+package bs.olympic.financial.model.entity.salary.incentive;
 
-import bs.olympic.employee.model.enums.EmployeeAttendanceStatus;
+import bs.olympic.employee.model.entity.Employee;
+import bs.olympic.financial.model.entity.PaymentMethod;
+import bs.olympic.financial.model.enums.IncentiveTypes;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,15 +11,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "oa_employee_attendance")
-public class EmployeeAttendance {
+@Table(name = "oa_salary_incentive")
+public class SalaryIncentive {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,25 +28,25 @@ public class EmployeeAttendance {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    @Column(name = "attendance_date")
+    @ManyToOne
+    @JoinColumn(name = "payment_method_id")
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "withdraw_date")
     @Basic
-    private LocalDate attendanceDate;
+    private LocalDate withdrawDate;
+
+    @Column(name = "amount_withdrawn")
+    @Basic
+    private Integer amountWithdrawn;
+
+    @Column(name = "image_url", length = 250)
+    @Basic
+    private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private EmployeeAttendanceStatus status;
-
-    @Column(name = "check_in_time")
-    @Basic
-    private LocalTime checkInTime;
-
-    @Column(name = "check_out_time")
-    @Basic
-    private LocalTime checkOutTime;
-
-    @Column(name = "late_time")
-    @Basic
-    private Integer lateTime;
+    @Column(name = "type")
+    private IncentiveTypes type;
 
     @Column(name = "note")
     @Basic

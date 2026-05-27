@@ -1,51 +1,40 @@
-package bs.olympic.employee.model.entity;
+package bs.olympic.trainee.model.entity;
 
-import bs.olympic.employee.model.enums.EmployeeAttendanceStatus;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "oa_employee_attendance")
-public class EmployeeAttendance {
+@Table(name = "oa_health_condition")
+public class HealthCondition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+    @JoinColumn(name = "trainee_id")
+    private Trainee trainee;
 
-    @Column(name = "attendance_date")
+    @Column(name = "title")
     @Basic
-    private LocalDate attendanceDate;
+    private String title;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private EmployeeAttendanceStatus status;
-
-    @Column(name = "check_in_time")
+    @Column(name = "description")
     @Basic
-    private LocalTime checkInTime;
+    private String description;
 
-    @Column(name = "check_out_time")
+    @Column(name = "medication")
     @Basic
-    private LocalTime checkOutTime;
-
-    @Column(name = "late_time")
-    @Basic
-    private Integer lateTime;
+    private String medication;
 
     @Column(name = "note")
     @Basic
@@ -70,4 +59,5 @@ public class EmployeeAttendance {
     @Column(name = "is_deleted")
     @Basic
     private Boolean isDeleted;
+
 }

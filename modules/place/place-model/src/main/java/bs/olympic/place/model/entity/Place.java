@@ -1,55 +1,36 @@
-package bs.olympic.employee.model.entity;
+package bs.olympic.place.model.entity;
 
-import bs.olympic.employee.model.enums.EmployeeAttendanceStatus;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "oa_employee_attendance")
-public class EmployeeAttendance {
+@Table(name = "oa_place")
+public class Place {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
-
-    @Column(name = "attendance_date")
+    @Column(name = "title")
     @Basic
-    private LocalDate attendanceDate;
+    private String title;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private EmployeeAttendanceStatus status;
-
-    @Column(name = "check_in_time")
+    @Column(name = "address")
     @Basic
-    private LocalTime checkInTime;
+    private String address;
 
-    @Column(name = "check_out_time")
+    @Column(name = "phone_number")
     @Basic
-    private LocalTime checkOutTime;
-
-    @Column(name = "late_time")
-    @Basic
-    private Integer lateTime;
-
-    @Column(name = "note")
-    @Basic
-    private String note;
+    private String phoneNumber;
 
     @Column(name = "created_on")
     @Basic

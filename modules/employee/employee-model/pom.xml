@@ -46,6 +46,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>bs.modules.department</groupId>
+            <artifactId>department-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

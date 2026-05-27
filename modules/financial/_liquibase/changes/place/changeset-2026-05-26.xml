@@ -38,6 +38,8 @@
                 <constraints nullable="false"/>
             </column>
             <column name="rent_amount" type="int"/>
+            <column name="payed_amount" type="int"/>
+            <column name="remained_amount" type="int"/>
             <column name="rent_type_id" type="int"/>
             <column name="payment_date" type="date"/>
             <column name="payment_method_id" type="int"/>

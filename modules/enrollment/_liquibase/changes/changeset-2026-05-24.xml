@@ -31,7 +31,7 @@
             <column name="course_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="employee_id" type="int">
+            <column name="trainer_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="enrollment_type_id" type="int"/>
@@ -80,9 +80,9 @@
                 referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
-                constraintName="fk_enrollment_employee"
+                constraintName="fk_enrollment_trainer"
                 baseTableName="oa_enrollment"
-                baseColumnNames="employee_id"
+                baseColumnNames="trainer_id"
                 referencedTableName="oa_employee"
                 referencedColumnNames="id"/>
 
