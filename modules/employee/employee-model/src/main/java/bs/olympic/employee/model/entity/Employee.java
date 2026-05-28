@@ -1,6 +1,7 @@
 package bs.olympic.employee.model.entity;
 
 import bs.olympic.common.model.enums.Gender;
+import bs.olympic.common.model.enums.SalaryTypes;
 import bs.olympic.employee.model.enums.EmployeeTypes;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
@@ -49,9 +50,9 @@ public class Employee {
     @Basic
     private Integer remainedSalary;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "salary_type")
-    @Basic
-    private String salaryType;
+    private SalaryTypes salaryType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "employee_type")

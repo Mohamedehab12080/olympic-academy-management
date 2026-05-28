@@ -1,11 +1,14 @@
-package bs.olympic.department.model.entity;
+package bs.olympic.financial.model.entity.salary.deduction;
 
+import bs.olympic.employee.model.entity.Employee;
+import bs.olympic.financial.model.enums.DeductionTypes;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -13,24 +16,40 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "oa_department")
-public class Department {
+@Table(name = "oa_salary_deduction")
+public class SalaryDeduction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name="title")
-    @Basic
-    private String title;
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 
-    @Column(name = "description")
+    @Column(name = "amount_deducted")
     @Basic
-    private String description;
+    private Integer amountDeducted;
 
-    @Column(name = "is_active")
+    @Column(name = "image_url")
     @Basic
-    private Boolean isActive;
+    private String imageUrl;
+
+    @Column(name = "reason")
+    @Basic
+    private String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "deduction_type")
+    private DeductionTypes deductionType;
+
+    @Column(name = "note")
+    @Basic
+    private String note;
+
+    @Column(name = "deduction_date")
+    @Basic
+    private LocalDate deductionDate;
 
     @Column(name = "created_on")
     @Basic

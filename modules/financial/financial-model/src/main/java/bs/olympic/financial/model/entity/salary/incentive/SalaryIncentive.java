@@ -2,6 +2,7 @@ package bs.olympic.financial.model.entity.salary.incentive;
 
 import bs.olympic.employee.model.entity.Employee;
 import bs.olympic.financial.model.entity.PaymentMethod;
+import bs.olympic.common.model.enums.SalaryTypes;
 import bs.olympic.financial.model.enums.IncentiveTypes;
 import bs.olympic.user.model.entity.User;
 import jakarta.persistence.*;
@@ -40,7 +41,7 @@ public class SalaryIncentive {
     @Basic
     private Integer amountWithdrawn;
 
-    @Column(name = "image_url", length = 250)
+    @Column(name = "image_url")
     @Basic
     private String imageUrl;
 
