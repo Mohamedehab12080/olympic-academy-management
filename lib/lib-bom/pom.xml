@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>bs</groupId>
+        <artifactId>olympic-academy-management</artifactId>
+        <version>0.0.1</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>bs.lib</groupId>
+    <artifactId>lib-bom</artifactId>
+    <version>0.0.1</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <bs.common-model.version>0.0.1</bs.common-model.version>
+        <bs.common-api.version>0.0.1</bs.common-api.version>
+        <bs.common-core.version>0.0.1</bs.common-core.version>
+
+        <bs.rest-adapter-api.version>0.0.1</bs.rest-adapter-api.version>
+        <bs.rest-adapter-core.version>0.0.1</bs.rest-adapter-core.version>
+
+        <bs.sql-db-adapter-model.version>0.0.1</bs.sql-db-adapter-model.version>
+        <bs.sql-db-adapter-api.version>0.0.1</bs.sql-db-adapter-api.version>
+        <bs.sql-db-adapter-core.version>0.0.1</bs.sql-db-adapter-core.version>
+        <bs.sql-db-adapter-test.version>0.0.1</bs.sql-db-adapter-test.version>
+
+        <bs.swagger.version>0.0.1</bs.swagger.version>
+        <bs.unit-test.version>0.0.1</bs.unit-test.version>
+
+        <bs.id-counter-model.version>0.0.1</bs.id-counter-model.version>
+        <bs.id-counter-api.version>0.0.1</bs.id-counter-api.version>
+        <bs.id-counter-core.version>0.0.1</bs.id-counter-core.version>
+        <bs.id-counter-repository.version>0.0.1</bs.id-counter-repository.version>
+
+        <bs.json.adapter-api.version>0.0.1</bs.json.adapter-api.version>
+        <bs.json.adapter-core.version>0.0.1</bs.json.adapter-core.version>
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>bs.lib.common</groupId>
+                <artifactId>common-model</artifactId>
+                <version>${bs.common-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.common</groupId>
+                <artifactId>common-api</artifactId>
+                <version>${bs.common-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.common</groupId>
+                <artifactId>common-core</artifactId>
+                <version>${bs.common-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.rest</groupId>
+                <artifactId>rest-adapter-api</artifactId>
+                <version>${bs.rest-adapter-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.rest</groupId>
+                <artifactId>rest-adapter-core</artifactId>
+                <version>${bs.rest-adapter-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.sql-db</groupId>
+                <artifactId>sql-db-adapter-model</artifactId>
+                <version>${bs.sql-db-adapter-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.sql-db</groupId>
+                <artifactId>sql-db-adapter-api</artifactId>
+                <version>${bs.sql-db-adapter-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.sql-db</groupId>
+                <artifactId>sql-db-adapter-core</artifactId>
+                <version>${bs.sql-db-adapter-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.sql-db</groupId>
+                <artifactId>sql-db-adapter-test</artifactId>
+                <version>${bs.sql-db-adapter-test.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib</groupId>
+                <artifactId>swagger</artifactId>
+                <version>${bs.swagger.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib</groupId>
+                <artifactId>unit-test</artifactId>
+                <version>${bs.unit-test.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.id-counter</groupId>
+                <artifactId>id-counter-model</artifactId>
+                <version>${bs.id-counter-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.id-counter</groupId>
+                <artifactId>id-counter-api</artifactId>
+                <version>${bs.id-counter-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.id-counter</groupId>
+                <artifactId>id-counter-core</artifactId>
+                <version>${bs.id-counter-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.id-counter</groupId>
+                <artifactId>id-counter-repository</artifactId>
+                <version>${bs.id-counter-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.json</groupId>
+                <artifactId>json-adapter-api</artifactId>
+                <version>${bs.json.adapter-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.json</groupId>
+                <artifactId>json-adapter-core</artifactId>
+                <version>${bs.json.adapter-core.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+</project>
+

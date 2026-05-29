@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>bs</groupId>
+        <artifactId>olympic-academy-management</artifactId>
+        <version>0.0.1</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>bs.lib</groupId>
+    <artifactId>swagger</artifactId>
+    <version>0.0.1</version>
+
+    <properties>
+        <io.swagger-annotations.v3.version>2.2.28</io.swagger-annotations.v3.version>
+        <openapitools.jackson-databind-nullable.version>0.2.6</openapitools.jackson-databind-nullable.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>bs.lib</groupId>
+                <artifactId>lib-bom</artifactId>
+                <version>${bs.lib-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${io.swagger-annotations.v3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openapitools</groupId>
+                <artifactId>jackson-databind-nullable</artifactId>
+                <version>${openapitools.jackson-databind-nullable.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${spring.doc.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+</project>

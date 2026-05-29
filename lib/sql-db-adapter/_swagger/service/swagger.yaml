@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "SQL DB Adapter Library"
+  contact:
+    email: "ahmedmotair@gmail.com"
+    name: "Ahmed Motair"
+
+paths:
+  { }
+
+components:
+  parameters:
+    QPOrderBy:
+      name: orderBy
+      in: query
+      description: Order By Attribute
+      schema:
+        type: string
+
+    QPOrderDir:
+      name: orderDir
+      in: query
+      description: Order Direction
+      schema:
+        $ref: '#/components/schemas/OrderDirections'
+
+    QPPageNum:
+      name: pageNum
+      in: query
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+
+    QPPageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+
+    QPNoPagination:
+      name: noPagination
+      in: query
+      schema:
+        type: boolean
+        default: false
+
+  schemas:
+    OrderDirections:
+      type: string
+      enum: [ ASC, DESC ]

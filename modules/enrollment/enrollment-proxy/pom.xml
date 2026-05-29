@@ -16,16 +16,16 @@
     <version>0.0.1</version>
 
     <dependencies>
+
         <dependency>
-            <groupId>bs.modules.enrollment</groupId>
-            <artifactId>enrollment-api</artifactId>
+            <groupId>bs.lib.common</groupId>
+            <artifactId>common-model</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>bs.modules</groupId>
-            <artifactId>common-module</artifactId>
-            <scope>provided</scope>
+            <groupId>bs.modules.enrollment</groupId>
+            <artifactId>enrollment-api</artifactId>
         </dependency>
 
         <dependency>

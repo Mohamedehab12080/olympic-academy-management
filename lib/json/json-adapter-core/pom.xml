@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>bs</groupId>
+        <artifactId>olympic-academy-management</artifactId>
+        <version>0.0.1</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>bs.lib.json</groupId>
+    <artifactId>json-adapter-core</artifactId>
+    <version>0.0.1</version>
+
+    <properties>
+        <json-simple.version>1.1.1</json-simple.version>
+        <json.version>1.1.1</json.version>
+        <gson.version>2.13.1</gson.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>bs.lib.json</groupId>
+            <artifactId>json-adapter-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.logger</groupId>
+            <artifactId>logger-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.common</groupId>
+            <artifactId>common-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>bs.lib</groupId>
+                <artifactId>lib-bom</artifactId>
+                <version>${bs.lib-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.googlecode.json-simple</groupId>
+                <artifactId>json-simple</artifactId>
+                <version>${json-simple.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

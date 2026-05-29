@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>bs</groupId>
+        <artifactId>olympic-academy-management</artifactId>
+        <version>0.0.1</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>bs.lib.sql-db</groupId>
+    <artifactId>sql-db-adapter-core</artifactId>
+    <version>0.0.1</version>
+
+    <properties>
+        <mysql-connector.version>9.4.0</mysql-connector.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.common</groupId>
+            <artifactId>common-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql-connector.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib</groupId>
+                <artifactId>lib-bom</artifactId>
+                <version>${bs.lib-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

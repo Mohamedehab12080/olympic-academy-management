@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <property name="SERVICE_NAME" value="sql-db-adapter-test"/>
+    <property name="LOG_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] [%-5level] [%X{traceId:-}] [%X{spanId:-}] [%X{REQUEST_TYPE}] [%X{REQUEST_DESTINATION}] [%logger] %msg%n"/>
+    <property name="LOG_FILE_SIZE" value="15 MB"/>
+    <property name="LOG_FILE_PATH" value="./logs"/>
+    <property name="MAX_FILES_OF_HISTORY" value="10"/>
+    <property name="MAX_SIZE_OF_HISTORY" value="5GB"/>
+
+    <logger name="root" additivity="false" level="info">
+        <appender-ref ref="console-appender"/>
+    </logger>
+
+
+    <logger name="bs.lib.test.sql-db-adapter" additivity="false" level="debug">
+        <appender-ref ref="console-appender"/>
+        <appender-ref ref="rolling-file-appender"/>
+    </logger>
+
+    <logger name="bs.lib" additivity="false" level="debug">
+        <appender-ref ref="console-appender"/>
+        <appender-ref ref="rolling-file-appender"/>
+    </logger>
+
+    <!-- Loggers of Third Party Libraries-->
+    <logger name="org.hibernate" additivity="false" level="info">
+        <appender-ref ref="console-appender"/>
+        <appender-ref ref="rolling-file-appender"/>
+    </logger>
+
+    <logger name="org.springframework.web" additivity="false" level="info">
+        <appender-ref ref="console-appender"/>
+        <appender-ref ref="rolling-file-appender"/>
+    </logger>
+
+    <logger name="org.springframework.security" additivity="false" level="debug">
+        <appender-ref ref="console-appender"/>
+        <appender-ref ref="rolling-file-appender"/>
+    </logger>
+    <!-- Loggers of Third Party Libraries-->
+
+    <appender name="console-appender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="rolling-file-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE_PATH}/${SERVICE_NAME}.log</file>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_PATH}/${SERVICE_NAME}/${SERVICE_NAME}-%d{yyyy-MM-dd}-%i.log
+            </fileNamePattern>
+            <maxFileSize>${LOG_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_FILES_OF_HISTORY}</maxHistory>
+            <totalSizeCap>${MAX_SIZE_OF_HISTORY}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+</configuration>

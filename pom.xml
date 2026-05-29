@@ -30,7 +30,8 @@
 		<project-name.dot-separated>service</project-name.dot-separated>
 
 		<bs.modules.modules-bom.version>0.0.1</bs.modules.modules-bom.version>
-		<bs.service.service-bom.version>0.0.1</bs.service.service-bom.version>
+		<bs.ms.ms-bom.version>0.0.1</bs.ms.ms-bom.version>
+		<bs.lib-bom.version>0.0.1</bs.lib-bom.version>
 
 		<service-name.dot-separated/>
 		<service-name.dash-separated/>
@@ -142,8 +143,8 @@
 								<output>${project.build.sourceDirectory}</output>
 
 							<importMappings>
-								<importMapping>ForgetPasswordOtpMethods =
-									zag.service.user.model.enums.ForgetPasswordOtpMethods
+								<importMapping>ErrorVTO =
+									bs.olympic.common.model.vto.ErrorVTO
 								</importMapping>
 							</importMappings>
 
@@ -203,8 +204,8 @@
 								<output>${project.build.sourceDirectory}</output>
 
 								<importMappings>
-									<importMapping>ForgetPasswordOtpMethods =
-										zag.service.user.model.enums.ForgetPasswordOtpMethods
+									<importMapping>ErrorVTO =
+										bs.olympic.common.model.vto.ErrorVTO
 									</importMapping>
 								</importMappings>
 
@@ -358,9 +359,22 @@
 	</build>
 
 	<modules>
+		<module>lib/lib-bom</module>
+		<module>lib/swagger</module>
+		<module>lib/common/common-model</module>
+		<module>lib/common/common-api</module>
+		<module>lib/common/common-core</module>
+
+		<module>lib/rest/rest-adapter-api</module>
+		<module>lib/rest/rest-adapter-core</module>
+
+		<module>lib/sql-db-adapter/sql-db-adapter-model</module>
+		<module>lib/sql-db-adapter/sql-db-adapter-api</module>
+		<module>lib/sql-db-adapter/sql-db-adapter-core</module>
+		<module>lib/sql-db-adapter/sql-db-adapter-test</module>
+
 		<module>modules/modules-bom</module>
-		<module>modules/swagger</module>
-		<module>modules/common-module</module>
+
 		<module>modules/user-module</module>
 		<module>modules/employee/employee-model</module>
 		<module>modules/employee/employee-api</module>
@@ -416,9 +430,9 @@
 		<module>modules/session/session-proxy</module>
 		<module>modules/session/session-repository</module>
 
-		<module>service/service-bom</module>
-		<module>service/olympic/olympic-academy-mgt</module>
-		<module>service/olympic/olympic-test-adapter</module>
+		<module>ms/ms-bom</module>
+		<module>ms/olympic/olympic-academy-mgt</module>
+		<module>ms/olympic/olympic-test-adapter</module>
 	</modules>
 
 	<dependencyManagement>
@@ -549,15 +563,14 @@
 
 			<modules>
 				<module>modules/modules-bom</module>
-				<module>modules/swagger</module>
-				<module>modules/common-module</module>
+				<module>lib/swagger</module>
 				<module>modules/user-module</module>
 				<module>modules/employee/employee-model</module>
 				<module>modules/employee/employee-api</module>
 				<module>modules/unit-test</module>
-				<module>service/service-bom</module>
-				<module>service/olympic/olympic-academy-mgt</module>
-				<module>service/olympic/olympic-test-adapter</module>
+				<module>ms/ms-bom</module>
+				<module>ms/olympic/olympic-academy-mgt</module>
+				<module>ms/olympic/olympic-test-adapter</module>
 			</modules>
 
 		</profile>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>bs</groupId>
+        <artifactId>olympic-academy-management</artifactId>
+        <version>0.0.1</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>bs.ms.olympic</groupId>
+    <artifactId>olympic-academy-mgt</artifactId>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+
+    <name>Web Module</name>
+    <description>Main application with REST controllers</description>
+
+    <properties>
+        <start-class>bs.ms.olympic.academy.OlympicAcademyManagement</start-class>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>bs.modules</groupId>
+            <artifactId>swagger</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.modules</groupId>
+            <artifactId>unit-test</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>bs.lib.common</groupId>
+            <artifactId>common-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.common</groupId>
+            <artifactId>common-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.modules</groupId>
+            <artifactId>user-module</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>bs.ms.olympic.academy.OlympicAcademyManagement</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>bs.ms</groupId>
+                <artifactId>ms-bom</artifactId>
+                <version>${bs.ms.ms-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

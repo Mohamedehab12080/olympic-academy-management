@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Common Library"
+  contact:
+    email: "ahmedmotair@gmail.com"
+    name: "Ahmed Motair"
+
+paths:
+  { }
+
+components:
+  responses:
+    Created:
+      description: Created
+    NoContent:
+      description: No Content
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '../../../common/_swagger/service/swagger.yaml#/components/schemas/ErrorVTO'
+
+  parameters:
+    QPQuickSearch:
+      name: quickSearch
+      in: query
+      required: false
+      schema:
+        type: string
+
+    QPCreatedOnFrom:
+      name: createdOnFrom
+      in: query
+      schema:
+        type: string
+        format: date
+
+    QPCreatedOnTo:
+      name: createdOnTo
+      in: query
+      schema:
+        type: string
+        format: date
+
+    QPLastModifiedOnFrom:
+      name: lastModifiedOnFrom
+      in: query
+      schema:
+        type: string
+        format: date
+
+    QPLastModifiedOnTo:
+      name: lastModifiedOnTo
+      in: query
+      schema:
+        type: string
+        format: date
+
+    QPExecutedOnFrom:
+      name: executedOnFrom
+      in: query
+      schema:
+        type: string
+        format: date
+
+    QPExecutedOnTo:
+      name: executedOnTo
+      in: query
+      schema:
+        type: string
+        format: date
+
+    QPIsActive:
+      name: isActive
+      in: query
+      schema:
+        type: boolean
+
+  schemas:
+    ErrorVTO:
+      type: object
+      properties:
+        code:
+          type: string
+        messageEn:
+          type: string
+        reqBodyErrors:
+          type: array
+          items:
+            type: string
+
+    LookupVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titleEn:
+          type: string
+        titleAr:
+          type: string
+        profileImageFid:
+          type: string
+
+    AppLanguages:
+      type: string
+      enum: [ EN, AR ]
+      default: "EN"
+
+    NewRecordVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+
+    LookupDTO:
+      type: object
+      required:
+        - titleEn
+      properties:
+        titleAr:
+          type: string
+        titleEn:
+          type: string
+          minLength: 1
+
+    LookupResultSet:
+      type: object
+      properties:
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/LookupVTO'
+        total:
+          type: integer
+          format: int64
