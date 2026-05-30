@@ -8,14 +8,11 @@ public interface Errors {
 
     String messageEn();
 
-    String messageAr();
-
     String name();
 
     default String label() {
         return this.name();
     }
-
 
     default String getFullMessage() {
         return "[" + getFullCode() + "] [" + label() + "]: " + messageEn();

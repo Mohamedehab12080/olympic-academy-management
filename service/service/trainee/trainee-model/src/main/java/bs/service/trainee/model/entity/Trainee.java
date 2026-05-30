@@ -1,7 +1,7 @@
 package bs.service.trainee.model.entity;
 
-import bs.olympic.common.model.enums.Gender;
-import bs.olympic.user.model.entity.User;
+import bs.lib.common.model.interfaces.enums.Gender;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

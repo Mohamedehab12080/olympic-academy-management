@@ -1,9 +1,9 @@
 package bs.service.employee.model.entity;
 
-import bs.olympic.common.model.enums.Gender;
-import bs.olympic.common.model.enums.SalaryTypes;
+import bs.lib.common.model.interfaces.enums.Gender;
+import bs.lib.common.model.interfaces.enums.SalaryTypes;
 import bs.olympic.employee.model.enums.EmployeeTypes;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

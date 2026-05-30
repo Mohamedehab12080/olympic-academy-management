@@ -1,7 +1,7 @@
 package bs.service.employee.model.entity;
 
 
-import bs.olympic.common.model.enums.ContactTypes;
+import bs.lib.common.model.interfaces.enums.ContactTypes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

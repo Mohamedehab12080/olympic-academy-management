@@ -1,6 +1,6 @@
 package bs.lib.common.api.service;
 
-import bs.olympic.common.model.dto.MailTemplateDTO;
+import bs.lib.common.model.interfaces.dto.MailTemplateDTO;
 
 public interface EmailService {
     void sendEmail(MailTemplateDTO mailTemplateDTO);

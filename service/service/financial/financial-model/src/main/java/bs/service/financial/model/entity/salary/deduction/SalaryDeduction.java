@@ -2,7 +2,7 @@ package bs.service.financial.model.entity.salary.deduction;
 
 import bs.olympic.employee.model.entity.Employee;
 import bs.olympic.financial.model.enums.DeductionTypes;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

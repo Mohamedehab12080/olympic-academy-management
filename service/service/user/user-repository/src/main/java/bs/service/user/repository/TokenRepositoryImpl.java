@@ -1,10 +1,10 @@
 package bs.service.user.repository;
 
 import bs.olympic.common.repository.BaseRepositoryImpl;
-import bs.olympic.user.api.repository.TokenRepository;
-import bs.olympic.user.model.entity.Token;
-import bs.olympic.user.model.enums.TokenTypes;
-import bs.olympic.user.repository.jpa.TokenJPARepository;
+import bs.service.user.api.repository.TokenRepository;
+import bs.service.user.model.entity.Token;
+import bs.service.user.model.enums.TokenTypes;
+import bs.service.user.repository.jpa.TokenJPARepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;

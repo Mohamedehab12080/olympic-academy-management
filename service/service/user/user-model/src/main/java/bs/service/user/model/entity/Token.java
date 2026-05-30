@@ -1,6 +1,6 @@
 package bs.service.user.model.entity;
 
-import bs.olympic.user.model.enums.TokenTypes;
+import bs.service.user.model.enums.TokenTypes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

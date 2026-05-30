@@ -68,7 +68,9 @@ if exist "!GENERATED_PACKAGE_PATH!" (
 
     if not "!MODULE!"=="sql-db-adapter" (
         call :delete_file "OrderDirections.java"
-		
+    )
+
+
 	REM if not "!PROJECT!"=="service"(
     REM )
     

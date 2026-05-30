@@ -1,6 +1,6 @@
 package bs.service.user.model.vto;
 
-import bs.olympic.user.model.enums.Role;
+import bs.service.user.model.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

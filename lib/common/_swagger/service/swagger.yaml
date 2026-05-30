@@ -20,7 +20,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '../../../common/_swagger/service/service/swagger.yaml#/components/schemas/ErrorVTO'
+            $ref: '../../../common/_swagger/service/swagger.yaml#/components/schemas/ErrorVTO'
 
   parameters:
     QPQuickSearch:

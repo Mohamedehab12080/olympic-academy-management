@@ -7,7 +7,7 @@
         <groupId>bs</groupId>
         <artifactId>olympic-academy-management</artifactId>
         <version>0.0.1</version>
-        <relativePath>../../../pom.xml</relativePath>
+        <relativePath>../../../../pom.xml</relativePath>
     </parent>
 
     <groupId>bs.service.olympic</groupId>

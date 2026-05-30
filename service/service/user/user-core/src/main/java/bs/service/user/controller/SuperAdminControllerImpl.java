@@ -2,12 +2,12 @@
 package bs.service.user.controller;
 
 import bs.olympic.common.security.api.service.SecurityUtilsService;
-import bs.olympic.user.api.service.UserService;
-import bs.olympic.user.core.controller.api.SuperAdminController;
-import bs.olympic.user.model.dto.RegisterUserDTO;
-import bs.olympic.user.model.dto.UpdateAdminDTO;
-import bs.olympic.user.model.vto.UserDetailsVTO;
-import bs.olympic.user.model.vto.UserVTO;
+import bs.service.user.api.service.UserService;
+import bs.service.user.core.controller.api.SuperAdminController;
+import bs.service.user.model.dto.RegisterUserDTO;
+import bs.service.user.model.dto.UpdateAdminDTO;
+import bs.service.user.model.vto.UserDetailsVTO;
+import bs.service.user.model.vto.UserVTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

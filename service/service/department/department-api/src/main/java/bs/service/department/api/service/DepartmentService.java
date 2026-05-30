@@ -1,6 +1,6 @@
 package bs.service.department.api.service;
 
-import bs.olympic.common.model.vto.NewRecordVTO;
+import bs.lib.common.model.interfaces.vto.NewRecordVTO;
 import bs.olympic.department.model.entity.Department;
 import bs.olympic.department.model.filter.DepartmentSearchFilter;
 

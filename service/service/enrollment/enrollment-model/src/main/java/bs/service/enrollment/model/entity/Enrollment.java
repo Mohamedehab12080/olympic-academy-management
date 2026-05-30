@@ -1,11 +1,11 @@
 package bs.service.enrollment.model.entity;
 
-import bs.olympic.common.model.enums.PaymentStatus;
+import bs.lib.common.model.interfaces.enums.PaymentStatus;
 import bs.olympic.course.model.entity.Course;
 import bs.olympic.employee.model.entity.Employee;
 import bs.olympic.enrollment.model.enums.EnrollmentStatus;
 import bs.olympic.trainee.model.entity.Trainee;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

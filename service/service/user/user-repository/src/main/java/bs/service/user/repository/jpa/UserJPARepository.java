@@ -1,8 +1,8 @@
 package bs.service.user.repository.jpa;
 
 import bs.olympic.common.repository.jpa.BaseJPARepository;
-import bs.olympic.user.model.entity.User;
-import bs.olympic.user.model.enums.Role;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

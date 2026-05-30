@@ -1,8 +1,8 @@
 package bs.service.user.core.mapper;
 
-import bs.olympic.user.model.dto.RegisterUserDTO;
-import bs.olympic.user.model.entity.User;
-import bs.olympic.user.model.vto.*;
+import bs.service.user.model.dto.RegisterUserDTO;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.vto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

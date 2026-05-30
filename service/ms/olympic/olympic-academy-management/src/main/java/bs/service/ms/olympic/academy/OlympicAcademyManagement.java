@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @ComponentScan(basePackages = {"bs"})
 @EntityScan(basePackages = {
-        "bs.olympic.user.model.entity"
+        "bs.service.user.model.entity"
 })
 @EnableScheduling
 public class OlympicAcademyManagement {

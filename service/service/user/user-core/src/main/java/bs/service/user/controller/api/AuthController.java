@@ -1,11 +1,11 @@
 // user-module/src/main/java/com/fawry/user/core/controller/api/AuthController.java
 package bs.service.user.controller.api;
 
-import bs.olympic.common.model.vto.ErrorVTO;
-import bs.olympic.user.model.dto.LoginUserDTO;
-import bs.olympic.user.model.dto.RegisterUserDTO;
-import bs.olympic.user.model.vto.LoginUserVTO;
-import bs.olympic.user.model.vto.RegisterUserVTO;
+import bs.lib.common.model.interfaces.vto.ErrorVTO;
+import bs.service.user.model.dto.LoginUserDTO;
+import bs.service.user.model.dto.RegisterUserDTO;
+import bs.service.user.model.vto.LoginUserVTO;
+import bs.service.user.model.vto.RegisterUserVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

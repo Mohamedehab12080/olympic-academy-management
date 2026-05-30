@@ -1,6 +1,6 @@
 package bs.service.user.model.entity;
 
-import bs.olympic.user.model.enums.Role;
+import bs.service.user.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 

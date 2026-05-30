@@ -1,24 +1,24 @@
 package bs.service.user.core.service;
 
 import bs.olympic.common.api.service.EmailService;
-import bs.olympic.common.model.dto.MailTemplateDTO;
-import bs.olympic.common.model.exception.BusinessException;
+import bs.lib.common.model.interfaces.dto.MailTemplateDTO;
+import bs.lib.common.model.interfaces.exception.BusinessException;
 import bs.olympic.common.security.api.service.JwtService;
 import bs.olympic.common.security.api.service.SecurityUtilsService;
-import bs.olympic.user.api.repository.TokenRepository;
-import bs.olympic.user.api.repository.UserRepository;
-import bs.olympic.user.api.service.UserService;
-import bs.olympic.user.core.mapper.UserMapper;
-import bs.olympic.user.model.dto.*;
-import bs.olympic.user.model.entity.Token;
-import bs.olympic.user.model.entity.User;
-import bs.olympic.user.model.enums.Role;
-import bs.olympic.user.model.enums.TokenTypes;
-import bs.olympic.user.model.vto.LoginUserVTO;
-import bs.olympic.user.model.vto.RegisterUserVTO;
-import bs.olympic.user.model.vto.UserDetailsVTO;
-import bs.olympic.user.model.vto.UserVTO;
-import bs.olympic.user.util.TokenGenerator;
+import bs.service.user.api.repository.TokenRepository;
+import bs.service.user.api.repository.UserRepository;
+import bs.service.user.api.service.UserService;
+import bs.service.user.core.mapper.UserMapper;
+import bs.service.user.model.dto.*;
+import bs.service.user.model.entity.Token;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
+import bs.service.user.model.enums.TokenTypes;
+import bs.service.user.model.vto.LoginUserVTO;
+import bs.service.user.model.vto.RegisterUserVTO;
+import bs.service.user.model.vto.UserDetailsVTO;
+import bs.service.user.model.vto.UserVTO;
+import bs.service.user.util.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +36,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static bs.olympic.common.security.config.SecurityConstants.TOKEN_EXPIRE_TIME;
-import static bs.olympic.user.model.enums.UserErrors.*;
+import static bs.service.user.model.enums.UserErrors.*;
 
 @Slf4j
 @Service

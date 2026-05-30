@@ -1,10 +1,10 @@
 // user-module/src/main/java/com/fawry/user/config/UserDetailsServiceImpl.java
 package bs.service.user.core.service;
 
-import bs.olympic.common.model.exception.BusinessException;
+import bs.lib.common.model.interfaces.exception.BusinessException;
 import bs.olympic.common.security.model.CustomUserDetails;
-import bs.olympic.user.api.repository.UserRepository;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.api.repository.UserRepository;
+import bs.service.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import static bs.olympic.user.model.enums.UserErrors.USER_NOT_FOUND;
+import static bs.service.user.model.enums.UserErrors.USER_NOT_FOUND;
 
 @Slf4j
 @Service("userDetailsService")

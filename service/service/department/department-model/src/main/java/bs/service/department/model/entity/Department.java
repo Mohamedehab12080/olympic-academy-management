@@ -1,6 +1,6 @@
 package bs.service.department.model.entity;
 
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

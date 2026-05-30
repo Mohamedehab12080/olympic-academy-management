@@ -6,7 +6,7 @@ import bs.olympic.department.model.entity.Department;
 import bs.olympic.department.model.filter.DepartmentSearchFilter;
 import bs.olympic.department.repository.jpa.DepartmentJPARepository;
 import bs.olympic.department.repository.query.DepartmentQueryBuilder;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 

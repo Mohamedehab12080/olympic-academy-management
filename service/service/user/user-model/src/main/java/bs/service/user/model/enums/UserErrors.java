@@ -1,10 +1,10 @@
 package bs.service.user.model.enums;
 
-import bs.olympic.common.model.interfaces.Domains;
-import bs.olympic.common.model.interfaces.Errors;
+import bs.lib.common.model.interfaces.Domains;
+import bs.lib.common.model.interfaces.Errors;
 import lombok.AllArgsConstructor;
 
-import static bs.olympic.user.model.enums.UserDomains.USER;
+import static bs.service.user.model.enums.UserDomains.USER;
 
 
 @AllArgsConstructor

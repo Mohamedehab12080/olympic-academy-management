@@ -1,10 +1,10 @@
 package bs.lib.common.model.enums;
 
-import bs.olympic.common.model.interfaces.Domains;
-import bs.olympic.common.model.interfaces.Errors;
+import bs.lib.common.model.interfaces.Domains;
+import bs.lib.common.model.interfaces.Errors;
 import lombok.AllArgsConstructor;
 
-import static bs.olympic.common.model.enums.DBDomains.QUERY_BUILDER;
+import static bs.lib.common.model.enums.DBDomains.QUERY_BUILDER;
 
 @AllArgsConstructor
 public enum DBErrors implements Errors {

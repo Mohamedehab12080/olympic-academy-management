@@ -1,9 +1,9 @@
 package bs.service.financial.model.entity.place;
 
-import bs.olympic.common.model.enums.PaymentStatus;
+import bs.lib.common.model.interfaces.enums.PaymentStatus;
 import bs.olympic.financial.model.entity.PaymentMethod;
 import bs.olympic.place.model.entity.Place;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

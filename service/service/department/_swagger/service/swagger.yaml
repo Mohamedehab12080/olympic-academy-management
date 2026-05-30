@@ -13,6 +13,38 @@ tags:
   - name: Department
 
 paths:
+  /departments:
+    get:
+      tags:
+        - Department
+      summary: Retrieve list of Departments
+      operationId: getAdminCarts
+      parameters:
+        - name: cartTitle
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 2
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPLastModifiedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPLastModifiedOnTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCartResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /departments/{departmentId}:
     get:
       tags:
@@ -31,170 +63,6 @@ paths:
         '400':
           $ref: '../../../common/'
 
-  /pharmacies/{pharmacyId}/carts/{cartId}/clear:
-    put:
-      tags:
-        - Pharmacy Cart
-      summary: Clear cart
-      operationId: clearPharmacyCart
-      parameters:
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/PPPharmacyId'
-        - $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/parameters/PPCartId'
-      responses:
-        '204':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/NoContent'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-  /pharmacies/{pharmacyId}/carts/items:
-    post:
-      tags:
-        - Pharmacy Cart
-      summary: Add item to cart
-      operationId: addItemToPharmacyCart
-      parameters:
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/PPPharmacyId'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/schemas/CartItemDTO'
-        required: true
-      responses:
-        '204':
-          description: No content
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-    put:
-      tags:
-        - Pharmacy Cart
-      summary: Update item In cart
-      operationId: updateItemInPharmacyCart
-      parameters:
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/PPPharmacyId'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/schemas/UpdateCartItemDTO'
-      responses:
-        '204':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/NoContent'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-    delete:
-      tags:
-        - Pharmacy Cart
-      summary: Delete item from cart
-      operationId: deleteItemFromPharmacyCart
-      parameters:
-        - $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/parameters/PPItemId'
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/PPPharmacyId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/schemas/DeleteCartItemDTO'
-      responses:
-        '204':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/NoContent'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-  /pharmacies/{pharmacyId}/carts/delivary/time:
-    get:
-      tags:
-        - Pharmacy Cart
-      summary: Retrieve expected delivery time
-      operationId: getExpectedDeliveryTime
-      parameters:
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/PPPharmacyId'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CartDeliveryTimeVTO'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-  /carts/admin/{cartId}/checkout:
-    put:
-      tags:
-        - Admin Cart
-      summary: Admin Checkout cart by id
-      operationId: adminCheckoutCart
-      parameters:
-        - $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/parameters/PPCartId'
-      responses:
-        '200':
-          description: Checkout success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CartCheckoutVTO'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-  /carts/admin:
-    post:
-      tags:
-        - Admin Cart
-      summary: Create Admin cart
-      operationId: createAdminCart
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AdminCartDTO'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/schemas/NewRecordVTO'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
-    get:
-      tags:
-        - Admin Cart
-      summary: Retrieve list of Admin carts
-      operationId: getAdminCarts
-      parameters:
-        - name: cartTitle
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 2
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/QPPharmacyId'
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/QPPharmacyOwnerId'
-        - $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/parameters/QPAssignedToIds'
-        - $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
-        - $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
-        - $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/parameters/QPLastModifiedOnFrom'
-        - $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/parameters/QPLastModifiedOnTo'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/service/swagger.yaml#/components/parameters/QPPageNum'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/service/swagger.yaml#/components/parameters/QPPageSize'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/service/swagger.yaml#/components/parameters/QPOrderDir'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/service/swagger.yaml#/components/parameters/QPOrderBy'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AdminCartResultSet'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
-
   /carts/admin/{cartId}:
     get:
       tags:
@@ -211,7 +79,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AdminCartDetailsVTO'
         '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
     delete:
       tags:
@@ -222,9 +90,9 @@ paths:
         - $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/parameters/PPCartId'
       responses:
         '204':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/NoContent'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/NoContent'
         '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
   /carts/admin/{cartId}/items:
     post:
@@ -244,7 +112,7 @@ paths:
         '204':
           description: No content
         '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
     put:
       tags:
@@ -260,9 +128,9 @@ paths:
               $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/schemas/UpdateCartItemDTO'
       responses:
         '204':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/NoContent'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/NoContent'
         '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
   /carts/admin/{cartId}/items/{itemId}:
     delete:
@@ -281,9 +149,9 @@ paths:
               $ref: '../../../../../service/service/service/service/cart/_swagger/service/service/swagger.yaml#/components/schemas/DeleteCartItemDTO'
       responses:
         '204':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/NoContent'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/NoContent'
         '400':
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/responses/BadRequest'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
 components:
   parameters:
@@ -364,7 +232,7 @@ components:
           maxLength: 150
           description: Optional cart title
 
-    AdminCartResultSet:
+    DepartmentResultSet:
       type: object
       properties:
         total:
@@ -373,9 +241,9 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/AdminCartListItem'
+            $ref: '#/components/schemas/DepartmentListItem'
 
-    AdminCartListItem:
+    DepartmentListItem:
       type: object
       properties:
         id:
@@ -383,10 +251,6 @@ components:
           format: int64
         cartTitle:
           type: string
-        pharmacy:
-          $ref: '../../../../../z-pharma-inv/service/service/pharmacy/_swagger/service/service/swagger.yaml#/components/schemas/LightPharmacyVTO'
-        assignedTo:
-          $ref: '../../../../../lib/user-adapter/_swagger/service/service/swagger.yaml#/components/schemas/LightUserVTO'
         totalItems:
           type: integer
           format: int64
@@ -400,7 +264,7 @@ components:
           type: string
           format: date-time
         createdBy:
-          $ref: '../../../../../lib/user-adapter/_swagger/service/service/swagger.yaml#/components/schemas/LightUserVTO'
+          $ref: '../../../../../service/service/user/'
         lastModifiedOn:
           type: string
           format: date-time
@@ -448,11 +312,11 @@ components:
         owner:
           $ref: '../../../../../lib/user-adapter/_swagger/service/service/swagger.yaml#/components/schemas/LightUserVTO'
         governorate:
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         city:
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         region:
-          $ref: '../../../../../lib/common/_swagger/service/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         deductedAmount:
           type: number
         paymentMethod:

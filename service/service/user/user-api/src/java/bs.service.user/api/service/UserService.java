@@ -1,10 +1,10 @@
 package bs.service.user.api.service;
 
-import bs.olympic.user.model.dto.*;
-import bs.olympic.user.model.vto.LoginUserVTO;
-import bs.olympic.user.model.vto.RegisterUserVTO;
-import bs.olympic.user.model.vto.UserDetailsVTO;
-import bs.olympic.user.model.vto.UserVTO;
+import bs.service.user.model.dto.*;
+import bs.service.user.model.vto.LoginUserVTO;
+import bs.service.user.model.vto.RegisterUserVTO;
+import bs.service.user.model.vto.UserDetailsVTO;
+import bs.service.user.model.vto.UserVTO;
 
 import java.util.List;
 

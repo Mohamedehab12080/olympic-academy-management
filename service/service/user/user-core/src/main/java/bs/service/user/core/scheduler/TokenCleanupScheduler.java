@@ -1,6 +1,6 @@
 package bs.service.user.core.scheduler;
 
-import bs.olympic.user.api.repository.TokenRepository;
+import bs.service.user.api.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

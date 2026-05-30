@@ -35,8 +35,6 @@ set "SLASH_SEP_MODULE_NAME=!DOT_SEPARATED_MODULE:.=\!"
 REM Determine module folder path based on project type
 if /i "!PROJECT_NAME!" == "lib" (
     SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\!PROJECT_NAME!"
-) else if /i "!PROJECT_NAME!" == "olympic" (
-    SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\service"
 ) else (
     if /i "!MODULE_TYPE!" == "adapter" (
         SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\!PROJECT_NAME!\adapter"
@@ -45,16 +43,12 @@ if /i "!PROJECT_NAME!" == "lib" (
     )
 )
 
-
-if /i "!PROJECT_NAME!" == "olympic" (
-    SET "MODULE_FOLDER_PATH=!MODULE_FOLDER_PATH!\!DASH_SEP_MODULE_NAME!\olympic-!DASH_SEP_MODULE_NAME!-model"
-) else (
     if /i "!MODULE_TYPE!" == "adapter" (
         SET "MODULE_FOLDER_PATH=!MODULE_FOLDER_PATH!\!DASH_SEP_MODULE_NAME!\!SUB_MODULE_NAME!"
     ) else (
         SET "MODULE_FOLDER_PATH=!MODULE_FOLDER_PATH!\!DASH_SEP_MODULE_NAME!\!DASH_SEP_MODULE_NAME!-model"
     )
-)
+
 
 if /i "!MODULE_TYPE!" == "adapter" (
     SET "GENERATED_PACKAGE_PATH=!MODULE_FOLDER_PATH!\src\main\java\bs\!PROJECT_NAME!\!SLASH_SEP_MODULE_NAME!\adapter\model\generated"

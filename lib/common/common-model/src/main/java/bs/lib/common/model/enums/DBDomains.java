@@ -1,6 +1,6 @@
 package bs.lib.common.model.enums;
 
-import bs.olympic.common.model.interfaces.Domains;
+import bs.lib.common.model.interfaces.Domains;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

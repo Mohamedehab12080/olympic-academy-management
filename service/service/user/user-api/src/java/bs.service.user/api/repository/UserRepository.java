@@ -1,8 +1,8 @@
 package bs.service.user.api.repository;
 
 import bs.olympic.common.api.repository.BaseRepository;
-import bs.olympic.user.model.entity.User;
-import bs.olympic.user.model.enums.Role;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,11 +1,11 @@
 package bs.service.user.controller;
 
-import bs.olympic.user.api.service.UserService;
-import bs.olympic.user.core.controller.api.AuthController;
-import bs.olympic.user.model.dto.LoginUserDTO;
-import bs.olympic.user.model.dto.RegisterUserDTO;
-import bs.olympic.user.model.vto.LoginUserVTO;
-import bs.olympic.user.model.vto.RegisterUserVTO;
+import bs.service.user.api.service.UserService;
+import bs.service.user.core.controller.api.AuthController;
+import bs.service.user.model.dto.LoginUserDTO;
+import bs.service.user.model.dto.RegisterUserDTO;
+import bs.service.user.model.vto.LoginUserVTO;
+import bs.service.user.model.vto.RegisterUserVTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

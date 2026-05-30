@@ -1,6 +1,6 @@
 package bs.service.financial.model.entity.place;
 
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

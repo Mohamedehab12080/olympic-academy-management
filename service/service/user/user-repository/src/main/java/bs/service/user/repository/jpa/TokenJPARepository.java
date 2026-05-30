@@ -1,8 +1,8 @@
 package bs.service.user.repository.jpa;
 
 import bs.olympic.common.repository.jpa.BaseJPARepository;
-import bs.olympic.user.model.entity.Token;
-import bs.olympic.user.model.enums.TokenTypes;
+import bs.service.user.model.entity.Token;
+import bs.service.user.model.enums.TokenTypes;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

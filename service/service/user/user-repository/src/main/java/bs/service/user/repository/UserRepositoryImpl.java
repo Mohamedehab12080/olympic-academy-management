@@ -1,10 +1,10 @@
 package bs.service.user.repository;
 
 import bs.olympic.common.repository.BaseRepositoryImpl;
-import bs.olympic.user.api.repository.UserRepository;
-import bs.olympic.user.model.entity.User;
-import bs.olympic.user.model.enums.Role;
-import bs.olympic.user.repository.jpa.UserJPARepository;
+import bs.service.user.api.repository.UserRepository;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
+import bs.service.user.repository.jpa.UserJPARepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;

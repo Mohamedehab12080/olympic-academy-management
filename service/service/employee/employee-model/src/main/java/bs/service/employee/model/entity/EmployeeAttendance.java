@@ -1,7 +1,7 @@
 package bs.service.employee.model.entity;
 
 import bs.olympic.employee.model.enums.EmployeeAttendanceStatus;
-import bs.olympic.user.model.entity.User;
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

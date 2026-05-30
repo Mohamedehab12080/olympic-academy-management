@@ -1,8 +1,8 @@
 package bs.service.user.api.repository;
 
 import bs.olympic.common.api.repository.BaseRepository;
-import bs.olympic.user.model.entity.Token;
-import bs.olympic.user.model.enums.TokenTypes;
+import bs.service.user.model.entity.Token;
+import bs.service.user.model.enums.TokenTypes;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
