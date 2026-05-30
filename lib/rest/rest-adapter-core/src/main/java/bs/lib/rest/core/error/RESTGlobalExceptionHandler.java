@@ -1,8 +1,5 @@
 package bs.lib.rest.core.error;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.tomcat.websocket.AuthenticationException;
@@ -11,6 +8,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorityAuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,7 +19,6 @@ import bs.lib.common.model.exception.InternalServerException;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.rest.model.enums.RESTErrors;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
@@ -41,7 +38,7 @@ public class RESTGlobalExceptionHandler {
 
         Throwable _cause = _ex.getCause();
 
-        while (_cause != null && _cause instanceof AppException appEx) {
+        while (_cause instanceof AppException appEx) {
             errorLog
                     .append("\nCaused by ")
                     .append(appEx.getClass().getSimpleName())
@@ -65,7 +62,7 @@ public class RESTGlobalExceptionHandler {
     public ResponseEntity<ErrorVTO> handleAuthenticationException(Exception _ex, WebRequest request) {
         if (_ex instanceof AuthorizationDeniedException ex) {
             AuthorityAuthorizationDecision decision = (AuthorityAuthorizationDecision) ex.getAuthorizationResult();
-            List<String> scopeIds = decision.getAuthorities().stream().map(a -> a.getAuthority()).toList();
+            List<String> scopeIds = decision.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
             log.error("{}: Access Denied for Scopes: {}", _ex.getClass().getSimpleName(), scopeIds);
         } else
             log.error("{}: {}", _ex.getClass().getSimpleName(), _ex.getMessage());
@@ -83,36 +80,4 @@ public class RESTGlobalExceptionHandler {
         return ResponseEntity.status(BAD_REQUEST).body(errorVTO);
     }
 
-    @ExceptionHandler(FeignException.class)
-    public ResponseEntity<ErrorVTO> handleFeignException(FeignException _ex, WebRequest request) throws JsonProcessingException {
-        String errorVTOStr = _ex.responseBody().map(byteArray -> new String(byteArray.array(), StandardCharsets.UTF_8)).orElse("{}");
-        ErrorVTO errorVTO = new ObjectMapper().readValue(errorVTOStr, ErrorVTO.class);
-        log.error("{}: {}", _ex.getClass().getSimpleName(), _ex.getMessage());
-        return ResponseEntity.status(_ex.status()).body(errorVTO);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorVTO> handleException(Exception _ex, WebRequest request) {
-        // Check if the exception or any of its causes is a BusinessException
-        Throwable cause = _ex;
-        BusinessException businessEx = null;
-
-        while (cause != null) {
-            if (cause instanceof BusinessException) {
-                businessEx = (BusinessException) cause;
-                break;
-            }
-            cause = cause.getCause();
-        }
-
-        if (businessEx != null) {
-            ErrorVTO error = businessEx.getArgs() != null ?
-                    ErrorVTO.of(businessEx.getError(), businessEx.getArgs()) :
-                    ErrorVTO.of(businessEx.getError());
-            log.error("{}: {}", _ex.getClass().getSimpleName(), RESTErrors.INTERNAL_SERVER_ERROR.getFullMessage(), _ex);
-            return ResponseEntity.status(BAD_REQUEST).body(error);
-        }
-        log.error("{}: {}", _ex.getClass().getSimpleName(), RESTErrors.INTERNAL_SERVER_ERROR.getFullMessage(), _ex);
-        return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(ErrorVTO.of(RESTErrors.INTERNAL_SERVER_ERROR));
-    }
 }

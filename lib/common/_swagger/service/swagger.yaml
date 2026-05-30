@@ -3,8 +3,8 @@ info:
   version: "1.0"
   title: "Common Library"
   contact:
-    email: "ahmedmotair@gmail.com"
-    name: "Ahmed Motair"
+    email: "m.ehab.rabea@gmail.com"
+    name: "Mohamed Ehab"
 
 paths:
   { }
@@ -20,7 +20,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '../../../common/_swagger/service/swagger.yaml#/components/schemas/ErrorVTO'
+            $ref: '../../../common/_swagger/service/service/swagger.yaml#/components/schemas/ErrorVTO'
 
   parameters:
     QPQuickSearch:
@@ -104,11 +104,6 @@ components:
         profileImageFid:
           type: string
 
-    AppLanguages:
-      type: string
-      enum: [ EN, AR ]
-      default: "EN"
-
     NewRecordVTO:
       type: object
       properties:
@@ -137,3 +132,14 @@ components:
         total:
           type: integer
           format: int64
+
+    RecordAttribute:
+      type: object
+      required:
+        - attributeKey
+        - attributeValue
+      properties:
+        attributeKey:
+          type: string
+        attributeValue:
+          type: string

@@ -12,27 +12,27 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <groupId>bs.ms.olympic</groupId>
+    <groupId>bs.ms.service</groupId>
     <artifactId>olympic-academy-mgt</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
-    <name>Web Module</name>
+    <name>Olympic Academy Service </name>
     <description>Main application with REST controllers</description>
 
     <properties>
-        <start-class>bs.ms.olympic.academy.OlympicAcademyManagement</start-class>
+        <start-class>bs.service.ms.olympic.academy.OlympicAcademyManagement</start-class>
     </properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>bs.modules</groupId>
+            <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>bs.modules</groupId>
+            <groupId>bs.service</groupId>
             <artifactId>unit-test</artifactId>
         </dependency>
 
@@ -55,11 +55,6 @@
         <dependency>
             <groupId>bs.lib.common</groupId>
             <artifactId>common-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>bs.modules</groupId>
-            <artifactId>user-module</artifactId>
         </dependency>
 
         <dependency>
@@ -87,7 +82,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <mainClass>bs.ms.olympic.academy.OlympicAcademyManagement</mainClass>
+                            <mainClass>bs.service.ms.olympic.academy.OlympicAcademyManagement</mainClass>
                         </configuration>
                     </execution>
                 </executions>
@@ -100,7 +95,7 @@
             <dependency>
                 <groupId>bs.ms</groupId>
                 <artifactId>ms-bom</artifactId>
-                <version>${bs.ms.ms-bom.version}</version>
+                <version>${bs.ms-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

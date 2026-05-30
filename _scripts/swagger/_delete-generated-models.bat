@@ -46,27 +46,28 @@ if exist "!GENERATED_PACKAGE_PATH!" (
     call :log "INFO" "Checking module-specific files for deletion..."
     
     REM Check file existence before deleting
-    if not "!MODULE!"=="common-module" (
+    if not "!MODULE!"=="common" (
         call :delete_file "ErrorVTO.java"
         call :delete_file "LookupDTO.java"
         call :delete_file "LookupResultSet.java"
         call :delete_file "LookupVTO.java"
         call :delete_file "NewRecordVTO.java"
-        )
+        call :delete_file "RecordAttribute.java"
+    )
 	
-    if "!MODULE!"=="common-module" (
+    if "!MODULE!"=="common" (
         call :delete_file "ErrorVTO.java"
+        call :delete_file "RecordAttribute.java"
     )
 
-    if not "!MODULE!"=="user-module" (
+    if not "!MODULE!"=="user" (
         call :delete_file "LightUserVTO.java"
         call :delete_file "LightUserResultSet.java"
         call :delete_file "Genders.java"
     )
 
-    if not "!MODULE!"=="common-module" (
+    if not "!MODULE!"=="sql-db-adapter" (
         call :delete_file "OrderDirections.java"
-    )
 		
 	REM if not "!PROJECT!"=="service"(
     REM )

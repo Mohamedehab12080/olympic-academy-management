@@ -4,12 +4,12 @@ package bs.lib.json.adapter.core.service;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import bs.lib.json.adapter.api.service.JSONParser;
-import bs.lib.logger.annotation.LogClass;
+
 
 
 //@Log4j2
 @Service
-@LogClass
+
 //@AllArgsConstructor
 public class JsonParserImpl implements JSONParser {
 

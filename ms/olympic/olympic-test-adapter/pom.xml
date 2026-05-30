@@ -31,13 +31,13 @@
         </dependency>
 
         <dependency>
-            <groupId>bs.modules</groupId>
-            <artifactId>user-module</artifactId>
+            <groupId>bs.service.user</groupId>
+            <artifactId>user-model</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>bs.modules</groupId>
+            <groupId>bs.service</groupId>
             <artifactId>unit-test</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -50,7 +50,7 @@
             <dependency>
                 <groupId>bs.ms</groupId>
                 <artifactId>ms-bom</artifactId>
-                <version>${bs.ms.ms-bom.version}</version>
+                <version>${bs.ms-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

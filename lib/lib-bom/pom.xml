@@ -24,6 +24,9 @@
         <bs.rest-adapter-api.version>0.0.1</bs.rest-adapter-api.version>
         <bs.rest-adapter-core.version>0.0.1</bs.rest-adapter-core.version>
 
+        <bs.security-adapter-api.version>0.0.1</bs.security-adapter-api.version>
+        <bs.security-adapter-core.version>0.0.1</bs.security-adapter-core.version>
+
         <bs.sql-db-adapter-model.version>0.0.1</bs.sql-db-adapter-model.version>
         <bs.sql-db-adapter-api.version>0.0.1</bs.sql-db-adapter-api.version>
         <bs.sql-db-adapter-core.version>0.0.1</bs.sql-db-adapter-core.version>
@@ -73,6 +76,19 @@
                 <artifactId>rest-adapter-core</artifactId>
                 <version>${bs.rest-adapter-core.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>bs.lib.security</groupId>
+                <artifactId>security-adapter-api</artifactId>
+                <version>${bs.security-adapter-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.security</groupId>
+                <artifactId>security-adapter-core</artifactId>
+                <version>${bs.security-adapter-core.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>bs.lib.sql-db</groupId>

@@ -22,12 +22,6 @@
         </dependency>
 
         <dependency>
-            <groupId>bs.lib.service-context</groupId>
-            <artifactId>service-context-model</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>

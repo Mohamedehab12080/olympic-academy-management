@@ -33,13 +33,15 @@ set "DASH_SEP_MODULE_NAME=!DOT_SEPARATED_MODULE:.=-!"
 set "SLASH_SEP_MODULE_NAME=!DOT_SEPARATED_MODULE:.=\!"
 
 REM Determine module folder path based on project type
-if /i "!PROJECT_NAME!" == "olympic" (
-    SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\modules"
+if /i "!PROJECT_NAME!" == "lib" (
+    SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\!PROJECT_NAME!"
+) else if /i "!PROJECT_NAME!" == "olympic" (
+    SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\service"
 ) else (
     if /i "!MODULE_TYPE!" == "adapter" (
         SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\!PROJECT_NAME!\adapter"
     ) else (
-        SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\!PROJECT_NAME!\modules"
+        SET "MODULE_FOLDER_PATH=!SCRIPT_ROOT!\..\..\!PROJECT_NAME!\service"
     )
 )
 

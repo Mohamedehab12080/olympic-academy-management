@@ -9,7 +9,7 @@
 ~$*.docx
 
 # Node artifact files
-node_modules/
+node_service/service/
 dist/
 node/
 package-lock.json

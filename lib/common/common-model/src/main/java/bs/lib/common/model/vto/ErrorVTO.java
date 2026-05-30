@@ -1,6 +1,6 @@
 package bs.lib.common.model.vto;
 
-import bs.olympic.common.model.interfaces.Errors;
+import bs.lib.common.model.interfaces.Errors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

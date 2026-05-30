@@ -10,7 +10,7 @@ import org.hibernate.type.Type;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import bs.lib.common.model.exception.BusinessException;
-import bs.lib.logger.annotation.LogClass;
+
 import bs.lib.sql.db.adapter.model.config.AbstractSQLDBAdapterConfig;
 import bs.lib.sql.db.adapter.model.config.DBColumnConfig;
 import bs.lib.sql.db.adapter.model.config.EvaluatedEntityConfig;
@@ -22,7 +22,7 @@ import java.util.*;
 import static bs.lib.sql.db.adapter.model.enums.SQLDatabaseEvents.BEFORE_INSERT;
 import static bs.lib.sql.db.adapter.model.enums.SQLDatabaseEvents.BEFORE_UPDATE;
 
-@LogClass
+
 @Component
 @RequiredArgsConstructor
 public class JpaServiceInterceptor implements Interceptor {

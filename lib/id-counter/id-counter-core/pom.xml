@@ -22,12 +22,6 @@
         </dependency>
 
         <dependency>
-            <groupId>bs.lib.logger</groupId>
-            <artifactId>logger-adapter-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>bs.lib.sql-db</groupId>
             <artifactId>sql-db-adapter-api</artifactId>
             <scope>provided</scope>
@@ -69,7 +63,7 @@
             <dependency>
                 <groupId>bs.service</groupId>
                 <artifactId>service-bom</artifactId>
-                <version>${bs.service-bom.version}</version>
+                <version>${bs.service.service-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

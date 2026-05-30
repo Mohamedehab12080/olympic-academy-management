@@ -18,9 +18,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>bs.modules</groupId>
-                <artifactId>modules-bom</artifactId>
-                <version>${bs.modules.modules-bom.version}</version>
+                <groupId>bs.service</groupId>
+                <artifactId>service-bom</artifactId>
+                <version>${bs.service.service-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
