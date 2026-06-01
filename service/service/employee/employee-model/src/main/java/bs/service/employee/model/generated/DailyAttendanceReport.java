@@ -39,7 +39,7 @@ public class DailyAttendanceReport implements Serializable {
 
     private Integer excused;
 
-    private Float attendanceRate;
+    private Double attendanceRate;
 
     @Valid
     private List<@Valid EmployeeAttendanceListItem> details = new ArrayList<>();
@@ -170,7 +170,7 @@ public class DailyAttendanceReport implements Serializable {
         this.excused = excused;
     }
 
-    public DailyAttendanceReport attendanceRate(Float attendanceRate) {
+    public DailyAttendanceReport attendanceRate(Double attendanceRate) {
         this.attendanceRate = attendanceRate;
         return this;
     }
@@ -183,11 +183,11 @@ public class DailyAttendanceReport implements Serializable {
 
     @Schema(name = "attendanceRate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("attendanceRate")
-    public Float getAttendanceRate() {
+    public Double getAttendanceRate() {
         return attendanceRate;
     }
 
-    public void setAttendanceRate(Float attendanceRate) {
+    public void setAttendanceRate(Double attendanceRate) {
         this.attendanceRate = attendanceRate;
     }
 

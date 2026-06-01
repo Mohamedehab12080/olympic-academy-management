@@ -908,7 +908,7 @@ components:
           format: int32
         attendanceRate:
           type: number
-          format: float
+          format: double
         details:
           type: array
           items:

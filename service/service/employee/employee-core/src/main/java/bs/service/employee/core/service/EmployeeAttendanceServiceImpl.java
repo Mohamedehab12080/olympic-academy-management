@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static bs.service.employee.model.enums.EmployeeErrors.*;
@@ -102,10 +103,10 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
                 .status(status.title)
                 .attendanceDateFrom(attendanceDateFrom)
                 .attendanceDateTo(attendanceDateTo)
-                .checkInFrom(checkInFrom)
-                .checkInTo(checkInTo)
-                .checkOutFrom(checkOutFrom)
-                .checkOutTo(checkOutTo)
+                .checkInFrom(LocalTime.parse(checkInFrom))
+                .checkInTo(LocalTime.parse(checkInTo))
+                .checkOutFrom(LocalTime.parse(checkOutFrom))
+                .checkOutTo(LocalTime.parse(checkOutTo))
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(EmployeeAttendanceSearchFilter.OrderByAttributes.ATTENDANCE_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
