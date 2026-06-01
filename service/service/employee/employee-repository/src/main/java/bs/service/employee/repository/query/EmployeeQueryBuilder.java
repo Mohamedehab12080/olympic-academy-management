@@ -57,6 +57,10 @@ public class EmployeeQueryBuilder extends AbstractQueryBuilderV2<Employee, Emplo
             qbConditions.add(QBCondition.builder().placeHolder("isActive").value(filters.getIsActive())
                     .condition("item.isActive = :PH").build());
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         return qbConditions;
     }
 }

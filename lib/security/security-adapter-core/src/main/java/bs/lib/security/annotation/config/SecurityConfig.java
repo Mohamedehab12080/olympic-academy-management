@@ -1,6 +1,7 @@
 package bs.lib.security.annotation.config;
 
 import bs.lib.security.core.service.JwtAuthenticationFilter;
+import bs.lib.security.model.config.AbstractSecurityAdapterConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,7 @@ import java.util.List;
 )@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final AbstractSecurityAdapterConfig securityAdapterConfig;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
 
@@ -76,15 +78,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                .authorizeHttpRequests(request -> {
+                    for (String path : securityAdapterConfig.getPublicPaths()) {
+                        request.requestMatchers(path).permitAll();
+                    }
+                    request.anyRequest().authenticated();
+                })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

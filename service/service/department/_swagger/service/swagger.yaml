@@ -11,8 +11,25 @@ servers:
 
 tags:
   - name: Department
+  - name: DepartmentLookup
 
 paths:
+  /lookup/departments:
+    get:
+      tags:
+        - DepartmentLookup
+      summary: Retrieve All Departments (public)
+      operationId: getAllDepartmentsLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /departments:
     post:
       tags:

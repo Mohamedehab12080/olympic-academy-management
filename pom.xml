@@ -155,8 +155,23 @@
 								<importMapping>SalaryTypes =
 									bs.lib.common.model.enums.SalaryTypes
 								</importMapping>
-								<importMapping>Genders =
-									bs.service.user.model.generated.Genders
+								<importMapping>ContactTypes =
+									bs.lib.common.model.enums.ContactTypes
+								</importMapping>
+
+								<importMapping>LookupResultSet =
+									bs.lib.common.model.generated.LookupResultSet
+								</importMapping>
+
+								<importMapping>Gender =
+									bs.lib.common.model.enums.Gender
+								</importMapping>
+
+								<importMapping>EmployeeTypes =
+									bs.service.employee.model.enums.EmployeeTypes
+								</importMapping>
+								<importMapping>EmployeeAttendanceStatus =
+									bs.service.employee.model.enums.EmployeeAttendanceStatus
 								</importMapping>
 								<importMapping>NewRecordVTO =
 									bs.lib.common.model.generated.NewRecordVTO
@@ -225,6 +240,9 @@
 								<output>${project.build.sourceDirectory}</output>
 
 								<importMappings>
+									<importMapping>LookupResultSet =
+										bs.lib.common.model.generated.LookupResultSet
+									</importMapping>
 									<importMapping>LookupVTO =
 										bs.lib.common.model.generated.LookupVTO
 									</importMapping>
@@ -240,9 +258,20 @@
 									<importMapping>SalaryTypes =
 										bs.lib.common.model.enums.SalaryTypes
 									</importMapping>
-									<importMapping>Genders =
-										bs.service.user.model.generated.Genders
+									<importMapping>ContactTypes =
+										bs.lib.common.model.enums.ContactTypes
 									</importMapping>
+									<importMapping>Gender =
+										bs.lib.common.model.enums.Gender
+									</importMapping>
+
+									<importMapping>EmployeeTypes =
+										bs.service.employee.model.enums.EmployeeTypes
+									</importMapping>
+									<importMapping>EmployeeAttendanceStatus =
+										bs.service.employee.model.enums.EmployeeAttendanceStatus
+									</importMapping>
+
 									<importMapping>CourseTypes =
 										bs.service.course.model.enums.CourseTypes
 									</importMapping>

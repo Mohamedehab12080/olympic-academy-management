@@ -5,15 +5,15 @@
  */
 package bs.service.employee.controller.generated;
 
+import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.generated.EmployeeDTO;
 import bs.service.employee.model.generated.EmployeeResultSet;
-import bs.service.employee.model.generated.EmployeeTypes;
 import bs.service.employee.model.generated.EmployeeVTO;
-import bs.service.user.model.generated.Genders;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -119,7 +119,7 @@ public interface EmployeeController {
             @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo,
             @Parameter(name = "hireDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "hireDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hireDateFrom,
             @Parameter(name = "hireDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "hireDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hireDateTo,
-            @Parameter(name = "gender", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "gender", required = false) Genders gender,
+            @Parameter(name = "gender", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "gender", required = false) Gender gender,
             @Parameter(name = "employeeType", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeType", required = false) EmployeeTypes employeeType,
             @Parameter(name = "salaryType", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "salaryType", required = false) SalaryTypes salaryType,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,

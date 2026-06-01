@@ -1,0 +1,159 @@
+package bs.service.employee.model.generated;
+
+import bs.lib.common.model.enums.ContactTypes;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.util.*;
+import java.util.Objects;
+import org.hibernate.validator.constraints.*;
+
+/**
+ * EmployeeContactListItem
+ */
+@lombok.Builder
+@lombok.AllArgsConstructor
+@lombok.NoArgsConstructor
+
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
+public class EmployeeContactListItem implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private Integer id;
+
+    private String contactName;
+
+    private String contactValue;
+
+    private ContactTypes contactType;
+
+    public EmployeeContactListItem id(Integer id) {
+        this.id = id;
+        return this;
+    }
+
+    /**
+     * Get id
+     *
+     * @return id
+     */
+
+    @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("id")
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public EmployeeContactListItem contactName(String contactName) {
+        this.contactName = contactName;
+        return this;
+    }
+
+    /**
+     * Get contactName
+     *
+     * @return contactName
+     */
+
+    @Schema(name = "contactName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("contactName")
+    public String getContactName() {
+        return contactName;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
+    }
+
+    public EmployeeContactListItem contactValue(String contactValue) {
+        this.contactValue = contactValue;
+        return this;
+    }
+
+    /**
+     * Get contactValue
+     *
+     * @return contactValue
+     */
+
+    @Schema(name = "contactValue", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("contactValue")
+    public String getContactValue() {
+        return contactValue;
+    }
+
+    public void setContactValue(String contactValue) {
+        this.contactValue = contactValue;
+    }
+
+    public EmployeeContactListItem contactType(ContactTypes contactType) {
+        this.contactType = contactType;
+        return this;
+    }
+
+    /**
+     * Get contactType
+     *
+     * @return contactType
+     */
+    @Valid
+    @Schema(name = "contactType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("contactType")
+    public ContactTypes getContactType() {
+        return contactType;
+    }
+
+    public void setContactType(ContactTypes contactType) {
+        this.contactType = contactType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        EmployeeContactListItem employeeContactListItem = (EmployeeContactListItem) o;
+        return Objects.equals(this.id, employeeContactListItem.id)
+                && Objects.equals(this.contactName, employeeContactListItem.contactName)
+                && Objects.equals(this.contactValue, employeeContactListItem.contactValue)
+                && Objects.equals(this.contactType, employeeContactListItem.contactType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, contactName, contactValue, contactType);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class EmployeeContactListItem {\n");
+        sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    contactName: ").append(toIndentedString(contactName)).append("\n");
+        sb.append("    contactValue: ").append(toIndentedString(contactValue)).append("\n");
+        sb.append("    contactType: ").append(toIndentedString(contactType)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
+}

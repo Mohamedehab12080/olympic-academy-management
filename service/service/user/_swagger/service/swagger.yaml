@@ -52,7 +52,3 @@ components:
         total:
           type: integer
           format: int32
-
-    Genders:
-      type: string
-      enum: [ F, M ]

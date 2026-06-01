@@ -7,6 +7,8 @@ package bs.service.employee.controller.generated;
 
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
+import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.model.generated.EmployeeAttendanceResultSet;
 import bs.service.employee.model.generated.EmployeeContactDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +30,42 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @Tag(name = "EmployeeContact", description = "the EmployeeContact API")
 public interface EmployeeContactController {
+
+    /**
+     * GET /employees/contacts : Retrieve list of employee contacts
+     *
+     * @param employeeId
+     *            (optional)
+     * @param contactName
+     *            (optional)
+     * @param contactValue
+     *            (optional)
+     * @param pageNum
+     *            (optional, default to 0)
+     * @param pageSize
+     *            (optional, default to 25)
+     * @param orderDir
+     *            Order Direction (optional)
+     * @param orderBy
+     *            Order By Attribute (optional)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllEmployeeContacts", summary = "Retrieve list of employee contacts", tags = {
+            "EmployeeContact" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeAttendanceResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/employees/contacts", produces = { "application/json" })
+
+    ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeeContacts(
+            @Parameter(name = "employeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeId", required = false) Integer employeeId,
+            @Parameter(name = "contactName", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "contactName", required = false) String contactName,
+            @Parameter(name = "contactValue", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "contactValue", required = false) String contactValue,
+            @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
+            @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
+            @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
+            @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
      * PUT /employees/{employeeId}/contacts/{contactId} : Update Employee Contact

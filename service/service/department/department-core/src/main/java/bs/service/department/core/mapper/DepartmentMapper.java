@@ -28,4 +28,5 @@ public abstract class DepartmentMapper {
 
     public abstract List<DepartmentListItem> toDepartmentListItems(List<Department> departments);
 
+    public abstract List<LookupVTO> toLookupVTOs(List<Department> departments);
 }

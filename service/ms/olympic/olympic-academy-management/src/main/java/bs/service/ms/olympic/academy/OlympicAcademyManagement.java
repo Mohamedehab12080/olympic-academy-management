@@ -11,6 +11,8 @@ import bs.service.course.annotation.imports.ImportCourseRepository;
 import bs.service.department.annotation.imports.ImportDepartmentCore;
 import bs.service.department.annotation.imports.ImportDepartmentRepository;
 import bs.service.department.proxy.annotation.imports.ImportDepartmentMgtInternalProxy;
+import bs.service.employee.annotation.imports.ImportEmployeeCore;
+import bs.service.employee.annotation.imports.ImportEmployeeRepository;
 import bs.service.user.annotation.imports.ImportUserCore;
 import bs.service.user.annotation.imports.ImportUserRepository;
 import org.springframework.boot.SpringApplication;
@@ -25,6 +27,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ImportUserCore
 @ImportUserRepository
+
+@ImportEmployeeCore
+@ImportEmployeeRepository
 
 @ImportCourseCore
 @ImportCourseRepository
@@ -44,12 +49,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "bs.service.user.repository",
         "bs.service.course.repository",
         "bs.service.department.repository",
+        "bs.service.employee.repository",
         "bs.lib.id.counter.repository"
 })
 @EntityScan(basePackages = {
         "bs.service.user.model.entity",
         "bs.service.course.model.entity",
         "bs.service.department.model.entity",
+        "bs.service.employee.model.entity",
         "bs.lib.id.counter.model.entity"
 })public class OlympicAcademyManagement {
 

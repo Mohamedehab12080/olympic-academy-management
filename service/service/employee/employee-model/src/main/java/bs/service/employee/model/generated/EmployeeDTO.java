@@ -1,7 +1,8 @@
 package bs.service.employee.model.generated;
 
+import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.enums.SalaryTypes;
-import bs.service.user.model.generated.Genders;
+import bs.service.employee.model.enums.EmployeeTypes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -35,7 +36,7 @@ public class EmployeeDTO implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
 
-    private Genders gender;
+    private Gender gender;
 
     private Integer salary;
 
@@ -120,7 +121,7 @@ public class EmployeeDTO implements Serializable {
         this.birthDate = birthDate;
     }
 
-    public EmployeeDTO gender(Genders gender) {
+    public EmployeeDTO gender(Gender gender) {
         this.gender = gender;
         return this;
     }
@@ -133,11 +134,11 @@ public class EmployeeDTO implements Serializable {
     @Valid
     @Schema(name = "gender", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("gender")
-    public Genders getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(Genders gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 

@@ -1,5 +1,6 @@
 package bs.service.department.api.service;
 
+import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.department.model.filter.DepartmentSearchFilter;
@@ -13,4 +14,5 @@ public interface DepartmentService {
     DepartmentVTO getDepartmentById(Integer id);
     DepartmentResultSet selectAllDepartmentsByFilters(String quickSearch, LocalDate createdOnFrom, LocalDate createdOnTo, LocalDate lastModifiedOnFrom, LocalDate lastModifiedOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
     void deleteDepartmentById(Integer id);
+    LookupResultSet getAllDepartments();
 }

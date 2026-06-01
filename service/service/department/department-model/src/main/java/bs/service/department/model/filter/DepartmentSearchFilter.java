@@ -18,6 +18,7 @@ public class DepartmentSearchFilter extends SearchFilter<DepartmentSearchFilter.
 
     private String quickSearchQuery;
     private Boolean isActive;
+    private Boolean isDeleted;
     private LocalDate createdOnFrom;
     private LocalDate createdOnTo;
 

@@ -1,7 +1,8 @@
 package bs.service.employee.model.generated;
 
+import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.user.model.generated.Genders;
+import bs.service.employee.model.enums.EmployeeTypes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -34,7 +35,7 @@ public class EmployeeListItem implements Serializable {
 
     private String nationalId;
 
-    private Genders gender;
+    private Gender gender;
 
     private EmployeeTypes employeeType;
 
@@ -109,7 +110,7 @@ public class EmployeeListItem implements Serializable {
         this.nationalId = nationalId;
     }
 
-    public EmployeeListItem gender(Genders gender) {
+    public EmployeeListItem gender(Gender gender) {
         this.gender = gender;
         return this;
     }
@@ -122,11 +123,11 @@ public class EmployeeListItem implements Serializable {
     @Valid
     @Schema(name = "gender", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("gender")
-    public Genders getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(Genders gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 

@@ -12,8 +12,59 @@ servers:
 tags:
   - name: Employee
   - name: EmployeeContact
+  - name: EmployeeAttendance
+  - name: Lookup
 
 paths:
+
+  /lookup/employee/attendance/status:
+    get:
+      tags:
+        - Lookup
+      summary: Retrieve All Employee Attendance Status (public)
+      operationId: getAllEmployeeAttendanceStatusLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/employee/types:
+    get:
+      tags:
+        - Lookup
+      summary: Retrieve All Employee Types (public)
+      operationId: getAllEmployeeTypesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/employees:
+    get:
+      tags:
+        - Lookup
+      summary: Retrieve All Employees (public)
+      operationId: getAllEmployeesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /employees:
     post:
       tags:
@@ -119,6 +170,30 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /employees/contacts:
+    get:
+      tags:
+        - EmployeeContact
+      summary: Retrieve list of employee contacts
+      operationId: getAllEmployeeContacts
+      parameters:
+        - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPContactName'
+        - $ref: '#/components/parameters/QPContactValue'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeAttendanceResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /employees/{employeeId}/contacts/{contactId}:
     put:
       tags:
@@ -144,6 +219,128 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /employees/{employeeId}/attendances:
+    post:
+      tags:
+        - EmployeeAttendance
+      summary: Create employee attendance record
+      operationId: createEmployeeAttendance
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeAttendanceDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EmployeeAttendance
+      summary: Retrieve list of employee attendances
+      operationId: getAllEmployeeAttendances
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+        - $ref: '#/components/parameters/QPEmployeeAttendanceStatus'
+        - $ref: '#/components/parameters/QPAttendanceDateFrom'
+        - $ref: '#/components/parameters/QPAttendanceDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeAttendanceResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /employees/{employeeId}/attendances/{attendanceId}:
+    put:
+      tags:
+        - EmployeeAttendance
+      summary: Update employee attendance record
+      operationId: updateEmployeeAttendance
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+        - $ref: '#/components/parameters/PPAttendanceId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeAttendanceDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EmployeeAttendance
+      summary: Retrieve employee attendance record
+      operationId: getEmployeeAttendance
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+        - $ref: '#/components/parameters/PPAttendanceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeAttendanceVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - EmployeeAttendance
+      summary: Delete employee attendance record (soft delete)
+      operationId: deleteEmployeeAttendance
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+        - $ref: '#/components/parameters/PPAttendanceId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /attendances/reports/daily:
+    get:
+      tags:
+        - EmployeeAttendance
+      summary: Get daily attendance report
+      operationId: getDailyAttendanceReport
+      parameters:
+        - $ref: '#/components/parameters/QPAttendanceDate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAttendanceReport'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
 components:
   parameters:
@@ -161,12 +358,42 @@ components:
       schema:
         type: integer
         format: int32
+    PPAttendanceId:
+      name: attendanceId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+
+    QPContactName:
+      name: contactName
+      in: query
+      required: false
+      schema:
+        type: string
+
+    QPContactValue:
+      name: contactValue
+      in: query
+      required: false
+      schema:
+        type: string
+
+    QPEmployeeId:
+      name: employeeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+
     QPGender:
       name: gender
       in: query
       required: false
       schema:
-        $ref: '#/components/schemas/Genders'
+        $ref: '#/components/schemas/Gender'
     QPEmployeeType:
       name: employeeType
       in: query
@@ -184,28 +411,108 @@ components:
       in: query
       required: false
       schema:
-        type : string
+        type: string
         format: date
     QPHireDateTo:
       name: hireDateTo
       in: query
       required: false
       schema:
-        type : string
+        type: string
+        format: date
+    QPEmployeeAttendanceStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/EmployeeAttendanceStatus'
+    QPAttendanceDateFrom:
+      name: attendanceDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPAttendanceDateTo:
+      name: attendanceDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPAttendanceDate:
+      name: attendanceDate
+      in: query
+      required: true
+      schema:
+        type: string
         format: date
 
   schemas:
-    Genders:
-      type: string
-      enum: [ "MALE", "FEMALE" ]
+    Gender:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2]
+        code:
+          type: string
+          enum: ["MALE", "FEMALE"]
+        arabicLabel:
+          type: string
+          enum: ["ذكر", "أنثى"]
 
     EmployeeTypes:
-      type: string
-      enum: [ "TRAINER", "MANAGER"]
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2]
+        code:
+          type: string
+          enum: ["TRAINER", "MANAGER"]
+        arabicLabel:
+          type: string
+          enum: ["مدرب", "مدير"]
 
     SalaryTypes:
-      type: string
-      enum: [ "MONTHLY", "DAILY", "HOURLY","PERCENTAGE" ]
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2, 3, 4]
+        code:
+          type: string
+          enum: ["MONTHLY", "DAILY", "HOURLY", "PERCENTAGE"]
+        arabicLabel:
+          type: string
+          enum: ["شهري", "يومي", "بالساعة", "نسبة"]
+
+    EmployeeAttendanceStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2, 3, 4]
+        code:
+          type: string
+          enum: ["PRESENT", "ABSENT", "LATE", "EXCUSED"]
+        arabicLabel:
+          type: string
+          enum: ["حاضر", "غائب", "متأخر", "معذور"]
+
+    ContactTypes:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2]
+        code:
+          type: string
+          enum: ["EMAIL", "PHONE"]
+        arabicLabel:
+          type: string
+          enum: ["ايميل", "هاتف"]
 
     EmployeeDTO:
       type: object
@@ -226,7 +533,7 @@ components:
           type: string
           format: date
         gender:
-          $ref: '#/components/schemas/Genders'
+          $ref: '#/components/schemas/Gender'
         salary:
           type: integer
           format: int32
@@ -260,6 +567,31 @@ components:
         contactValue:
           type: string
 
+    EmployeeAttendanceDTO:
+      type: object
+      required:
+        - attendanceDate
+        - status
+        - checkInTime
+      properties:
+        attendanceDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/EmployeeAttendanceStatus'
+        checkInTime:
+          type: string
+          format: time
+        checkOutTime:
+          type: string
+          format: time
+        lateTime:
+          type: integer
+          format: int32
+          description: "Late time in minutes"
+        note:
+          type: string
+
     EmployeeVTO:
       type: object
       properties:
@@ -274,7 +606,7 @@ components:
           type: string
           format: date
         gender:
-          $ref: '#/components/schemas/Genders'
+          $ref: '#/components/schemas/Gender'
         salary:
           type: integer
           format: int32
@@ -322,6 +654,41 @@ components:
         contactValue:
           type: string
 
+    EmployeeAttendanceVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        employee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        attendanceDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/EmployeeAttendanceStatus'
+        checkInTime:
+          type: string
+          format: time
+        checkOutTime:
+          type: string
+          format: time
+        lateTime:
+          type: integer
+          format: int32
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
     EmployeeResultSet:
       type: object
       properties:
@@ -344,7 +711,7 @@ components:
         nationalId:
           type: string
         gender:
-          $ref: '#/components/schemas/Genders'
+          $ref: '#/components/schemas/Gender'
         employeeType:
           $ref: '#/components/schemas/EmployeeTypes'
         hireDate:
@@ -356,3 +723,91 @@ components:
           type: array
           items:
             $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+
+    EmployeeContactResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeContactListItem'
+
+
+    EmployeeAttendanceResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeAttendanceListItem'
+
+    EmployeeContactListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        contactName:
+          type: string
+        contactValue:
+          type: string
+        contactType:
+          $ref: '#/components/schemas/ContactTypes'
+
+    EmployeeAttendanceListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        employee:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        attendanceDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/EmployeeAttendanceStatus'
+        checkInTime:
+          type: string
+          format: time
+        checkOutTime:
+          type: string
+          format: time
+        lateTime:
+          type: integer
+          format: int32
+
+    DailyAttendanceReport:
+      type: object
+      properties:
+        attendanceDate:
+          type: string
+          format: date
+        totalEmployees:
+          type: integer
+          format: int32
+        present:
+          type: integer
+          format: int32
+        absent:
+          type: integer
+          format: int32
+        late:
+          type: integer
+          format: int32
+        excused:
+          type: integer
+          format: int32
+        attendanceRate:
+          type: number
+          format: float
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeAttendanceListItem'

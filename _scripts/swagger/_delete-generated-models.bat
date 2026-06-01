@@ -53,6 +53,7 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "LookupVTO.java"
         call :delete_file "NewRecordVTO.java"
         call :delete_file "RecordAttribute.java"
+        call :delete_file "Gender.java"
     )
 	
     if "!MODULE!"=="common" (
@@ -62,12 +63,14 @@ if exist "!GENERATED_PACKAGE_PATH!" (
 
     if "!MODULE!"=="employee" (
             call :delete_file "SalaryTypes.java"
+            call :delete_file "EmployeeAttendanceStatus.java"
+            call :delete_file "EmployeeTypes.java"
+            call :delete_file "ContactTypes.java"
     )
 
     if not "!MODULE!"=="user" (
         call :delete_file "LightUserVTO.java"
         call :delete_file "LightUserResultSet.java"
-        call :delete_file "Genders.java"
     )
 
     if not "!MODULE!"=="sql-db-adapter" (

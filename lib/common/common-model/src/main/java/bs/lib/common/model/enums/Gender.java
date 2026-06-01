@@ -1,5 +1,13 @@
 package bs.lib.common.model.enums;
 
-public enum Gender {
-    MALE,FEMALE
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
+public enum Gender{
+    MALE(1,"ذكر"),FEMALE(2,"انثي");
+
+    public Integer id;
+    public String title;
 }

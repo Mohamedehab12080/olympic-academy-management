@@ -1,6 +1,8 @@
 package bs.service.department.core.service;
 
 import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.LookupResultSet;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
@@ -70,9 +72,21 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @Transactional
     public void deleteDepartmentById(Integer id) {
         Department department =departmentRepository.selectDepartmentById(id).orElseThrow(()-> new BusinessException(DEPARTMENT_NOT_FOUND,id));
         department.setIsDeleted(true);
         departmentRepository.update(department);
+    }
+
+    @Override
+    public LookupResultSet getAllDepartments() {
+        DepartmentSearchFilter departmentSearchFilter=DepartmentSearchFilter.builder()
+                .isActive(true)
+                .isDeleted(false)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<LookupVTO> lookupVTOS=departmentMapper.toLookupVTOs(departmentRepository.selectAllByFilters(departmentSearchFilter));
+        return LookupResultSet.builder()._list(lookupVTOS).total(departmentRepository.countAllByFilters(departmentSearchFilter)).build();
     }
 }

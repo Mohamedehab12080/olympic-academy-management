@@ -1,10 +1,10 @@
 package bs.service.employee.model.filter;
 
+import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.sql.db.adapter.model.dto.SearchFilter;
 import bs.lib.sql.db.adapter.model.interfaces.OrderAttributes;
 import bs.service.employee.model.enums.EmployeeTypes;
-import bs.service.user.model.generated.Genders;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -21,12 +21,13 @@ public class EmployeeSearchFilter extends SearchFilter<EmployeeSearchFilter.Orde
 
     private String quickSearchQuery;
     private Boolean isActive;
+    private Boolean isDeleted;
     private LocalDate createdOnFrom;
     private LocalDate createdOnTo;
     private LocalDate hireDateFrom;
     private LocalDate hireDateTo;
-    private Genders gender;
-    private EmployeeTypes employeeType;
+    private String gender;
+    private String employeeType;
     private SalaryTypes salaryType;
 
     @Getter
