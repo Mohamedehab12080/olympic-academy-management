@@ -1,0 +1,119 @@
+package bs.service.employee.core.service;
+
+import bs.lib.common.model.enums.SalaryTypes;
+import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.NewRecordVTO;
+import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
+import bs.lib.sql.db.adapter.model.dto.SortingInfo;
+import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.api.repository.EmployeeRepository;
+import bs.service.employee.api.service.EmployeeService;
+import bs.service.employee.core.mapper.EmployeeMapper;
+import bs.service.employee.model.entity.Employee;
+import bs.service.employee.model.entity.EmployeeContact;
+import bs.service.employee.model.enums.EmployeeTypes;
+import bs.service.employee.model.filter.EmployeeSearchFilter;
+import bs.service.employee.model.generated.*;
+import bs.service.user.model.generated.Genders;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_CONTACT_NOT_FOUND;
+import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_NOT_FOUND;
+
+@Service
+@AllArgsConstructor
+public class EmployeeServiceImpl implements EmployeeService {
+
+    private final EmployeeRepository employeeRepository;
+    private final EmployeeMapper employeeMapper;
+
+    @Override
+    @Transactional
+    public NewRecordVTO createEmployee(EmployeeDTO employeeDTO) {
+        Employee employee = employeeMapper.toEmployee(employeeDTO);
+        employee = employeeRepository.insert(employee);
+        return NewRecordVTO.builder().id(employee.getId()).build();
+    }
+
+    @Override
+    @Transactional
+    public NewRecordVTO updateEmployee(Integer employeeId, EmployeeDTO employeeDTO) {
+        Employee employee = employeeRepository.selectById(employeeId)
+                .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
+        Employee employeeToUpdate = employeeMapper.toEmployee(employeeDTO);
+        employeeToUpdate.setId(employeeId);
+        employeeRepository.update(employeeToUpdate);
+        return NewRecordVTO.builder().id(employeeId).build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteEmployeeById(Integer employeeId) {
+        Employee employee = employeeRepository.selectById(employeeId)
+                .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
+        employee.setIsDeleted(true);
+        employeeRepository.update(employee);
+    }
+
+    @Override
+    public EmployeeVTO getEmployeeById(Integer employeeId) {
+        Employee employee = employeeRepository.selectById(employeeId)
+                .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
+        return employeeMapper.toEmployeeVTO(employee);
+    }
+
+    @Override
+    @Transactional
+    public NewRecordVTO updateEmployeeContact(Integer employeeId, Integer contactId, EmployeeContactDTO employeeContactDTO) {
+        Employee employee = employeeRepository.selectById(employeeId)
+                .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
+
+        EmployeeContact contact = employee.getContacts().stream()
+                .filter(c -> c.getId().equals(contactId))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(EMPLOYEE_CONTACT_NOT_FOUND, contactId));
+
+        contact.setContactType(employeeMapper.toContactType(employeeContactDTO.getContactType()));
+        contact.setContactValue(employeeContactDTO.getContactValue());
+
+        employeeRepository.update(employee);
+        return NewRecordVTO.builder().id(contactId).build();
+    }
+
+    @Override
+    public EmployeeResultSet getAllEmployees(String quickSearch, Boolean isActive,
+                                             LocalDate createdOnFrom, LocalDate createdOnTo,
+                                             LocalDate hireDateFrom, LocalDate hireDateTo,
+                                             Genders gender, EmployeeTypes employeeType,
+                                             SalaryTypes salaryType, Integer pageNum, Integer pageSize,
+                                             OrderDirections orderDir, String orderBy) {
+
+        EmployeeSearchFilter employeeSearchFilter = EmployeeSearchFilter.builder()
+                .quickSearchQuery(quickSearch)
+                .isActive(isActive)
+                .createdOnFrom(createdOnFrom)
+                .createdOnTo(createdOnTo)
+                .hireDateFrom(hireDateFrom)
+                .hireDateTo(hireDateTo)
+                .gender(gender)
+                .employeeType(employeeType)
+                .salaryType(salaryType)
+                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
+                .defaultSorting(new SortingInfo<>(EmployeeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
+                .sorting(new SortingInfo<>(orderBy, orderDir))
+                .build();
+
+        List<Employee> employees = employeeRepository.selectAllByFilters(employeeSearchFilter);
+        List<EmployeeListItem> listItems = employeeMapper.toEmployeeListItems(employees);
+
+        return EmployeeResultSet.builder()
+                .items(listItems)
+                .total(employeeRepository.countAllByFilters(employeeSearchFilter))
+                .build();
+    }
+}

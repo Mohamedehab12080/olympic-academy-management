@@ -60,6 +60,10 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "RecordAttribute.java"
     )
 
+    if "!MODULE!"=="employee" (
+            call :delete_file "SalaryTypes.java"
+    )
+
     if not "!MODULE!"=="user" (
         call :delete_file "LightUserVTO.java"
         call :delete_file "LightUserResultSet.java"

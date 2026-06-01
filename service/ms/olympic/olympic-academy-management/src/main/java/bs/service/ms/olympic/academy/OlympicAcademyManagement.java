@@ -10,6 +10,7 @@ import bs.service.course.annotation.imports.ImportCourseCore;
 import bs.service.course.annotation.imports.ImportCourseRepository;
 import bs.service.department.annotation.imports.ImportDepartmentCore;
 import bs.service.department.annotation.imports.ImportDepartmentRepository;
+import bs.service.department.proxy.annotation.imports.ImportDepartmentMgtInternalProxy;
 import bs.service.user.annotation.imports.ImportUserCore;
 import bs.service.user.annotation.imports.ImportUserRepository;
 import org.springframework.boot.SpringApplication;
@@ -30,6 +31,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ImportDepartmentCore
 @ImportDepartmentRepository
+@ImportDepartmentMgtInternalProxy
 
 @ImportSQLDBAdapter
 

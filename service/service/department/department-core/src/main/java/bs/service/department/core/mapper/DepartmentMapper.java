@@ -7,16 +7,14 @@ import bs.service.department.model.generated.DepartmentListItem;
 import bs.service.department.model.generated.DepartmentVTO;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.generated.LightUserVTO;
-import org.mapstruct.Builder;
-import org.mapstruct.CollectionMappingStrategy;
-import org.mapstruct.Mapper;
-import org.mapstruct.MapperConfig;
+import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", builder = @Builder(disableBuilder = true))
-@MapperConfig(collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
-public interface DepartmentMapper {
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+public abstract class DepartmentMapper {
 
     public abstract LightUserVTO toLightUserVTO(User user);
 

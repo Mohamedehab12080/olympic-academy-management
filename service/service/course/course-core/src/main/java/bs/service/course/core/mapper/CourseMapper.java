@@ -11,15 +11,16 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", builder = @Builder(disableBuilder = true))
-@MapperConfig(collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
-public interface CourseMapper {
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+public abstract class CourseMapper {
 
     public abstract LightUserVTO toLightUserVTO(User user);
 
     public abstract LookupVTO toLookupVTO(Course course);
 
-    public abstract LookupVTO toLookupVTO(Department course);
+    public abstract LookupVTO toLookupVTO(Department department);
 
     @Mapping(target = "department.id", source = "departmentId")
     public abstract Course toCourse(CourseDTO courseDTO);

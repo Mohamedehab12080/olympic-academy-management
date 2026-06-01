@@ -1,0 +1,358 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Employee Management"
+  contact:
+    email: "m.ehab.rabea@gmail.com"
+    name: "Mohamed Ehab"
+
+servers:
+  - url: http://localhost:7002/
+
+tags:
+  - name: Employee
+  - name: EmployeeContact
+
+paths:
+  /employees:
+    post:
+      tags:
+        - Employee
+      summary: Create employee
+      operationId: createEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Employee
+      summary: Retrieve list of Employees
+      operationId: getAllEmployees
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
+        - $ref: '#/components/parameters/QPHireDateFrom'
+        - $ref: '#/components/parameters/QPHireDateTo'
+        - $ref: '#/components/parameters/QPGender'
+        - $ref: '#/components/parameters/QPEmployeeType'
+        - $ref: '#/components/parameters/QPSalaryType'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /employees/{employeeId}:
+    put:
+      tags:
+        - Employee
+      summary: Update Employee By Id
+      operationId: updateEmployeeById
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Employee
+      summary: Retrieve employee
+      operationId: getEmployee
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - Employee
+      summary: Delete employee (soft delete)
+      operationId: deleteEmployee
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /employees/{employeeId}/contacts/{contactId}:
+    put:
+      tags:
+        - EmployeeContact
+      summary: Update Employee Contact
+      operationId: updateEmployeeContact
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+        - $ref: '#/components/parameters/PPContactId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeContactDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+
+components:
+  parameters:
+    PPEmployeeId:
+      name: employeeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPContactId:
+      name: contactId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    QPGender:
+      name: gender
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Genders'
+    QPEmployeeType:
+      name: employeeType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/EmployeeTypes'
+    QPSalaryType:
+      name: salaryType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SalaryTypes'
+    QPHireDateFrom:
+      name: hireDateFrom
+      in: query
+      required: false
+      schema:
+        type : string
+        format: date
+    QPHireDateTo:
+      name: hireDateTo
+      in: query
+      required: false
+      schema:
+        type : string
+        format: date
+
+  schemas:
+    Genders:
+      type: string
+      enum: [ "MALE", "FEMALE" ]
+
+    EmployeeTypes:
+      type: string
+      enum: [ "TRAINER", "MANAGER"]
+
+    SalaryTypes:
+      type: string
+      enum: [ "MONTHLY", "DAILY", "HOURLY","PERCENTAGE" ]
+
+    EmployeeDTO:
+      type: object
+      required:
+        - fullName
+        - nationalId
+        - employeeType
+        - departmentIds
+        - contacts
+      properties:
+        fullName:
+          type: string
+        nationalId:
+          type: string
+          minLength: 14
+          maxLength: 14
+        birthDate:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/Genders'
+        salary:
+          type: integer
+          format: int32
+        remainedSalary:
+          type: integer
+          format: int32
+        salaryType:
+          $ref: '#/components/schemas/SalaryTypes'
+        employeeType:
+          $ref: '#/components/schemas/EmployeeTypes'
+        imageUrl:
+          type: string
+        hireDate:
+          type: string
+          format: date
+        departmentIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeContactDTO'
+
+    EmployeeContactDTO:
+      type: object
+      properties:
+        contactType:
+          type: string
+        contactValue:
+          type: string
+
+    EmployeeVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/Genders'
+        salary:
+          type: integer
+          format: int32
+        remainedSalary:
+          type: integer
+          format: int32
+        salaryType:
+          $ref: '#/components/schemas/SalaryTypes'
+        employeeType:
+          $ref: '#/components/schemas/EmployeeTypes'
+        imageUrl:
+          type: string
+        hireDate:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+        departments:
+          type: array
+          items:
+            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeContactVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    EmployeeContactVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        contactType:
+          type: string
+        contactValue:
+          type: string
+
+    EmployeeResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeListItem'
+
+    EmployeeListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        gender:
+          $ref: '#/components/schemas/Genders'
+        employeeType:
+          $ref: '#/components/schemas/EmployeeTypes'
+        hireDate:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+        departments:
+          type: array
+          items:
+            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'

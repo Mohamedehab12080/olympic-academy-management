@@ -143,8 +143,20 @@
 								<output>${project.build.sourceDirectory}</output>
 
 							<importMappings>
-								<importMapping>CourseTypes =
-									bs.service.course.model.enums.CourseTypes
+								<importMapping>ErrorVTO =
+									bs.lib.common.model.vto.ErrorVTO
+								</importMapping>
+								<importMapping>OrderDirections =
+									bs.lib.sql.db.adapter.model.generated.OrderDirections
+								</importMapping>
+								<importMapping>LookupVTO =
+									bs.lib.common.model.generated.LookupVTO
+								</importMapping>
+								<importMapping>SalaryTypes =
+									bs.lib.common.model.enums.SalaryTypes
+								</importMapping>
+								<importMapping>Genders =
+									bs.service.user.model.generated.Genders
 								</importMapping>
 								<importMapping>NewRecordVTO =
 									bs.lib.common.model.generated.NewRecordVTO
@@ -152,11 +164,8 @@
 								<importMapping>LightUserVTO =
 									bs.service.user.model.generated.LightUserVTO
 								</importMapping>
-								<importMapping>ErrorVTO =
-									bs.lib.common.model.vto.ErrorVTO
-								</importMapping>
-								<importMapping>OrderDirections =
-									bs.lib.sql.db.adapter.model.generated.OrderDirections
+								<importMapping>CourseTypes =
+									bs.service.course.model.enums.CourseTypes
 								</importMapping>
 							</importMappings>
 
@@ -217,13 +226,7 @@
 
 								<importMappings>
 									<importMapping>LookupVTO =
-										bs.l.course.model.enums.CourseTypes
-									</importMapping>
-									<importMapping>CourseTypes =
-										bs.service.course.model.enums.CourseTypes
-									</importMapping>
-									<importMapping>LightUserVTO =
-										bs.service.user.model.generated.LightUserVTO
+										bs.lib.common.model.generated.LookupVTO
 									</importMapping>
 									<importMapping>NewRecordVTO =
 										bs.lib.common.model.generated.NewRecordVTO
@@ -233,6 +236,18 @@
 									</importMapping>
 									<importMapping>OrderDirections =
 										bs.lib.sql.db.adapter.model.generated.OrderDirections
+									</importMapping>
+									<importMapping>SalaryTypes =
+										bs.lib.common.model.enums.SalaryTypes
+									</importMapping>
+									<importMapping>Genders =
+										bs.service.user.model.generated.Genders
+									</importMapping>
+									<importMapping>CourseTypes =
+										bs.service.course.model.enums.CourseTypes
+									</importMapping>
+									<importMapping>LightUserVTO =
+										bs.service.user.model.generated.LightUserVTO
 									</importMapping>
 								</importMappings>
 

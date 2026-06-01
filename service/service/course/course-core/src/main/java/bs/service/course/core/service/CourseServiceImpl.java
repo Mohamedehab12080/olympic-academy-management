@@ -14,6 +14,8 @@ import bs.service.course.model.filter.CourseSearchFilter;
 import bs.service.course.model.generated.CourseDTO;
 import bs.service.course.model.generated.CourseResultSet;
 import bs.service.course.model.generated.CourseVTO;
+import bs.service.department.model.generated.DepartmentVTO;
+import bs.service.department.proxy.service.DepartmentMgtProxyService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +31,12 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final CourseMapper courseMapper;
+    private final DepartmentMgtProxyService departmentMgtProxyService;
 
     @Override
     @Transactional
     public NewRecordVTO createCourse(CourseDTO courseDTO) {
+        DepartmentVTO departmentVTO=departmentMgtProxyService.getDepartmentDetails(courseDTO.getDepartmentId());
         Course course =courseMapper.toCourse(courseDTO);
         course=courseRepository.insert(course);
         return NewRecordVTO.builder().id(course.getId()).build();
