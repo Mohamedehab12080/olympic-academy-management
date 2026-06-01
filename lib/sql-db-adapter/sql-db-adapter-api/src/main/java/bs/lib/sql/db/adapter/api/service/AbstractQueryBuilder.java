@@ -38,7 +38,7 @@ public abstract class AbstractQueryBuilder<ENTITY, FILTER extends SearchFilter> 
         return query.getResultList();
     }
 
-    public Long countAllByFilters(FILTER filters) {
+    public Integer countAllByFilters(FILTER filters) {
         String hql = "SELECT COUNT(item) FROM " + this.getEntityNameClass().getCanonicalName() + " item "
                 + this.joinQuery(filters);
 
@@ -47,7 +47,7 @@ public abstract class AbstractQueryBuilder<ENTITY, FILTER extends SearchFilter> 
         if (!conditions.isEmpty())
             hql += this.constructWhereCondition(conditions);
 
-        TypedQuery<Long> query = em.createQuery(hql, Long.class);
+        TypedQuery<Integer> query = em.createQuery(hql, Integer.class);
         this.setParameters(query, filters);
 
         return query.getSingleResult();

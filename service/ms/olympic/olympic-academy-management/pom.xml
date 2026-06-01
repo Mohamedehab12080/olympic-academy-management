@@ -27,6 +27,52 @@
     <dependencies>
 
         <dependency>
+            <groupId>bs.service.user</groupId>
+            <artifactId>user-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.user</groupId>
+            <artifactId>user-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.course</groupId>
+            <artifactId>course-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.course</groupId>
+            <artifactId>course-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.department</groupId>
+            <artifactId>department-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.department</groupId>
+            <artifactId>department-repository</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>bs.lib.id-counter</groupId>
+            <artifactId>id-counter-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.id-counter</groupId>
+            <artifactId>id-counter-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.rest</groupId>
+            <artifactId>rest-adapter-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
         </dependency>
@@ -37,15 +83,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-core</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-
 
         <dependency>
             <groupId>bs.lib.common</groupId>
@@ -58,6 +98,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
@@ -65,7 +115,26 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.security</groupId>
+            <artifactId>security-adapter-core</artifactId>
         </dependency>
 
     </dependencies>

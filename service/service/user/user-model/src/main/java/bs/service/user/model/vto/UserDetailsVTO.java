@@ -1,5 +1,6 @@
 package bs.service.user.model.vto;
 
+import bs.service.user.model.generated.LightUserVTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDetailsVTO {
-    private Long id;
+    private Integer id;
     private String email;
     private String fullName;
     private String mobileNumber;

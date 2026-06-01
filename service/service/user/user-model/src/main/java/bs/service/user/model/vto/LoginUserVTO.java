@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginUserVTO {
     private String token;
-    private Long userId;
+    private Integer userId;
     private String fullName;
     private String email;
     private Role role;
-    private Long expiresIn;
+    private Integer expiresIn;
 }

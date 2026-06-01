@@ -96,12 +96,10 @@ components:
       properties:
         id:
           type: integer
-          format: int64
-        titleEn:
+          format: int32
+        title:
           type: string
-        titleAr:
-          type: string
-        profileImageFid:
+        imageUrl:
           type: string
 
     NewRecordVTO:
@@ -109,7 +107,7 @@ components:
       properties:
         id:
           type: integer
-          format: int64
+          format: int32
 
     LookupDTO:
       type: object
@@ -131,7 +129,7 @@ components:
             $ref: '#/components/schemas/LookupVTO'
         total:
           type: integer
-          format: int64
+          format: int32
 
     RecordAttribute:
       type: object

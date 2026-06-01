@@ -1,8 +1,8 @@
-package bs.service.common.security.api.service;
+package bs.lib.security.api.service;
 
 public interface SecurityUtilsService {
 
-     Long getCurrentUserId();
+     Integer getCurrentUserId();
      String getCurrentUserEmail();
      String getCurrentUserRole();
      boolean isAuthenticated();

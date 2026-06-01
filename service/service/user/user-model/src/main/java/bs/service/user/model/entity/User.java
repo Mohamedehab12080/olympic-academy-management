@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tp_user")
+@Table(name = "oa_user")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name ="id")
-    private Long id;
+    private Integer id;
 
     @Basic
     @Column(name ="email")

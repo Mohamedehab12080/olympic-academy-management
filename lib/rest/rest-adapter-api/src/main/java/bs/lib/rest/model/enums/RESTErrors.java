@@ -8,15 +8,14 @@ import static bs.lib.rest.model.enums.RESTDomains.REST;
 
 @AllArgsConstructor
 public enum RESTErrors implements Errors {
-    INTERNAL_SERVER_ERROR(REST, "0001", "Internal Server Error",""),
-    UN_AUTHENTICATED_REQ(REST, "0002", "Request isn't Authenticated",""),
-    UN_AUTHORIZED_REQ(REST, "0003", "User isn't Authorized to access this resource",""),
-    INVALID_REQUEST(REST, "0004", "Invalid Request received",""),
+    INTERNAL_SERVER_ERROR(REST, "0001", "Internal Server Error"),
+    UN_AUTHENTICATED_REQ(REST, "0002", "Request isn't Authenticated"),
+    UN_AUTHORIZED_REQ(REST, "0003", "User isn't Authorized to access this resource"),
+    INVALID_REQUEST(REST, "0004", "Invalid Request received"),
     ;
     private final Domains domain;
     private final String code;
-    private final String messageEn;
-    private final String messageAr;
+    private final String message;
 
     @Override
     public Domains domain() {
@@ -29,12 +28,8 @@ public enum RESTErrors implements Errors {
     }
 
     @Override
-    public String messageEn() {
-        return messageEn;
-    }
-    @Override
-    public String messageAr() {
-        return messageAr;
+    public String message() {
+        return message;
     }
 
 }

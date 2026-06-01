@@ -1,9 +1,9 @@
 // user-module/src/main/java/com/fawry/user/core/controller/SuperAdminControllerImpl.java
 package bs.service.user.controller;
 
-import bs.olympic.common.security.api.service.SecurityUtilsService;
+import bs.lib.security.api.service.SecurityUtilsService;
 import bs.service.user.api.service.UserService;
-import bs.service.user.core.controller.api.SuperAdminController;
+import bs.service.user.controller.api.SuperAdminController;
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.dto.UpdateAdminDTO;
 import bs.service.user.model.vto.UserDetailsVTO;
@@ -36,7 +36,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
 
     @Override
     @Secured("ROLE_SUPER_ADMIN")
-    public ResponseEntity<Void> updateAdmin(Long adminId, UpdateAdminDTO request) {
+    public ResponseEntity<Void> updateAdmin(Integer adminId, UpdateAdminDTO request) {
         log.info("PUT /api/super-admin/admins/{} - Super Admin {} updating admin",
                 adminId, securityUtilsService.getCurrentUserEmail());
         userService.updateAdmin(adminId, request);
@@ -45,7 +45,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
 
     @Override
     @Secured("ROLE_SUPER_ADMIN")
-    public ResponseEntity<Void> activateAdmin(Long adminId) {
+    public ResponseEntity<Void> activateAdmin(Integer adminId) {
         log.info("PUT /api/super-admin/admins/{}/activate - Super Admin {} activating admin",
                 adminId, securityUtilsService.getCurrentUserEmail());
         userService.activateUser(adminId);
@@ -54,7 +54,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
 
     @Override
     @Secured("ROLE_SUPER_ADMIN")
-    public ResponseEntity<Void> deactivateAdmin(Long adminId) {
+    public ResponseEntity<Void> deactivateAdmin(Integer adminId) {
         log.info("PUT /api/super-admin/admins/{}/deactivate - Super Admin {} deactivating admin",
                 adminId, securityUtilsService.getCurrentUserEmail());
         userService.deactivateUser(adminId);
@@ -72,7 +72,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
 
     @Override
     @Secured("ROLE_SUPER_ADMIN")
-    public ResponseEntity<UserDetailsVTO> getAdminById(Long id) {
+    public ResponseEntity<UserDetailsVTO> getAdminById(Integer id) {
         log.info("GET /api/super-admin/admins/{} - Super Admin {} viewing admin details",
                 id, securityUtilsService.getCurrentUserEmail());
         UserDetailsVTO user = userService.getUserById(id);

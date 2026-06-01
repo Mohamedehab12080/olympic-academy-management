@@ -6,7 +6,7 @@ public interface Errors {
 
     String code();
 
-    String messageEn();
+    String message();
 
     String name();
 
@@ -15,7 +15,7 @@ public interface Errors {
     }
 
     default String getFullMessage() {
-        return "[" + getFullCode() + "] [" + label() + "]: " + messageEn();
+        return "[" + getFullCode() + "] [" + label() + "]: " + message();
     }
 
     default String getFullCode() {

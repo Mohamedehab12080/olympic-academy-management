@@ -1,4 +1,4 @@
-package bs.service.common.security.model;
+package bs.lib.security.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +15,7 @@ import java.util.Collections;
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
-    private Long id;
+    private Integer id;
     private String email;
     private String password;
     private String role;

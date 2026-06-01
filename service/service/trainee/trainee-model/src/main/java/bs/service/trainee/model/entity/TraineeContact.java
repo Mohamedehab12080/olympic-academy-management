@@ -1,6 +1,6 @@
 package bs.service.trainee.model.entity;
 
-import bs.lib.common.model.interfaces.enums.ContactTypes;
+import bs.lib.common.model.enums.ContactTypes;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

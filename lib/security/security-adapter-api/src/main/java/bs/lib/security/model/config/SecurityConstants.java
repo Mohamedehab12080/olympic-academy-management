@@ -1,4 +1,4 @@
-package bs.service.common.security.config;
+package bs.lib.security.model.config;
 
 public class SecurityConstants {
 

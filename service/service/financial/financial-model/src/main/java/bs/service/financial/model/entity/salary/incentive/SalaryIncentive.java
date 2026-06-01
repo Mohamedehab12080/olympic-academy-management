@@ -1,8 +1,8 @@
 package bs.service.financial.model.entity.salary.incentive;
 
-import bs.olympic.employee.model.entity.Employee;
-import bs.olympic.financial.model.entity.PaymentMethod;
-import bs.olympic.financial.model.enums.IncentiveTypes;
+import bs.service.employee.model.entity.Employee;
+import bs.service.financial.model.entity.PaymentMethod;
+import bs.service.financial.model.enums.IncentiveTypes;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

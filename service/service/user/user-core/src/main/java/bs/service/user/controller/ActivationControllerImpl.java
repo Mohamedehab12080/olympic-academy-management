@@ -1,10 +1,10 @@
 package bs.service.user.controller;
 
 import bs.service.user.api.service.UserService;
-import bs.service.user.core.controller.api.ActivationController;
+import bs.service.user.controller.api.ActivationController;
 import bs.service.user.model.dto.ForgotPasswordRequestDTO;
 import bs.service.user.model.dto.ResetPasswordDTO;
-import bs.service.user.util.ActivationVTO;
+import bs.service.user.model.util.ActivationVTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

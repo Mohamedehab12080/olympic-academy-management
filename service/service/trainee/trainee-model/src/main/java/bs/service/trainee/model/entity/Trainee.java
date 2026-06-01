@@ -1,6 +1,6 @@
 package bs.service.trainee.model.entity;
 
-import bs.lib.common.model.interfaces.enums.Gender;
+import bs.lib.common.model.enums.Gender;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -60,12 +60,12 @@ public class Trainee {
     @Basic
     private LocalDateTime lastModifiedOn;
 
-    @Column(name = "created_by_id")
-    @Basic
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
     private User createdBy;
 
-    @Column(name = "last_modified_by_id")
-    @Basic
+    @ManyToOne
+    @JoinColumn(name = "last_modified_by_id")
     private User lastModifiedBy;
 
     @Column(name = "is_deleted")

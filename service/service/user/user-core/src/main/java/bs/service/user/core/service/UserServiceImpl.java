@@ -1,10 +1,10 @@
 package bs.service.user.core.service;
 
-import bs.olympic.common.api.service.EmailService;
-import bs.lib.common.model.interfaces.dto.MailTemplateDTO;
-import bs.lib.common.model.interfaces.exception.BusinessException;
-import bs.olympic.common.security.api.service.JwtService;
-import bs.olympic.common.security.api.service.SecurityUtilsService;
+import bs.lib.common.api.service.EmailService;
+import bs.lib.common.model.dto.MailTemplateDTO;
+import bs.lib.common.model.exception.BusinessException;
+import bs.lib.security.api.service.JwtService;
+import bs.lib.security.api.service.SecurityUtilsService;
 import bs.service.user.api.repository.TokenRepository;
 import bs.service.user.api.repository.UserRepository;
 import bs.service.user.api.service.UserService;
@@ -14,11 +14,11 @@ import bs.service.user.model.entity.Token;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.enums.Role;
 import bs.service.user.model.enums.TokenTypes;
+import bs.service.user.model.util.TokenGenerator;
 import bs.service.user.model.vto.LoginUserVTO;
 import bs.service.user.model.vto.RegisterUserVTO;
 import bs.service.user.model.vto.UserDetailsVTO;
 import bs.service.user.model.vto.UserVTO;
-import bs.service.user.util.TokenGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +35,8 @@ import org.thymeleaf.context.Context;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static bs.olympic.common.security.config.SecurityConstants.TOKEN_EXPIRE_TIME;
 import static bs.service.user.model.enums.UserErrors.*;
+import static bs.lib.security.model.config.SecurityConstants.TOKEN_EXPIRE_TIME;
 
 @Slf4j
 @Service
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         user.setIsActive(false);
         user.setRole(Role.ROLE_USER);
 
-        Long currentUserId = securityUtilsService.getCurrentUserId();
+        Integer currentUserId = securityUtilsService.getCurrentUserId();
         if (currentUserId != null) {
             user.setCreatedBy(User.builder().id(currentUserId).build());
         }
@@ -308,7 +308,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetailsVTO getUserById(Long id) {
+    public UserDetailsVTO getUserById(Integer id) {
         User user = userRepository.selectById(id)
                 .orElseThrow(() -> new BusinessException(USER_NOT_FOUND, id));
         return userMapper.toUserDetailsVTO(user);
@@ -340,7 +340,7 @@ public class UserServiceImpl implements UserService {
         user.setIsActive(true);
         user.setRole(Role.ROLE_ADMIN);
 
-        Long currentUserId = securityUtilsService.getCurrentUserId();
+        Integer currentUserId = securityUtilsService.getCurrentUserId();
         if (currentUserId != null) {
             user.setCreatedBy(User.builder().id(currentUserId).build());
         }
@@ -351,7 +351,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void activateUser(Long userId) {
+    public void activateUser(Integer userId) {
         log.info("Activate user with id: {}", userId);
 
         User user = userRepository.selectById(userId)
@@ -363,7 +363,7 @@ public class UserServiceImpl implements UserService {
 
         user.setIsActive(true);
 
-        Long currentUserId = securityUtilsService.getCurrentUserId();
+        Integer currentUserId = securityUtilsService.getCurrentUserId();
         if (currentUserId != null) {
             user.setLastModifiedBy(User.builder().id(currentUserId).build());
         }
@@ -374,7 +374,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deactivateUser(Long userId) {
+    public void deactivateUser(Integer userId) {
         log.info("Deactivate user with id: {}", userId);
 
         User user = userRepository.selectById(userId)
@@ -386,7 +386,7 @@ public class UserServiceImpl implements UserService {
 
         user.setIsActive(false);
 
-        Long currentUserId = securityUtilsService.getCurrentUserId();
+        Integer currentUserId = securityUtilsService.getCurrentUserId();
         if (currentUserId != null) {
             user.setLastModifiedBy(User.builder().id(currentUserId).build());
         }
@@ -397,7 +397,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateAdmin(Long adminId, UpdateAdminDTO request) {
+    public void updateAdmin(Integer adminId, UpdateAdminDTO request) {
         log.info("Updating admin with id: {}", adminId);
 
         User user = userRepository.selectById(adminId)
@@ -405,7 +405,7 @@ public class UserServiceImpl implements UserService {
 
         user.setMobileNumber(request.getMobileNumber());
 
-        Long currentUserId = securityUtilsService.getCurrentUserId();
+        Integer currentUserId = securityUtilsService.getCurrentUserId();
         if (currentUserId != null) {
             user.setLastModifiedBy(User.builder().id(currentUserId).build());
         }

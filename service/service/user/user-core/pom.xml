@@ -52,12 +52,6 @@
         </dependency>
 
         <dependency>
-            <groupId>bs.lib.security</groupId>
-            <artifactId>security-adapter-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>bs.lib.sql-db</groupId>
             <artifactId>sql-db-adapter-api</artifactId>
             <scope>provided</scope>
@@ -80,6 +74,13 @@
             <artifactId>mapstruct</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>bs.lib.security</groupId>
+            <artifactId>security-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>

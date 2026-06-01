@@ -35,7 +35,7 @@ public class Counter {
 
     @Column(name = "counter_starting_value")
     @Basic
-    private Long counterStartingValue;
+    private Integer counterStartingValue;
 
     @Column(name = "is_reset_daily")
     @Basic

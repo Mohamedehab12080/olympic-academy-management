@@ -1,6 +1,6 @@
 package bs.service.trainee.model.entity;
 
-import bs.olympic.course.model.entity.Course;
+import bs.service.course.model.entity.Course;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

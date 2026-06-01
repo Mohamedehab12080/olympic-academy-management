@@ -29,6 +29,18 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.lib.security</groupId>
+            <artifactId>security-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib.common</groupId>
             <artifactId>common-model</artifactId>
             <scope>provided</scope>

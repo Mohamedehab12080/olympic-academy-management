@@ -1,10 +1,9 @@
 package bs.lib.security.annotation.imports;
 
+import bs.lib.security.annotation.config.SecurityConfig;
+import bs.lib.security.model.config.SecurityConstants;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import bs.lib.security.annotation.config.SecurityConfiguration;
-import bs.lib.security.core.filter.AuthenticationRESTFilter;
-
 import java.lang.annotation.*;
 
 @Target(ElementType.TYPE)
@@ -13,9 +12,8 @@ import java.lang.annotation.*;
 @Import(value = {ImportSecurityAdapter.Root.class})
 public @interface ImportSecurityAdapter {
 
-    @ImportSecurityUtilities
-    @Import(value = {SecurityConfiguration.class, AuthenticationRESTFilter.class})
-    @ComponentScan(basePackages = {"bs.lib.security.core.service", "bs.lib.security.core.mapper"})
+    @Import(value = {SecurityConfig.class, SecurityConstants.class})
+    @ComponentScan(basePackages = {"bs.lib.security.core"})
     class Root {
 
     }

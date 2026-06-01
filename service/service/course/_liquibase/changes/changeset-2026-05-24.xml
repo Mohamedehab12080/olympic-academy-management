@@ -26,12 +26,12 @@
             <column name="image_url" type="varchar(255)"/>
             <column name="course_type" type="varchar(50)"/>
             <column name="price" type="Integer"/>
-            <column name="is_active" type="boolean" defaultValueBoolean="true"/>
+            <column name="is_active" type="boolean" defaultValueComputed="1"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp" />
             <column name="created_by_id" type="int"/>
             <column name="last_modified_by_id" type="int"/>
-            <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+            <column name="is_deleted" type="boolean" defaultValueComputed="0"/>
         </createTable>
 
         <addForeignKeyConstraint

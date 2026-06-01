@@ -2,7 +2,6 @@ package bs.lib.id.counter.repository;
 
 import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import bs.lib.id.counter.api.repository.CounterInstanceRepository;
@@ -14,16 +13,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static bs.lib.id.counter.model.config.IdCounterVariables.ID_COUNTER_EMF;
-import static bs.lib.id.counter.model.config.IdCounterVariables.ID_COUNTER_TM;
-
 @Repository
 @RequiredArgsConstructor
 public class CounterInstanceRepositoryImpl implements CounterInstanceRepository {
 
     private final CounterInstanceJPARepository counterInstanceJPARepository;
 
-    @PersistenceContext(unitName = ID_COUNTER_EMF)
     private EntityManager entityManager;
 
     @Override
@@ -40,7 +35,7 @@ public class CounterInstanceRepositoryImpl implements CounterInstanceRepository 
 
 
     @Override
-    @Transactional(transactionManager = ID_COUNTER_TM)
+    @Transactional
     public Optional<CounterInstance> selectByFilters(
             Integer counterId,
             List<CounterInstanceAttribute> attributes) {

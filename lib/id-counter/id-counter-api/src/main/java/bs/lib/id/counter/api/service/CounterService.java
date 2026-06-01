@@ -7,8 +7,8 @@ import bs.lib.id.counter.model.interfaces.CounterTypes;
 import java.util.List;
 
 public interface CounterService {
-    Long getNextValue(CounterTypes counterType, List<RecordAttribute> attributes);
-    Long getNextValue(CounterTypes counterType);
+    Integer getNextValue(CounterTypes counterType, List<RecordAttribute> attributes);
+    Integer getNextValue(CounterTypes counterType);
 
     String getNextValueAsString(CounterTypes counterType, List<RecordAttribute> attributes);
 

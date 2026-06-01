@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import bs.lib.id.counter.model.entity.CounterInstanceAttribute;
 
 @Repository
-public interface CounterInstanceAttributeJPARepository extends JpaRepository<CounterInstanceAttribute,Long> {
+public interface CounterInstanceAttributeJPARepository extends JpaRepository<CounterInstanceAttribute,Integer> {
 }

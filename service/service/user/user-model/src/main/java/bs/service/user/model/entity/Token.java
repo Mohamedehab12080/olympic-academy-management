@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tp_token")
+@Table(name = "oa_token")
 public class Token {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
-    private Long id;
+    private Integer id;
 
     @Basic
     @Column(name="token")

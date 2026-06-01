@@ -29,7 +29,7 @@ public class IntegrationTestService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        long diffInSeconds = Math.abs(Duration.between(actual, now).getSeconds());
+        Long diffInSeconds = Math.abs(Duration.between(actual, now).getSeconds());
 
         assertTrue(diffInSeconds <= 5 && diffInSeconds >= 0);
     }

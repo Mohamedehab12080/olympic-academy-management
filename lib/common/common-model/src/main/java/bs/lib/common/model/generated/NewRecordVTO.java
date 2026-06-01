@@ -21,9 +21,9 @@ public class NewRecordVTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long id;
+    private Integer id;
 
-    public NewRecordVTO id(Long id) {
+    public NewRecordVTO id(Integer id) {
         this.id = id;
         return this;
     }
@@ -36,11 +36,11 @@ public class NewRecordVTO implements Serializable {
 
     @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("id")
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

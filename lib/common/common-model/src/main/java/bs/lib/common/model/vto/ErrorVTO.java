@@ -20,11 +20,11 @@ public class ErrorVTO {
 
     public static ErrorVTO of(Errors error) {
         return ErrorVTO.builder().code(error.domain().name() + "-" + error.code())
-                .messageEn(error.messageEn()).build();
+                .messageEn(error.message()).build();
     }
 
     public static ErrorVTO of(Errors error, Object[] args) {
         return ErrorVTO.builder().code(error.domain().name() + "-" + error.code())
-                .messageEn(MessageFormat.format(error.messageEn(), args)).build();
+                .messageEn(MessageFormat.format(error.message(), args)).build();
     }
 }

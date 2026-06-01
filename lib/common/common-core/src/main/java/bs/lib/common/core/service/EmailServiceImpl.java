@@ -1,8 +1,8 @@
 package bs.lib.common.core.service;
 
-import bs.olympic.common.api.service.EmailService;
+import bs.lib.common.api.service.EmailService;
 
-import bs.lib.common.model.interfaces.dto.MailTemplateDTO;
+import bs.lib.common.model.dto.MailTemplateDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

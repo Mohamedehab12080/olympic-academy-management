@@ -7,9 +7,7 @@ import bs.lib.common.model.data.RecordAttribute;
 import bs.lib.common.model.exception.BusinessException;
 import bs.lib.id.counter.api.repository.CounterInstanceAttributeRepository;
 import bs.lib.id.counter.api.repository.CounterInstanceRepository;
-import bs.lib.id.counter.api.repository.CounterRepository;
 import bs.lib.id.counter.api.service.CounterInternalService;
-import bs.lib.id.counter.api.service.CounterService;
 import bs.lib.id.counter.core.mapper.CounterMapper;
 import bs.lib.id.counter.model.entity.Counter;
 import bs.lib.id.counter.model.entity.CounterAttribute;
@@ -18,7 +16,6 @@ import bs.lib.id.counter.model.entity.CounterInstanceAttribute;
 
 import java.util.List;
 
-import static bs.lib.id.counter.model.config.IdCounterVariables.ID_COUNTER_TM;
 import static bs.lib.id.counter.model.enums.CounterErrors.MISSED_ATTRIBUTE;
 
 @Service
@@ -30,7 +27,7 @@ public class CounterInternalServiceImpl implements CounterInternalService {
 
     @Override
     @Transactional
-    public Long getNextValue(Counter counter, List<RecordAttribute> attributes) {
+    public Integer getNextValue(Counter counter, List<RecordAttribute> attributes) {
         if (!counter.getAttributes().isEmpty()) {
             if (attributes == null ||( attributes.size() != counter.getAttributes().stream().filter(c->!c.getIsOptional()).toList().size() && attributes.size()!=counter.getAttributes().size()))
                 throw new BusinessException(MISSED_ATTRIBUTE);
@@ -67,7 +64,7 @@ public class CounterInternalServiceImpl implements CounterInternalService {
                     return newInstance;
                 });
 
-        Long newValue = counterInstance.getCounterLastValue() + 1;
+        Integer newValue = counterInstance.getCounterLastValue() + 1;
         counterInstance.setCounterLastValue(newValue);
         counterInstanceRepository.update(counterInstance);
         return newValue;

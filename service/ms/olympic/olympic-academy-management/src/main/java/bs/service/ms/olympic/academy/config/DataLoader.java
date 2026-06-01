@@ -1,5 +1,8 @@
 package bs.service.ms.olympic.academy.config;
 
+import bs.service.user.api.repository.UserRepository;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

@@ -23,9 +23,6 @@ import static bs.lib.id.counter.model.config.IdCounterVariables.*;
 @Import(value = {ImportIdCounterRepository.Root.class})
 public @interface ImportIdCounterRepository {
 
-    @EnableJpaRepositories(basePackages = {"bs.lib.id.counter.repository.jpa"},
-            entityManagerFactoryRef = ID_COUNTER_EMF)
-    @EntityScan(basePackages = {"bs.lib.id.counter.model.entity"})
     @ComponentScan(basePackages = {"bs.lib.id.counter.repository"})
     class Root {
     }

@@ -5,6 +5,6 @@
 cd /d %~dp0
 
 cd ../../../../../_scripts/swagger
-CALL generate.bat --project=olympic --module=department --model --core
+CALL generate.bat --project=service --module=department --model --core
 
 pause

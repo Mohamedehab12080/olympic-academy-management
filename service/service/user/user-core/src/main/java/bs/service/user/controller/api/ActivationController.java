@@ -1,10 +1,10 @@
 package bs.service.user.controller.api;
 
 
-import bs.lib.common.model.interfaces.vto.ErrorVTO;
+import bs.lib.common.model.vto.ErrorVTO;
 import bs.service.user.model.dto.ForgotPasswordRequestDTO;
 import bs.service.user.model.dto.ResetPasswordDTO;
-import bs.service.user.util.ActivationVTO;
+import bs.service.user.model.util.ActivationVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,7 +1,7 @@
 package bs.service.department.model.filter;
 
-import bs.olympic.common.db.model.dto.SearchFilter;
-import bs.olympic.common.db.model.interfaces.OrderAttributes;
+import bs.lib.sql.db.adapter.model.dto.SearchFilter;
+import bs.lib.sql.db.adapter.model.interfaces.OrderAttributes;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;

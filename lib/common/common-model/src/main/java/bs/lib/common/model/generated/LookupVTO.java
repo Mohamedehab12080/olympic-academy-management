@@ -21,15 +21,13 @@ public class LookupVTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private Long id;
+    private Integer id;
 
-    private String titleEn;
+    private String title;
 
-    private String titleAr;
+    private String imageUrl;
 
-    private String profileImageFid;
-
-    public LookupVTO id(Long id) {
+    public LookupVTO id(Integer id) {
         this.id = id;
         return this;
     }
@@ -42,75 +40,54 @@ public class LookupVTO implements Serializable {
 
     @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("id")
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public LookupVTO titleEn(String titleEn) {
-        this.titleEn = titleEn;
+    public LookupVTO title(String title) {
+        this.title = title;
         return this;
     }
 
     /**
-     * Get titleEn
+     * Get title
      *
-     * @return titleEn
+     * @return title
      */
 
-    @Schema(name = "titleEn", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("titleEn")
-    public String getTitleEn() {
-        return titleEn;
+    @Schema(name = "title", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("title")
+    public String getTitle() {
+        return title;
     }
 
-    public void setTitleEn(String titleEn) {
-        this.titleEn = titleEn;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public LookupVTO titleAr(String titleAr) {
-        this.titleAr = titleAr;
+    public LookupVTO imageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
         return this;
     }
 
     /**
-     * Get titleAr
+     * Get imageUrl
      *
-     * @return titleAr
+     * @return imageUrl
      */
 
-    @Schema(name = "titleAr", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("titleAr")
-    public String getTitleAr() {
-        return titleAr;
+    @Schema(name = "imageUrl", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("imageUrl")
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setTitleAr(String titleAr) {
-        this.titleAr = titleAr;
-    }
-
-    public LookupVTO profileImageFid(String profileImageFid) {
-        this.profileImageFid = profileImageFid;
-        return this;
-    }
-
-    /**
-     * Get profileImageFid
-     *
-     * @return profileImageFid
-     */
-
-    @Schema(name = "profileImageFid", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("profileImageFid")
-    public String getProfileImageFid() {
-        return profileImageFid;
-    }
-
-    public void setProfileImageFid(String profileImageFid) {
-        this.profileImageFid = profileImageFid;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     @Override
@@ -122,14 +99,13 @@ public class LookupVTO implements Serializable {
             return false;
         }
         LookupVTO lookupVTO = (LookupVTO) o;
-        return Objects.equals(this.id, lookupVTO.id) && Objects.equals(this.titleEn, lookupVTO.titleEn)
-                && Objects.equals(this.titleAr, lookupVTO.titleAr)
-                && Objects.equals(this.profileImageFid, lookupVTO.profileImageFid);
+        return Objects.equals(this.id, lookupVTO.id) && Objects.equals(this.title, lookupVTO.title)
+                && Objects.equals(this.imageUrl, lookupVTO.imageUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, titleEn, titleAr, profileImageFid);
+        return Objects.hash(id, title, imageUrl);
     }
 
     @Override
@@ -137,9 +113,8 @@ public class LookupVTO implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("class LookupVTO {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
-        sb.append("    titleEn: ").append(toIndentedString(titleEn)).append("\n");
-        sb.append("    titleAr: ").append(toIndentedString(titleAr)).append("\n");
-        sb.append("    profileImageFid: ").append(toIndentedString(profileImageFid)).append("\n");
+        sb.append("    title: ").append(toIndentedString(title)).append("\n");
+        sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("}");
         return sb.toString();
     }

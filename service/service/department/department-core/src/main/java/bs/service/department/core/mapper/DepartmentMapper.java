@@ -1,0 +1,33 @@
+package bs.service.department.core.mapper;
+
+import bs.lib.common.model.generated.LookupVTO;
+import bs.service.department.model.entity.Department;
+import bs.service.department.model.generated.DepartmentDTO;
+import bs.service.department.model.generated.DepartmentListItem;
+import bs.service.department.model.generated.DepartmentVTO;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.generated.LightUserVTO;
+import org.mapstruct.Builder;
+import org.mapstruct.CollectionMappingStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.MapperConfig;
+
+import java.util.List;
+
+@Mapper(componentModel = "spring", builder = @Builder(disableBuilder = true))
+@MapperConfig(collectionMappingStrategy = CollectionMappingStrategy.ADDER_PREFERRED)
+public interface DepartmentMapper {
+
+    public abstract LightUserVTO toLightUserVTO(User user);
+
+    public abstract LookupVTO toLookupVTO(Department department);
+
+    public abstract Department toDepartment(DepartmentDTO departmentDTO);
+
+    public abstract DepartmentVTO toDepartmentVTO(Department department);
+
+    public abstract DepartmentListItem toDepartmentListItem(Department department);
+
+    public abstract List<DepartmentListItem> toDepartmentListItems(List<Department> departments);
+
+}

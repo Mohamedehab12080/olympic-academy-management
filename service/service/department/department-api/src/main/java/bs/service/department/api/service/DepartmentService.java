@@ -1,16 +1,16 @@
 package bs.service.department.api.service;
 
-import bs.lib.common.model.interfaces.vto.NewRecordVTO;
-import bs.olympic.department.model.entity.Department;
-import bs.olympic.department.model.filter.DepartmentSearchFilter;
+import bs.lib.common.model.generated.NewRecordVTO;
+import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.department.model.filter.DepartmentSearchFilter;
+import bs.service.department.model.generated.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
 
-public class DepartmentService {
+public interface DepartmentService {
     NewRecordVTO create(DepartmentDTO departmentDTO);
     NewRecordVTO update(Integer departmentId,DepartmentDTO departmentDTO);
-    Optional<Department> getDepartmentById(Integer id);
-    List<Department> selectAllByFilters(DepartmentSearchFilter filters);
-    Long countAllByFilters(DepartmentSearchFilter filters);
+    DepartmentVTO getDepartmentById(Integer id);
+    DepartmentResultSet selectAllDepartmentsByFilters(String quickSearch, LocalDate createdOnFrom, LocalDate createdOnTo, LocalDate lastModifiedOnFrom, LocalDate lastModifiedOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    void deleteDepartmentById(Integer id);
 }

@@ -1,6 +1,6 @@
 package bs.service.financial.model.entity.expense;
 
-import bs.olympic.financial.model.entity.PaymentMethod;
+import bs.service.financial.model.entity.PaymentMethod;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

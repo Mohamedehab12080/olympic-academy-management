@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterUserVTO {
-    private Long id;
+    private Integer id;
     private String email;
     private String fullName;
     private String role;

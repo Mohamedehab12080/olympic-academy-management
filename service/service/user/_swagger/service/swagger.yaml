@@ -15,14 +15,14 @@ components:
       in: query
       schema:
         type: integer
-        format: int64
+        format: int32
 
     QPUserId:
       name: userId
       in: query
       schema:
         type: integer
-        format: int64
+        format: int32
 
     PPUserId:
       name: userId
@@ -30,7 +30,7 @@ components:
       required: true
       schema:
         type: integer
-        format: int64
+        format: int32
 
   schemas:
     LightUserVTO:
@@ -38,7 +38,7 @@ components:
       properties:
         id:
           type: integer
-          format: int64
+          format: int32
         fullName:
           type: string
 
@@ -51,7 +51,7 @@ components:
             $ref: '#/components/schemas/LightUserVTO'
         total:
           type: integer
-          format: int64
+          format: int32
 
     Genders:
       type: string

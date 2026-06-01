@@ -20,7 +20,7 @@ public class CounterInstance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "counter_id")
@@ -28,7 +28,7 @@ public class CounterInstance {
 
     @Column(name="counter_last_value")
     @Basic
-    private Long counterLastValue;
+    private Integer counterLastValue;
 
     @Column(name="last_modified_on")
     @Basic

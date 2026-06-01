@@ -143,8 +143,20 @@
 								<output>${project.build.sourceDirectory}</output>
 
 							<importMappings>
+								<importMapping>CourseTypes =
+									bs.service.course.model.enums.CourseTypes
+								</importMapping>
+								<importMapping>NewRecordVTO =
+									bs.lib.common.model.generated.NewRecordVTO
+								</importMapping>
+								<importMapping>LightUserVTO =
+									bs.service.user.model.generated.LightUserVTO
+								</importMapping>
 								<importMapping>ErrorVTO =
 									bs.lib.common.model.vto.ErrorVTO
+								</importMapping>
+								<importMapping>OrderDirections =
+									bs.lib.sql.db.adapter.model.generated.OrderDirections
 								</importMapping>
 							</importMappings>
 
@@ -204,8 +216,23 @@
 								<output>${project.build.sourceDirectory}</output>
 
 								<importMappings>
+									<importMapping>LookupVTO =
+										bs.l.course.model.enums.CourseTypes
+									</importMapping>
+									<importMapping>CourseTypes =
+										bs.service.course.model.enums.CourseTypes
+									</importMapping>
+									<importMapping>LightUserVTO =
+										bs.service.user.model.generated.LightUserVTO
+									</importMapping>
+									<importMapping>NewRecordVTO =
+										bs.lib.common.model.generated.NewRecordVTO
+									</importMapping>
 									<importMapping>ErrorVTO =
 										bs.lib.common.model.vto.ErrorVTO
+									</importMapping>
+									<importMapping>OrderDirections =
+										bs.lib.sql.db.adapter.model.generated.OrderDirections
 									</importMapping>
 								</importMappings>
 
@@ -386,8 +413,8 @@
 
 		<module>service/service/user/user-model</module>
 		<module>service/service/user/user-api</module>
-		<module>service/service/user/user-repository</module>
 		<module>service/service/user/user-core</module>
+		<module>service/service/user/user-repository</module>
 		<module>service/service/user/user-proxy</module>
 
 		<module>service/service/employee/employee-model</module>

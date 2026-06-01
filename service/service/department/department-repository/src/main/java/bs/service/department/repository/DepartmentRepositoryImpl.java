@@ -1,11 +1,11 @@
 package bs.service.department.repository;
 
-import bs.olympic.common.security.api.service.SecurityUtilsService;
-import bs.olympic.department.api.repository.DepartmentRepository;
-import bs.olympic.department.model.entity.Department;
-import bs.olympic.department.model.filter.DepartmentSearchFilter;
-import bs.olympic.department.repository.jpa.DepartmentJPARepository;
-import bs.olympic.department.repository.query.DepartmentQueryBuilder;
+import bs.lib.security.api.service.SecurityUtilsService;
+import bs.service.department.api.repository.DepartmentRepository;
+import bs.service.department.model.entity.Department;
+import bs.service.department.model.filter.DepartmentSearchFilter;
+import bs.service.department.repository.jpa.DepartmentJPARepository;
+import bs.service.department.repository.query.DepartmentQueryBuilder;
 import bs.service.user.model.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -27,6 +27,8 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
         User currentUser=User.builder().id(securityUtilsService.getCurrentUserId()).build();
         department.setCreatedBy(currentUser);
         department.setCreatedOn(LocalDateTime.now());
+        department.setIsActive(true);
+        department.setIsDeleted(false);
         return departmentJPARepository.save(department);
     }
 
@@ -39,7 +41,7 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public Optional<Department> getDepartmentById(Integer id) {
+    public Optional<Department> selectDepartmentById(Integer id) {
         return departmentJPARepository.findById(id);
     }
 
@@ -49,7 +51,7 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public Long countAllByFilters(DepartmentSearchFilter filters) {
+    public Integer countAllByFilters(DepartmentSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
 

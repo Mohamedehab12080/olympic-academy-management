@@ -1,8 +1,7 @@
-// user-module/src/main/java/com/fawry/user/config/UserDetailsServiceImpl.java
 package bs.service.user.core.service;
 
-import bs.lib.common.model.interfaces.exception.BusinessException;
-import bs.olympic.common.security.model.CustomUserDetails;
+import bs.lib.common.model.exception.BusinessException;
+import bs.lib.security.model.CustomUserDetails;
 import bs.service.user.api.repository.UserRepository;
 import bs.service.user.model.entity.User;
 import lombok.RequiredArgsConstructor;

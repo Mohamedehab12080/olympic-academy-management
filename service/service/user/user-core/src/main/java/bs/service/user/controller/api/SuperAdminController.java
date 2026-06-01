@@ -1,6 +1,6 @@
 package bs.service.user.controller.api;
 
-import bs.lib.common.model.interfaces.vto.ErrorVTO;
+import bs.lib.common.model.vto.ErrorVTO;
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.dto.UpdateAdminDTO;
 import bs.service.user.model.vto.UserDetailsVTO;
@@ -54,7 +54,7 @@ public interface SuperAdminController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
             })
     })
-    ResponseEntity<Void> updateAdmin(@PathVariable Long adminId, @Valid @RequestBody UpdateAdminDTO request);
+    ResponseEntity<Void> updateAdmin(@PathVariable Integer adminId, @Valid @RequestBody UpdateAdminDTO request);
 
     @PutMapping("/admins/{adminId}/activate")
     @Operation(summary = "Activate admin", description = "Activate admin user (Super Admin only)")
@@ -70,7 +70,7 @@ public interface SuperAdminController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
             })
     })
-    ResponseEntity<Void> activateAdmin(@PathVariable Long adminId);
+    ResponseEntity<Void> activateAdmin(@PathVariable Integer adminId);
 
     @PutMapping("/admins/{adminId}/deactivate")
     @Operation(summary = "Deactivate admin", description = "Deactivate admin user (Super Admin only)")
@@ -86,7 +86,7 @@ public interface SuperAdminController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
             })
     })
-    ResponseEntity<Void> deactivateAdmin(@PathVariable Long adminId);
+    ResponseEntity<Void> deactivateAdmin(@PathVariable Integer adminId);
 
     @GetMapping("/admins")
     @Operation(summary = "Get all admins", description = "Returns all admin users (Super Admin only)")
@@ -120,5 +120,5 @@ public interface SuperAdminController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
             })
     })
-    ResponseEntity<UserDetailsVTO> getAdminById(@PathVariable Long id);
+    ResponseEntity<UserDetailsVTO> getAdminById(@PathVariable Integer id);
 }

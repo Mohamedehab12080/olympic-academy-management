@@ -1,9 +1,9 @@
 package bs.service.department.repository.query;
 
-import bs.olympic.common.db.api.service.AbstractQueryBuilderV2;
-import bs.olympic.common.db.model.dto.QBCondition;
-import bs.olympic.department.model.entity.Department;
-import bs.olympic.department.model.filter.DepartmentSearchFilter;
+import bs.lib.sql.db.adapter.api.service.AbstractQueryBuilderV2;
+import bs.lib.sql.db.adapter.model.dto.QBCondition;
+import bs.service.department.model.entity.Department;
+import bs.service.department.model.filter.DepartmentSearchFilter;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 

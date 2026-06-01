@@ -1,9 +1,9 @@
 package bs.service.session.model.entity;
 
-import bs.olympic.course.model.entity.Course;
-import bs.olympic.employee.model.entity.Employee;
-import bs.olympic.place.model.entity.Place;
-import bs.olympic.session.model.enums.SessionStatus;
+import bs.service.course.model.entity.Course;
+import bs.service.employee.model.entity.Employee;
+import bs.service.place.model.entity.Place;
+import bs.service.session.model.enums.SessionStatus;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

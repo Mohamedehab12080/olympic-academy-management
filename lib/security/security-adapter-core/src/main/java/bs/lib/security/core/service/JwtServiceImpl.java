@@ -1,6 +1,6 @@
 package bs.lib.security.core.service;
 
-import bs.olympic.common.security.api.service.JwtService;
+import bs.lib.security.api.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
-import static bs.olympic.common.security.config.SecurityConstants.JWT_TOKEN_SECRET_KEY;
-import static bs.olympic.common.security.config.SecurityConstants.TOKEN_EXPIRE_TIME;
+import static bs.lib.security.model.config.SecurityConstants.JWT_TOKEN_SECRET_KEY;
+import static bs.lib.security.model.config.SecurityConstants.TOKEN_EXPIRE_TIME;
 
 @Slf4j
 @Component

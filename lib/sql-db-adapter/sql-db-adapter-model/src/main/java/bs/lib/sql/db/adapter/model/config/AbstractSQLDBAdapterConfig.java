@@ -14,6 +14,6 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AbstractSQLDBAdapterConfig  {
-   private Map<String,DBEntityConfig> entities;
+   private Map<String,DBEntityConfig> entities=new HashMap<>();
    private Map<String, EvaluatedEntityConfig> evaluatedEntities = new HashMap<>();
 }

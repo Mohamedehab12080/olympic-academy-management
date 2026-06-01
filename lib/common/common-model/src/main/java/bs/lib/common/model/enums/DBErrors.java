@@ -13,7 +13,7 @@ public enum DBErrors implements Errors {
 
     private final Domains domain;
     private final String code;
-    private final String messageEn;
+    private final String message;
 
     @Override
     public Domains domain() {
@@ -26,7 +26,7 @@ public enum DBErrors implements Errors {
     }
 
     @Override
-    public String messageEn() {
-        return messageEn;
+    public String message() {
+        return message;
     }
 }

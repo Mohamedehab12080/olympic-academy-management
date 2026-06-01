@@ -1,0 +1,248 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Course Management"
+  contact:
+    email: "m.ehab.rabea@gmail.com"
+    name: "Mohamed Ehab"
+
+servers:
+  - url: http://localhost:7002/
+
+tags:
+  - name: Course
+
+paths:
+  /courses:
+    post:
+      tags:
+        - Course
+      summary: Create course
+      operationId: createCourse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Course
+      summary: Retrieve list of Courses
+      operationId: getAllCourses
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+        - $ref: '#/components/parameters/QPCourseType'
+        - $ref: '#/components/parameters/QPStartDateFrom'
+        - $ref: '#/components/parameters/QPStartDateTo'
+        - $ref: '#/components/parameters/QPEndDateFrom'
+        - $ref: '#/components/parameters/QPEndDateTo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}:
+
+    put:
+      tags:
+        - Course
+      summary: Update Course By Id
+      operationId: updateCourseById
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Course
+      summary: Retrieve Course
+      operationId: getCourse
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+
+components:
+  parameters:
+    PPCourseId:
+      name: courseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    QPCourseType:
+      name: courseType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/CourseTypes'
+    QPStartDateFrom:
+      name: startDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPStartDateTo:
+      name: startDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPEndDateFrom:
+      name: endDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPEndDateTo:
+      name: endDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+
+  schemas:
+    CourseDTO:
+      type: object
+      required:
+        - title
+        - departmentId
+        - duration
+        - startDate
+        - courseType
+        - price
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        departmentId:
+          type: integer
+          format: int32
+        duration:
+          type: integer
+          format: int32
+        maxCapacity:
+          type: integer
+          format: int32
+          minimum: 1
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        imageUrl:
+          type: string
+        courseType:
+          $ref: '#/components/schemas/CourseTypes'
+        price:
+          type: integer
+          format: int32
+
+    CourseTypes:
+      type: string
+      enum: [ "QUALIFICATION","TRAINING" ]
+
+    CourseVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        department:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        duration:
+          type: integer
+          format: int32
+        maxCapacity:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        imageUrl:
+          type: string
+        courseType:
+          $ref: '#/components/schemas/CourseTypes'
+        price:
+          type: integer
+          format: int32
+        isActive:
+          type: boolean
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    CourseResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseVTO'

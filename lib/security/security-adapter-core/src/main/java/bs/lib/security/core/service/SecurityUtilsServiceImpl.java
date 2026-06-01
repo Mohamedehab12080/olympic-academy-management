@@ -1,5 +1,8 @@
 package bs.lib.security.core.service;
 
+import bs.lib.security.api.service.SecurityUtilsService;
+import bs.lib.security.model.CustomUserDetails;
+import bs.lib.security.model.exception.AuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +18,7 @@ import static bs.lib.security.model.enums.SecurityErrors.NOT_AUTHENTICATED;
 public class SecurityUtilsServiceImpl implements SecurityUtilsService {
 
     @Override
-    public Long getCurrentUserId() {
+    public Integer getCurrentUserId() {
         Authentication authentication = getAuthentication();
         Object principal = authentication.getPrincipal();
 

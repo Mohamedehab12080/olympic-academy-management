@@ -1,7 +1,7 @@
 package bs.service.user.controller;
 
 import bs.service.user.api.service.UserService;
-import bs.service.user.core.controller.api.AuthController;
+import bs.service.user.controller.api.AuthController;
 import bs.service.user.model.dto.LoginUserDTO;
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.vto.LoginUserVTO;

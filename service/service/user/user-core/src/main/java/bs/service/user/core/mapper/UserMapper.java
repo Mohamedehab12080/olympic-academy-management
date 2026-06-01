@@ -2,6 +2,7 @@ package bs.service.user.core.mapper;
 
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.entity.User;
+import bs.service.user.model.generated.LightUserVTO;
 import bs.service.user.model.vto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -1,7 +1,7 @@
 // user-module/src/main/java/com/fawry/user/core/controller/api/AuthController.java
 package bs.service.user.controller.api;
 
-import bs.lib.common.model.interfaces.vto.ErrorVTO;
+import bs.lib.common.model.vto.ErrorVTO;
 import bs.service.user.model.dto.LoginUserDTO;
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.vto.LoginUserVTO;

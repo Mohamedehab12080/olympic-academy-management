@@ -27,7 +27,7 @@ public class LookupResultSet implements Serializable {
     @Valid
     private List<@Valid LookupVTO> _list = new ArrayList<>();
 
-    private Long total;
+    private Integer total;
 
     public LookupResultSet _list(List<@Valid LookupVTO> _list) {
         this._list = _list;
@@ -58,7 +58,7 @@ public class LookupResultSet implements Serializable {
         this._list = _list;
     }
 
-    public LookupResultSet total(Long total) {
+    public LookupResultSet total(Integer total) {
         this.total = total;
         return this;
     }
@@ -71,11 +71,11 @@ public class LookupResultSet implements Serializable {
 
     @Schema(name = "total", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("total")
-    public Long getTotal() {
+    public Integer getTotal() {
         return total;
     }
 
-    public void setTotal(Long total) {
+    public void setTotal(Integer total) {
         this.total = total;
     }
 

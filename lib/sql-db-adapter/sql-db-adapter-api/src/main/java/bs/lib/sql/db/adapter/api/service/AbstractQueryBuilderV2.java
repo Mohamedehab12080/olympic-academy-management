@@ -59,7 +59,7 @@ public abstract class AbstractQueryBuilderV2<ENTITY, FILTER extends SearchFilter
         return query.getResultList();
     }
 
-    public Long countAllByFilters(FILTER filters) {
+    public Integer countAllByFilters(FILTER filters) {
         String hql = "SELECT COUNT(" + (isDistinct() ? "DISTINCT " : " ") + "item) " +
                 "FROM " + ENTITY_CLASS_TYPE.getCanonicalName() + " item "
                 + this.joinQuery(filters).replaceAll("(?i)FETCH", ""); // Remove FETCH keyword from join for count query
@@ -70,7 +70,7 @@ public abstract class AbstractQueryBuilderV2<ENTITY, FILTER extends SearchFilter
         if (!conditions.isEmpty())
             hql += this.constructWhereCondition(conditions);
 
-        TypedQuery<Long> query = em.createQuery(hql, Long.class);
+        TypedQuery<Integer> query = em.createQuery(hql, Integer.class);
 
         List<QBCondition> allConditions = new ArrayList<>(conditions);
         if (onConditions != null) {

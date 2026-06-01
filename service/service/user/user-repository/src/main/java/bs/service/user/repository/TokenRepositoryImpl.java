@@ -1,24 +1,20 @@
 package bs.service.user.repository;
 
-import bs.olympic.common.repository.BaseRepositoryImpl;
 import bs.service.user.api.repository.TokenRepository;
 import bs.service.user.model.entity.Token;
 import bs.service.user.model.enums.TokenTypes;
 import bs.service.user.repository.jpa.TokenJPARepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
-public class TokenRepositoryImpl extends BaseRepositoryImpl<Token,Long> implements TokenRepository {
+@AllArgsConstructor
+public class TokenRepositoryImpl implements TokenRepository {
 
     private final TokenJPARepository tokenJPARepository;
-
-    public TokenRepositoryImpl(TokenJPARepository tokenJPARepository) {
-        super(tokenJPARepository);
-        this.tokenJPARepository = tokenJPARepository;
-    }
 
     @Override
     public Token insert(Token entity) {
@@ -36,7 +32,7 @@ public class TokenRepositoryImpl extends BaseRepositoryImpl<Token,Long> implemen
     }
 
     @Override
-    public void deleteByUserIdAndTokenType(Long userId, TokenTypes tokenType) {
+    public void deleteByUserIdAndTokenType(Integer userId, TokenTypes tokenType) {
         tokenJPARepository.deleteByUserIdAndTokenType(userId,tokenType);
 
     }

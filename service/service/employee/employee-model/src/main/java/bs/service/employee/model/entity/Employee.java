@@ -1,8 +1,8 @@
 package bs.service.employee.model.entity;
 
-import bs.lib.common.model.interfaces.enums.Gender;
-import bs.lib.common.model.interfaces.enums.SalaryTypes;
-import bs.olympic.employee.model.enums.EmployeeTypes;
+import bs.lib.common.model.enums.Gender;
+import bs.lib.common.model.enums.SalaryTypes;
+import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -93,6 +93,4 @@ public class Employee {
     @OneToMany(mappedBy = "employee")
     private List<EmployeeContact> contacts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "employee")
-    private List<TrainerCourse> trainerCourses = new ArrayList<>();
 }

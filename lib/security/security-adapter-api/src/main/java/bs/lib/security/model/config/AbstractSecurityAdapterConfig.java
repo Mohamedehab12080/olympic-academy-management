@@ -13,7 +13,7 @@ import java.util.List;
 public abstract class AbstractSecurityAdapterConfig {
     private List<String> publicPaths;
     private String jwtSalt;
-    private Long expirationTimeInHours;
+    private Integer expirationTimeInHours;
     private InternalMSRESTConfig internalMS;
 
     public String getInternalRESTBasicToken() {
