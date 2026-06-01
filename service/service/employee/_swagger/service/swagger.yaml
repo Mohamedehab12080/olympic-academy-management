@@ -190,7 +190,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmployeeAttendanceResultSet'
+                $ref: '#/components/schemas/EmployeeContactResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /employees/{employeeId}/contacts:
+    post:
+      tags:
+        - EmployeeContact
+      summary: Create Employee Contact
+      operationId: createEmployeeContact
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeContactDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
@@ -219,6 +243,20 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+    delete:
+      tags:
+        - Employee Contact
+      summary: Delete employee contact record
+      operationId: deleteEmployeeContact
+      parameters:
+        - $ref: '#/components/parameters/PPEmployeeId'
+        - $ref: '#/components/parameters/PPContactId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /employees/{employeeId}/attendances:
     post:
       tags:
@@ -242,7 +280,6 @@ paths:
                 $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
-
     get:
       tags:
         - EmployeeAttendance
@@ -253,6 +290,39 @@ paths:
         - $ref: '#/components/parameters/QPEmployeeAttendanceStatus'
         - $ref: '#/components/parameters/QPAttendanceDateFrom'
         - $ref: '#/components/parameters/QPAttendanceDateTo'
+        - $ref: '#/components/parameters/QPCheckInFrom'
+        - $ref: '#/components/parameters/QPCheckInTo'
+        - $ref: '#/components/parameters/QPCheckOutFrom'
+        - $ref: '#/components/parameters/QPCheckOutTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeAttendanceResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /employees/attendances:
+    get:
+      tags:
+        - EmployeeAttendance
+      summary: Retrieve list of employees attendances
+      operationId: getAllEmployeesAttendances
+      parameters:
+        - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPEmployeeAttendanceStatus'
+        - $ref: '#/components/parameters/QPAttendanceDateFrom'
+        - $ref: '#/components/parameters/QPAttendanceDateTo'
+        - $ref: '#/components/parameters/QPCheckInFrom'
+        - $ref: '#/components/parameters/QPCheckInTo'
+        - $ref: '#/components/parameters/QPCheckOutFrom'
+        - $ref: '#/components/parameters/QPCheckOutTo'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -313,7 +383,7 @@ paths:
     delete:
       tags:
         - EmployeeAttendance
-      summary: Delete employee attendance record (soft delete)
+      summary: Delete employee attendance record
       operationId: deleteEmployeeAttendance
       parameters:
         - $ref: '#/components/parameters/PPEmployeeId'
@@ -447,6 +517,38 @@ components:
       schema:
         type: string
         format: date
+
+    QPCheckInFrom:
+      name: checkInFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
+
+    QPCheckInTo:
+      name: checkInTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
+
+    QPCheckOutFrom:
+      name: checkOutFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
+
+    QPCheckOutTo:
+      name: checkOutTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
 
   schemas:
     Gender:

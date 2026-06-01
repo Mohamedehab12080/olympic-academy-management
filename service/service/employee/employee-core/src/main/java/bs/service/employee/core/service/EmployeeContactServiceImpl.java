@@ -17,7 +17,6 @@ import bs.service.employee.model.generated.EmployeeContactListItem;
 import bs.service.employee.model.generated.EmployeeContactResultSet;
 import bs.service.employee.model.generated.EmployeeContactVTO;
 import lombok.AllArgsConstructor;
-import org.springdoc.core.converters.models.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +35,10 @@ public class EmployeeContactServiceImpl implements EmployeeContactService {
 
     @Override
     @Transactional
-    public NewRecordVTO create(EmployeeContactDTO employeeContactDTO) {
+    public NewRecordVTO create(Integer employeeId,EmployeeContactDTO employeeContactDTO) {
+        Employee employee =employeeRepository.selectById(employeeId).orElseThrow(()->new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
         EmployeeContact employeeContact=employeeMapper.toEmployeeContact(employeeContactDTO);
+        employeeContact.setEmployee(employee);
         employeeContact=employeeContactRepository.insert(employeeContact);
         return NewRecordVTO.builder().id(employeeContact.getId()).build();
     }

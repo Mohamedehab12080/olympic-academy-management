@@ -72,24 +72,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @Transactional
-    public NewRecordVTO updateEmployeeContact(Integer employeeId, Integer contactId, EmployeeContactDTO employeeContactDTO) {
-        Employee employee = employeeRepository.selectById(employeeId)
-                .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
-
-        EmployeeContact contact = employee.getContacts().stream()
-                .filter(c -> c.getId().equals(contactId))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(EMPLOYEE_CONTACT_NOT_FOUND, contactId));
-
-        contact.setContactType(employeeMapper.toContactType(employeeContactDTO.getContactType()));
-        contact.setContactValue(employeeContactDTO.getContactValue());
-
-        employeeRepository.update(employee);
-        return NewRecordVTO.builder().id(contactId).build();
-    }
-
-    @Override
     public EmployeeResultSet getAllEmployees(String quickSearch, Boolean isActive,
                                              LocalDate createdOnFrom, LocalDate createdOnTo,
                                              LocalDate hireDateFrom, LocalDate hireDateTo,

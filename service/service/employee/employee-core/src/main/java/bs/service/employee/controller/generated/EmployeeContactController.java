@@ -8,8 +8,8 @@ package bs.service.employee.controller.generated;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
-import bs.service.employee.model.generated.EmployeeAttendanceResultSet;
 import bs.service.employee.model.generated.EmployeeContactDTO;
+import bs.service.employee.model.generated.EmployeeContactResultSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -30,6 +30,49 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @Tag(name = "EmployeeContact", description = "the EmployeeContact API")
 public interface EmployeeContactController {
+
+    /**
+     * POST /employees/{employeeId}/contacts : Create Employee Contact
+     *
+     * @param employeeId
+     *            (required)
+     * @param employeeContactDTO
+     *            (required)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "createEmployeeContact", summary = "Create Employee Contact", tags = {
+            "EmployeeContact" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = NewRecordVTO.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.POST, value = "/employees/{employeeId}/contacts", produces = {
+            "application/json" }, consumes = { "application/json" })
+
+    ResponseEntity<NewRecordVTO> _createEmployeeContact(
+            @Parameter(name = "employeeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("employeeId") Integer employeeId,
+            @Parameter(name = "EmployeeContactDTO", description = "", required = true) @Valid @RequestBody EmployeeContactDTO employeeContactDTO);
+
+    /**
+     * DELETE /employees/{employeeId}/contacts/{contactId} : Delete employee contact record
+     *
+     * @param employeeId
+     *            (required)
+     * @param contactId
+     *            (required)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "deleteEmployeeContact", summary = "Delete employee contact record", tags = {
+            "Employee Contact" }, responses = { @ApiResponse(responseCode = "200", description = "OK"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/employees/{employeeId}/contacts/{contactId}", produces = {
+            "application/json" })
+
+    ResponseEntity<Void> _deleteEmployeeContact(
+            @Parameter(name = "employeeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("employeeId") Integer employeeId,
+            @Parameter(name = "contactId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("contactId") Integer contactId);
 
     /**
      * GET /employees/contacts : Retrieve list of employee contacts
@@ -53,12 +96,12 @@ public interface EmployeeContactController {
      */
     @Operation(operationId = "getAllEmployeeContacts", summary = "Retrieve list of employee contacts", tags = {
             "EmployeeContact" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeAttendanceResultSet.class)) }),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeContactResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/employees/contacts", produces = { "application/json" })
 
-    ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeeContacts(
+    ResponseEntity<EmployeeContactResultSet> _getAllEmployeeContacts(
             @Parameter(name = "employeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeId", required = false) Integer employeeId,
             @Parameter(name = "contactName", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "contactName", required = false) String contactName,
             @Parameter(name = "contactValue", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "contactValue", required = false) String contactValue,

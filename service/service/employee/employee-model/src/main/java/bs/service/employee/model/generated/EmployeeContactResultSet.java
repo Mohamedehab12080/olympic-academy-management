@@ -27,7 +27,7 @@ public class EmployeeContactResultSet implements Serializable {
     private Integer total;
 
     @Valid
-    private List<@Valid EmployeeAttendanceListItem> items = new ArrayList<>();
+    private List<@Valid EmployeeContactListItem> items = new ArrayList<>();
 
     public EmployeeContactResultSet total(Integer total) {
         this.total = total;
@@ -50,12 +50,12 @@ public class EmployeeContactResultSet implements Serializable {
         this.total = total;
     }
 
-    public EmployeeContactResultSet items(List<@Valid EmployeeAttendanceListItem> items) {
+    public EmployeeContactResultSet items(List<@Valid EmployeeContactListItem> items) {
         this.items = items;
         return this;
     }
 
-    public EmployeeContactResultSet addItemsItem(EmployeeAttendanceListItem itemsItem) {
+    public EmployeeContactResultSet addItemsItem(EmployeeContactListItem itemsItem) {
         if (this.items == null) {
             this.items = new ArrayList<>();
         }
@@ -71,11 +71,11 @@ public class EmployeeContactResultSet implements Serializable {
     @Valid
     @Schema(name = "items", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("items")
-    public List<@Valid EmployeeAttendanceListItem> getItems() {
+    public List<@Valid EmployeeContactListItem> getItems() {
         return items;
     }
 
-    public void setItems(List<@Valid EmployeeAttendanceListItem> items) {
+    public void setItems(List<@Valid EmployeeContactListItem> items) {
         this.items = items;
     }
 

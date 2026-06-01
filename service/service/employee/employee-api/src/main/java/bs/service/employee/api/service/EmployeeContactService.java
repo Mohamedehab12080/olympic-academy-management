@@ -7,7 +7,7 @@ import bs.service.employee.model.generated.EmployeeContactResultSet;
 import bs.service.employee.model.generated.EmployeeContactVTO;
 
 public interface EmployeeContactService {
-    NewRecordVTO create(EmployeeContactDTO employeeContactDTO);
+    NewRecordVTO create(Integer employeeId,EmployeeContactDTO employeeContactDTO);
     NewRecordVTO updateEmployeeContact(Integer employeeId, Integer contactId, EmployeeContactDTO employeeContactDTO);
     void deleteEmployeeContact(Integer contactId);
     EmployeeContactResultSet getAllEmployeeContactByFilters(Integer employeeId, String contactName, String contactValue, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);

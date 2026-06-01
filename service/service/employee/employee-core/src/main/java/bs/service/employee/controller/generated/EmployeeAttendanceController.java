@@ -59,7 +59,7 @@ public interface EmployeeAttendanceController {
             @Parameter(name = "EmployeeAttendanceDTO", description = "", required = true) @Valid @RequestBody EmployeeAttendanceDTO employeeAttendanceDTO);
 
     /**
-     * DELETE /employees/{employeeId}/attendances/{attendanceId} : Delete employee attendance record (soft delete)
+     * DELETE /employees/{employeeId}/attendances/{attendanceId} : Delete employee attendance record
      *
      * @param employeeId
      *            (required)
@@ -68,7 +68,7 @@ public interface EmployeeAttendanceController {
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "deleteEmployeeAttendance", summary = "Delete employee attendance record (soft delete)", tags = {
+    @Operation(operationId = "deleteEmployeeAttendance", summary = "Delete employee attendance record", tags = {
             "EmployeeAttendance" }, responses = { @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
@@ -89,6 +89,14 @@ public interface EmployeeAttendanceController {
      * @param attendanceDateFrom
      *            (optional)
      * @param attendanceDateTo
+     *            (optional)
+     * @param checkInFrom
+     *            (optional)
+     * @param checkInTo
+     *            (optional)
+     * @param checkOutFrom
+     *            (optional)
+     * @param checkOutTo
      *            (optional)
      * @param pageNum
      *            (optional, default to 0)
@@ -111,9 +119,64 @@ public interface EmployeeAttendanceController {
 
     ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeeAttendances(
             @Parameter(name = "employeeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("employeeId") Integer employeeId,
-            @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "status", required = false) EmployeeAttendanceStatus status,
+            @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid EmployeeAttendanceStatus status,
             @Parameter(name = "attendanceDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "attendanceDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate attendanceDateFrom,
             @Parameter(name = "attendanceDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "attendanceDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate attendanceDateTo,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkInFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkInFrom", required = false) String checkInFrom,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkInTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkInTo", required = false) String checkInTo,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkOutFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkOutFrom", required = false) String checkOutFrom,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkOutTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkOutTo", required = false) String checkOutTo,
+            @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
+            @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
+            @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
+            @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
+
+    /**
+     * GET /employees/attendances : Retrieve list of employees attendances
+     *
+     * @param employeeId
+     *            (optional)
+     * @param status
+     *            (optional)
+     * @param attendanceDateFrom
+     *            (optional)
+     * @param attendanceDateTo
+     *            (optional)
+     * @param checkInFrom
+     *            (optional)
+     * @param checkInTo
+     *            (optional)
+     * @param checkOutFrom
+     *            (optional)
+     * @param checkOutTo
+     *            (optional)
+     * @param pageNum
+     *            (optional, default to 0)
+     * @param pageSize
+     *            (optional, default to 25)
+     * @param orderDir
+     *            Order Direction (optional)
+     * @param orderBy
+     *            Order By Attribute (optional)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllEmployeesAttendances", summary = "Retrieve list of employees attendances", tags = {
+            "EmployeeAttendance" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeAttendanceResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/employees/attendances", produces = { "application/json" })
+
+    ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeesAttendances(
+            @Parameter(name = "employeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeId", required = false) Integer employeeId,
+            @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid EmployeeAttendanceStatus status,
+            @Parameter(name = "attendanceDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "attendanceDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate attendanceDateFrom,
+            @Parameter(name = "attendanceDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "attendanceDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate attendanceDateTo,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkInFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkInFrom", required = false) String checkInFrom,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkInTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkInTo", required = false) String checkInTo,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkOutFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkOutFrom", required = false) String checkOutFrom,
+            @Pattern(regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$") @Parameter(name = "checkOutTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkOutTo", required = false) String checkOutTo,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
             @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,

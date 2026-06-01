@@ -197,7 +197,7 @@
 									<delegatePattern>true</delegatePattern>
 									<interfaceOnly>true</interfaceOnly>
 
-									<dateLibrary>java8-localdatetime</dateLibrary>
+									<dateLibrary>java8</dateLibrary>
 									<useBeanValidation>true</useBeanValidation>
 									<openApiNullable>false</openApiNullable>
 									<serializationLibrary>jackson</serializationLibrary>
@@ -206,6 +206,8 @@
 									<java8>true</java8>
 									<sourceFolder>/</sourceFolder>
 									<useTags>true</useTags>
+									<typeMappings>time=LocalTime</typeMappings>
+									<importMappings>LocalTime=java.time.LocalTime</importMappings>
 									<generatedConstructorWithRequiredArgs>false</generatedConstructorWithRequiredArgs>
 									<!--suppress UnresolvedMavenProperty -->
 									<additionalModelTypeAnnotations>
@@ -294,13 +296,15 @@
 									<delegatePattern>true</delegatePattern>
 									<interfaceOnly>true</interfaceOnly>
 
-									<dateLibrary>java8-localdatetime</dateLibrary>
+									<dateLibrary>java8</dateLibrary>
 									<useBeanValidation>true</useBeanValidation>
 									<openApiNullable>false</openApiNullable>
 									<serializationLibrary>jackson</serializationLibrary>
 									<serializableModel>true</serializableModel>
 
 									<java8>true</java8>
+									<typeMappings>time=LocalTime</typeMappings>
+									<importMappings>LocalTime=java.time.LocalTime</importMappings>
 									<skipDefaultInterface>true</skipDefaultInterface>
 									<sourceFolder>/</sourceFolder>
 									<!--suppress UnresolvedMavenProperty -->

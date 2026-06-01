@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum EmployeeDomains implements Domains {
-    EMPLOYEE(4002);
+    EMPLOYEE(4002),
+    EMPLOYEE_ATTENDANCE(4003);
 
     private final Integer id;
 
