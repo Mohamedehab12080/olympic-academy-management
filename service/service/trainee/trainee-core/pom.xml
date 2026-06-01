@@ -25,9 +25,13 @@
         <dependency>
             <groupId>bs.service.trainee</groupId>
             <artifactId>trainee-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>bs.service.course</groupId>
+            <artifactId>course-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>bs.service.user</groupId>

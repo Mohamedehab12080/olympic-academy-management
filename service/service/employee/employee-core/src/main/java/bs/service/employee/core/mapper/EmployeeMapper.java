@@ -67,8 +67,8 @@ public abstract class EmployeeMapper {
     // ==================== Attendance Mappings ====================
 
     // DTO to Entity (for create/update)
-    @Mapping(target = "checkInTime", expression ="(java(toLocalTime(employeeAttendanceDTO.getCheckInTime())))")
-    @Mapping(target = "checkOutTime", expression ="(java(toLocalTime(employeeAttendanceDTO.getCheckOutTime())))")
+    @Mapping(target = "checkInTime", expression = "java(toLocalTime(employeeAttendanceDTO.getCheckInTime()))")
+    @Mapping(target = "checkOutTime", expression = "java(toLocalTime(employeeAttendanceDTO.getCheckOutTime()))")
     public abstract EmployeeAttendance toEmployeeAttendance(EmployeeAttendanceDTO employeeAttendanceDTO);
 
     // Entity to VTO (for response)
@@ -98,7 +98,6 @@ public abstract class EmployeeMapper {
     public abstract List<EmployeeListItem> toEmployeeListItems(List<Employee> employees);
 
     // Contact List Item
-    @Mapping(target = "employeeId", source = "employee.id")
     public abstract EmployeeContactListItem toEmployeeContactListItem(EmployeeContact employeeContact);
 
     public abstract List<EmployeeContactListItem> toEmployeeContactListItems(List<EmployeeContact> employeeContacts);

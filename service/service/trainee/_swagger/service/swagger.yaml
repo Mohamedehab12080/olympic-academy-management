@@ -1,0 +1,631 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Trainee Management"
+  contact:
+    email: "m.ehab.rabea@gmail.com"
+    name: "Mohamed Ehab"
+
+servers:
+  - url: http://localhost:7002/
+
+tags:
+  - name: Trainee
+  - name: TraineeContact
+  - name: TraineeCertificate
+  - name: HealthCondition
+  - name: TraineeAttendance
+
+paths:
+  /trainees:
+    post:
+      tags:
+        - Trainee
+      summary: Create trainee
+      operationId: createTrainee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Trainee
+      summary: Retrieve list of Trainees
+      operationId: getAllTrainees
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '#/components/parameters/QPGender'
+        - $ref: '#/components/parameters/QPAcademicYear'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}:
+    put:
+      tags:
+        - Trainee
+      summary: Update Trainee By Id
+      operationId: updateTraineeById
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Trainee
+      summary: Retrieve trainee
+      operationId: getTrainee
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - Trainee
+      summary: Delete trainee (soft delete)
+      operationId: deleteTrainee
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}/contacts:
+    post:
+      tags:
+        - TraineeContact
+      summary: Create trainee contact
+      operationId: createTraineeContact
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeContactDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - TraineeContact
+      summary: Get all trainee contacts
+      operationId: getTraineeContacts
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeContactResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}/contacts/{contactId}:
+    put:
+      tags:
+        - TraineeContact
+      summary: Update trainee contact
+      operationId: updateTraineeContact
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/PPContactId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeContactDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - TraineeContact
+      summary: Delete trainee contact
+      operationId: deleteTraineeContact
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/PPContactId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}/certificates:
+    post:
+      tags:
+        - TraineeCertificate
+      summary: Create trainee certificate
+      operationId: createTraineeCertificate
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeCertificateDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - TraineeCertificate
+      summary: Get all trainee certificates
+      operationId: getTraineeCertificates
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeCertificateResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}/certificates/{certificateId}:
+    put:
+      tags:
+        - TraineeCertificate
+      summary: Update trainee certificate
+      operationId: updateTraineeCertificate
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/PPCertificateId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeCertificateDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - TraineeCertificate
+      summary: Delete trainee certificate
+      operationId: deleteTraineeCertificate
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/PPCertificateId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}/health-conditions:
+    post:
+      tags:
+        - HealthCondition
+      summary: Create health condition
+      operationId: createHealthCondition
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthConditionDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - HealthCondition
+      summary: Get all health conditions
+      operationId: getHealthConditions
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthConditionResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/{traineeId}/health-conditions/{conditionId}:
+    put:
+      tags:
+        - HealthCondition
+      summary: Update health condition
+      operationId: updateHealthCondition
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/PPConditionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthConditionDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - HealthCondition
+      summary: Delete health condition
+      operationId: deleteHealthCondition
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/PPConditionId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+components:
+  parameters:
+    PPTraineeId:
+      name: traineeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPContactId:
+      name: contactId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPCertificateId:
+      name: certificateId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPConditionId:
+      name: conditionId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    QPGender:
+      name: gender
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Gender'
+    QPAcademicYear:
+      name: academicYear
+      in: query
+      required: false
+      schema:
+        type: string
+
+  schemas:
+    Gender:
+      type: string
+      enum: [ "MALE", "FEMALE" ]
+
+    TraineeDTO:
+      type: object
+      required:
+        - fullName
+        - nationalId
+      properties:
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        academicYear:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/Gender'
+        address:
+          type: string
+        imageUrl:
+          type: string
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeContactDTO'
+
+    TraineeContactDTO:
+      type: object
+      properties:
+        contactType:
+          type: string
+        contactValue:
+          type: string
+
+    TraineeCertificateDTO:
+      type: object
+      properties:
+        certificateNumber:
+          type: string
+        certificateName:
+          type: string
+        courseId:
+          type: integer
+          format: int32
+        issueDate:
+          type: string
+          format: date
+        grade:
+          type: string
+
+    HealthConditionDTO:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        medication:
+          type: string
+        note:
+          type: string
+
+    TraineeVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        academicYear:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          $ref: '#/components/schemas/Gender'
+        address:
+          type: string
+        imageUrl:
+          type: string
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeContactVTO'
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeCertificateVTO'
+        healthConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthConditionVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    TraineeContactVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        contactType:
+          type: string
+        contactValue:
+          type: string
+
+    TraineeCertificateVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        certificateNumber:
+          type: string
+        certificateName:
+          type: string
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        issueDate:
+          type: string
+          format: date
+        grade:
+          type: string
+
+    HealthConditionVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        medication:
+          type: string
+        note:
+          type: string
+
+    TraineeResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeListItem'
+
+    TraineeListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        academicYear:
+          type: string
+        gender:
+          $ref: '#/components/schemas/Gender'
+
+    TraineeContactResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeContactListItem'
+
+    TraineeContactListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        contactType:
+          type: string
+        contactName:
+          type: string
+        contactValue:
+          type: string
+
+    TraineeCertificateResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeCertificateVTO'
+
+    HealthConditionResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthConditionVTO'
