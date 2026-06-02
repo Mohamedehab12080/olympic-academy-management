@@ -146,6 +146,9 @@
 								<importMapping>ErrorVTO =
 									bs.lib.common.model.vto.ErrorVTO
 								</importMapping>
+								<importMapping>PaymentStatus =
+									bs.lib.common.model.enums.PaymentStatus
+								</importMapping>
 								<importMapping>OrderDirections =
 									bs.lib.sql.db.adapter.model.generated.OrderDirections
 								</importMapping>
@@ -167,8 +170,15 @@
 									bs.lib.common.model.enums.Gender
 								</importMapping>
 
+								<importMapping>CourseTypes =
+									bs.service.course.model.enums.CourseTypes
+								</importMapping>
+
 								<importMapping>EmployeeTypes =
 									bs.service.employee.model.enums.EmployeeTypes
+								</importMapping>
+								<importMapping>EnrollmentStatus =
+									bs.service.enrollment.model.enums.EnrollmentStatus
 								</importMapping>
 								<importMapping>EmployeeAttendanceStatus =
 									bs.service.employee.model.enums.EmployeeAttendanceStatus
@@ -243,6 +253,9 @@
 								<output>${project.build.sourceDirectory}</output>
 
 								<importMappings>
+									<importMapping>PaymentStatus =
+										bs.lib.common.model.enums.PaymentStatus
+									</importMapping>
 									<importMapping>LookupResultSet =
 										bs.lib.common.model.generated.LookupResultSet
 									</importMapping>
@@ -266,6 +279,14 @@
 									</importMapping>
 									<importMapping>Gender =
 										bs.lib.common.model.enums.Gender
+									</importMapping>
+
+									<importMapping>CourseTypes =
+										bs.service.course.model.enums.CourseTypes
+									</importMapping>
+
+									<importMapping>EnrollmentStatus =
+										bs.service.enrollment.model.enums.EnrollmentStatus
 									</importMapping>
 
 									<importMapping>EmployeeTypes =
@@ -509,18 +530,6 @@
 		<module>service/service/financial/financial-core</module>
 		<module>service/service/financial/financial-proxy</module>
 		<module>service/service/financial/financial-repository</module>
-
-		<module>service/service/trainer/trainer-model</module>
-		<module>service/service/trainer/trainer-api</module>
-		<module>service/service/trainer/trainer-core</module>
-		<module>service/service/trainer/trainer-proxy</module>
-		<module>service/service/trainer/trainer-repository</module>
-
-		<module>service/service/session/session-model</module>
-		<module>service/service/session/session-api</module>
-		<module>service/service/session/session-core</module>
-		<module>service/service/session/session-proxy</module>
-		<module>service/service/session/session-repository</module>
 
 		<module>service/ms/ms-bom</module>
 		<module>service/ms/olympic/olympic-academy-management</module>

@@ -2,10 +2,9 @@ package bs.service.employee.core.mapper;
 
 import bs.lib.common.model.enums.ContactTypes;
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.course.model.entity.Course;
 import bs.service.department.model.entity.Department;
-import bs.service.employee.model.entity.Employee;
-import bs.service.employee.model.entity.EmployeeAttendance;
-import bs.service.employee.model.entity.EmployeeContact;
+import bs.service.employee.model.entity.*;
 import bs.service.employee.model.enums.EmployeeAttendanceStatus;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.generated.*;
@@ -57,6 +56,7 @@ public abstract class EmployeeMapper {
     public abstract List<LookupVTO> toLookupVTO(List<Department> departments);
 
     public abstract LookupVTO toLookupVTO(Employee employee);
+    public abstract List<LookupVTO> toLookupEmployeeVTOs(List<Employee> employees);
 
     // ==================== Contact Mappings ====================
 
@@ -118,4 +118,31 @@ public abstract class EmployeeMapper {
     public abstract LookupVTO toLookupVTO(EmployeeTypes employeeTypes);
 
     public abstract LookupVTO toLookupVTO(EmployeeAttendanceStatus employeeAttendanceStatus);
+
+    public abstract LookupVTO toLookupVTO(Course course);
+
+    public abstract List<LookupVTO> toLookupCourseVTOs(List<Course> course);
+
+    public abstract TrainerCourseVTO toTrainerCourseVTO(TrainerCourse trainerCourse);
+
+    public abstract List<TrainerCourseVTO> toTrainerCourseVTOs(List<TrainerCourse> trainerCourses);
+
+    @Mapping(target = "trainer", source = "employee")
+    @Mapping(target = "course", source = "course")
+    public abstract TrainerCourseAssignmentVTO toTrainerCourseAssignmentVTO(TrainerCourse trainerCourse);
+
+    public abstract List<TrainerCourseAssignmentVTO> toTrainerCourseAssignmentVTOs(List<TrainerCourse> trainerCourses);
+
+    // ==================== Course Session Mappings ====================
+
+    @Mapping(target = "course.id", source = "courseId")
+    @Mapping(target = "employee.id", source = "employeeId")
+    @Mapping(target = "place.id", source = "placeId")
+    @Mapping(target = "startTime", expression = "java(toLocalTime(courseSessionDTO.getStartTime()))")
+    @Mapping(target = "endTime", expression = "java(toLocalTime(courseSessionDTO.getEndTime()))")
+    public abstract CourseSession toCourseSession(CourseSessionDTO courseSessionDTO);
+
+    public abstract CourseSessionVTO toCourseSessionVTO(CourseSession courseSession);
+
+    public abstract List<CourseSessionVTO> toCourseSessionVTOs(List<CourseSession> courseSessions);
 }

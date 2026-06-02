@@ -64,6 +64,12 @@ public class EmployeeVTO implements Serializable {
     @Valid
     private List<@Valid EmployeeContactVTO> contacts = new ArrayList<>();
 
+    @Valid
+    private List<@Valid LookupVTO> courses = new ArrayList<>();
+
+    @Valid
+    private List<@Valid CourseSessionVTO> sessions = new ArrayList<>();
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
 
@@ -384,6 +390,64 @@ public class EmployeeVTO implements Serializable {
         this.contacts = contacts;
     }
 
+    public EmployeeVTO courses(List<@Valid LookupVTO> courses) {
+        this.courses = courses;
+        return this;
+    }
+
+    public EmployeeVTO addCoursesItem(LookupVTO coursesItem) {
+        if (this.courses == null) {
+            this.courses = new ArrayList<>();
+        }
+        this.courses.add(coursesItem);
+        return this;
+    }
+
+    /**
+     * Get courses
+     *
+     * @return courses
+     */
+    @Valid
+    @Schema(name = "courses", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("courses")
+    public List<@Valid LookupVTO> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(List<@Valid LookupVTO> courses) {
+        this.courses = courses;
+    }
+
+    public EmployeeVTO sessions(List<@Valid CourseSessionVTO> sessions) {
+        this.sessions = sessions;
+        return this;
+    }
+
+    public EmployeeVTO addSessionsItem(CourseSessionVTO sessionsItem) {
+        if (this.sessions == null) {
+            this.sessions = new ArrayList<>();
+        }
+        this.sessions.add(sessionsItem);
+        return this;
+    }
+
+    /**
+     * Get sessions
+     *
+     * @return sessions
+     */
+    @Valid
+    @Schema(name = "sessions", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("sessions")
+    public List<@Valid CourseSessionVTO> getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(List<@Valid CourseSessionVTO> sessions) {
+        this.sessions = sessions;
+    }
+
     public EmployeeVTO createdOn(LocalDateTime createdOn) {
         this.createdOn = createdOn;
         return this;
@@ -489,6 +553,8 @@ public class EmployeeVTO implements Serializable {
                 && Objects.equals(this.isActive, employeeVTO.isActive)
                 && Objects.equals(this.departments, employeeVTO.departments)
                 && Objects.equals(this.contacts, employeeVTO.contacts)
+                && Objects.equals(this.courses, employeeVTO.courses)
+                && Objects.equals(this.sessions, employeeVTO.sessions)
                 && Objects.equals(this.createdOn, employeeVTO.createdOn)
                 && Objects.equals(this.createdBy, employeeVTO.createdBy)
                 && Objects.equals(this.lastModifiedOn, employeeVTO.lastModifiedOn)
@@ -498,8 +564,8 @@ public class EmployeeVTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, fullName, nationalId, birthDate, gender, salary, remainedSalary, salaryType,
-                employeeType, imageUrl, hireDate, isActive, departments, contacts, createdOn, createdBy, lastModifiedOn,
-                lastModifiedBy);
+                employeeType, imageUrl, hireDate, isActive, departments, contacts, courses, sessions, createdOn,
+                createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -520,6 +586,8 @@ public class EmployeeVTO implements Serializable {
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    departments: ").append(toIndentedString(departments)).append("\n");
         sb.append("    contacts: ").append(toIndentedString(contacts)).append("\n");
+        sb.append("    courses: ").append(toIndentedString(courses)).append("\n");
+        sb.append("    sessions: ").append(toIndentedString(sessions)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("    lastModifiedOn: ").append(toIndentedString(lastModifiedOn)).append("\n");

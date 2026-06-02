@@ -7,6 +7,7 @@ package bs.service.trainee.controller.generated;
 
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
+import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.trainee.model.generated.TraineeCertificateDTO;
 import bs.service.trainee.model.generated.TraineeCertificateResultSet;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -74,14 +77,30 @@ public interface TraineeCertificateController {
             @Parameter(name = "certificateId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("certificateId") Integer certificateId);
 
     /**
-     * GET /trainees/{traineeId}/certificates : Get all trainee certificates
+     * GET /trainees/{traineeId}/certificates : Get all trainee certificates by filter
      *
      * @param traineeId
      *            (required)
+     * @param courseId
+     *            (optional)
+     * @param quickSearch
+     *            (optional)
+     * @param issueDateFrom
+     *            (optional)
+     * @param issueDateTo
+     *            (optional)
+     * @param pageNum
+     *            (optional, default to 0)
+     * @param pageSize
+     *            (optional, default to 25)
+     * @param orderDir
+     *            Order Direction (optional)
+     * @param orderBy
+     *            Order By Attribute (optional)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "getTraineeCertificates", summary = "Get all trainee certificates", tags = {
+    @Operation(operationId = "getAllTraineeCertificatesByFilter", summary = "Get all trainee certificates by filter", tags = {
             "TraineeCertificate" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = TraineeCertificateResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
@@ -89,8 +108,16 @@ public interface TraineeCertificateController {
     @RequestMapping(method = RequestMethod.GET, value = "/trainees/{traineeId}/certificates", produces = {
             "application/json" })
 
-    ResponseEntity<TraineeCertificateResultSet> _getTraineeCertificates(
-            @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId);
+    ResponseEntity<TraineeCertificateResultSet> _getAllTraineeCertificatesByFilter(
+            @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId,
+            @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
+            @Parameter(name = "issueDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "issueDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate issueDateFrom,
+            @Parameter(name = "issueDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "issueDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate issueDateTo,
+            @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
+            @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
+            @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
+            @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
      * PUT /trainees/{traineeId}/certificates/{certificateId} : Update trainee certificate

@@ -29,6 +29,8 @@ public class TraineeListItem implements Serializable {
 
     private String nationalId;
 
+    private Boolean isActive;
+
     private String academicYear;
 
     private Gender gender;
@@ -96,6 +98,27 @@ public class TraineeListItem implements Serializable {
         this.nationalId = nationalId;
     }
 
+    public TraineeListItem isActive(Boolean isActive) {
+        this.isActive = isActive;
+        return this;
+    }
+
+    /**
+     * Get isActive
+     *
+     * @return isActive
+     */
+
+    @Schema(name = "isActive", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isActive")
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     public TraineeListItem academicYear(String academicYear) {
         this.academicYear = academicYear;
         return this;
@@ -149,13 +172,14 @@ public class TraineeListItem implements Serializable {
         TraineeListItem traineeListItem = (TraineeListItem) o;
         return Objects.equals(this.id, traineeListItem.id) && Objects.equals(this.fullName, traineeListItem.fullName)
                 && Objects.equals(this.nationalId, traineeListItem.nationalId)
+                && Objects.equals(this.isActive, traineeListItem.isActive)
                 && Objects.equals(this.academicYear, traineeListItem.academicYear)
                 && Objects.equals(this.gender, traineeListItem.gender);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, academicYear, gender);
+        return Objects.hash(id, fullName, nationalId, isActive, academicYear, gender);
     }
 
     @Override
@@ -165,6 +189,7 @@ public class TraineeListItem implements Serializable {
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
+        sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    academicYear: ").append(toIndentedString(academicYear)).append("\n");
         sb.append("    gender: ").append(toIndentedString(gender)).append("\n");
         sb.append("}");

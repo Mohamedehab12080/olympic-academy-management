@@ -79,6 +79,45 @@ components:
         type: boolean
 
   schemas:
+    Gender:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2 ]
+        code:
+          type: string
+          enum: [ "MALE", "FEMALE" ]
+        arabicLabel:
+          type: string
+          enum: [ "ذكر", "أنثى" ]
+
+    PaymentStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2,3,4,5 ]
+        code:
+          type: string
+          enum: [ "PENDING","PAID","FAILED","REFUNDED","CANCELLED"]
+        arabicLabel:
+          type: string
+          enum: [ "قيد الانتظار", "تم الدفع","فشل","تم استرداد المبلغ","تم الالغاء" ]
+
+    ContactTypes:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2]
+        code:
+          type: string
+          enum: ["EMAIL", "PHONE"]
+        arabicLabel:
+          type: string
+          enum: ["ايميل", "هاتف"]
+
     ErrorVTO:
       type: object
       properties:

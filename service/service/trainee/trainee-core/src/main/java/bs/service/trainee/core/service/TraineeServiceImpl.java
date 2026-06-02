@@ -1,0 +1,96 @@
+package bs.service.trainee.core.service;
+
+import bs.lib.common.model.enums.Gender;
+import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.NewRecordVTO;
+import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
+import bs.lib.sql.db.adapter.model.dto.SortingInfo;
+import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.trainee.api.repository.TraineeRepository;
+import bs.service.trainee.api.service.TraineeService;
+import bs.service.trainee.core.mapper.TraineeMapper;
+import bs.service.trainee.model.entity.Trainee;
+import bs.service.trainee.model.filter.TraineeSearchFilter;
+import bs.service.trainee.model.generated.*;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static bs.service.trainee.model.enums.TraineeErrors.NATIONAL_ID_ALREADY_EXISTS;
+import static bs.service.trainee.model.enums.TraineeErrors.TRAINEE_NOT_FOUND;
+
+@Service
+@AllArgsConstructor
+public class TraineeServiceImpl implements TraineeService {
+
+    private final TraineeRepository traineeRepository;
+    private final TraineeMapper traineeMapper;
+
+    @Override
+    @Transactional
+    public NewRecordVTO createTrainee(TraineeDTO traineeDTO) {
+        TraineeSearchFilter traineeSearchFilter=TraineeSearchFilter.builder().quickSearchQuery(traineeDTO.getNationalId()).pagination(PaginationInfo.noPagination()).build();
+        Trainee existsTrainee = traineeRepository.selectAllByFilters(traineeSearchFilter).stream().findFirst().orElse(null);
+        if(existsTrainee!=null) {
+            throw new BusinessException(NATIONAL_ID_ALREADY_EXISTS, existsTrainee.getNationalId());
+        }
+        Trainee trainee = traineeMapper.toTrainee(traineeDTO);
+        trainee = traineeRepository.insert(trainee);
+        return NewRecordVTO.builder().id(trainee.getId()).build();
+    }
+
+    @Override
+    @Transactional
+    public NewRecordVTO updateTrainee(Integer traineeId, TraineeDTO traineeDTO) {
+        Trainee trainee = traineeRepository.selectById(traineeId)
+                .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
+        Trainee traineeToUpdate = traineeMapper.toTrainee(traineeDTO);
+        traineeToUpdate.setId(traineeId);
+        traineeRepository.update(traineeToUpdate);
+        return NewRecordVTO.builder().id(traineeId).build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteTraineeById(Integer traineeId) {
+        Trainee trainee = traineeRepository.selectById(traineeId)
+                .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
+        trainee.setIsDeleted(true);
+        traineeRepository.update(trainee);
+    }
+
+    @Override
+    public TraineeVTO getTraineeById(Integer traineeId) {
+        Trainee trainee = traineeRepository.selectById(traineeId)
+                .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
+        return traineeMapper.toTraineeVTO(trainee);
+    }
+
+    @Override
+    public TraineeResultSet getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, String academicYear,
+                                                   LocalDate createdOnFrom, LocalDate createdOnTo,
+                                                   Integer pageNum, Integer pageSize,
+                                                   OrderDirections orderDir, String orderBy) {
+        TraineeSearchFilter filter = TraineeSearchFilter.builder()
+                .quickSearchQuery(quickSearch)
+                .gender(gender)
+                .academicYear(academicYear)
+                .createdOnFrom(createdOnFrom)
+                .createdOnTo(createdOnTo)
+                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
+                .defaultSorting(new SortingInfo<>(TraineeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
+                .sorting(new SortingInfo<>(orderBy, orderDir))
+                .build();
+
+        List<Trainee> trainees = traineeRepository.selectAllByFilters(filter);
+        List<TraineeListItem> items = traineeMapper.toTraineeListItems(trainees);
+
+        return TraineeResultSet.builder()
+                .items(items)
+                .total(traineeRepository.countAllByFilters(filter))
+                .build();
+    }
+}

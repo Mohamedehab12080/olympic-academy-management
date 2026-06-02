@@ -7,6 +7,7 @@ package bs.service.trainee.controller.generated;
 
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
+import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.trainee.model.generated.HealthConditionDTO;
 import bs.service.trainee.model.generated.HealthConditionResultSet;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,14 +75,26 @@ public interface HealthConditionController {
             @Parameter(name = "conditionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("conditionId") Integer conditionId);
 
     /**
-     * GET /trainees/{traineeId}/health-conditions : Get all health conditions
+     * GET /trainees/{traineeId}/health-conditions : Get all health conditions by filter
      *
      * @param traineeId
      *            (required)
+     * @param quickSearch
+     *            (optional)
+     * @param medication
+     *            (optional)
+     * @param pageNum
+     *            (optional, default to 0)
+     * @param pageSize
+     *            (optional, default to 25)
+     * @param orderDir
+     *            Order Direction (optional)
+     * @param orderBy
+     *            Order By Attribute (optional)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "getHealthConditions", summary = "Get all health conditions", tags = {
+    @Operation(operationId = "getAllHealthConditionsByFilter", summary = "Get all health conditions by filter", tags = {
             "HealthCondition" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = HealthConditionResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
@@ -89,8 +102,14 @@ public interface HealthConditionController {
     @RequestMapping(method = RequestMethod.GET, value = "/trainees/{traineeId}/health-conditions", produces = {
             "application/json" })
 
-    ResponseEntity<HealthConditionResultSet> _getHealthConditions(
-            @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId);
+    ResponseEntity<HealthConditionResultSet> _getAllHealthConditionsByFilter(
+            @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId,
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
+            @Parameter(name = "medication", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "medication", required = false) String medication,
+            @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
+            @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
+            @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
+            @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
      * PUT /trainees/{traineeId}/health-conditions/{conditionId} : Update health condition

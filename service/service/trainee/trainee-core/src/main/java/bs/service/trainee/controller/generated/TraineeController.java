@@ -62,19 +62,21 @@ public interface TraineeController {
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "deleteTrainee", summary = "Delete trainee (soft delete)", tags = {
+    @Operation(operationId = "deleteTraineeById", summary = "Delete trainee (soft delete)", tags = {
             "Trainee" }, responses = { @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.DELETE, value = "/trainees/{traineeId}", produces = { "application/json" })
 
-    ResponseEntity<Void> _deleteTrainee(
+    ResponseEntity<Void> _deleteTraineeById(
             @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId);
 
     /**
      * GET /trainees : Retrieve list of Trainees
      *
      * @param quickSearch
+     *            (optional)
+     * @param isActive
      *            (optional)
      * @param gender
      *            (optional)
@@ -95,16 +97,17 @@ public interface TraineeController {
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "getAllTrainees", summary = "Retrieve list of Trainees", tags = {
+    @Operation(operationId = "getAllTraineesByFilter", summary = "Retrieve list of Trainees", tags = {
             "Trainee" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = TraineeResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/trainees", produces = { "application/json" })
 
-    ResponseEntity<TraineeResultSet> _getAllTrainees(
+    ResponseEntity<TraineeResultSet> _getAllTraineesByFilter(
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
-            @Parameter(name = "gender", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "gender", required = false) Gender gender,
+            @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
+            @Parameter(name = "gender", description = "", in = ParameterIn.QUERY) @Valid Gender gender,
             @Parameter(name = "academicYear", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "academicYear", required = false) String academicYear,
             @Parameter(name = "createdOnFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnFrom,
             @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo,
@@ -121,14 +124,14 @@ public interface TraineeController {
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "getTrainee", summary = "Retrieve trainee", tags = { "Trainee" }, responses = {
+    @Operation(operationId = "getTraineeById", summary = "Retrieve trainee", tags = { "Trainee" }, responses = {
             @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = TraineeVTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/trainees/{traineeId}", produces = { "application/json" })
 
-    ResponseEntity<TraineeVTO> _getTrainee(
+    ResponseEntity<TraineeVTO> _getTraineeById(
             @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId);
 
     /**
@@ -141,7 +144,7 @@ public interface TraineeController {
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "updateTraineeById", summary = "Update Trainee By Id", tags = { "Trainee" }, responses = {
+    @Operation(operationId = "updateTrainee", summary = "Update Trainee By Id", tags = { "Trainee" }, responses = {
             @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewRecordVTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = {
@@ -149,7 +152,7 @@ public interface TraineeController {
     @RequestMapping(method = RequestMethod.PUT, value = "/trainees/{traineeId}", produces = {
             "application/json" }, consumes = { "application/json" })
 
-    ResponseEntity<NewRecordVTO> _updateTraineeById(
+    ResponseEntity<NewRecordVTO> _updateTrainee(
             @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId,
             @Parameter(name = "TraineeDTO", description = "", required = true) @Valid @RequestBody TraineeDTO traineeDTO);
 

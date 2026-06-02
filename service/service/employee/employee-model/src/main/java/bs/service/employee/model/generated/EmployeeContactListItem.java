@@ -25,8 +25,6 @@ public class EmployeeContactListItem implements Serializable {
 
     private Integer id;
 
-    private String contactName;
-
     private String contactValue;
 
     private ContactTypes contactType;
@@ -50,27 +48,6 @@ public class EmployeeContactListItem implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public EmployeeContactListItem contactName(String contactName) {
-        this.contactName = contactName;
-        return this;
-    }
-
-    /**
-     * Get contactName
-     *
-     * @return contactName
-     */
-
-    @Schema(name = "contactName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("contactName")
-    public String getContactName() {
-        return contactName;
-    }
-
-    public void setContactName(String contactName) {
-        this.contactName = contactName;
     }
 
     public EmployeeContactListItem contactValue(String contactValue) {
@@ -125,14 +102,13 @@ public class EmployeeContactListItem implements Serializable {
         }
         EmployeeContactListItem employeeContactListItem = (EmployeeContactListItem) o;
         return Objects.equals(this.id, employeeContactListItem.id)
-                && Objects.equals(this.contactName, employeeContactListItem.contactName)
                 && Objects.equals(this.contactValue, employeeContactListItem.contactValue)
                 && Objects.equals(this.contactType, employeeContactListItem.contactType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, contactName, contactValue, contactType);
+        return Objects.hash(id, contactValue, contactType);
     }
 
     @Override
@@ -140,7 +116,6 @@ public class EmployeeContactListItem implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("class EmployeeContactListItem {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
-        sb.append("    contactName: ").append(toIndentedString(contactName)).append("\n");
         sb.append("    contactValue: ").append(toIndentedString(contactValue)).append("\n");
         sb.append("    contactType: ").append(toIndentedString(contactType)).append("\n");
         sb.append("}");

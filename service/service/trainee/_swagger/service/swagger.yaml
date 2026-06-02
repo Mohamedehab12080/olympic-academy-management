@@ -14,9 +14,9 @@ tags:
   - name: TraineeContact
   - name: TraineeCertificate
   - name: HealthCondition
-  - name: TraineeAttendance
 
 paths:
+  # ==================== Trainee Endpoints ====================
   /trainees:
     post:
       tags:
@@ -43,9 +43,10 @@ paths:
       tags:
         - Trainee
       summary: Retrieve list of Trainees
-      operationId: getAllTrainees
+      operationId: getAllTraineesByFilter
       parameters:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
         - $ref: '#/components/parameters/QPGender'
         - $ref: '#/components/parameters/QPAcademicYear'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
@@ -69,7 +70,7 @@ paths:
       tags:
         - Trainee
       summary: Update Trainee By Id
-      operationId: updateTraineeById
+      operationId: updateTrainee
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
       requestBody:
@@ -92,7 +93,7 @@ paths:
       tags:
         - Trainee
       summary: Retrieve trainee
-      operationId: getTrainee
+      operationId: getTraineeById
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
       responses:
@@ -109,7 +110,7 @@ paths:
       tags:
         - Trainee
       summary: Delete trainee (soft delete)
-      operationId: deleteTrainee
+      operationId: deleteTraineeById
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
       responses:
@@ -118,6 +119,7 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Trainee Contact Endpoints ====================
   /trainees/{traineeId}/contacts:
     post:
       tags:
@@ -149,6 +151,7 @@ paths:
       operationId: getTraineeContacts
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/QPContactValue'
       responses:
         '200':
           description: OK
@@ -198,6 +201,7 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Trainee Certificate Endpoints ====================
   /trainees/{traineeId}/certificates:
     post:
       tags:
@@ -225,10 +229,18 @@ paths:
     get:
       tags:
         - TraineeCertificate
-      summary: Get all trainee certificates
-      operationId: getTraineeCertificates
+      summary: Get all trainee certificates by filter
+      operationId: getAllTraineeCertificatesByFilter
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '#/components/parameters/QPIssueDateFrom'
+        - $ref: '#/components/parameters/QPIssueDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
       responses:
         '200':
           description: OK
@@ -278,6 +290,7 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Health Condition Endpoints ====================
   /trainees/{traineeId}/health-conditions:
     post:
       tags:
@@ -305,10 +318,16 @@ paths:
     get:
       tags:
         - HealthCondition
-      summary: Get all health conditions
-      operationId: getHealthConditions
+      summary: Get all health conditions by filter
+      operationId: getAllHealthConditionsByFilter
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '#/components/parameters/QPMedication'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
       responses:
         '200':
           description: OK
@@ -367,6 +386,12 @@ components:
       schema:
         type: integer
         format: int32
+    QPContactValue:
+      name: contactValue
+      in: query
+      required: true
+      schema:
+        type: string
     PPContactId:
       name: contactId
       in: path
@@ -393,19 +418,42 @@ components:
       in: query
       required: false
       schema:
-        $ref: '#/components/schemas/Gender'
+        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
     QPAcademicYear:
       name: academicYear
       in: query
       required: false
       schema:
         type: string
+    QPCourseId:
+      name: courseId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPIssueDateFrom:
+      name: issueDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPIssueDateTo:
+      name: issueDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPMedication:
+      name: medication
+      in: query
+      required: false
+      schema:
+        type: string
 
   schemas:
-    Gender:
-      type: string
-      enum: [ "MALE", "FEMALE" ]
-
     TraineeDTO:
       type: object
       required:
@@ -422,7 +470,7 @@ components:
           type: string
           format: date
         gender:
-          $ref: '#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
         address:
           type: string
         imageUrl:
@@ -486,7 +534,9 @@ components:
           type: string
           format: date
         gender:
-          $ref: '#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
+        isActive:
+          type: boolean
         address:
           type: string
         imageUrl:
@@ -579,10 +629,12 @@ components:
           type: string
         nationalId:
           type: string
+        isActive:
+          type: boolean
         academicYear:
           type: string
         gender:
-          $ref: '#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
 
     TraineeContactResultSet:
       type: object
@@ -602,9 +654,7 @@ components:
           type: integer
           format: int32
         contactType:
-          type: string
-        contactName:
-          type: string
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/ContactTypes'
         contactValue:
           type: string
 

@@ -24,6 +24,18 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.course</groupId>
+            <artifactId>course-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.department</groupId>
+            <artifactId>department-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>
@@ -44,11 +56,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>bs.service.department</groupId>
-            <artifactId>department-model</artifactId>
             <scope>provided</scope>
         </dependency>
 

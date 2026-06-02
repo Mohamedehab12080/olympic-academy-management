@@ -68,6 +68,10 @@ public class Trainee {
     @JoinColumn(name = "last_modified_by_id")
     private User lastModifiedBy;
 
+    @Column(name = "is_active")
+    @Basic
+    private Boolean isActive;
+
     @Column(name = "is_deleted")
     @Basic
     private Boolean isDeleted;

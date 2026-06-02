@@ -29,6 +29,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

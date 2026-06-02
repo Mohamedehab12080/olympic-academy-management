@@ -42,6 +42,8 @@ public class TraineeVTO implements Serializable {
 
     private Gender gender;
 
+    private Boolean isActive;
+
     private String address;
 
     private String imageUrl;
@@ -189,6 +191,27 @@ public class TraineeVTO implements Serializable {
 
     public void setGender(Gender gender) {
         this.gender = gender;
+    }
+
+    public TraineeVTO isActive(Boolean isActive) {
+        this.isActive = isActive;
+        return this;
+    }
+
+    /**
+     * Get isActive
+     *
+     * @return isActive
+     */
+
+    @Schema(name = "isActive", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isActive")
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public TraineeVTO address(String address) {
@@ -417,7 +440,8 @@ public class TraineeVTO implements Serializable {
                 && Objects.equals(this.nationalId, traineeVTO.nationalId)
                 && Objects.equals(this.academicYear, traineeVTO.academicYear)
                 && Objects.equals(this.birthDate, traineeVTO.birthDate)
-                && Objects.equals(this.gender, traineeVTO.gender) && Objects.equals(this.address, traineeVTO.address)
+                && Objects.equals(this.gender, traineeVTO.gender) && Objects.equals(this.isActive, traineeVTO.isActive)
+                && Objects.equals(this.address, traineeVTO.address)
                 && Objects.equals(this.imageUrl, traineeVTO.imageUrl)
                 && Objects.equals(this.contacts, traineeVTO.contacts)
                 && Objects.equals(this.certificates, traineeVTO.certificates)
@@ -430,8 +454,8 @@ public class TraineeVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, academicYear, birthDate, gender, address, imageUrl, contacts,
-                certificates, healthConditions, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, fullName, nationalId, academicYear, birthDate, gender, isActive, address, imageUrl,
+                contacts, certificates, healthConditions, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -444,6 +468,7 @@ public class TraineeVTO implements Serializable {
         sb.append("    academicYear: ").append(toIndentedString(academicYear)).append("\n");
         sb.append("    birthDate: ").append(toIndentedString(birthDate)).append("\n");
         sb.append("    gender: ").append(toIndentedString(gender)).append("\n");
+        sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    address: ").append(toIndentedString(address)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    contacts: ").append(toIndentedString(contacts)).append("\n");

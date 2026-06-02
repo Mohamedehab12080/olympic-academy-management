@@ -2,30 +2,59 @@ package bs.service.course.core.mapper;
 
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.course.model.entity.Course;
-import bs.service.course.model.generated.CourseDTO;
-import bs.service.course.model.generated.CourseVTO;
+import bs.service.course.model.generated.*;
 import bs.service.department.model.entity.Department;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.generated.LightUserVTO;
 import org.mapstruct.*;
 
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+        imports = {OffsetDateTime.class, ZoneOffset.class})
 public abstract class CourseMapper {
+
+    // Convert String to LocalTime (for time fields from DTO)
+    protected LocalTime toLocalTime(String timeString) {
+        if (timeString == null || timeString.trim().isEmpty()) {
+            return null;
+        }
+        return LocalTime.parse(timeString);
+    }
+
+    // ==================== User Mapping ====================
 
     public abstract LightUserVTO toLightUserVTO(User user);
 
-    public abstract LookupVTO toLookupVTO(Course course);
+    // ==================== Lookup Mappings ====================
 
     public abstract LookupVTO toLookupVTO(Department department);
+    public abstract LookupVTO toLookupVTO(Course course);
 
-    @Mapping(target = "department.id", source = "departmentId")
+    // ==================== Course Mappings ====================
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "department", source = "departmentId")
+    @Mapping(target = "sessions", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "lastModifiedOn", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
     public abstract Course toCourse(CourseDTO courseDTO);
 
+    @Mapping(target = "department", source = "department")
+    @Mapping(target = "sessions", source = "sessions")
+    @Mapping(target = "createdOn", expression = "java(toOffsetDateTime(course.getCreatedOn()))")
+    @Mapping(target = "lastModifiedOn", expression = "java(toOffsetDateTime(course.getLastModifiedOn()))")
     public abstract CourseVTO toCourseVTO(Course course);
 
     public abstract List<CourseVTO> toCourseVTOs(List<Course> courses);
+
 }

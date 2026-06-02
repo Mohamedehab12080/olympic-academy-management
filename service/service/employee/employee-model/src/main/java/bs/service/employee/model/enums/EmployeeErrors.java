@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum EmployeeErrors implements Errors {
 
-    // Employee errors (Domain: 4001)
+    // Employee errors (Domain: 4002)
     EMPLOYEE_NOT_FOUND(EmployeeDomains.EMPLOYEE, "0001", "الموظف غير موجود {0}"),
     NATIONAL_ID_ALREADY_EXISTS(EmployeeDomains.EMPLOYEE, "0002", "الرقم القومي موجود بالفعل {0}"),
     INVALID_GENDER(EmployeeDomains.EMPLOYEE, "0003", "نوع الجنس غير صالح {0}"),
@@ -21,7 +21,19 @@ public enum EmployeeErrors implements Errors {
     ATTENDANCE_ALREADY_EXISTS(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0002", "سجل الحضور لهذا اليوم موجود بالفعل {0}"),
     INVALID_ATTENDANCE_STATUS(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0003", "حالة الحضور غير صالحة {0}"),
     CHECK_OUT_BEFORE_CHECK_IN(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0004", "وقت الخروج يجب أن يكون بعد وقت الدخول"),
-    FUTURE_ATTENDANCE_DATE(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0005", "لا يمكن تسجيل حضور لتاريخ مستقبلي {0}");
+    FUTURE_ATTENDANCE_DATE(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0005", "لا يمكن تسجيل حضور لتاريخ مستقبلي {0}"),
+
+    // Trainer Course errors (Domain: 4004)
+    COURSE_NOT_FOUND_FOR_TRAINER(EmployeeDomains.EMPLOYEE, "0008", "الدورة غير موجودة {0}"),
+    COURSE_ALREADY_ASSIGNED_TO_TRAINER(EmployeeDomains.EMPLOYEE, "0009", "الدورة معينة بالفعل لهذا المدرب {0}"),
+    TRAINER_COURSE_ASSIGNMENT_NOT_FOUND(EmployeeDomains.EMPLOYEE, "0010", "تعيين المدرب للدورة غير موجود {0}"),
+
+    // Course Session errors (Domain: 4005)
+    COURSE_SESSION_NOT_FOUND(EmployeeDomains.COURSE_SESSION, "0001", "جلسة الدورة غير موجودة {0}"),
+    START_TIME_AFTER_END_TIME(EmployeeDomains.COURSE_SESSION, "0002", "وقت البدء يجب أن يكون قبل وقت الانتهاء"),
+    SESSION_DATE_IN_PAST(EmployeeDomains.COURSE_SESSION, "0003", "لا يمكن إنشاء جلسة في تاريخ مضى"),
+    PLACE_NOT_FOUND_FOR_SESSION(EmployeeDomains.COURSE_SESSION, "0004", "المكان غير موجود للجلسة {0}"),
+    COURSE_SESSION_TIME_CONFLICT(EmployeeDomains.COURSE_SESSION, "0005", "توجد جلسة أخرى للمدرب في نفس التوقيت {0}");
 
     private final Domains domain;
     private final String code;

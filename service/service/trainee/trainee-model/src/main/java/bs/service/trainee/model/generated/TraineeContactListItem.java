@@ -1,8 +1,10 @@
 package bs.service.trainee.model.generated;
 
+import bs.lib.common.model.enums.ContactTypes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.*;
@@ -23,9 +25,7 @@ public class TraineeContactListItem implements Serializable {
 
     private Integer id;
 
-    private String contactType;
-
-    private String contactName;
+    private ContactTypes contactType;
 
     private String contactValue;
 
@@ -50,7 +50,7 @@ public class TraineeContactListItem implements Serializable {
         this.id = id;
     }
 
-    public TraineeContactListItem contactType(String contactType) {
+    public TraineeContactListItem contactType(ContactTypes contactType) {
         this.contactType = contactType;
         return this;
     }
@@ -60,36 +60,15 @@ public class TraineeContactListItem implements Serializable {
      *
      * @return contactType
      */
-
+    @Valid
     @Schema(name = "contactType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("contactType")
-    public String getContactType() {
+    public ContactTypes getContactType() {
         return contactType;
     }
 
-    public void setContactType(String contactType) {
+    public void setContactType(ContactTypes contactType) {
         this.contactType = contactType;
-    }
-
-    public TraineeContactListItem contactName(String contactName) {
-        this.contactName = contactName;
-        return this;
-    }
-
-    /**
-     * Get contactName
-     *
-     * @return contactName
-     */
-
-    @Schema(name = "contactName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("contactName")
-    public String getContactName() {
-        return contactName;
-    }
-
-    public void setContactName(String contactName) {
-        this.contactName = contactName;
     }
 
     public TraineeContactListItem contactValue(String contactValue) {
@@ -124,13 +103,12 @@ public class TraineeContactListItem implements Serializable {
         TraineeContactListItem traineeContactListItem = (TraineeContactListItem) o;
         return Objects.equals(this.id, traineeContactListItem.id)
                 && Objects.equals(this.contactType, traineeContactListItem.contactType)
-                && Objects.equals(this.contactName, traineeContactListItem.contactName)
                 && Objects.equals(this.contactValue, traineeContactListItem.contactValue);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, contactType, contactName, contactValue);
+        return Objects.hash(id, contactType, contactValue);
     }
 
     @Override
@@ -139,7 +117,6 @@ public class TraineeContactListItem implements Serializable {
         sb.append("class TraineeContactListItem {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    contactType: ").append(toIndentedString(contactType)).append("\n");
-        sb.append("    contactName: ").append(toIndentedString(contactName)).append("\n");
         sb.append("    contactValue: ").append(toIndentedString(contactValue)).append("\n");
         sb.append("}");
         return sb.toString();

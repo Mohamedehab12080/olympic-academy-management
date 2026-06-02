@@ -13,6 +13,7 @@ tags:
   - name: Employee
   - name: EmployeeContact
   - name: EmployeeAttendance
+  - name: TrainerCourse
   - name: Lookup
 
 paths:
@@ -55,6 +56,22 @@ paths:
         - Lookup
       summary: Retrieve All Employees (public)
       operationId: getAllEmployeesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/trainers:
+    get:
+      tags:
+        - Lookup
+      summary: Retrieve All Trainers (Employees with TRAINER type)
+      operationId: getAllTrainersLookup
       responses:
         '200':
           description: OK
@@ -412,6 +429,233 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Trainer Course Endpoints ====================
+
+  /trainers/{trainerId}/courses:
+    get:
+      tags:
+        - TrainerCourse
+      summary: Get all courses assigned to a trainer
+      operationId: getTrainerCourses
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerId'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainerCourseResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    post:
+      tags:
+        - TrainerCourse
+      summary: Assign a course to a trainer
+      operationId: assignCourseToTrainer
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignCourseDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainers/{trainerId}/courses/{courseId}:
+    delete:
+      tags:
+        - TrainerCourse
+      summary: Unassign a course from a trainer
+      operationId: unassignCourseFromTrainer
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerId'
+        - $ref: '#/components/parameters/PPCourseId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainers/courses/assignments:
+    get:
+      tags:
+        - TrainerCourse
+      summary: Get all trainer-course assignments with filters
+      operationId: getAllTrainerCourseAssignments
+      parameters:
+        - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainerCourseAssignmentResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Course Session Endpoints ====================
+
+  /courses/{courseId}/sessions:
+    post:
+      tags:
+        - CourseSession
+      summary: Create course session
+      operationId: createCourseSession
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSessionDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - CourseSession
+      summary: Get all course sessions by filter
+      operationId: getAllCourseSessionsByFilter
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionStatus'
+        - $ref: '#/components/parameters/QPSessionDateFrom'
+        - $ref: '#/components/parameters/QPSessionDateTo'
+        - $ref: '#/components/parameters/QPStartTimeFrom'
+        - $ref: '#/components/parameters/QPStartTimeTo'
+        - $ref: '#/components/parameters/QPEndTimeFrom'
+        - $ref: '#/components/parameters/QPEndTimeTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseSessionResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/sessions:
+    get:
+      tags:
+        - CourseSession
+      summary: Get all course sessions across all courses with filters
+      operationId: getAllSessionsByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPPlaceId'
+        - $ref: '#/components/parameters/QPSessionStatus'
+        - $ref: '#/components/parameters/QPSessionDateFrom'
+        - $ref: '#/components/parameters/QPSessionDateTo'
+        - $ref: '#/components/parameters/QPStartTimeFrom'
+        - $ref: '#/components/parameters/QPStartTimeTo'
+        - $ref: '#/components/parameters/QPEndTimeFrom'
+        - $ref: '#/components/parameters/QPEndTimeTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseSessionResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/{sessionId}:
+    put:
+      tags:
+        - CourseSession
+      summary: Update course session
+      operationId: updateCourseSession
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/PPSessionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSessionDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - CourseSession
+      summary: Get course session by id
+      operationId: getCourseSessionById
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/PPSessionId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseSessionVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete course session (soft delete)
+      operationId: deleteCourseSession
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/PPSessionId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
 components:
   parameters:
     PPEmployeeId:
@@ -430,6 +674,27 @@ components:
         format: int32
     PPAttendanceId:
       name: attendanceId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPTrainerId:
+      name: trainerId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPCourseId:
+      name: courseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPSessionId:
+      name: sessionId
       in: path
       required: true
       schema:
@@ -458,12 +723,28 @@ components:
         type: integer
         format: int32
 
+    QPTrainerId:
+      name: trainerId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+
+    QPCourseId:
+      name: courseId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+
     QPGender:
       name: gender
       in: query
       required: false
       schema:
-        $ref: '#/components/schemas/Gender'
+        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
     QPEmployeeType:
       name: employeeType
       in: query
@@ -550,20 +831,64 @@ components:
         type: string
         format: time
 
-  schemas:
-    Gender:
-      type: object
-      properties:
-        id:
-          type: integer
-          enum: [1, 2]
-        code:
-          type: string
-          enum: ["MALE", "FEMALE"]
-        arabicLabel:
-          type: string
-          enum: ["ذكر", "أنثى"]
+    # Course Session Parameters
+    QPPlaceId:
+      name: placeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPSessionStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SessionStatus'
+    QPSessionDateFrom:
+      name: sessionDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPSessionDateTo:
+      name: sessionDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPStartTimeFrom:
+      name: startTimeFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
+    QPStartTimeTo:
+      name: startTimeTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
+    QPEndTimeFrom:
+      name: endTimeFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
+    QPEndTimeTo:
+      name: endTimeTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: time
 
+  schemas:
     EmployeeTypes:
       type: object
       properties:
@@ -603,18 +928,19 @@ components:
           type: string
           enum: ["حاضر", "غائب", "متأخر", "معذور"]
 
-    ContactTypes:
+    SessionStatus:
       type: object
       properties:
         id:
           type: integer
-          enum: [1, 2]
+          enum: [ 1, 2, 3, 4 ]
         code:
           type: string
-          enum: ["EMAIL", "PHONE"]
+          enum: [ "SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED" ]
         arabicLabel:
           type: string
-          enum: ["ايميل", "هاتف"]
+          enum: [ "مجدول", "في تقدم", "مكتمل", "ملغي" ]
+
 
     EmployeeDTO:
       type: object
@@ -635,7 +961,7 @@ components:
           type: string
           format: date
         gender:
-          $ref: '#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
         salary:
           type: integer
           format: int32
@@ -694,6 +1020,47 @@ components:
         note:
           type: string
 
+    CourseSessionDTO:
+      type: object
+      required:
+        - title
+        - employeeId
+        - placeId
+        - sessionDate
+        - startTime
+        - endTime
+      properties:
+        title:
+          type: string
+        employeeId:
+          type: integer
+          format: int32
+        placeId:
+          type: integer
+          format: int32
+        sessionDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        note:
+          type: string
+
+    AssignCourseDTO:
+      type: object
+      required:
+        - courseId
+      properties:
+        courseId:
+          type: integer
+          format: int32
+
     EmployeeVTO:
       type: object
       properties:
@@ -708,7 +1075,7 @@ components:
           type: string
           format: date
         gender:
-          $ref: '#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
         salary:
           type: integer
           format: int32
@@ -734,6 +1101,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EmployeeContactVTO'
+        courses:
+          type: array
+          items:
+            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseSessionVTO'
         createdOn:
           type: string
           format: date-time
@@ -791,6 +1166,37 @@ components:
         lastModifiedBy:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
 
+    TrainerCourseVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    TrainerCourseAssignmentVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        trainer:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+
     EmployeeResultSet:
       type: object
       properties:
@@ -813,7 +1219,7 @@ components:
         nationalId:
           type: string
         gender:
-          $ref: '#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
         employeeType:
           $ref: '#/components/schemas/EmployeeTypes'
         hireDate:
@@ -837,7 +1243,6 @@ components:
           items:
             $ref: '#/components/schemas/EmployeeContactListItem'
 
-
     EmployeeAttendanceResultSet:
       type: object
       properties:
@@ -855,12 +1260,10 @@ components:
         id:
           type: integer
           format: int32
-        contactName:
-          type: string
         contactValue:
           type: string
         contactType:
-          $ref: '#/components/schemas/ContactTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/ContactTypes'
 
     EmployeeAttendanceListItem:
       type: object
@@ -913,3 +1316,74 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EmployeeAttendanceListItem'
+
+    TrainerCourseResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainerCourseVTO'
+
+    TrainerCourseAssignmentResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainerCourseAssignmentVTO'
+
+    CourseSessionVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        employee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        place:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        sessionDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    CourseSessionResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseSessionVTO'

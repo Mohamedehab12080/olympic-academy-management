@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Enrollment Management"
+  contact:
+    email: "m.ehab.rabea@gmail.com"
+    name: "Mohamed Ehab"
+
+servers:
+  - url: http://localhost:7002/
+
+tags:
+  - name: Enrollment
+  - name: EnrollmentType
+
+paths:
+  # ==================== Enrollment Type Endpoints ====================
+  /enrollment-types:
+    post:
+      tags:
+        - EnrollmentType
+      summary: Create enrollment type
+      operationId: createEnrollmentType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentTypeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EnrollmentType
+      summary: Retrieve list of enrollment types
+      operationId: getAllEnrollmentTypes
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentTypeResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /enrollment-types/{enrollmentTypeId}:
+    put:
+      tags:
+        - EnrollmentType
+      summary: Update enrollment type
+      operationId: updateEnrollmentType
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentTypeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentTypeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EnrollmentType
+      summary: Get enrollment type by id
+      operationId: getEnrollmentTypeById
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentTypeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentTypeVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - EnrollmentType
+      summary: Delete enrollment type
+      operationId: deleteEnrollmentType
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentTypeId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Enrollment Endpoints ====================
+  /enrollments:
+    post:
+      tags:
+        - Enrollment
+      summary: Create enrollment
+      operationId: createEnrollment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Enrollment
+      summary: Retrieve list of enrollments
+      operationId: getAllEnrollmentsByFilter
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '#/components/parameters/QPTraineeId'
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPEnrollmentTypeId'
+        - $ref: '#/components/parameters/QPEnrollmentStatus'
+        - $ref: '#/components/parameters/QPPaymentStatus'
+        - $ref: '#/components/parameters/QPStartDateFrom'
+        - $ref: '#/components/parameters/QPStartDateTo'
+        - $ref: '#/components/parameters/QPEndDateFrom'
+        - $ref: '#/components/parameters/QPEndDateTo'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /enrollments/{enrollmentId}:
+    put:
+      tags:
+        - Enrollment
+      summary: Update enrollment
+      operationId: updateEnrollment
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Enrollment
+      summary: Get enrollment by id
+      operationId: getEnrollmentById
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - Enrollment
+      summary: Delete enrollment (soft delete)
+      operationId: deleteEnrollment
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+components:
+  parameters:
+    PPEnrollmentTypeId:
+      name: enrollmentTypeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPEnrollmentId:
+      name: enrollmentId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    QPTraineeId:
+      name: traineeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPCourseId:
+      name: courseId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPTrainerId:
+      name: trainerId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPEnrollmentTypeId:
+      name: enrollmentTypeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPEnrollmentStatus:
+      name: enrollmentStatus
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/EnrollmentStatus'
+    QPPaymentStatus:
+      name: paymentStatus
+      in: query
+      required: false
+      schema:
+        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+    QPStartDateFrom:
+      name: startDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPStartDateTo:
+      name: startDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPEndDateFrom:
+      name: endDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPEndDateTo:
+      name: endDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+
+  schemas:
+    EnrollmentStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2,3 ]
+        code:
+          type: string
+          enum: [ "PENDING","COMPLETED","CANCELLED"]
+        arabicLabel:
+          type: string
+          enum: [ "قيد الانتظار", "مكتمل","تم الالغاء" ]
+
+    EnrollmentTypeDTO:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
+    EnrollmentTypeVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    EnrollmentTypeResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrollmentTypeVTO'
+
+    EnrollmentDTO:
+      type: object
+      required:
+        - traineeId
+        - courseId
+        - trainerId
+        - startDate
+      properties:
+        traineeId:
+          type: integer
+          format: int32
+        courseId:
+          type: integer
+          format: int32
+        trainerId:
+          type: integer
+          format: int32
+        enrollmentTypeId:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        enrollmentStatus:
+          $ref: '#/components/schemas/EnrollmentStatus'
+        paymentStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+        subscriptionValue:
+          type: integer
+          format: int32
+        discountAmount:
+          type: integer
+          format: int32
+        discountPercentage:
+          type: number
+          format: float
+        finalSubscriptionValue:
+          type: integer
+          format: int32
+        remainedSubscriptionValue:
+          type: integer
+          format: int32
+        note:
+          type: string
+
+    EnrollmentVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        trainee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        trainer:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        enrollmentType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        enrollmentStatus:
+          $ref: '#/components/schemas/EnrollmentStatus'
+        paymentStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+        subscriptionValue:
+          type: integer
+          format: int32
+        discountAmount:
+          type: integer
+          format: int32
+        discountPercentage:
+          type: number
+          format: float
+        finalSubscriptionValue:
+          type: integer
+          format: int32
+        remainedSubscriptionValue:
+          type: integer
+          format: int32
+        note:
+          type: string
+        isActive:
+          type: boolean
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    EnrollmentResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrollmentListItem'
+
+    EnrollmentListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        trainee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        trainer:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        enrollmentStatus:
+          $ref: '#/components/schemas/EnrollmentStatus'
+        paymentStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+        finalSubscriptionValue:
+          type: integer
+          format: int32
+        isActive:
+          type: boolean

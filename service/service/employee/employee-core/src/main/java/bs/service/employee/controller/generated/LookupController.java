@@ -74,4 +74,20 @@ public interface LookupController {
 
     );
 
+    /**
+     * GET /lookup/trainers : Retrieve All Trainers (Employees with TRAINER type)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllTrainersLookup", summary = "Retrieve All Trainers (Employees with TRAINER type)", tags = {
+            "Lookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/lookup/trainers", produces = { "application/json" })
+
+    ResponseEntity<LookupResultSet> _getAllTrainersLookup(
+
+    );
+
 }

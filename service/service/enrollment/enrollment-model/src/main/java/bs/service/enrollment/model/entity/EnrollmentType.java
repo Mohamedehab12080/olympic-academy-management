@@ -1,5 +1,6 @@
 package bs.service.enrollment.model.entity;
 
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,9 +32,9 @@ public class EnrollmentType {
     @Basic
     private LocalDateTime createdOn;
 
-    @Column(name = "created_by_id")
-    @Basic
-    private Integer createdBy;
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
 
     @Column(name = "is_deleted")
     @Basic

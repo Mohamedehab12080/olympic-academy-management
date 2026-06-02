@@ -11,6 +11,7 @@ servers:
 
 tags:
   - name: Course
+  - name: CourseSession
 
 paths:
   /courses:
@@ -63,7 +64,6 @@ paths:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
   /courses/{courseId}:
-
     put:
       tags:
         - Course
@@ -150,6 +150,10 @@ components:
         format: date
 
   schemas:
+    CourseTypes:
+      type: string
+      enum: [ "QUALIFICATION", "TRAINING" ]
+
     CourseDTO:
       type: object
       required:
@@ -187,10 +191,6 @@ components:
         price:
           type: integer
           format: int32
-
-    CourseTypes:
-      type: string
-      enum: [ "QUALIFICATION","TRAINING" ]
 
     CourseVTO:
       type: object
@@ -246,3 +246,4 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CourseVTO'
+

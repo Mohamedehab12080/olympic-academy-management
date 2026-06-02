@@ -47,6 +47,16 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.trainee</groupId>
+            <artifactId>trainee-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.trainee</groupId>
+            <artifactId>trainee-repository</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.course</groupId>
             <artifactId>course-core</artifactId>
         </dependency>

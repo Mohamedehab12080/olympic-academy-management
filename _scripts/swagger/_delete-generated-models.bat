@@ -54,18 +54,24 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "NewRecordVTO.java"
         call :delete_file "RecordAttribute.java"
         call :delete_file "Gender.java"
+        call :delete_file "ContactTypes.java"
+        call :delete_file "PaymentStatus.java"
+        call :delete_file "EnrollmentStatus.java"
+        call :delete_file "CourseTypes.java"
     )
 	
     if "!MODULE!"=="common" (
         call :delete_file "ErrorVTO.java"
         call :delete_file "RecordAttribute.java"
+        call :delete_file "Gender.java"
+        call :delete_file "ContactTypes.java"
+        call :delete_file "PaymentStatus.java"
     )
 
     if "!MODULE!"=="employee" (
             call :delete_file "SalaryTypes.java"
             call :delete_file "EmployeeAttendanceStatus.java"
             call :delete_file "EmployeeTypes.java"
-            call :delete_file "ContactTypes.java"
     )
 
     if not "!MODULE!"=="user" (

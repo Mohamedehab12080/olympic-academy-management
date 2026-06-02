@@ -62,17 +62,6 @@
         <bs.place-repository.version>0.0.1</bs.place-repository.version>
         <bs.place-proxy.version>0.0.1</bs.place-proxy.version>
 
-        <bs.trainer-model.version>0.0.1</bs.trainer-model.version>
-        <bs.trainer-api.version>0.0.1</bs.trainer-api.version>
-        <bs.trainer-core.version>0.0.1</bs.trainer-core.version>
-        <bs.trainer-repository.version>0.0.1</bs.trainer-repository.version>
-        <bs.trainer-proxy.version>0.0.1</bs.trainer-proxy.version>
-
-        <bs.session-model.version>0.0.1</bs.session-model.version>
-        <bs.session-api.version>0.0.1</bs.session-api.version>
-        <bs.session-core.version>0.0.1</bs.session-core.version>
-        <bs.session-repository.version>0.0.1</bs.session-repository.version>
-        <bs.session-proxy.version>0.0.1</bs.session-proxy.version>
 
         <bs.user-model.version>0.0.1</bs.user-model.version>
         <bs.user-api.version>0.0.1</bs.user-api.version>
@@ -339,67 +328,6 @@
                 <groupId>bs.service.financial</groupId>
                 <artifactId>financial-proxy</artifactId>
                 <version>${bs.financial-proxy.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.trainer</groupId>
-                <artifactId>trainer-model</artifactId>
-                <version>${bs.trainer-model.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.trainer</groupId>
-                <artifactId>trainer-api</artifactId>
-                <version>${bs.trainer-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.trainer</groupId>
-                <artifactId>trainer-core</artifactId>
-                <version>${bs.trainer-core.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.trainer</groupId>
-                <artifactId>trainer-repository</artifactId>
-                <version>${bs.trainer-repository.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.trainer</groupId>
-                <artifactId>trainer-proxy</artifactId>
-                <version>${bs.trainer-proxy.version}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>bs.service.session</groupId>
-                <artifactId>session-model</artifactId>
-                <version>${bs.session-model.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.session</groupId>
-                <artifactId>session-api</artifactId>
-                <version>${bs.session-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.session</groupId>
-                <artifactId>session-core</artifactId>
-                <version>${bs.session-core.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.session</groupId>
-                <artifactId>session-repository</artifactId>
-                <version>${bs.session-repository.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>bs.service.session</groupId>
-                <artifactId>session-proxy</artifactId>
-                <version>${bs.session-proxy.version}</version>
             </dependency>
 
             <dependency>
