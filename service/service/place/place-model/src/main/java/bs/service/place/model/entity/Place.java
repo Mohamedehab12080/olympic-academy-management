@@ -32,6 +32,14 @@ public class Place {
     @Basic
     private String phoneNumber;
 
+    @Column(name = "rent_value")
+    @Basic
+    private Integer rentValue;
+
+    @Column(name = "remained_value")
+    @Basic
+    private Integer remainedValue;
+
     @Column(name = "created_on")
     @Basic
     private LocalDateTime createdOn;

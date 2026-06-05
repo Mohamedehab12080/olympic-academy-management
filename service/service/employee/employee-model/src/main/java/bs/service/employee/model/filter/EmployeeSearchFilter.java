@@ -27,7 +27,7 @@ public class EmployeeSearchFilter extends SearchFilter<EmployeeSearchFilter.Orde
     private LocalDate hireDateFrom;
     private LocalDate hireDateTo;
     private String gender;
-    private String employeeType;
+    private Integer employeeTypeId;
     private SalaryTypes salaryType;
 
     @Getter

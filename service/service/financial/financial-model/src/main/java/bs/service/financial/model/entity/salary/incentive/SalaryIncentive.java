@@ -1,8 +1,9 @@
 package bs.service.financial.model.entity.salary.incentive;
 
+import bs.lib.common.model.enums.SalaryTypes;
 import bs.service.employee.model.entity.Employee;
 import bs.service.financial.model.entity.PaymentMethod;
-import bs.service.financial.model.enums.IncentiveTypes;
+import bs.service.financial.model.enums.SalaryTransactionType;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -45,8 +46,12 @@ public class SalaryIncentive {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
-    private IncentiveTypes type;
+    @Column(name = "salary_type")
+    private SalaryTypes salaryType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "salary_transaction_type")
+    private SalaryTransactionType salaryTransactionType;
 
     @Column(name = "note")
     @Basic

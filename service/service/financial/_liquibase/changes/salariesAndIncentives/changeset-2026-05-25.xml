@@ -18,7 +18,8 @@
             <column name="amount_withdrawn" type="Integer"/>
             <column name="payment_method_id" type="int"/>
             <column name="image_url" type="varchar(250)"/>
-            <column name="type" type="varchar(100)"/>
+            <column name="salary_type" type="varchar(100)"/>
+            <column name="salary_transaction_type" type="varchar(100)"/>
             <column name="note" type="text"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>

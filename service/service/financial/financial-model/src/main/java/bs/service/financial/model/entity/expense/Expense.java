@@ -7,8 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -34,15 +38,15 @@ public class Expense {
     @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
 
-    @Column(name = "expense_type_id")
-    @Basic
-    private Integer expenseTypeId;
+    @ManyToOne
+    @JoinColumn(name = "expense_type_id")
+    private ExpenseType expenseType;
 
-    @Column(name = "images_urls", columnDefinition = "JSON")
-    @Basic
-    private String imagesUrls;
+    @Column(name = "images_urls", columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> imagesUrls;
 
-    @Column(name = "notes", columnDefinition = "TEXT")
+    @Column(name = "notes")
     @Basic
     private String notes;
 

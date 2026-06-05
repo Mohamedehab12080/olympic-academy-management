@@ -16,22 +16,46 @@
     <version>0.0.1</version>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>bs.service.financial</groupId>
             <artifactId>financial-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.user</groupId>
+            <artifactId>user-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.trainee</groupId>
+            <artifactId>trainee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.course</groupId>
+            <artifactId>course-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
 
         <dependency>
-            <groupId>bs.service.user</groupId>
-            <artifactId>user-model</artifactId>
+            <groupId>bs.service.enrollment</groupId>
+            <artifactId>enrollment-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.employee</groupId>
+            <artifactId>employee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib</groupId>
+            <artifactId>swagger</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -42,8 +66,26 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.place</groupId>
+            <artifactId>place-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
             <scope>provided</scope>
         </dependency>
 

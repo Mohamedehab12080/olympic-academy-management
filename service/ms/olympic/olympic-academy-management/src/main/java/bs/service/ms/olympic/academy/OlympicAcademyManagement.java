@@ -13,6 +13,12 @@ import bs.service.department.annotation.imports.ImportDepartmentRepository;
 import bs.service.department.proxy.annotation.imports.ImportDepartmentMgtInternalProxy;
 import bs.service.employee.annotation.imports.ImportEmployeeCore;
 import bs.service.employee.annotation.imports.ImportEmployeeRepository;
+import bs.service.enrollment.annotation.imports.ImportEnrollmentCore;
+import bs.service.enrollment.annotation.imports.ImportEnrollmentRepository;
+import bs.service.financial.annotation.imports.ImportFinancialCore;
+import bs.service.financial.annotation.imports.ImportFinancialRepository;
+import bs.service.place.annotation.imports.ImportPlaceCore;
+import bs.service.place.annotation.imports.ImportPlaceRepository;
 import bs.service.trainee.annotation.imports.ImportTraineeCore;
 import bs.service.trainee.annotation.imports.ImportTraineeRepository;
 import bs.service.user.annotation.imports.ImportUserCore;
@@ -39,6 +45,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ImportCourseCore
 @ImportCourseRepository
 
+@ImportEnrollmentCore
+@ImportEnrollmentRepository
+
+@ImportFinancialCore
+@ImportFinancialRepository
+
+@ImportPlaceCore
+@ImportPlaceRepository
+
 @ImportDepartmentCore
 @ImportDepartmentRepository
 @ImportDepartmentMgtInternalProxy
@@ -50,22 +65,32 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
+
+@EntityScan(basePackages = {
+        "bs.service.place.model.entity",
+        "bs.service.user.model.entity",
+        "bs.service.course.model.entity",
+        "bs.service.department.model.entity",
+        "bs.service.employee.model.entity",
+        "bs.service.trainee.model.entity",
+        "bs.service.financial.model.entity",
+        "bs.service.enrollment.model.entity",
+        "bs.lib.id.counter.model.entity"
+})
+
 @EnableJpaRepositories(basePackages = {
         "bs.service.user.repository",
         "bs.service.course.repository",
         "bs.service.department.repository",
         "bs.service.employee.repository",
         "bs.service.trainee.repository",
+        "bs.service.place.repository",
+        "bs.service.financial.repository",
+        "bs.service.enrollment.repository",
         "bs.lib.id.counter.repository"
 })
-@EntityScan(basePackages = {
-        "bs.service.user.model.entity",
-        "bs.service.course.model.entity",
-        "bs.service.department.model.entity",
-        "bs.service.employee.model.entity",
-        "bs.service.trainee.model.entity",
-        "bs.lib.id.counter.model.entity"
-})public class OlympicAcademyManagement {
+
+public class OlympicAcademyManagement {
 
     public static void main(String[] args) {
         SpringApplication.run(OlympicAcademyManagement.class, args);

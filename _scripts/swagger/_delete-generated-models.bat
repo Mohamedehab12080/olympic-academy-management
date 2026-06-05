@@ -58,6 +58,11 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "PaymentStatus.java"
         call :delete_file "EnrollmentStatus.java"
         call :delete_file "CourseTypes.java"
+        call :delete_file "SessionStatus.java"
+        call :delete_file "RefundStatus.java"
+        call :delete_file "SalaryTransactionType.java"
+        call :delete_file "SalaryTypes.java"
+        call :delete_file "DeductionTypes.java"
     )
 	
     if "!MODULE!"=="common" (

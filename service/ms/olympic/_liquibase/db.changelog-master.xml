@@ -21,9 +21,6 @@
     <include file="../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml"
              relativeToChangelogFile="true"/>
 
-    <include file="../../../service/trainer/_liquibase/changes/changeset-2026-05-24.xml"
-             relativeToChangelogFile="true"/>
-
     <include file="../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml"
              relativeToChangelogFile="true"/>
 
@@ -42,13 +39,10 @@
     <include file="../../../service/financial/_liquibase/changes/salaryDeduction/changeset-2026-05-25.xml"
              relativeToChangelogFile="true"/>
 
-    <include file="../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml"
-             relativeToChangelogFile="true"/>
-
     <include file="../../../service/place/_liquibase/changes/changeset-2026-05-26.xml"
              relativeToChangelogFile="true"/>
 
-    <include file="../../../service/session/_liquibase/changes/changeset-2026-05-26.xml"
+    <include file="../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml"
              relativeToChangelogFile="true"/>
 
     <include file="../../../service/trainee/_liquibase/changes/attendance/changeset-2026-05-26.xml"

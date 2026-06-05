@@ -127,8 +127,6 @@ public abstract class EmployeeMapper {
 
     public abstract List<TrainerCourseVTO> toTrainerCourseVTOs(List<TrainerCourse> trainerCourses);
 
-    @Mapping(target = "trainer", source = "employee")
-    @Mapping(target = "course", source = "course")
     public abstract TrainerCourseAssignmentVTO toTrainerCourseAssignmentVTO(TrainerCourse trainerCourse);
 
     public abstract List<TrainerCourseAssignmentVTO> toTrainerCourseAssignmentVTOs(List<TrainerCourse> trainerCourses);
@@ -136,10 +134,8 @@ public abstract class EmployeeMapper {
     // ==================== Course Session Mappings ====================
 
     @Mapping(target = "course.id", source = "courseId")
-    @Mapping(target = "employee.id", source = "employeeId")
+    @Mapping(target = "trainer.id", source = "trainerId")
     @Mapping(target = "place.id", source = "placeId")
-    @Mapping(target = "startTime", expression = "java(toLocalTime(courseSessionDTO.getStartTime()))")
-    @Mapping(target = "endTime", expression = "java(toLocalTime(courseSessionDTO.getEndTime()))")
     public abstract CourseSession toCourseSession(CourseSessionDTO courseSessionDTO);
 
     public abstract CourseSessionVTO toCourseSessionVTO(CourseSession courseSession);

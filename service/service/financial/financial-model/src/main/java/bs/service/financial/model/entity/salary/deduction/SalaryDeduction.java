@@ -1,5 +1,6 @@
 package bs.service.financial.model.entity.salary.deduction;
 
+import bs.lib.common.model.enums.SalaryTypes;
 import bs.service.employee.model.entity.Employee;
 import bs.service.financial.model.enums.DeductionTypes;
 import bs.service.user.model.entity.User;
@@ -38,6 +39,10 @@ public class SalaryDeduction {
     @Column(name = "reason")
     @Basic
     private String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "salary_type")
+    private SalaryTypes salaryTypes;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "deduction_type")

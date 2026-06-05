@@ -1,0 +1,1840 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Financial Management"
+  contact:
+    email: "m.ehab.rabea@gmail.com"
+    name: "Mohamed Ehab"
+
+servers:
+  - url: http://localhost:7002/
+
+tags:
+  - name: PaymentMethod
+  - name: RentType
+  - name: PlaceRentPayment
+  - name: ExpenseType
+  - name: Expense
+  - name: EnrollmentPayment
+  - name: EnrollmentRefund
+  - name: SalaryIncentive
+  - name: SalaryDeduction
+  - name: Lookup
+
+paths:
+  # ==================== Payment Method Endpoints ====================
+  /payment-methods:
+    post:
+      tags:
+        - PaymentMethod
+      summary: Create payment method
+      operationId: createPaymentMethod
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethodDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - PaymentMethod
+      summary: Retrieve list of payment methods
+      operationId: getAllPaymentMethods
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /payment-methods/{paymentMethodId}:
+    put:
+      tags:
+        - PaymentMethod
+      summary: Update payment method
+      operationId: updatePaymentMethod
+      parameters:
+        - $ref: '#/components/parameters/PPPaymentMethodId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethodDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - PaymentMethod
+      summary: Get payment method by id
+      operationId: getPaymentMethodById
+      parameters:
+        - $ref: '#/components/parameters/PPPaymentMethodId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - PaymentMethod
+      summary: Delete payment method
+      operationId: deletePaymentMethod
+      parameters:
+        - $ref: '#/components/parameters/PPPaymentMethodId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Rent Type Endpoints ====================
+  /rent-types:
+    post:
+      tags:
+        - RentType
+      summary: Create rent type
+      operationId: createRentType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentTypeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - RentType
+      summary: Retrieve list of rent types
+      operationId: getAllRentTypes
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentTypeResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /rent-types/{rentTypeId}:
+    put:
+      tags:
+        - RentType
+      summary: Update rent type
+      operationId: updateRentType
+      parameters:
+        - $ref: '#/components/parameters/PPRentTypeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentTypeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - RentType
+      summary: Get rent type by id
+      operationId: getRentTypeById
+      parameters:
+        - $ref: '#/components/parameters/PPRentTypeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentTypeVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - RentType
+      summary: Delete rent type
+      operationId: deleteRentType
+      parameters:
+        - $ref: '#/components/parameters/PPRentTypeId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Expense Type Endpoints ====================
+  /expense-types:
+    post:
+      tags:
+        - ExpenseType
+      summary: Create expense type
+      operationId: createExpenseType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseTypeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - ExpenseType
+      summary: Retrieve list of expense types
+      operationId: getAllExpenseTypes
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseTypeResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /expense-types/{expenseTypeId}:
+    put:
+      tags:
+        - ExpenseType
+      summary: Update expense type
+      operationId: updateExpenseType
+      parameters:
+        - $ref: '#/components/parameters/PPExpenseTypeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseTypeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - ExpenseType
+      summary: Get expense type by id
+      operationId: getExpenseTypeById
+      parameters:
+        - $ref: '#/components/parameters/PPExpenseTypeId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseTypeVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - ExpenseType
+      summary: Delete expense type
+      operationId: deleteExpenseType
+      parameters:
+        - $ref: '#/components/parameters/PPExpenseTypeId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Place Rent Payment Endpoints ====================
+  /place-rent-payments:
+    post:
+      tags:
+        - PlaceRentPayment
+      summary: Create place rent payment
+      operationId: createPlaceRentPayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceRentPaymentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - PlaceRentPayment
+      summary: Retrieve list of place rent payments
+      operationId: getAllPlaceRentPaymentsByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPPlaceId'
+        - $ref: '#/components/parameters/QPRentTypeId'
+        - $ref: '#/components/parameters/QPPaymentMethodId'
+        - $ref: '#/components/parameters/QPPaymentStatus'
+        - $ref: '#/components/parameters/QPPaymentDateFrom'
+        - $ref: '#/components/parameters/QPPaymentDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceRentPaymentResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /place-rent-payments/{paymentId}:
+    put:
+      tags:
+        - PlaceRentPayment
+      summary: Update place rent payment
+      operationId: updatePlaceRentPayment
+      parameters:
+        - $ref: '#/components/parameters/PPPaymentId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceRentPaymentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - PlaceRentPayment
+      summary: Get place rent payment by id
+      operationId: getPlaceRentPaymentById
+      parameters:
+        - $ref: '#/components/parameters/PPPaymentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceRentPaymentVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - PlaceRentPayment
+      summary: Delete place rent payment
+      operationId: deletePlaceRentPayment
+      parameters:
+        - $ref: '#/components/parameters/PPPaymentId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Expense Endpoints ====================
+  /expenses:
+    post:
+      tags:
+        - Expense
+      summary: Create expense
+      operationId: createExpense
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Expense
+      summary: Retrieve list of expenses
+      operationId: getAllExpensesByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPExpenseTypeId'
+        - $ref: '#/components/parameters/QPPaymentMethodId'
+        - $ref: '#/components/parameters/QPExpenseDateFrom'
+        - $ref: '#/components/parameters/QPExpenseDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /expenses/{expenseId}:
+    put:
+      tags:
+        - Expense
+      summary: Update expense
+      operationId: updateExpense
+      parameters:
+        - $ref: '#/components/parameters/PPExpenseId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Expense
+      summary: Get expense by id
+      operationId: getExpenseById
+      parameters:
+        - $ref: '#/components/parameters/PPExpenseId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - Expense
+      summary: Delete expense
+      operationId: deleteExpense
+      parameters:
+        - $ref: '#/components/parameters/PPExpenseId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Enrollment Payment Endpoints ====================
+  /enrollment-payments:
+    post:
+      tags:
+        - EnrollmentPayment
+      summary: Create enrollment payment
+      operationId: createEnrollmentPayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentPaymentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EnrollmentPayment
+      summary: Retrieve list of enrollment payments
+      operationId: getAllEnrollmentPaymentsByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPEnrollmentId'
+        - $ref: '#/components/parameters/QPPaymentMethodId'
+        - $ref: '#/components/parameters/QPPaymentStatus'
+        - $ref: '#/components/parameters/QPPaymentDateFrom'
+        - $ref: '#/components/parameters/QPPaymentDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentPaymentResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /enrollment-payments/{paymentId}:
+    put:
+      tags:
+        - EnrollmentPayment
+      summary: Update enrollment payment
+      operationId: updateEnrollmentPayment
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentPaymentId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentPaymentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EnrollmentPayment
+      summary: Get enrollment payment by id
+      operationId: getEnrollmentPaymentById
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentPaymentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentPaymentVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - EnrollmentPayment
+      summary: Delete enrollment payment
+      operationId: deleteEnrollmentPayment
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentPaymentId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Enrollment Refund Endpoints ====================
+  /enrollment-refunds:
+    post:
+      tags:
+        - EnrollmentRefund
+      summary: Create enrollment refund
+      operationId: createEnrollmentRefund
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRefundDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EnrollmentRefund
+      summary: Retrieve list of enrollment refunds
+      operationId: getAllEnrollmentRefundsByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPEnrollmentId'
+        - $ref: '#/components/parameters/QPPaymentMethodId'
+        - $ref: '#/components/parameters/QPRefundStatus'
+        - $ref: '#/components/parameters/QPRefundDateFrom'
+        - $ref: '#/components/parameters/QPRefundDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentRefundResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /enrollment-refunds/{refundId}:
+    put:
+      tags:
+        - EnrollmentRefund
+      summary: Update enrollment refund
+      operationId: updateEnrollmentRefund
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentRefundId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRefundDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - EnrollmentRefund
+      summary: Get enrollment refund by id
+      operationId: getEnrollmentRefundById
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentRefundId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentRefundVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - EnrollmentRefund
+      summary: Delete enrollment refund
+      operationId: deleteEnrollmentRefund
+      parameters:
+        - $ref: '#/components/parameters/PPEnrollmentRefundId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Salary Incentive Endpoints ====================
+  /salary-incentives:
+    post:
+      tags:
+        - SalaryIncentive
+      summary: Create salary incentive
+      operationId: createSalaryIncentive
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryIncentiveDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - SalaryIncentive
+      summary: Retrieve list of salary incentives
+      operationId: getAllSalaryIncentivesByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPPaymentMethodId'
+        - $ref: '#/components/parameters/QPSalaryType'
+        - $ref: '#/components/parameters/QPSalaryTransactionType'
+        - $ref: '#/components/parameters/QPWithdrawDateFrom'
+        - $ref: '#/components/parameters/QPWithdrawDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryIncentiveResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /salary-incentives/{transactionId}:
+    put:
+      tags:
+        - SalaryIncentive
+      summary: Update salary incentive
+      operationId: updateSalaryIncentive
+      parameters:
+        - $ref: '#/components/parameters/PPSalaryIncentiveId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryIncentiveDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - SalaryIncentive
+      summary: Get salary incentive by id
+      operationId: getSalaryIncentiveById
+      parameters:
+        - $ref: '#/components/parameters/PPSalaryIncentiveId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryIncentiveVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - SalaryIncentive
+      summary: Delete salary incentive
+      operationId: deleteSalaryIncentive
+      parameters:
+        - $ref: '#/components/parameters/PPSalaryIncentiveId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Salary Deduction Endpoints ====================
+  /salary-deductions:
+    post:
+      tags:
+        - SalaryDeduction
+      summary: Create salary deduction
+      operationId: createSalaryDeduction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryDeductionDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - SalaryDeduction
+      summary: Retrieve list of salary deductions
+      operationId: getAllSalaryDeductionsByFilter
+      parameters:
+        - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPSalaryType'
+        - $ref: '#/components/parameters/QPDeductionDateFrom'
+        - $ref: '#/components/parameters/QPDeductionDateTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryDeductionResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /salary-deductions/{deductionId}:
+    put:
+      tags:
+        - SalaryDeduction
+      summary: Update salary deduction
+      operationId: updateSalaryDeduction
+      parameters:
+        - $ref: '#/components/parameters/PPSalaryDeductionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryDeductionDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - SalaryDeduction
+      summary: Get salary deduction by id
+      operationId: getSalaryDeductionById
+      parameters:
+        - $ref: '#/components/parameters/PPSalaryDeductionId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryDeductionVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - SalaryDeduction
+      summary: Delete salary deduction
+      operationId: deleteSalaryDeduction
+      parameters:
+        - $ref: '#/components/parameters/PPSalaryDeductionId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Lookup Endpoints ====================
+  /lookup/payment-methods:
+    get:
+      tags:
+        - Lookup
+      summary: Get all payment methods for lookup
+      operationId: getAllPaymentMethodsLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/rent-types:
+    get:
+      tags:
+        - Lookup
+      summary: Get all rent types for lookup
+      operationId: getAllRentTypesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/expense-types:
+    get:
+      tags:
+        - Lookup
+      summary: Get all expense types for lookup
+      operationId: getAllExpenseTypesLookup
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/payment-status:
+    get:
+      tags:
+        - Lookup
+      summary: Get all payment statuses for lookup
+      operationId: getAllPaymentStatusLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/refund-status:
+    get:
+      tags:
+        - Lookup
+      summary: Get all refund statuses for lookup
+      operationId: getAllRefundStatusLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/salary-transaction-types:
+    get:
+      tags:
+        - Lookup
+      summary: Get all salary transaction types for lookup
+      operationId: getAllSalaryTransactionTypesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/salary-types:
+    get:
+      tags:
+        - Lookup
+      summary: Get all salary types for lookup
+      operationId: getAllSalaryTypesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+components:
+  parameters:
+    # Path Parameters
+    PPPaymentMethodId:
+      name: paymentMethodId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPRentTypeId:
+      name: rentTypeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPExpenseTypeId:
+      name: expenseTypeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPPaymentId:
+      name: paymentId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPExpenseId:
+      name: expenseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPEnrollmentPaymentId:
+      name: paymentId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPEnrollmentRefundId:
+      name: refundId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPSalaryIncentiveId:
+      name: transactionId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPSalaryDeductionId:
+      name: deductionId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+
+    # Query Parameters
+    QPPlaceId:
+      name: placeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPRentTypeId:
+      name: rentTypeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPPaymentMethodId:
+      name: paymentMethodId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPPaymentStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+    QPPaymentDateFrom:
+      name: paymentDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPPaymentDateTo:
+      name: paymentDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPExpenseTypeId:
+      name: expenseTypeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPExpenseDateFrom:
+      name: expenseDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPExpenseDateTo:
+      name: expenseDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPEnrollmentId:
+      name: enrollmentId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPRefundStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/RefundStatus'
+    QPRefundDateFrom:
+      name: refundDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPRefundDateTo:
+      name: refundDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPEmployeeId:
+      name: employeeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPSalaryTransactionType:
+      name: type
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SalaryTransactionType'
+    QPWithdrawDateFrom:
+      name: withdrawDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPWithdrawDateTo:
+      name: withdrawDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPSalaryType:
+      name: salaryType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SalaryTypes'
+    QPDeductionDateFrom:
+      name: deductionDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPDeductionDateTo:
+      name: deductionDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+
+  schemas:
+    # Enums
+    RefundStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2, 3, 4 ]
+        code:
+          type: string
+          enum: [ "PENDING", "APPROVED", "REJECTED", "COMPLETED" ]
+        arabicLabel:
+          type: string
+          enum: [ "قيد الانتظار", "موافق عليه", "مرفوض", "مكتمل" ]  # Fixed quotes
+
+    SalaryTransactionType:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2, 3, 4 ]
+        code:
+          type: string
+          enum: [ "SALARY", "INCENTIVE", "BONUS", "ADVANCE" ]
+        arabicLabel:
+          type: string
+          enum: [ "الراتب", "الحافز", "المكافأة", "السلفة" ]  # Fixed quotes
+
+    SalaryTypes:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2, 3, 4 ]
+        code:
+          type: string
+          enum: [ "MONTHLY", "DAILY", "HOURLY", "PERCENTAGE" ]
+        arabicLabel:
+          type: string
+          enum: [ "شهريًا", "يوميًا", "ساعيًا", "نسبة مئوية" ]  # Fixed quotes
+
+    # DTOs
+    PaymentMethodDTO:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+
+    RentTypeDTO:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
+    ExpenseTypeDTO:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+
+    PlaceRentPaymentDTO:
+      type: object
+      required:
+        - placeId
+        - payedAmount
+        - rentAmount
+        - paymentDate
+      properties:
+        placeId:
+          type: integer
+          format: int32
+        rentAmount:
+          type: integer
+          format: int32
+        payedAmount:
+          type: integer
+          format: int32
+        remainedAmount:
+          type: integer
+          format: int32
+        rentTypeId:
+          type: integer
+          format: int32
+        paymentDate:
+          type: string
+          format: date
+        paymentMethodId:
+          type: integer
+          format: int32
+
+    ExpenseDTO:
+      type: object
+      required:
+        - expenseDate
+        - amountExpensed
+        - expenseTypeId
+      properties:
+        expenseDate:
+          type: string
+          format: date
+        amountExpensed:
+          type: integer
+          format: int32
+        paymentMethodId:
+          type: integer
+          format: int32
+        expenseTypeId:
+          type: integer
+          format: int32
+        imagesUrls:
+          type: array
+          items:
+            type: string
+        note:
+          type: string
+
+    EnrollmentPaymentDTO:
+      type: object
+      required:
+        - enrollmentId
+        - paymentDate
+        - amountPaid
+      properties:
+        enrollmentId:
+          type: integer
+          format: int32
+        paymentDate:
+          type: string
+          format: date
+        enrollmentValue:
+          type: integer
+          format: int32
+        paidAmount:
+          type: integer
+          format: int32
+        remainedValue:
+          type: integer
+          format: int32
+        paymentMethodId:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+        note:
+          type: string
+        paymentStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+
+    EnrollmentRefundDTO:
+      type: object
+      required:
+        - enrollmentId
+        - refundDate
+        - amountRefunded
+      properties:
+        enrollmentId:
+          type: integer
+          format: int32
+        refundDate:
+          type: string
+          format: date
+        amountRefunded:
+          type: integer
+          format: int32
+        paymentMethodId:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+        note:
+          type: string
+        status:
+          $ref: '#/components/schemas/RefundStatus'
+
+    SalaryIncentiveDTO:
+      type: object
+      required:
+        - employeeId
+        - withdrawDate
+        - amountWithdrawn
+        - type
+      properties:
+        employeeId:
+          type: integer
+          format: int32
+        withdrawDate:
+          type: string
+          format: date
+        amountWithdrawn:
+          type: integer
+          format: int32
+        paymentMethodId:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+        salaryType:
+          $ref: '#/components/schemas/SalaryTypes'
+        salaryTransactionType:
+          $ref: '#/components/schemas/SalaryTransactionType'
+        note:
+          type: string
+
+    SalaryDeductionDTO:
+      type: object
+      required:
+        - employeeId
+        - deductionDate
+        - amountDeducted
+      properties:
+        employeeId:
+          type: integer
+          format: int32
+        deductionDate:
+          type: string
+          format: date
+        amountDeducted:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+        reason:
+          type: string
+        salaryType:
+          $ref: '#/components/schemas/SalaryTypes'
+        note:
+          type: string
+
+    # VTOs
+    PaymentMethodVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+
+    RentTypeVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    ExpenseTypeVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    PlaceRentPaymentVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        place:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        rentAmount:
+          type: integer
+          format: int32
+        payedAmount:
+          type: integer
+          format: int32
+        remainedAmount:
+          type: integer
+          format: int32
+        rentType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        paymentDate:
+          type: string
+          format: date
+        paymentMethod:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    ExpenseVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        expenseDate:
+          type: string
+          format: date
+        amountExpensed:
+          type: integer
+          format: int32
+        paymentMethod:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        expenseType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        imagesUrls:
+          type: array
+          items:
+            type: string
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    EnrollmentPaymentVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        enrollment:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        paymentDate:
+          type: string
+          format: date
+        enrollmentValue:
+          type: integer
+          format: int32
+        paidAmount:
+          type: integer
+          format: int32
+        remainedValue:
+          type: integer
+          format: int32
+        paymentMethod:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        imageUrl:
+          type: string
+        note:
+          type: string
+        paymentStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    EnrollmentRefundVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        enrollment:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        refundDate:
+          type: string
+          format: date
+        amountRefunded:
+          type: integer
+          format: int32
+        paymentMethod:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        imageUrl:
+          type: string
+        note:
+          type: string
+        status:
+          $ref: '#/components/schemas/RefundStatus'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    SalaryIncentiveVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        employee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        withdrawDate:
+          type: string
+          format: date
+        amountWithdrawn:
+          type: integer
+          format: int32
+        paymentMethod:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        imageUrl:
+          type: string
+        type:
+          $ref: '#/components/schemas/SalaryTransactionType'
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    SalaryDeductionVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        employee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        deductionDate:
+          type: string
+          format: date
+        amountDeducted:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+        reason:
+          type: string
+        salaryType:
+          $ref: '#/components/schemas/SalaryTypes'
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    # Result Sets
+    PaymentMethodResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentMethodVTO'
+
+    RentTypeResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RentTypeVTO'
+
+    ExpenseTypeResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpenseTypeVTO'
+
+    PlaceRentPaymentResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceRentPaymentVTO'
+
+    ExpenseResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpenseVTO'
+
+    EnrollmentPaymentResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrollmentPaymentVTO'
+
+    EnrollmentRefundResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrollmentRefundVTO'
+
+    SalaryIncentiveResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalaryIncentiveVTO'
+
+    SalaryDeductionResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalaryDeductionVTO'

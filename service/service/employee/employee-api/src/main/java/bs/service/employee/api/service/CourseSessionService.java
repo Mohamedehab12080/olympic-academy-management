@@ -20,17 +20,7 @@ public interface CourseSessionService {
 
     CourseSessionVTO getCourseSessionById(Integer courseId, Integer sessionId);
 
-    CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId, SessionStatus status,
-                                                        LocalDate sessionDateFrom, LocalDate sessionDateTo,
-                                                        LocalTime startTimeFrom, LocalTime startTimeTo,
-                                                        LocalTime endTimeFrom, LocalTime endTimeTo,
-                                                        Integer pageNum, Integer pageSize,
-                                                        OrderDirections orderDir, String orderBy);
+    CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
 
-    CourseSessionResultSet getAllSessionsByFilter(Integer courseId, Integer employeeId, Integer placeId,
-                                                  SessionStatus status, LocalDate sessionDateFrom,
-                                                  LocalDate sessionDateTo, LocalTime startTimeFrom,
-                                                  LocalTime startTimeTo, LocalTime endTimeFrom,
-                                                  LocalTime endTimeTo, Integer pageNum, Integer pageSize,
-                                                  OrderDirections orderDir, String orderBy);
+        CourseSessionResultSet getAllSessionsByFilter(Integer courseId, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
 }

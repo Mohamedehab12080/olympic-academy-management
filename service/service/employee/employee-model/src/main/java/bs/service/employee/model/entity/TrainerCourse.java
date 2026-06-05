@@ -22,8 +22,8 @@ public class TrainerCourse {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+    @JoinColumn(name = "trainer_id")
+    private Employee trainer;
 
     @ManyToOne
     @JoinColumn(name = "course_id")

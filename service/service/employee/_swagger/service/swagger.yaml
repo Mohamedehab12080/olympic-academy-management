@@ -576,7 +576,7 @@ paths:
       operationId: getAllSessionsByFilter
       parameters:
         - $ref: '#/components/parameters/QPCourseId'
-        - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPTrainerId'
         - $ref: '#/components/parameters/QPPlaceId'
         - $ref: '#/components/parameters/QPSessionStatus'
         - $ref: '#/components/parameters/QPSessionDateFrom'
@@ -1024,7 +1024,8 @@ components:
       type: object
       required:
         - title
-        - employeeId
+        - trainerId
+        - courseId
         - placeId
         - sessionDate
         - startTime
@@ -1032,7 +1033,10 @@ components:
       properties:
         title:
           type: string
-        employeeId:
+        courseId:
+          type: integer
+          format: int32
+        trainerId:
           type: integer
           format: int32
         placeId:
@@ -1349,7 +1353,7 @@ components:
           type: string
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
-        employee:
+        trainer:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         place:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'

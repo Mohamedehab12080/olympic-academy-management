@@ -8,10 +8,10 @@ package bs.service.employee.controller.generated;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.model.enums.SessionStatus;
 import bs.service.employee.model.generated.CourseSessionDTO;
 import bs.service.employee.model.generated.CourseSessionResultSet;
 import bs.service.employee.model.generated.CourseSessionVTO;
-import bs.service.employee.model.generated.SessionStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -135,7 +135,7 @@ public interface CourseSessionController {
      *
      * @param courseId
      *            (optional)
-     * @param employeeId
+     * @param trainerId
      *            (optional)
      * @param placeId
      *            (optional)
@@ -173,7 +173,7 @@ public interface CourseSessionController {
 
     ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(
             @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
-            @Parameter(name = "employeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeId", required = false) Integer employeeId,
+            @Parameter(name = "trainerId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainerId", required = false) Integer trainerId,
             @Parameter(name = "placeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "placeId", required = false) Integer placeId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid SessionStatus status,
             @Parameter(name = "sessionDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate sessionDateFrom,

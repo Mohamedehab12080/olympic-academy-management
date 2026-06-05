@@ -45,8 +45,8 @@ public class EmployeeQueryBuilder extends AbstractQueryBuilderV2<Employee, Emplo
             qbConditions.add(QBCondition.builder().placeHolder("gender").value(filters.getGender())
                     .condition("item.gender = :PH").build());
 
-        if (filters.getEmployeeType() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("employeeType").value(filters.getEmployeeType())
+        if (filters.getEmployeeTypeId() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("employeeType").value(filters.getEmployeeTypeId())
                     .condition("item.employeeType = :PH").build());
 
         if (filters.getSalaryType() != null)

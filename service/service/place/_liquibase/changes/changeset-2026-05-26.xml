@@ -13,6 +13,8 @@
             <column name="title" type="varchar(250)">
                 <constraints nullable="false"/>
             </column>
+            <column name="rent_value" type="int"/>
+            <column name="remained_value" type="int"/>
             <column name="address" type="varchar(250)"/>
             <column name="phone_number" type="varchar(30)"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>

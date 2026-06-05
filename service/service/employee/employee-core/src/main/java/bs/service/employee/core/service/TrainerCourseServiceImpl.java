@@ -60,7 +60,7 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
 
 
         TrainerCourse assignment = TrainerCourse.builder()
-                .employee(trainer)
+                .trainer(trainer)
                 .course(Course.builder().id(courseId).build())
                 .build();
 

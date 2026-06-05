@@ -24,6 +24,12 @@
 
 
         <dependency>
+            <groupId>bs.service.department</groupId>
+            <artifactId>department-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.user</groupId>
             <artifactId>user-model</artifactId>
             <scope>provided</scope>

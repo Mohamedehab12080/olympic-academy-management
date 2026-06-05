@@ -38,21 +38,9 @@ public abstract class CourseMapper {
 
     // ==================== Course Mappings ====================
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "department", source = "departmentId")
-    @Mapping(target = "sessions", ignore = true)
-    @Mapping(target = "createdOn", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "lastModifiedOn", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
-    @Mapping(target = "isDeleted", ignore = true)
+    @Mapping(target = "department.id", source = "departmentId")
     public abstract Course toCourse(CourseDTO courseDTO);
 
-    @Mapping(target = "department", source = "department")
-    @Mapping(target = "sessions", source = "sessions")
-    @Mapping(target = "createdOn", expression = "java(toOffsetDateTime(course.getCreatedOn()))")
-    @Mapping(target = "lastModifiedOn", expression = "java(toOffsetDateTime(course.getLastModifiedOn()))")
     public abstract CourseVTO toCourseVTO(Course course);
 
     public abstract List<CourseVTO> toCourseVTOs(List<Course> courses);

@@ -36,6 +36,12 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.enrollment</groupId>
+            <artifactId>enrollment-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>
@@ -44,6 +50,12 @@
         <dependency>
             <groupId>bs.lib.common</groupId>
             <artifactId>common-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-model</artifactId>
             <scope>provided</scope>
         </dependency>
 

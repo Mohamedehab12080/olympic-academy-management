@@ -27,4 +27,9 @@ public class LookupControllerImpl implements LookupController {
     public ResponseEntity<LookupResultSet> _getAllEmployeesLookup() {
         return ResponseEntity.ok(employeeService.getAllEmployeesLookup());
     }
+
+    @Override
+    public ResponseEntity<LookupResultSet> _getAllTrainersLookup() {
+        return ResponseEntity.ok(employeeService.getAllEmployeesLookup());
+    }
 }

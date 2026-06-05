@@ -55,4 +55,94 @@
                 referencedColumnNames="id"/>
     </changeSet>
 
+        <changeSet id="2" author="mohamed.ehab">
+            <createTable tableName="oa_course_session">
+                <column name="id" type="int" autoIncrement="true">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="title" type="varchar(250)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="course_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="employee_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="place_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="session_date" type="date"/>
+                <column name="start_time" type="time"/>
+                <column name="end_time" type="time"/>
+                <column name="status" type="varchar(100)"/>
+                <column name="note" type="text"/>
+                <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+                <column name="last_modified_on" type="timestamp"/>
+                <column name="created_by_id" type="int"/>
+                <column name="last_modified_by_id" type="int"/>
+                <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+            </createTable>
+
+            <addUniqueConstraint
+                    constraintName="uq_employee_course"
+                    tableName="oa_course_session"
+                    columnNames="employee_id,course_id,start_time,end_time"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_session_created_by"
+                    baseTableName="oa_course_session"
+                    baseColumnNames="created_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_session_modified_by"
+                    baseTableName="oa_course_session"
+                    baseColumnNames="last_modified_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+        </changeSet>
+
+        <changeSet id="3" author="mohamed.ehab">
+            <createTable tableName="oa_trainer_course">
+                <column name="id" type="int" autoIncrement="true">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="employee_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="course_id" type="int">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+                <column name="created_by_id" type="int"/>
+                <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
+            </createTable>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_trainer_course_employee"
+                    baseTableName="oa_trainer_course"
+                    baseColumnNames="employee_id"
+                    referencedTableName="oa_employee"
+                    referencedColumnNames="id"
+                    onDelete="CASCADE"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_trainer_course_course"
+                    baseTableName="oa_trainer_course"
+                    baseColumnNames="course_id"
+                    referencedTableName="oa_course"
+                    referencedColumnNames="id"
+                    onDelete="CASCADE"/>
+
+            <addForeignKeyConstraint
+                    constraintName="fk_trainer_course_created_by"
+                    baseTableName="oa_trainer_course"
+                    baseColumnNames="created_by_id"
+                    referencedTableName="oa_user"
+                    referencedColumnNames="id"/>
+
+        </changeSet>
+
 </databaseChangeLog>

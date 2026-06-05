@@ -27,4 +27,6 @@ public interface EmployeeService {
     LookupResultSet getAllEmployeesLookup();
     LookupResultSet getAllEmployeeTypesLookup();
     LookupResultSet getAllEmployeeAttendanceStatusLookup();
+    LookupResultSet getAllTrainersLookup();
+
 }

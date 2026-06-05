@@ -57,6 +57,36 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.place</groupId>
+            <artifactId>place-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.place</groupId>
+            <artifactId>place-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.enrollment</groupId>
+            <artifactId>enrollment-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.enrollment</groupId>
+            <artifactId>enrollment-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.financial</groupId>
+            <artifactId>financial-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.financial</groupId>
+            <artifactId>financial-repository</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.course</groupId>
             <artifactId>course-core</artifactId>
         </dependency>

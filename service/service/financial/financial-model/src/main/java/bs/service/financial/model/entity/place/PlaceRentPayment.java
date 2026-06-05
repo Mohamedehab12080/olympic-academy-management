@@ -32,7 +32,6 @@ public class PlaceRentPayment {
     @JoinColumn(name = "rent_type_id")
     private RentType rentType;
 
-
     @Column(name = "rent_amount")
     @Basic
     private Integer rentAmount;
@@ -52,10 +51,6 @@ public class PlaceRentPayment {
     @ManyToOne
     @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private PaymentStatus status;
 
     @Column(name = "created_on")
     @Basic

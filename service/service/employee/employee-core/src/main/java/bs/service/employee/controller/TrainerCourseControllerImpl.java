@@ -10,8 +10,9 @@ import bs.service.employee.model.generated.TrainerCourseResultSet;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @AllArgsConstructor
 public class TrainerCourseControllerImpl implements TrainerCourseController {
 

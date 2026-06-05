@@ -1,5 +1,6 @@
 package bs.service.employee.model.generated;
 
+import bs.service.employee.model.enums.SessionStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -26,7 +27,9 @@ public class CourseSessionDTO implements Serializable {
 
     private String title;
 
-    private Integer employeeId;
+    private Integer courseId;
+
+    private Integer trainerId;
 
     private Integer placeId;
 
@@ -62,25 +65,46 @@ public class CourseSessionDTO implements Serializable {
         this.title = title;
     }
 
-    public CourseSessionDTO employeeId(Integer employeeId) {
-        this.employeeId = employeeId;
+    public CourseSessionDTO courseId(Integer courseId) {
+        this.courseId = courseId;
         return this;
     }
 
     /**
-     * Get employeeId
+     * Get courseId
      *
-     * @return employeeId
+     * @return courseId
      */
     @NotNull
-    @Schema(name = "employeeId", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonProperty("employeeId")
-    public Integer getEmployeeId() {
-        return employeeId;
+    @Schema(name = "courseId", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("courseId")
+    public Integer getCourseId() {
+        return courseId;
     }
 
-    public void setEmployeeId(Integer employeeId) {
-        this.employeeId = employeeId;
+    public void setCourseId(Integer courseId) {
+        this.courseId = courseId;
+    }
+
+    public CourseSessionDTO trainerId(Integer trainerId) {
+        this.trainerId = trainerId;
+        return this;
+    }
+
+    /**
+     * Get trainerId
+     *
+     * @return trainerId
+     */
+    @NotNull
+    @Schema(name = "trainerId", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("trainerId")
+    public Integer getTrainerId() {
+        return trainerId;
+    }
+
+    public void setTrainerId(Integer trainerId) {
+        this.trainerId = trainerId;
     }
 
     public CourseSessionDTO placeId(Integer placeId) {
@@ -220,7 +244,8 @@ public class CourseSessionDTO implements Serializable {
         }
         CourseSessionDTO courseSessionDTO = (CourseSessionDTO) o;
         return Objects.equals(this.title, courseSessionDTO.title)
-                && Objects.equals(this.employeeId, courseSessionDTO.employeeId)
+                && Objects.equals(this.courseId, courseSessionDTO.courseId)
+                && Objects.equals(this.trainerId, courseSessionDTO.trainerId)
                 && Objects.equals(this.placeId, courseSessionDTO.placeId)
                 && Objects.equals(this.sessionDate, courseSessionDTO.sessionDate)
                 && Objects.equals(this.startTime, courseSessionDTO.startTime)
@@ -231,7 +256,7 @@ public class CourseSessionDTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, employeeId, placeId, sessionDate, startTime, endTime, status, note);
+        return Objects.hash(title, courseId, trainerId, placeId, sessionDate, startTime, endTime, status, note);
     }
 
     @Override
@@ -239,7 +264,8 @@ public class CourseSessionDTO implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("class CourseSessionDTO {\n");
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
-        sb.append("    employeeId: ").append(toIndentedString(employeeId)).append("\n");
+        sb.append("    courseId: ").append(toIndentedString(courseId)).append("\n");
+        sb.append("    trainerId: ").append(toIndentedString(trainerId)).append("\n");
         sb.append("    placeId: ").append(toIndentedString(placeId)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
         sb.append("    startTime: ").append(toIndentedString(startTime)).append("\n");

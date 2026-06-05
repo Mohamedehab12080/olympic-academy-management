@@ -173,7 +173,18 @@
 								<importMapping>CourseTypes =
 									bs.service.course.model.enums.CourseTypes
 								</importMapping>
-
+								<importMapping>RefundStatus =
+									bs.service.financial.model.enums.RefundStatus
+								</importMapping>
+								<importMapping>SalaryTransactionType =
+									bs.service.financial.model.enums.SalaryTransactionType
+								</importMapping>
+								<importMapping>DeductionTypes =
+									bs.service.financial.model.enums.DeductionTypes
+								</importMapping>
+								<importMapping>SessionStatus =
+									bs.service.employee.model.enums.SessionStatus
+								</importMapping>
 								<importMapping>EmployeeTypes =
 									bs.service.employee.model.enums.EmployeeTypes
 								</importMapping>
@@ -281,6 +292,18 @@
 										bs.lib.common.model.enums.Gender
 									</importMapping>
 
+									<importMapping>RefundStatus =
+										bs.service.financial.model.enums.RefundStatus
+									</importMapping>
+									<importMapping>SalaryTransactionType =
+										bs.service.financial.model.enums.SalaryTransactionType
+									</importMapping>
+									<importMapping>DeductionTypes =
+										bs.service.financial.model.enums.DeductionTypes
+									</importMapping>
+									<importMapping>SessionStatus =
+										bs.service.employee.model.enums.SessionStatus
+									</importMapping>
 									<importMapping>CourseTypes =
 										bs.service.course.model.enums.CourseTypes
 									</importMapping>

@@ -1,6 +1,7 @@
 package bs.service.employee.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.employee.model.enums.SessionStatus;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,7 +34,7 @@ public class CourseSessionVTO implements Serializable {
 
     private LookupVTO course;
 
-    private LookupVTO employee;
+    private LookupVTO trainer;
 
     private LookupVTO place;
 
@@ -121,25 +122,25 @@ public class CourseSessionVTO implements Serializable {
         this.course = course;
     }
 
-    public CourseSessionVTO employee(LookupVTO employee) {
-        this.employee = employee;
+    public CourseSessionVTO trainer(LookupVTO trainer) {
+        this.trainer = trainer;
         return this;
     }
 
     /**
-     * Get employee
+     * Get trainer
      *
-     * @return employee
+     * @return trainer
      */
     @Valid
-    @Schema(name = "employee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("employee")
-    public LookupVTO getEmployee() {
-        return employee;
+    @Schema(name = "trainer", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("trainer")
+    public LookupVTO getTrainer() {
+        return trainer;
     }
 
-    public void setEmployee(LookupVTO employee) {
-        this.employee = employee;
+    public void setTrainer(LookupVTO trainer) {
+        this.trainer = trainer;
     }
 
     public CourseSessionVTO place(LookupVTO place) {
@@ -363,7 +364,7 @@ public class CourseSessionVTO implements Serializable {
         CourseSessionVTO courseSessionVTO = (CourseSessionVTO) o;
         return Objects.equals(this.id, courseSessionVTO.id) && Objects.equals(this.title, courseSessionVTO.title)
                 && Objects.equals(this.course, courseSessionVTO.course)
-                && Objects.equals(this.employee, courseSessionVTO.employee)
+                && Objects.equals(this.trainer, courseSessionVTO.trainer)
                 && Objects.equals(this.place, courseSessionVTO.place)
                 && Objects.equals(this.sessionDate, courseSessionVTO.sessionDate)
                 && Objects.equals(this.startTime, courseSessionVTO.startTime)
@@ -378,8 +379,8 @@ public class CourseSessionVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, course, employee, place, sessionDate, startTime, endTime, status, note,
-                createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, title, course, trainer, place, sessionDate, startTime, endTime, status, note, createdOn,
+                createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -389,7 +390,7 @@ public class CourseSessionVTO implements Serializable {
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    course: ").append(toIndentedString(course)).append("\n");
-        sb.append("    employee: ").append(toIndentedString(employee)).append("\n");
+        sb.append("    trainer: ").append(toIndentedString(trainer)).append("\n");
         sb.append("    place: ").append(toIndentedString(place)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
         sb.append("    startTime: ").append(toIndentedString(startTime)).append("\n");

@@ -1,8 +1,8 @@
 package bs.service.employee.model.entity;
 
 import bs.service.course.model.entity.Course;
+import bs.service.employee.model.enums.SessionStatus;
 import bs.service.place.model.entity.Place;
-import bs.service.session.model.enums.SessionStatus;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

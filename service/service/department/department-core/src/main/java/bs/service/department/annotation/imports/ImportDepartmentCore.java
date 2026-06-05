@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Import(value = {ImportDepartmentCore.Root.class })
 public @interface ImportDepartmentCore {
 
-    @ComponentScan(basePackages = {"bs.service.Department.core", "bs.service.Department.controller"})
+    @ComponentScan(basePackages = {"bs.service.department.core", "bs.service.department.controller"})
     class Root {
     }
 }

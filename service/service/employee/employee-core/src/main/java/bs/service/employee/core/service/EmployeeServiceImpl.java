@@ -87,7 +87,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .hireDateFrom(hireDateFrom)
                 .hireDateTo(hireDateTo)
                 .gender(gender.title)
-                .employeeType(employeeType.title)
+                .employeeTypeId(employeeType.id)
                 .salaryType(salaryType)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(EmployeeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
@@ -124,5 +124,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     public LookupResultSet getAllEmployeeAttendanceStatusLookup() {
         List<LookupVTO> lookupVTOS=employeeMapper.toLookupEmployeeAttendanceStatusVTOs(List.of(EmployeeAttendanceStatus.values()));
         return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
+    }
+
+    @Override
+    public LookupResultSet getAllTrainersLookup() {
+        EmployeeSearchFilter trainerSearchFilter=EmployeeSearchFilter.builder()
+                .isActive(true)
+                .isDeleted(false)
+                .employeeTypeId(EmployeeTypes.TRAINER.id)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Employee> employees=employeeRepository.selectAllByFilters(trainerSearchFilter);
+        List<LookupVTO> lookupVTOS=employeeMapper.toLookupVTOs(employees);
+        return LookupResultSet.builder()._list(lookupVTOS).total(employeeRepository.countAllByFilters(trainerSearchFilter)).build();
     }
 }

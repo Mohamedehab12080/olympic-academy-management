@@ -1,9 +1,13 @@
 package bs.service.course.model.enums;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum CourseTypes {
-    QUALIFICATION("تأهيل"),TRAINING("تدريب");
-    String name;
+    QUALIFICATION(1,"تأهيل"),TRAINING(2,"تدريب");
+
+    private Integer id;
+    private String title;
 }

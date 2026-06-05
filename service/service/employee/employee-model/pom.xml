@@ -36,6 +36,12 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.place</groupId>
+            <artifactId>place-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>
