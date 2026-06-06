@@ -1,0 +1,208 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+* {
+  font-family: 'Cairo', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #f3f4f6;
+}
+
+/* RTL Support */
+.mat-mdc-form-field {
+  direction: rtl;
+  text-align: right;
+}
+
+.mat-mdc-table {
+  direction: rtl;
+}
+
+.mat-mdc-header-cell {
+  text-align: right !important;
+  font-weight: 600;
+}
+
+.mat-mdc-cell {
+  text-align: right !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Custom Colors */
+.text-primary { color: #2563eb; }
+.bg-primary { background-color: #2563eb; }
+.text-success { color: #10b981; }
+.bg-success { background-color: #10b981; }
+.text-warning { color: #f59e0b; }
+.bg-warning { background-color: #f59e0b; }
+.text-danger { color: #ef4444; }
+.bg-danger { background-color: #ef4444; }
+
+/* Animations */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+html, body { 
+  height: 100%; 
+}
+
+/* ==================== تنسيقات الإشعارات (Toast Notifications) ==================== */
+
+/* تنسيق Toast المخصص */
+.custom-toast {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.custom-toast .mdc-snackbar__surface {
+  background: transparent !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  border-radius: 12px !important;
+  min-width: 280px !important;
+}
+
+/* تنسيقات الإشعارات العادية (للأكشن) */
+.notification-snackbar {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Cairo', sans-serif;
+  border-radius: 12px !important;
+  margin: 8px !important;
+}
+
+.notification-success {
+  background: #10b981 !important;
+  color: white !important;
+  border-right: 4px solid #059669 !important;
+}
+
+.notification-error {
+  background: #ef4444 !important;
+  color: white !important;
+  border-right: 4px solid #dc2626 !important;
+}
+
+.notification-warning {
+  background: #f59e0b !important;
+  color: white !important;
+  border-right: 4px solid #d97706 !important;
+}
+
+.notification-info {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-right: 4px solid #2563eb !important;
+}
+
+/* تنسيق زر الإجراء في الإشعارات */
+.notification-snackbar .mat-mdc-button {
+  color: white !important;
+  font-weight: 500;
+}
+
+.notification-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+  border-right: 1px solid rgba(255,255,255,0.3);
+  margin-right: 8px;
+  padding-right: 8px;
+}
+
+/* تنسيق Toast Component الداخلي */
+.toast-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  direction: rtl;
+}
+
+.toast-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.toast-message {
+  font-size: 14px;
+}
+
+/* ألوان Toast */
+.toast-container.success {
+  background: #10b981;
+  color: white;
+}
+
+.toast-container.error {
+  background: #ef4444;
+  color: white;
+}
+
+.toast-container.warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.toast-container.info {
+  background: #3b82f6;
+  color: white;
+}
+
+/* تأثير ظهور الإشعارات */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.custom-toast,
+.notification-snackbar {
+  animation: slideInRight 0.3s ease-out !important;
+}
+
+/* تأثير اختفاء الإشعارات */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.notification-snackbar.mat-mdc-snack-bar-container {
+  animation: fadeOut 0.2s ease-in forwards;
+  animation-delay: 3.8s;
+}
