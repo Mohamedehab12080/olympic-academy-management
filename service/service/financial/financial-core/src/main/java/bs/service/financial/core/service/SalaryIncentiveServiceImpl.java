@@ -106,7 +106,7 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
 
         return SalaryIncentiveResultSet.builder()
                 .items(items)
-                .total(salaryIncentiveRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

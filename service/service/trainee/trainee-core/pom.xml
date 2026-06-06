@@ -16,11 +16,6 @@
     <version>0.0.1</version>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>bs.service.trainee</groupId>
@@ -30,6 +25,12 @@
         <dependency>
             <groupId>bs.service.course</groupId>
             <artifactId>course-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.employee</groupId>
+            <artifactId>employee-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -58,6 +59,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib.sql-db</groupId>
             <artifactId>sql-db-adapter-model</artifactId>
             <scope>provided</scope>
@@ -68,6 +75,13 @@
             <artifactId>spring-tx</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework</groupId>

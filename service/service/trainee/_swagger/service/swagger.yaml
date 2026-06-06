@@ -14,6 +14,8 @@ tags:
   - name: TraineeContact
   - name: TraineeCertificate
   - name: HealthCondition
+  - name: TraineeAttendance
+  - name: TraineeLookup
 
 paths:
   # ==================== Trainee Endpoints ====================
@@ -377,6 +379,210 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Trainee Attendance Endpoints ====================
+  /trainee-attendances:
+    post:
+      tags:
+        - TraineeAttendance
+      summary: Create trainee attendance record
+      operationId: createTraineeAttendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeAttendanceDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - TraineeAttendance
+      summary: Retrieve list of trainee attendances with filters
+      operationId: getAllTraineeAttendances
+      parameters:
+        - name: traineeId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: courseId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: courseSessionId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: status
+          in: query
+          required: false
+          schema:
+             $ref: '#/components/schemas/TraineeAttendanceStatus'
+        - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckInFrom'
+        - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckInTo'
+        - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckOutFrom'
+        - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckOutTo'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPFromDate'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPToDate'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeAttendanceResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainees/attendances/reports/daily:
+    get:
+      tags:
+        - TraineeAttendance
+      summary: Get daily attendance report
+      operationId: getDailyTraineeAttendanceReport
+      parameters:
+        - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPAttendanceDate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAttendanceReport'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainee-attendances/{attendanceId}:
+    put:
+      tags:
+        - TraineeAttendance
+      summary: Update trainee attendance record
+      operationId: updateTraineeAttendance
+      parameters:
+        - $ref: '#/components/parameters/PPAttendanceId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeAttendanceDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - TraineeAttendance
+      summary: Get trainee attendance by id
+      operationId: getTraineeAttendanceById
+      parameters:
+        - $ref: '#/components/parameters/PPAttendanceId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeAttendanceVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - TraineeAttendance
+      summary: Delete trainee attendance record (soft delete)
+      operationId: deleteTraineeAttendance
+      parameters:
+        - $ref: '#/components/parameters/PPAttendanceId'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainee-attendances/batch:
+    post:
+      tags:
+        - TraineeAttendance
+      summary: Batch create trainee attendance records for a session
+      operationId: batchCreateTraineeAttendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TraineeAttendanceDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainee-attendances/session/{sessionId}/report:
+    get:
+      tags:
+        - TraineeAttendance
+      summary: Get attendance report for a specific session
+      operationId: getSessionAttendanceReport
+      parameters:
+        - $ref: '#/components/parameters/PPSessionId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionAttendanceReport'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/trainee/attendance/status:
+    get:
+      tags:
+        - TraineeLookup
+      summary: Get all trainee attendance statuses for lookup
+      operationId: getTraineeAttendanceStatusLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
 components:
   parameters:
     PPTraineeId:
@@ -452,6 +658,20 @@ components:
       required: false
       schema:
         type: string
+    PPAttendanceId:
+      name: attendanceId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPSessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
 
   schemas:
     TraineeDTO:
@@ -679,3 +899,204 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HealthConditionVTO'
+
+    # ==================== Trainee Attendance Schemas ====================
+    DailyAttendanceReport:
+      type: object
+      properties:
+        attendanceDate:
+          type: string
+          format: date
+        totalNumber:
+          type: integer
+          format: int32
+        present:
+          type: integer
+          format: int32
+        absent:
+          type: integer
+          format: int32
+        late:
+          type: integer
+          format: int32
+        excused:
+          type: integer
+          format: int32
+        attendanceRate:
+          type: number
+          format: double
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeAttendanceListItem'
+
+    TraineeAttendanceStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2, 3, 4]
+        code:
+          type: string
+          enum: ["PRESENT", "ABSENT", "LATE", "EXCUSED"]
+        arabicLabel:
+          type: string
+          enum: ["حاضر", "غائب", "متأخر", "معذور"]
+
+    TraineeAttendanceDTO:
+      type: object
+      required:
+        - courseSessionId
+        - traineeId
+        - status
+      properties:
+        courseSessionId:
+          type: integer
+          format: int32
+          description: "ID of the course session"
+        traineeId:
+          type: integer
+          format: int32
+          description: "ID of the trainee"
+        status:
+          $ref: '#/components/schemas/TraineeAttendanceStatus'
+        attendanceDate:
+          type: string
+          format: date
+        checkInTime:
+          type: string
+          format: time
+          description: "Check in time (HH:MM:SS)"
+        checkOutTime:
+          type: string
+          format: time
+          description: "Check out time (HH:MM:SS)"
+        lateTime:
+          type: integer
+          format: int32
+          description: "Late time in minutes"
+        note:
+          type: string
+          description: "Additional notes"
+
+    TraineeAttendanceVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        trainee:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        session:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        status:
+          $ref: '#/components/schemas/TraineeAttendanceStatus'
+        attendanceDate:
+          type: string
+          format: date
+        checkInTime:
+          type: string
+          format: time
+        checkOutTime:
+          type: string
+          format: time
+        lateTime:
+          type: integer
+          format: int32
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    TraineeAttendanceListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        traineeName:
+          type: string
+        sessionTitle:
+          type: string
+        courseTitle:
+          type: string
+        sessionDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/TraineeAttendanceStatus'
+        checkInTime:
+          type: string
+          format: time
+        checkOutTime:
+          type: string
+          format: time
+        lateTime:
+          type: integer
+          format: int32
+
+    TraineeAttendanceResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeAttendanceListItem'
+
+    TraineeAttendanceListResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeAttendanceVTO'
+
+    SessionAttendanceReport:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+          format: int32
+        sessionTitle:
+          type: string
+        sessionDate:
+          type: string
+          format: date
+        totalTrainees:
+          type: integer
+          format: int32
+        present:
+          type: integer
+          format: int32
+        absent:
+          type: integer
+          format: int32
+        late:
+          type: integer
+          format: int32
+        excused:
+          type: integer
+          format: int32
+        attendanceRate:
+          type: number
+          format: double
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeAttendanceListItem'

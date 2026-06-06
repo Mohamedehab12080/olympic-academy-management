@@ -86,8 +86,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .createdOnTo(createdOnTo)
                 .hireDateFrom(hireDateFrom)
                 .hireDateTo(hireDateTo)
-                .gender(gender.title)
-                .employeeTypeId(employeeType.id)
+                .gender(gender!=null ? gender.title :null)
+                .employeeTypeId(employeeType!=null ? employeeType.id:null)
                 .salaryType(salaryType)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(EmployeeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
@@ -98,7 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<EmployeeListItem> listItems = employeeMapper.toEmployeeListItems(employees);
         return EmployeeResultSet.builder()
                 .items(listItems)
-                .total(employeeRepository.countAllByFilters(employeeSearchFilter))
+                .total(listItems.size())
                 .build();
     }
 
@@ -111,7 +111,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
         List<Employee> employees=employeeRepository.selectAllByFilters(employeeSearchFilter);
         List<LookupVTO> lookupVTOS=employeeMapper.toLookupVTOs(employees);
-        return LookupResultSet.builder()._list(lookupVTOS).total(employeeRepository.countAllByFilters(employeeSearchFilter)).build();
+        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
     }
 
     @Override
@@ -136,6 +136,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
         List<Employee> employees=employeeRepository.selectAllByFilters(trainerSearchFilter);
         List<LookupVTO> lookupVTOS=employeeMapper.toLookupVTOs(employees);
-        return LookupResultSet.builder()._list(lookupVTOS).total(employeeRepository.countAllByFilters(trainerSearchFilter)).build();
+        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
     }
 }

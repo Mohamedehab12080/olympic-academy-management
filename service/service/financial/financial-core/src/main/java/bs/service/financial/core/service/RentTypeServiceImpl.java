@@ -78,7 +78,7 @@ public class RentTypeServiceImpl implements RentTypeService {
 
         return RentTypeResultSet.builder()
                 .items(items)
-                .total(rentTypeRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

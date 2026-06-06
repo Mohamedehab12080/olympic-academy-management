@@ -10,6 +10,7 @@ import bs.service.financial.model.generated.SalaryDeductionResultSet;
 import bs.service.financial.model.generated.SalaryDeductionVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDate;
@@ -21,18 +22,21 @@ public class SalaryDeductionControllerImpl implements SalaryDeductionController 
     private final SalaryDeductionService salaryDeductionService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createSalaryDeduction(SalaryDeductionDTO salaryDeductionDTO) {
         NewRecordVTO result = salaryDeductionService.createSalaryDeduction(salaryDeductionDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteSalaryDeduction(Integer deductionId) {
         salaryDeductionService.deleteSalaryDeduction(deductionId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<SalaryDeductionResultSet> _getAllSalaryDeductionsByFilter(
             Integer employeeId, SalaryTypes salaryType,
             LocalDate deductionDateFrom, LocalDate deductionDateTo,
@@ -45,12 +49,14 @@ public class SalaryDeductionControllerImpl implements SalaryDeductionController 
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<SalaryDeductionVTO> _getSalaryDeductionById(Integer deductionId) {
         SalaryDeductionVTO result = salaryDeductionService.getSalaryDeductionById(deductionId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateSalaryDeduction(Integer deductionId, SalaryDeductionDTO salaryDeductionDTO) {
         NewRecordVTO result = salaryDeductionService.updateSalaryDeduction(deductionId, salaryDeductionDTO);
         return ResponseEntity.ok(result);

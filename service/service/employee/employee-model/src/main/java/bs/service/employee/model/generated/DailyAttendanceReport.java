@@ -29,7 +29,7 @@ public class DailyAttendanceReport implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate attendanceDate;
 
-    private Integer totalEmployees;
+    private Integer totalNumber;
 
     private Integer present;
 
@@ -65,25 +65,25 @@ public class DailyAttendanceReport implements Serializable {
         this.attendanceDate = attendanceDate;
     }
 
-    public DailyAttendanceReport totalEmployees(Integer totalEmployees) {
-        this.totalEmployees = totalEmployees;
+    public DailyAttendanceReport totalNumber(Integer totalNumber) {
+        this.totalNumber = totalNumber;
         return this;
     }
 
     /**
-     * Get totalEmployees
+     * Get totalNumber
      *
-     * @return totalEmployees
+     * @return totalNumber
      */
 
-    @Schema(name = "totalEmployees", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("totalEmployees")
-    public Integer getTotalEmployees() {
-        return totalEmployees;
+    @Schema(name = "totalNumber", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalNumber")
+    public Integer getTotalNumber() {
+        return totalNumber;
     }
 
-    public void setTotalEmployees(Integer totalEmployees) {
-        this.totalEmployees = totalEmployees;
+    public void setTotalNumber(Integer totalNumber) {
+        this.totalNumber = totalNumber;
     }
 
     public DailyAttendanceReport present(Integer present) {
@@ -230,7 +230,7 @@ public class DailyAttendanceReport implements Serializable {
         }
         DailyAttendanceReport dailyAttendanceReport = (DailyAttendanceReport) o;
         return Objects.equals(this.attendanceDate, dailyAttendanceReport.attendanceDate)
-                && Objects.equals(this.totalEmployees, dailyAttendanceReport.totalEmployees)
+                && Objects.equals(this.totalNumber, dailyAttendanceReport.totalNumber)
                 && Objects.equals(this.present, dailyAttendanceReport.present)
                 && Objects.equals(this.absent, dailyAttendanceReport.absent)
                 && Objects.equals(this.late, dailyAttendanceReport.late)
@@ -241,7 +241,7 @@ public class DailyAttendanceReport implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(attendanceDate, totalEmployees, present, absent, late, excused, attendanceRate, details);
+        return Objects.hash(attendanceDate, totalNumber, present, absent, late, excused, attendanceRate, details);
     }
 
     @Override
@@ -249,7 +249,7 @@ public class DailyAttendanceReport implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("class DailyAttendanceReport {\n");
         sb.append("    attendanceDate: ").append(toIndentedString(attendanceDate)).append("\n");
-        sb.append("    totalEmployees: ").append(toIndentedString(totalEmployees)).append("\n");
+        sb.append("    totalNumber: ").append(toIndentedString(totalNumber)).append("\n");
         sb.append("    present: ").append(toIndentedString(present)).append("\n");
         sb.append("    absent: ").append(toIndentedString(absent)).append("\n");
         sb.append("    late: ").append(toIndentedString(late)).append("\n");

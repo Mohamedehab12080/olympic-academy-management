@@ -10,11 +10,10 @@ import bs.service.employee.model.generated.CourseSessionResultSet;
 import bs.service.employee.model.generated.CourseSessionVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 @RestController
 @AllArgsConstructor
@@ -23,12 +22,14 @@ public class CourseSessionControllerImpl implements CourseSessionController {
     private final CourseSessionService courseSessionService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createCourseSession(Integer courseId, CourseSessionDTO courseSessionDTO) {
         NewRecordVTO result = courseSessionService.createCourseSession(courseId, courseSessionDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteCourseSession(Integer courseId, Integer sessionId) {
         courseSessionService.deleteCourseSession(courseId, sessionId);
         return ResponseEntity.ok().build();
@@ -36,6 +37,7 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<CourseSessionResultSet> _getAllCourseSessionsByFilter(Integer courseId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         CourseSessionResultSet result = courseSessionService.getAllCourseSessionsByFilter(
@@ -46,6 +48,7 @@ public class CourseSessionControllerImpl implements CourseSessionController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(Integer courseId, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy){
 
         CourseSessionResultSet result = courseSessionService.getAllSessionsByFilter(
@@ -56,12 +59,14 @@ public class CourseSessionControllerImpl implements CourseSessionController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<CourseSessionVTO> _getCourseSessionById(Integer courseId, Integer sessionId) {
         CourseSessionVTO result = courseSessionService.getCourseSessionById(courseId, sessionId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateCourseSession(Integer courseId, Integer sessionId,
                                                              CourseSessionDTO courseSessionDTO) {
         NewRecordVTO result = courseSessionService.updateCourseSession(courseId, sessionId, courseSessionDTO);

@@ -1,10 +1,8 @@
 package bs.service.employee.model.filter;
 
-import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.sql.db.adapter.model.dto.SearchFilter;
 import bs.lib.sql.db.adapter.model.interfaces.OrderAttributes;
-import bs.service.employee.model.enums.EmployeeTypes;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;

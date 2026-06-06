@@ -83,7 +83,7 @@ public class TraineeContactServiceImpl implements TraineeContactService {
 
         return TraineeContactResultSet.builder()
                 .items(items)
-                .total(traineeContactRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

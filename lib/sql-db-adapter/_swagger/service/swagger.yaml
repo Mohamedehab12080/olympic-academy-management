@@ -25,6 +25,22 @@ components:
       schema:
         $ref: '#/components/schemas/OrderDirections'
 
+    QPFromDate:
+      name: fromDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+
+    QPToDate:
+      name: toDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+
     QPPageNum:
       name: pageNum
       in: query

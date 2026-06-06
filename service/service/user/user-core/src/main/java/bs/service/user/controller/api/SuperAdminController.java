@@ -14,12 +14,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "Super Admin Management", description = "Super Admin endpoints for managing admin users")
-@RequestMapping("/api/super-admin")
+@RequestMapping("/super-admin")
 public interface SuperAdminController {
 
     @PostMapping("/admins")

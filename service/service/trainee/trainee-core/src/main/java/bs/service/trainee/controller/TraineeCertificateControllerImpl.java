@@ -8,6 +8,7 @@ import bs.service.trainee.model.generated.TraineeCertificateDTO;
 import bs.service.trainee.model.generated.TraineeCertificateResultSet;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDate;
@@ -19,18 +20,21 @@ public class TraineeCertificateControllerImpl implements TraineeCertificateContr
     private final TraineeCertificateService traineeCertificateService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createTraineeCertificate(Integer traineeId, TraineeCertificateDTO traineeCertificateDTO) {
         NewRecordVTO result = traineeCertificateService.createTraineeCertificate(traineeId, traineeCertificateDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteTraineeCertificate(Integer traineeId, Integer certificateId) {
         traineeCertificateService.deleteTraineeCertificate(traineeId, certificateId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<TraineeCertificateResultSet> _getAllTraineeCertificatesByFilter(
             Integer traineeId, Integer courseId, String quickSearch,
             LocalDate issueDateFrom, LocalDate issueDateTo,
@@ -43,6 +47,7 @@ public class TraineeCertificateControllerImpl implements TraineeCertificateContr
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateTraineeCertificate(Integer traineeId, Integer certificateId,
                                                                   TraineeCertificateDTO traineeCertificateDTO) {
         NewRecordVTO result = traineeCertificateService.updateTraineeCertificate(traineeId, certificateId, traineeCertificateDTO);

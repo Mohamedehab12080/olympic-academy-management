@@ -40,7 +40,7 @@ public class EnrollmentPayment {
     @Basic
     private Integer paidAmount;
 
-    @Column(name = "enrollment_vlaue")
+    @Column(name = "enrollment_value")
     @Basic
     private Integer enrollmentValue;
 

@@ -99,7 +99,7 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
 
         return TrainerCourseResultSet.builder()
                 .items(items)
-                .total(trainerCourseRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 
@@ -120,7 +120,7 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
 
         return TrainerCourseAssignmentResultSet.builder()
                 .items(items)
-                .total(trainerCourseRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

@@ -21,7 +21,6 @@
             <artifactId>employee-api</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>bs.service.user</groupId>
             <artifactId>user-model</artifactId>

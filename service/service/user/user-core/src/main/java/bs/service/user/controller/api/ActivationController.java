@@ -13,10 +13,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Account Activation", description = "Endpoints for user account activation and password reset")
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public interface ActivationController {
 
     @GetMapping("/activate")

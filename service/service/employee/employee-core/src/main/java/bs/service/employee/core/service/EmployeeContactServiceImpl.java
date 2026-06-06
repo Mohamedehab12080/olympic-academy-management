@@ -78,7 +78,7 @@ public class EmployeeContactServiceImpl implements EmployeeContactService {
                 .build();
         List<EmployeeContact> employeeContacts=employeeContactRepository.selectAllByFilters(employeeContactSearchFilter);
         List<EmployeeContactListItem> employeeContactListItems=employeeMapper.toEmployeeContactListItems(employeeContacts);
-        return EmployeeContactResultSet.builder().items(employeeContactListItems).total(employeeContactRepository.countAllByFilters(employeeContactSearchFilter)).build();
+        return EmployeeContactResultSet.builder().items(employeeContactListItems).total(employeeContactListItems.size()).build();
     }
 
     @Override

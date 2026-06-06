@@ -102,7 +102,7 @@ public class SalaryDeductionServiceImpl implements SalaryDeductionService {
 
         return SalaryDeductionResultSet.builder()
                 .items(items)
-                .total(salaryDeductionRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

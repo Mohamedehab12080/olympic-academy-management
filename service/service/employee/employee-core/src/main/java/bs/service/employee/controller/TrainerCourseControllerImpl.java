@@ -9,6 +9,7 @@ import bs.service.employee.model.generated.TrainerCourseAssignmentResultSet;
 import bs.service.employee.model.generated.TrainerCourseResultSet;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +20,7 @@ public class TrainerCourseControllerImpl implements TrainerCourseController {
     private final TrainerCourseService trainerCourseService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<TrainerCourseResultSet> _getTrainerCourses(Integer trainerId, Integer pageNum,
                                                                      Integer pageSize, OrderDirections orderDir,
                                                                      String orderBy) {
@@ -28,18 +30,21 @@ public class TrainerCourseControllerImpl implements TrainerCourseController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _assignCourseToTrainer(Integer trainerId, AssignCourseDTO assignCourseDTO) {
         NewRecordVTO result = trainerCourseService.assignCourseToTrainer(trainerId, assignCourseDTO.getCourseId());
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _unassignCourseFromTrainer(Integer trainerId, Integer courseId) {
         trainerCourseService.unassignCourseFromTrainer(trainerId, courseId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<TrainerCourseAssignmentResultSet> _getAllTrainerCourseAssignments(
             Integer trainerId, Integer courseId, Integer pageNum, Integer pageSize,
             OrderDirections orderDir, String orderBy) {

@@ -78,7 +78,7 @@ public class EnrollmentTypeServiceImpl implements EnrollmentTypeService {
 
         return EnrollmentTypeResultSet.builder()
                 .items(items)
-                .total(enrollmentTypeRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

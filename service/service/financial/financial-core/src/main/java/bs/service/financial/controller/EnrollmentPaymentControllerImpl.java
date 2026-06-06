@@ -10,6 +10,7 @@ import bs.service.financial.model.generated.EnrollmentPaymentResultSet;
 import bs.service.financial.model.generated.EnrollmentPaymentVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDate;
@@ -21,18 +22,21 @@ public class EnrollmentPaymentControllerImpl implements EnrollmentPaymentControl
     private final EnrollmentPaymentService enrollmentPaymentService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createEnrollmentPayment(EnrollmentPaymentDTO enrollmentPaymentDTO) {
         NewRecordVTO result = enrollmentPaymentService.createEnrollmentPayment(enrollmentPaymentDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteEnrollmentPayment(Integer paymentId) {
         enrollmentPaymentService.deleteEnrollmentPayment(paymentId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentPaymentResultSet> _getAllEnrollmentPaymentsByFilter(
             Integer enrollmentId, Integer paymentMethodId, PaymentStatus status,
             LocalDate paymentDateFrom, LocalDate paymentDateTo,
@@ -45,12 +49,14 @@ public class EnrollmentPaymentControllerImpl implements EnrollmentPaymentControl
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentPaymentVTO> _getEnrollmentPaymentById(Integer paymentId) {
         EnrollmentPaymentVTO result = enrollmentPaymentService.getEnrollmentPaymentById(paymentId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateEnrollmentPayment(Integer paymentId, EnrollmentPaymentDTO enrollmentPaymentDTO) {
         NewRecordVTO result = enrollmentPaymentService.updateEnrollmentPayment(paymentId, enrollmentPaymentDTO);
         return ResponseEntity.ok(result);

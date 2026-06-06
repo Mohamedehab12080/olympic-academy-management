@@ -128,7 +128,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
 
         return CourseSessionResultSet.builder()
                 .items(items)
-                .total(courseSessionRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 
@@ -155,7 +155,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
 
         return CourseSessionResultSet.builder()
                 .items(items)
-                .total(courseSessionRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

@@ -1,0 +1,193 @@
+<div class="enrollments-container">
+  <div class="page-header">
+    <div>
+      <h2>إدارة التسجيلات</h2>
+      <p>عرض وإدارة تسجيلات المتدربين في الدورات</p>
+    </div>
+    <button mat-raised-button color="primary" routerLink="/enrollments/new">
+      <mat-icon>add</mat-icon> تسجيل جديد
+    </button>
+  </div>
+
+  <mat-card>
+    <!-- الفلاتر -->
+    <div class="filters-section">
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>بحث عام</mat-label>
+          <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>المتدرب</mat-label>
+          <mat-select [(ngModel)]="filters.traineeId" (selectionChange)="loadEnrollments()">
+            <mat-option [value]="null">الكل</mat-option>
+            <mat-option *ngFor="let t of trainees" [value]="t.id">{{ t.title }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>الدورة</mat-label>
+          <mat-select [(ngModel)]="filters.courseId" (selectionChange)="loadEnrollments()">
+            <mat-option [value]="null">الكل</mat-option>
+            <mat-option *ngFor="let c of courses" [value]="c.id">{{ c.title }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>المدرب</mat-label>
+          <mat-select [(ngModel)]="filters.trainerId" (selectionChange)="loadEnrollments()">
+            <mat-option [value]="null">الكل</mat-option>
+            <mat-option *ngFor="let t of trainers" [value]="t.id">{{ t.title }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>حالة التسجيل</mat-label>
+          <mat-select [(ngModel)]="filters.enrollmentStatus" (selectionChange)="loadEnrollments()">
+            <mat-option [value]="null">الكل</mat-option>
+            <mat-option *ngFor="let s of enrollmentStatuses" [value]="s.id">{{ s.title }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>حالة الدفع</mat-label>
+          <mat-select [(ngModel)]="filters.paymentStatus" (selectionChange)="loadEnrollments()">
+            <mat-option [value]="null">الكل</mat-option>
+            <mat-option *ngFor="let s of paymentStatuses" [value]="s.id">{{ s.title }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>تاريخ البدء من</mat-label>
+          <input matInput [matDatepicker]="startFromPicker" [(ngModel)]="filters.startDateFrom" (dateChange)="loadEnrollments()">
+          <mat-datepicker-toggle matSuffix [for]="startFromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startFromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>تاريخ البدء إلى</mat-label>
+          <input matInput [matDatepicker]="startToPicker" [(ngModel)]="filters.startDateTo" (dateChange)="loadEnrollments()">
+          <mat-datepicker-toggle matSuffix [for]="startToPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startToPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>تاريخ الانتهاء من</mat-label>
+          <input matInput [matDatepicker]="endFromPicker" [(ngModel)]="filters.endDateFrom" (dateChange)="loadEnrollments()">
+          <mat-datepicker-toggle matSuffix [for]="endFromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endFromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>تاريخ الانتهاء إلى</mat-label>
+          <input matInput [matDatepicker]="endToPicker" [(ngModel)]="filters.endDateTo" (dateChange)="loadEnrollments()">
+          <mat-datepicker-toggle matSuffix [for]="endToPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endToPicker></mat-datepicker>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="resetFilters()">
+            <mat-icon>clear</mat-icon> مسح الفلاتر
+          </button>
+          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0">
+            <mat-icon>table_chart</mat-icon> Excel
+          </button>
+          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0">
+            <mat-icon>picture_as_pdf</mat-icon> PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- تحميل -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>جاري تحميل البيانات...</p>
+    </div>
+
+    <!-- الجدول -->
+    <div class="table-container" *ngIf="!isLoading">
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" matSort class="full-width-table">
+          
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>#</th>
+            <td mat-cell *matCellDef="let e">{{ e.id }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="trainee">
+            <th mat-header-cell *matHeaderCellDef>المتدرب</th>
+            <td mat-cell *matCellDef="let e">{{ e.trainee?.title }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="course">
+            <th mat-header-cell *matHeaderCellDef>الدورة</th>
+            <td mat-cell *matCellDef="let e">{{ e.course?.title }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="trainer">
+            <th mat-header-cell *matHeaderCellDef>المدرب</th>
+            <td mat-cell *matCellDef="let e">{{ e.trainer?.title }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="startDate">
+            <th mat-header-cell *matHeaderCellDef>تاريخ البدء</th>
+            <td mat-cell *matCellDef="let e">{{ e.startDate | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="endDate">
+            <th mat-header-cell *matHeaderCellDef>تاريخ الانتهاء</th>
+            <td mat-cell *matCellDef="let e">{{ e.endDate ? (e.endDate | date:'dd/MM/yyyy') : '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="enrollmentStatus">
+            <th mat-header-cell *matHeaderCellDef>حالة التسجيل</th>
+            <td mat-cell *matCellDef="let e">{{ e.enrollmentStatus?.title }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="paymentStatus">
+            <th mat-header-cell *matHeaderCellDef>حالة الدفع</th>
+            <td mat-cell *matCellDef="let e">{{ e.paymentStatus?.title }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>المبلغ</th>
+            <td mat-cell *matCellDef="let e">{{ e.finalSubscriptionValue | currency:'EGP ' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
+            <td mat-cell *matCellDef="let e">
+              <button mat-icon-button color="primary" (click)="viewEnrollment(e.id)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button color="accent" (click)="editEnrollment(e.id)">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        </table>
+      </div>
+
+      <div class="no-data" *ngIf="dataSource.data.length === 0">
+        <mat-icon>receipt</mat-icon>
+        <p>لا توجد تسجيلات</p>
+        <button mat-raised-button color="primary" routerLink="/enrollments/new">
+          <mat-icon>add</mat-icon> إضافة تسجيل جديد
+        </button>
+      </div>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </mat-card>
+</div>

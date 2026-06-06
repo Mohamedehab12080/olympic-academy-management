@@ -75,7 +75,7 @@ public class CourseServiceImpl implements CourseService {
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(CourseSearchFilter.OrderByAttributes.START_DATE,OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
-                .courseType(courseType.name())
+                .courseType(courseType!=null ?courseType.getTitle() :null)
                 .startDateFrom(startDateFrom)
                 .startDateTo(startDateTo)
                 .endDateFrom(endDateFrom)
@@ -83,6 +83,6 @@ public class CourseServiceImpl implements CourseService {
                 .build();
         List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
         List<CourseVTO> courseVTOS=courseMapper.toCourseVTOs(courses);
-        return CourseResultSet.builder().items(courseVTOS).total(courseRepository.countAllByFilter(courseSearchFilter)).build();
+        return CourseResultSet.builder().items(courseVTOS).total(courseVTOS.size()).build();
     }
 }

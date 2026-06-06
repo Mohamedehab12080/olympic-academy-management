@@ -120,7 +120,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         return EnrollmentResultSet.builder()
                 .items(items)
-                .total(enrollmentRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

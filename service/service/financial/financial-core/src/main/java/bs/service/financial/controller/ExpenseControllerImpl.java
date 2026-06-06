@@ -9,6 +9,7 @@ import bs.service.financial.model.generated.ExpenseResultSet;
 import bs.service.financial.model.generated.ExpenseVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDate;
@@ -20,18 +21,21 @@ public class ExpenseControllerImpl implements ExpenseController {
     private final ExpenseService expenseService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createExpense(ExpenseDTO expenseDTO) {
         NewRecordVTO result = expenseService.createExpense(expenseDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteExpense(Integer expenseId) {
         expenseService.deleteExpense(expenseId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ExpenseResultSet> _getAllExpensesByFilter(
             Integer expenseTypeId, Integer paymentMethodId,
             LocalDate expenseDateFrom, LocalDate expenseDateTo,
@@ -44,12 +48,14 @@ public class ExpenseControllerImpl implements ExpenseController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ExpenseVTO> _getExpenseById(Integer expenseId) {
         ExpenseVTO result = expenseService.getExpenseById(expenseId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateExpense(Integer expenseId, ExpenseDTO expenseDTO) {
         NewRecordVTO result = expenseService.updateExpense(expenseId, expenseDTO);
         return ResponseEntity.ok(result);

@@ -1,7 +1,7 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -47,6 +47,9 @@ import { ApiService } from './core/services/api.service';
 import { NotificationService } from './core/services/notification.service';
 import { ReportService } from './core/services/report.service';
 
+// Interceptor
+import { authInterceptor } from './core/auth/auth.interceptor';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -91,6 +94,7 @@ import { ReportService } from './core/services/report.service';
     MatExpansionModule
   ],
   providers: [
+    provideHttpClient(withInterceptors([authInterceptor])), // ✅ إضافة الـ interceptor
     ApiService,
     NotificationService,
     ReportService

@@ -8,7 +8,8 @@ public enum TraineeDomains implements Domains {
     TRAINEE(5002),
     TRAINEE_CERTIFICATE(5003),
     TRAINEE_CONTACT(5004),
-    HEALTH_CONDITION(5005);
+    HEALTH_CONDITION(5005),
+    TRAINEE_ATTENDANCE(5006);
 
     private final Integer id;
 

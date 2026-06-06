@@ -100,13 +100,13 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
 
         EmployeeAttendanceSearchFilter filter = EmployeeAttendanceSearchFilter.builder()
                 .employeeId(employeeId)
-                .status(status.title)
+                .status(status!=null ?status.title:null)
                 .attendanceDateFrom(attendanceDateFrom)
                 .attendanceDateTo(attendanceDateTo)
-                .checkInFrom(LocalTime.parse(checkInFrom))
-                .checkInTo(LocalTime.parse(checkInTo))
-                .checkOutFrom(LocalTime.parse(checkOutFrom))
-                .checkOutTo(LocalTime.parse(checkOutTo))
+                .checkInFrom(checkInFrom != null ? LocalTime.parse(checkInFrom) : null)
+                .checkInTo(checkInTo != null ? LocalTime.parse(checkInTo) : null)
+                .checkOutFrom(checkOutFrom != null ? LocalTime.parse(checkOutFrom) : null)
+                .checkOutTo(checkOutTo != null ? LocalTime.parse(checkOutTo) : null)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(EmployeeAttendanceSearchFilter.OrderByAttributes.ATTENDANCE_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
@@ -117,7 +117,7 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
 
         return EmployeeAttendanceResultSet.builder()
                 .items(items)
-                .total(employeeAttendanceRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 
@@ -143,7 +143,7 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
 
         return DailyAttendanceReport.builder()
                 .attendanceDate(attendanceDate)
-                .totalEmployees((int) totalEmployees)
+                .totalNumber((int) totalEmployees)
                 .present((int) present)
                 .absent((int) absent)
                 .late((int) late)

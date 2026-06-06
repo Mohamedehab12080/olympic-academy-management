@@ -90,7 +90,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         return ExpenseResultSet.builder()
                 .items(items)
-                .total(expenseRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

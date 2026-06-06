@@ -11,6 +11,7 @@ import bs.service.enrollment.model.generated.EnrollmentResultSet;
 import bs.service.enrollment.model.generated.EnrollmentVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDate;
@@ -22,18 +23,21 @@ public class EnrollmentControllerImpl implements EnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createEnrollment(EnrollmentDTO enrollmentDTO) {
         NewRecordVTO result = enrollmentService.createEnrollment(enrollmentDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteEnrollment(Integer enrollmentId) {
         enrollmentService.deleteEnrollment(enrollmentId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsByFilter(String quickSearch, Boolean isActive, Integer traineeId, Integer courseId, Integer trainerId, Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus, PaymentStatus paymentStatus, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo, LocalDate createdOnFrom, LocalDate createdOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
         EnrollmentResultSet result = enrollmentService.getAllEnrollmentsByFilter(
                 quickSearch, isActive, traineeId, courseId, trainerId, enrollmentTypeId,
@@ -44,12 +48,14 @@ public class EnrollmentControllerImpl implements EnrollmentController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentVTO> _getEnrollmentById(Integer enrollmentId) {
         EnrollmentVTO result = enrollmentService.getEnrollmentById(enrollmentId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateEnrollment(Integer enrollmentId, EnrollmentDTO enrollmentDTO) {
         NewRecordVTO result = enrollmentService.updateEnrollment(enrollmentId, enrollmentDTO);
         return ResponseEntity.ok(result);

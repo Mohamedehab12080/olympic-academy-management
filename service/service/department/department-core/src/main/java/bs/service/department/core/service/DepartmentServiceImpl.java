@@ -68,7 +68,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .build();
         List<Department> departments=departmentRepository.selectAllByFilters(departmentSearchFilter);
         List<DepartmentListItem> listItems=departmentMapper.toDepartmentListItems(departments);
-        return DepartmentResultSet.builder().items(listItems).total(departmentRepository.countAllByFilters(departmentSearchFilter)).build();
+        return DepartmentResultSet.builder().items(listItems).total(listItems.size()).build();
     }
 
     @Override
@@ -87,6 +87,6 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .pagination(PaginationInfo.noPagination())
                 .build();
         List<LookupVTO> lookupVTOS=departmentMapper.toLookupVTOs(departmentRepository.selectAllByFilters(departmentSearchFilter));
-        return LookupResultSet.builder()._list(lookupVTOS).total(departmentRepository.countAllByFilters(departmentSearchFilter)).build();
+        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
     }
 }

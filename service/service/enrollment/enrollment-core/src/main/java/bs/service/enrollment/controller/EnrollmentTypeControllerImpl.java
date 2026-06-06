@@ -9,6 +9,7 @@ import bs.service.enrollment.model.generated.EnrollmentTypeResultSet;
 import bs.service.enrollment.model.generated.EnrollmentTypeVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -18,18 +19,21 @@ public class EnrollmentTypeControllerImpl implements EnrollmentTypeController {
     private final EnrollmentTypeService enrollmentTypeService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createEnrollmentType(EnrollmentTypeDTO enrollmentTypeDTO) {
         NewRecordVTO result = enrollmentTypeService.createEnrollmentType(enrollmentTypeDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteEnrollmentType(Integer enrollmentTypeId) {
         enrollmentTypeService.deleteEnrollmentType(enrollmentTypeId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentTypeResultSet> _getAllEnrollmentTypes(String quickSearch, Integer pageNum,
                                                                           Integer pageSize, OrderDirections orderDir,
                                                                           String orderBy) {
@@ -39,12 +43,14 @@ public class EnrollmentTypeControllerImpl implements EnrollmentTypeController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentTypeVTO> _getEnrollmentTypeById(Integer enrollmentTypeId) {
         EnrollmentTypeVTO result = enrollmentTypeService.getEnrollmentTypeById(enrollmentTypeId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateEnrollmentType(Integer enrollmentTypeId, EnrollmentTypeDTO enrollmentTypeDTO) {
         NewRecordVTO result = enrollmentTypeService.updateEnrollmentType(enrollmentTypeId, enrollmentTypeDTO);
         return ResponseEntity.ok(result);

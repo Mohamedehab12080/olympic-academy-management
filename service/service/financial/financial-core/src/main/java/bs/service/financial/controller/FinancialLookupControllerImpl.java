@@ -19,6 +19,7 @@ import bs.service.financial.model.filter.PaymentMethodSearchFilter;
 import bs.service.financial.model.filter.RentTypeSearchFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.util.Arrays;
@@ -35,6 +36,7 @@ public class FinancialLookupControllerImpl implements LookupController {
     private final FinancialMapper financialMapper;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllExpenseTypesLookup(Boolean isActive) {
         ExpenseTypeSearchFilter filter = ExpenseTypeSearchFilter.builder()
                 .isActive(isActive)
@@ -45,11 +47,12 @@ public class FinancialLookupControllerImpl implements LookupController {
 
         return ResponseEntity.ok(LookupResultSet.builder()
                 ._list(items)
-                .total(expenseTypeRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build());
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllPaymentMethodsLookup() {
         PaymentMethodSearchFilter filter = PaymentMethodSearchFilter.builder().build();
 
@@ -58,11 +61,12 @@ public class FinancialLookupControllerImpl implements LookupController {
 
         return ResponseEntity.ok(LookupResultSet.builder()
                 ._list(items)
-                .total(paymentMethodRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build());
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllPaymentStatusLookup() {
         List<LookupVTO> items = Arrays.stream(PaymentStatus.values())
                 .map(financialMapper::toLookupVTO)
@@ -75,6 +79,7 @@ public class FinancialLookupControllerImpl implements LookupController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllRefundStatusLookup() {
         List<LookupVTO> items = Arrays.stream(RefundStatus.values())
                 .map(financialMapper::toLookupVTO)
@@ -87,6 +92,7 @@ public class FinancialLookupControllerImpl implements LookupController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllRentTypesLookup() {
         RentTypeSearchFilter filter = RentTypeSearchFilter.builder().build();
 
@@ -95,11 +101,12 @@ public class FinancialLookupControllerImpl implements LookupController {
 
         return ResponseEntity.ok(LookupResultSet.builder()
                 ._list(items)
-                .total(rentTypeRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build());
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllSalaryTransactionTypesLookup() {
         List<LookupVTO> items = Arrays.stream(SalaryTransactionType.values())
                 .map(financialMapper::toLookupVTO)
@@ -112,6 +119,7 @@ public class FinancialLookupControllerImpl implements LookupController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllSalaryTypesLookup() {
         List<LookupVTO> items = Arrays.stream(SalaryTypes.values())
                 .map(financialMapper::toLookupVTO)

@@ -1,0 +1,150 @@
+<div class="refunds-container">
+  <div class="page-header">
+    <div>
+      <h1>استردادات التسجيلات</h1>
+      <p>إدارة ومتابعة استردادات المبالغ لتسجيلات المتدربين</p>
+    </div>
+    <button mat-raised-button color="primary" routerLink="/financial/enrollment-refunds/new">
+      <mat-icon>add</mat-icon> استرداد جديد
+    </button>
+  </div>
+
+  <mat-card>
+    <!-- صف الفلاتر الأول -->
+    <div class="filters">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>بحث عام</mat-label>
+        <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث عن تسجيل...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>التسجيل</mat-label>
+        <mat-select [(ngModel)]="filters.enrollmentId" (selectionChange)="loadData()">
+          <mat-option [value]="null">الكل</mat-option>
+          <mat-option *ngFor="let e of enrollments" [value]="e.id">{{ e.title }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>طريقة الدفع</mat-label>
+        <mat-select [(ngModel)]="filters.paymentMethodId" (selectionChange)="loadData()">
+          <mat-option [value]="null">الكل</mat-option>
+          <mat-option *ngFor="let p of paymentMethods" [value]="p.id">{{ p.title }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- صف الفلاتر الثاني -->
+    <div class="filters">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>حالة الاسترداد</mat-label>
+        <mat-select [(ngModel)]="filters.status" (selectionChange)="loadData()">
+          <mat-option [value]="null">الكل</mat-option>
+          <mat-option *ngFor="let s of refundStatuses" [value]="s.id">{{ s.title }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>من تاريخ</mat-label>
+        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.refundDateFrom" (dateChange)="loadData()">
+        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+        <mat-datepicker #fromPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>إلى تاريخ</mat-label>
+        <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.refundDateTo" (dateChange)="loadData()">
+        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+        <mat-datepicker #toPicker></mat-datepicker>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="resetFilters()">
+        <mat-icon>clear</mat-icon> مسح الفلاتر
+      </button>
+      <button mat-stroked-button color="accent" (click)="exportToExcel()">
+        <mat-icon>table_chart</mat-icon> Excel
+      </button>
+      <button mat-stroked-button color="warn" (click)="exportToPDF()">
+        <mat-icon>picture_as_pdf</mat-icon> PDF
+      </button>
+    </div>
+
+    <!-- تحميل -->
+    <div class="loading" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <!-- الجدول -->
+    <div class="table-container" *ngIf="!isLoading">
+      <div class="table-info" *ngIf="dataSource.data.length > 0">
+        <p>عدد السجلات: <strong>{{ dataSource.data.length }}</strong> استرداد</p>
+      </div>
+
+      <table mat-table [dataSource]="dataSource" matSort class="full-width">
+        
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef> # </th>
+          <td mat-cell *matCellDef="let r"> {{r.id}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="enrollment">
+          <th mat-header-cell *matHeaderCellDef> التسجيل </th>
+          <td mat-cell *matCellDef="let r"> {{r.enrollment?.title}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="amountRefunded">
+          <th mat-header-cell *matHeaderCellDef> المبلغ المسترد </th>
+          <td mat-cell *matCellDef="let r"> {{r.amountRefunded}} ريال </td>
+        </ng-container>
+
+        <ng-container matColumnDef="refundDate">
+          <th mat-header-cell *matHeaderCellDef> تاريخ الاسترداد </th>
+          <td mat-cell *matCellDef="let r"> {{r.refundDate | date}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="paymentMethod">
+          <th mat-header-cell *matHeaderCellDef> طريقة الدفع </th>
+          <td mat-cell *matCellDef="let r"> {{r.paymentMethod?.title || '-'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> الحالة </th>
+          <td mat-cell *matCellDef="let r"> 
+            <span [style.background]="getStatusColor(r.status?.id)" 
+                  [style.color]="getStatusTextColor(r.status?.id)"
+                  style="padding: 4px 12px; border-radius: 20px;">
+              {{r.status?.title}}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> الإجراءات </th>
+          <td mat-cell *matCellDef="let r">
+            <button mat-icon-button color="primary" (click)="editRefund(r.id)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteRefund(r)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      </table>
+
+      <div class="no-data" *ngIf="dataSource.data.length === 0">
+        <mat-icon>receipt</mat-icon>
+        <p>لا توجد استردادات</p>
+        <button mat-raised-button color="primary" routerLink="/financial/enrollment-refunds/new">
+          <mat-icon>add</mat-icon> إضافة استرداد جديد
+        </button>
+      </div>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </mat-card>
+</div>

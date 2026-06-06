@@ -1,0 +1,64 @@
+<div class="activate-container">
+  <mat-card class="activate-card">
+    <!-- حالة التحميل -->
+    <div class="loading-state" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>جاري التحقق من حسابك...</p>
+    </div>
+
+    <!-- حالة النجاح -->
+    <div class="success-state" *ngIf="!isLoading && isSuccess">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+      <h2>تم التفعيل بنجاح!</h2>
+      <p>{{ message }}</p>
+      <p class="countdown">سيتم تحويلك إلى صفحة تسجيل الدخول بعد {{ countdown }} ثواني...</p>
+      <button mat-raised-button color="primary" (click)="goToLogin()">
+        <mat-icon>login</mat-icon> تسجيل الدخول الآن
+      </button>
+    </div>
+
+    <!-- حالة الخطأ -->
+    <div class="error-state" *ngIf="!isLoading && isError">
+      <mat-icon class="error-icon">error</mat-icon>
+      <h2>فشل التفعيل</h2>
+      <p>{{ message }}</p>
+      
+      <div *ngIf="isExpired" class="expired-actions">
+        <button mat-stroked-button color="primary" (click)="toggleResendForm()">
+          <mat-icon>email</mat-icon> إعادة إرسال بريد التفعيل
+        </button>
+        <button mat-stroked-button (click)="goToLogin()">
+          <mat-icon>login</mat-icon> الذهاب إلى تسجيل الدخول
+        </button>
+      </div>
+
+      <div *ngIf="!isExpired">
+        <button mat-raised-button color="primary" (click)="goToLogin()">
+          <mat-icon>login</mat-icon> تسجيل الدخول
+        </button>
+      </div>
+    </div>
+
+    <!-- نموذج إعادة إرسال التفعيل -->
+    <div class="resend-form" *ngIf="showResendForm">
+      <mat-divider></mat-divider>
+      <h3>إعادة إرسال بريد التفعيل</h3>
+      <form [formGroup]="resendForm" (ngSubmit)="resendActivationEmail()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>البريد الإلكتروني</mat-label>
+          <input matInput formControlName="email" type="email">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="resendForm.get('email')?.hasError('required')">البريد الإلكتروني مطلوب</mat-error>
+          <mat-error *ngIf="resendForm.get('email')?.hasError('email')">بريد إلكتروني غير صحيح</mat-error>
+        </mat-form-field>
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isResending">
+            <mat-spinner diameter="16" *ngIf="isResending"></mat-spinner>
+            <span *ngIf="!isResending">إرسال</span>
+          </button>
+          <button mat-stroked-button type="button" (click)="toggleResendForm()">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </mat-card>
+</div>

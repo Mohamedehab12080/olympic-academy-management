@@ -1298,7 +1298,7 @@ components:
         attendanceDate:
           type: string
           format: date
-        totalEmployees:
+        totalNumber:
           type: integer
           format: int32
         present:

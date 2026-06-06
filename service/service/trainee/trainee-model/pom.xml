@@ -24,6 +24,12 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.employee</groupId>
+            <artifactId>employee-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>

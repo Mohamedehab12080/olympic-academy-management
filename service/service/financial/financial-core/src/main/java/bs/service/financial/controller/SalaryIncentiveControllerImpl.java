@@ -11,6 +11,7 @@ import bs.service.financial.model.generated.SalaryIncentiveResultSet;
 import bs.service.financial.model.generated.SalaryIncentiveVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 import java.time.LocalDate;
@@ -22,18 +23,21 @@ public class SalaryIncentiveControllerImpl implements SalaryIncentiveController 
     private final SalaryIncentiveService salaryIncentiveService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createSalaryIncentive(SalaryIncentiveDTO salaryIncentiveDTO) {
         NewRecordVTO result = salaryIncentiveService.createSalaryIncentive(salaryIncentiveDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteSalaryIncentive(Integer transactionId) {
         salaryIncentiveService.deleteSalaryIncentive(transactionId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<SalaryIncentiveResultSet> _getAllSalaryIncentivesByFilter(
             Integer employeeId, Integer paymentMethodId, SalaryTypes salaryType,
             SalaryTransactionType type, LocalDate withdrawDateFrom, LocalDate withdrawDateTo,
@@ -46,12 +50,14 @@ public class SalaryIncentiveControllerImpl implements SalaryIncentiveController 
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<SalaryIncentiveVTO> _getSalaryIncentiveById(Integer transactionId) {
         SalaryIncentiveVTO result = salaryIncentiveService.getSalaryIncentiveById(transactionId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateSalaryIncentive(Integer transactionId, SalaryIncentiveDTO salaryIncentiveDTO) {
         NewRecordVTO result = salaryIncentiveService.updateSalaryIncentive(transactionId, salaryIncentiveDTO);
         return ResponseEntity.ok(result);

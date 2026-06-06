@@ -115,7 +115,7 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
 
         return EnrollmentPaymentResultSet.builder()
                 .items(items)
-                .total(enrollmentPaymentRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

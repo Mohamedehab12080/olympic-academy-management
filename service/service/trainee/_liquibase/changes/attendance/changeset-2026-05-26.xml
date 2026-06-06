@@ -16,6 +16,8 @@
             <column name="status" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
+            <column name="attendance_date" type="date"/>
+            <column name="late_time" type="int"/>
             <column name="check_in_time" type="time"/>
             <column name="check_out_time" type="time"/>
             <column name="note" type="text"/>

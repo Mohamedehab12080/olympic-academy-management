@@ -1,0 +1,45 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <div class="login-header">
+      <mat-icon class="logo-icon">sports_score</mat-icon>
+      <h1>الأكاديمية الأولمبية</h1>
+      <p>نظام إدارة الأكاديمية</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>البريد الإلكتروني</mat-label>
+        <input matInput formControlName="email" type="email">
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">البريد الإلكتروني مطلوب</mat-error>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">بريد إلكتروني غير صحيح</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>كلمة المرور</mat-label>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+        <mat-icon matPrefix>lock</mat-icon>
+        <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="cursor-pointer">
+          {{ hidePassword ? 'visibility_off' : 'visibility' }}
+        </mat-icon>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">كلمة المرور مطلوبة</mat-error>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">كلمة المرور يجب أن تكون 6 أحرف على الأقل</mat-error>
+      </mat-form-field>
+
+      <div class="login-options">
+        <a routerLink="/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
+      </div>
+
+      <button mat-raised-button color="primary" type="submit" class="login-btn" [disabled]="isLoading">
+        <mat-icon *ngIf="!isLoading">login</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+        <span>{{ isLoading ? 'جاري الدخول...' : 'تسجيل الدخول' }}</span>
+      </button>
+
+      <div class="register-link">
+        <span>ليس لديك حساب؟</span>
+        <a routerLink="/register">إنشاء حساب جديد</a>
+      </div>
+    </form>
+  </mat-card>
+</div>

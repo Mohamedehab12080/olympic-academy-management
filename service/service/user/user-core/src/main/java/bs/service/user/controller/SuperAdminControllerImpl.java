@@ -28,7 +28,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
     @Override
     @Secured("ROLE_SUPER_ADMIN")
     public ResponseEntity<UserVTO> createAdmin(RegisterUserDTO request) {
-        log.info("POST /api/super-admin/admins - Super Admin {} creating new admin with email: {}",
+        log.info("POST /super-admin/admins - Super Admin {} creating new admin with email: {}",
                 securityUtilsService.getCurrentUserEmail(), request.getEmail());
         UserVTO createdAdmin = userService.createAdmin(request);
         return new ResponseEntity<>(createdAdmin, HttpStatus.CREATED);
@@ -37,7 +37,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
     @Override
     @Secured("ROLE_SUPER_ADMIN")
     public ResponseEntity<Void> updateAdmin(Integer adminId, UpdateAdminDTO request) {
-        log.info("PUT /api/super-admin/admins/{} - Super Admin {} updating admin",
+        log.info("PUT /super-admin/admins/{} - Super Admin {} updating admin",
                 adminId, securityUtilsService.getCurrentUserEmail());
         userService.updateAdmin(adminId, request);
         return ResponseEntity.noContent().build();
@@ -46,7 +46,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
     @Override
     @Secured("ROLE_SUPER_ADMIN")
     public ResponseEntity<Void> activateAdmin(Integer adminId) {
-        log.info("PUT /api/super-admin/admins/{}/activate - Super Admin {} activating admin",
+        log.info("PUT /super-admin/admins/{}/activate - Super Admin {} activating admin",
                 adminId, securityUtilsService.getCurrentUserEmail());
         userService.activateUser(adminId);
         return ResponseEntity.noContent().build();
@@ -55,7 +55,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
     @Override
     @Secured("ROLE_SUPER_ADMIN")
     public ResponseEntity<Void> deactivateAdmin(Integer adminId) {
-        log.info("PUT /api/super-admin/admins/{}/deactivate - Super Admin {} deactivating admin",
+        log.info("PUT /super-admin/admins/{}/deactivate - Super Admin {} deactivating admin",
                 adminId, securityUtilsService.getCurrentUserEmail());
         userService.deactivateUser(adminId);
         return ResponseEntity.noContent().build();
@@ -64,7 +64,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
     @Override
     @Secured("ROLE_SUPER_ADMIN")
     public ResponseEntity<List<UserDetailsVTO>> getAllAdmins() {
-        log.info("GET /api/super-admin/admins - Super Admin {} viewing all admins",
+        log.info("GET /super-admin/admins - Super Admin {} viewing all admins",
                 securityUtilsService.getCurrentUserEmail());
         List<UserDetailsVTO> admins = userService.getUsersByRole("ROLE_ADMIN");
         return ResponseEntity.ok(admins);
@@ -73,7 +73,7 @@ public class SuperAdminControllerImpl implements SuperAdminController {
     @Override
     @Secured("ROLE_SUPER_ADMIN")
     public ResponseEntity<UserDetailsVTO> getAdminById(Integer id) {
-        log.info("GET /api/super-admin/admins/{} - Super Admin {} viewing admin details",
+        log.info("GET /super-admin/admins/{} - Super Admin {} viewing admin details",
                 id, securityUtilsService.getCurrentUserEmail());
         UserDetailsVTO user = userService.getUserById(id);
         return ResponseEntity.ok(user);

@@ -90,7 +90,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         return TraineeResultSet.builder()
                 .items(items)
-                .total(traineeRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }

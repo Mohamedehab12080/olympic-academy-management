@@ -86,7 +86,7 @@ public class PlaceServiceImpl implements PlaceService {
 
         return PlaceResultSet.builder()
                 .items(items)
-                .total(placeRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 

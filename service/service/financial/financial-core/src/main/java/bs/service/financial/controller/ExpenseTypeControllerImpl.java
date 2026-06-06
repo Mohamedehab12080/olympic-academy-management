@@ -9,6 +9,7 @@ import bs.service.financial.model.generated.ExpenseTypeResultSet;
 import bs.service.financial.model.generated.ExpenseTypeVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -18,18 +19,21 @@ public class ExpenseTypeControllerImpl implements ExpenseTypeController {
     private final ExpenseTypeService expenseTypeService;
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createExpenseType(ExpenseTypeDTO expenseTypeDTO) {
         NewRecordVTO result = expenseTypeService.createExpenseType(expenseTypeDTO);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _deleteExpenseType(Integer expenseTypeId) {
         expenseTypeService.deleteExpenseType(expenseTypeId);
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ExpenseTypeResultSet> _getAllExpenseTypes(
             String quickSearch, Boolean isActive,
             Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
@@ -40,12 +44,14 @@ public class ExpenseTypeControllerImpl implements ExpenseTypeController {
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ExpenseTypeVTO> _getExpenseTypeById(Integer expenseTypeId) {
         ExpenseTypeVTO result = expenseTypeService.getExpenseTypeById(expenseTypeId);
         return ResponseEntity.ok(result);
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateExpenseType(Integer expenseTypeId, ExpenseTypeDTO expenseTypeDTO) {
         NewRecordVTO result = expenseTypeService.updateExpenseType(expenseTypeId, expenseTypeDTO);
         return ResponseEntity.ok(result);

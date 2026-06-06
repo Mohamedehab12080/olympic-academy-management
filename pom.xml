@@ -170,6 +170,10 @@
 									bs.lib.common.model.enums.Gender
 								</importMapping>
 
+								<importMapping>TraineeAttendanceStatus =
+									bs.service.trainee.model.enums.TraineeAttendanceStatus
+								</importMapping>
+
 								<importMapping>CourseTypes =
 									bs.service.course.model.enums.CourseTypes
 								</importMapping>
@@ -292,6 +296,9 @@
 										bs.lib.common.model.enums.Gender
 									</importMapping>
 
+									<importMapping>TraineeAttendanceStatus =
+										bs.service.trainee.model.enums.TraineeAttendanceStatus
+									</importMapping>
 									<importMapping>RefundStatus =
 										bs.service.financial.model.enums.RefundStatus
 									</importMapping>

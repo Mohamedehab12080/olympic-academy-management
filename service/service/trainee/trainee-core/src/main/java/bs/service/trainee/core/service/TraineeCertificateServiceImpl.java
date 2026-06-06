@@ -96,7 +96,7 @@ public class TraineeCertificateServiceImpl implements TraineeCertificateService 
 
         return TraineeCertificateResultSet.builder()
                 .items(items)
-                .total(traineeCertificateRepository.countAllByFilters(filter))
+                .total(items.size())
                 .build();
     }
 }
