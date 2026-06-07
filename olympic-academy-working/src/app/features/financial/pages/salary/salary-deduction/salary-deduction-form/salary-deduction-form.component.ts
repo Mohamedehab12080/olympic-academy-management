@@ -1,113 +1,54 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
+// Material Imports
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { EmployeeService } from '../../../../../../core/services/employee.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
+import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { SALARY_TYPES } from '../../../../../../core/models/common.model';
 
 @Component({
   selector: 'app-salary-deduction-form',
-  standalone: false,
-  template: `
-    <div class="form-container">
-      <mat-card>
-        <div class="form-header">
-          <button mat-icon-button routerLink="/financial/salary-deductions">
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-          <h2>{{ isEditMode ? 'تعديل خصم' : 'إضافة خصم جديد' }}</h2>
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <div class="form-grid">
-            <!-- الموظف -->
-            <mat-form-field appearance="outline">
-              <mat-label>الموظف *</mat-label>
-              <mat-select formControlName="employeeId">
-                <mat-option *ngFor="let emp of employees" [value]="emp.id">
-                  {{ emp.title }}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="form.get('employeeId')?.hasError('required')">الموظف مطلوب</mat-error>
-            </mat-form-field>
-
-            <!-- المبلغ -->
-            <mat-form-field appearance="outline">
-              <mat-label>المبلغ *</mat-label>
-              <input matInput type="number" formControlName="amountDeducted" placeholder="مثال: 500">
-              <span matSuffix>ريال</span>
-              <mat-error *ngIf="form.get('amountDeducted')?.hasError('required')">المبلغ مطلوب</mat-error>
-              <mat-error *ngIf="form.get('amountDeducted')?.hasError('min')">المبلغ يجب أن يكون أكبر من 0</mat-error>
-            </mat-form-field>
-
-            <!-- تاريخ الخصم -->
-            <mat-form-field appearance="outline">
-              <mat-label>تاريخ الخصم *</mat-label>
-              <input matInput [matDatepicker]="datePicker" formControlName="deductionDate">
-              <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-              <mat-datepicker #datePicker></mat-datepicker>
-              <mat-error *ngIf="form.get('deductionDate')?.hasError('required')">تاريخ الخصم مطلوب</mat-error>
-            </mat-form-field>
-
-            <!-- نوع الراتب -->
-            <mat-form-field appearance="outline">
-              <mat-label>نوع الراتب</mat-label>
-              <mat-select formControlName="salaryType">
-                <mat-option *ngFor="let type of salaryTypes" [value]="type">
-                  {{ type.title }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <!-- السبب -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>سبب الخصم</mat-label>
-              <input matInput formControlName="reason" placeholder="مثال: غياب بدون عذر, تأخير متكرر">
-            </mat-form-field>
-
-            <!-- ملاحظات -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>ملاحظات إضافية</mat-label>
-              <textarea matInput formControlName="note" rows="3" placeholder="تفاصيل إضافية عن الخصم..."></textarea>
-            </mat-form-field>
-
-            <!-- رفع صورة (اختياري) -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>رابط الصورة</mat-label>
-              <input matInput formControlName="imageUrl" placeholder="https://example.com/image.jpg">
-              <mat-icon matSuffix>image</mat-icon>
-            </mat-form-field>
-          </div>
-
-          <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
-              <mat-icon>save</mat-icon> {{ isEditMode ? 'تحديث' : 'حفظ' }}
-            </button>
-            <button mat-stroked-button type="button" routerLink="/financial/salary-deductions">
-              <mat-icon>close</mat-icon> إلغاء
-            </button>
-          </div>
-        </form>
-      </mat-card>
-    </div>
-  `,
-  styles: [`
-    .form-container { max-width: 800px; margin: 0 auto; padding: 24px; }
-    .form-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-    .form-header h2 { margin: 0; font-size: 24px; font-weight: 600; }
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .full-width { grid-column: span 2; }
-    .form-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
-    .form-actions button { min-width: 120px; }
-  `]
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    SearchableSelectComponent
+  ],
+  templateUrl: './salary-deduction-form.component.html',
+  styleUrls: ['./salary-deduction-form.component.css']
 })
 export class SalaryDeductionFormComponent implements OnInit {
   form: FormGroup;
   isEditMode = false;
   itemId?: number;
-  employees: any[] = [];
-  salaryTypes = SALARY_TYPES;
+  employees: SelectOption[] = [];
+  salaryTypes: SelectOption[] = [];  // ✅ تغيير النوع إلى SelectOption[]
+  isSubmitting = false;
 
   constructor(
     private fb: FormBuilder,
@@ -118,18 +59,18 @@ export class SalaryDeductionFormComponent implements OnInit {
     private router: Router
   ) {
     this.form = this.fb.group({
-      employeeId: [null, [Validators.required]],
+      employeeId: [null, Validators.required],
       amountDeducted: [null, [Validators.required, Validators.min(1)]],
-      deductionDate: [null, [Validators.required]],
+      deductionDate: [null, Validators.required],
       salaryType: [null],
       reason: [''],
-      note: [''],
-      imageUrl: ['']
+      note: ['']
     });
   }
 
   ngOnInit() {
     this.loadEmployees();
+    this.loadSalaryTypes();
     this.itemId = this.route.snapshot.params['id'];
     if (this.itemId) {
       this.isEditMode = true;
@@ -139,9 +80,24 @@ export class SalaryDeductionFormComponent implements OnInit {
 
   loadEmployees() {
     this.employeeService.getAllEmployeesLookup().subscribe({
-      next: (res: any) => { this.employees = res.list; },
-      error: () => { this.notification.showError('حدث خطأ في تحميل بيانات الموظفين'); }
+      next: (res: any) => {
+        this.employees = res.list.map((emp: any) => ({ 
+          value: emp.id, 
+          label: emp.title 
+        }));
+      },
+      error: () => { 
+        this.notification.showError('حدث خطأ في تحميل بيانات الموظفين'); 
+      }
     });
+  }
+
+  // ✅ تحويل SALARY_TYPES إلى SelectOption[]
+  loadSalaryTypes() {
+    this.salaryTypes = SALARY_TYPES.map((type: any) => ({ 
+      value: type, 
+      label: type.title 
+    }));
   }
 
   loadItemData() {
@@ -154,8 +110,7 @@ export class SalaryDeductionFormComponent implements OnInit {
           deductionDate: res.deductionDate,
           salaryType: res.salaryType,
           reason: res.reason,
-          note: res.note,
-          imageUrl: res.imageUrl
+          note: res.note
         });
       },
       error: () => {
@@ -172,6 +127,7 @@ export class SalaryDeductionFormComponent implements OnInit {
       return;
     }
 
+    this.isSubmitting = true;
     const formData = this.form.value;
 
     if (this.isEditMode && this.itemId) {
@@ -179,9 +135,11 @@ export class SalaryDeductionFormComponent implements OnInit {
         next: () => {
           this.notification.showSuccess('تم تحديث الخصم بنجاح');
           this.router.navigate(['/financial/salary-deductions']);
+          this.isSubmitting = false;
         },
         error: () => {
           this.notification.showError('حدث خطأ في تحديث الخصم');
+          this.isSubmitting = false;
         }
       });
     } else {
@@ -189,9 +147,11 @@ export class SalaryDeductionFormComponent implements OnInit {
         next: () => {
           this.notification.showSuccess('تم إضافة الخصم بنجاح');
           this.router.navigate(['/financial/salary-deductions']);
+          this.isSubmitting = false;
         },
         error: () => {
           this.notification.showError('حدث خطأ في إضافة الخصم');
+          this.isSubmitting = false;
         }
       });
     }

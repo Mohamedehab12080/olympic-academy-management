@@ -1,76 +1,97 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { PlaceService } from '../../../../../../core/services/place.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
+import { ReportService } from '../../../../../../core/services/report.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-place-rent-payment-list',
-  standalone: false,
-  template: `
-    <div class="container">
-      <div class="header">
-        <h1>مدفوعات إيجار المواقع</h1>
-        <button mat-raised-button color="primary" routerLink="/financial/place-rent-payments/new">
-          <mat-icon>add</mat-icon> دفعة جديدة
-        </button>
-      </div>
-
-      <mat-card>
-        <div class="filters">
-          <mat-form-field appearance="outline"><mat-label>بحث</mat-label><input matInput (keyup)="applyFilter($event)" placeholder="بحث"><\/mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>الموقع</mat-label><mat-select (selectionChange)="filterByPlace($event.value)"><mat-option>الكل</mat-option><mat-option *ngFor="let p of places" [value]="p.id">{{ p.title }}</mat-option><\/mat-select><\/mat-form-field>
-        <\/div>
-
-        <div class="table-container">
-          <table mat-table [dataSource]="dataSource" matSort>
-            <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let p">{{ p.id }}<\/td><\/ng-container>
-            <ng-container matColumnDef="place"><th mat-header-cell *matHeaderCellDef>الموقع</th><td mat-cell *matCellDef="let p">{{ p.place?.title }}<\/td><\/ng-container>
-            <ng-container matColumnDef="rentAmount"><th mat-header-cell *matHeaderCellDef>قيمة الإيجار</th><td mat-cell *matCellDef="let p">{{ p.rentAmount | currency:'SAR ' }}<\/td><\/ng-container>
-            <ng-container matColumnDef="payedAmount"><th mat-header-cell *matHeaderCellDef>المبلغ المدفوع</th><td mat-cell *matCellDef="let p">{{ p.payedAmount | currency:'SAR ' }}<\/td><\/ng-container>
-            <ng-container matColumnDef="remainedAmount"><th mat-header-cell *matHeaderCellDef>المتبقي</th><td mat-cell *matCellDef="let p">{{ p.remainedAmount | currency:'SAR ' }}<\/td><\/ng-container>
-            <ng-container matColumnDef="paymentDate"><th mat-header-cell *matHeaderCellDef>تاريخ الدفع</th><td mat-cell *matCellDef="let p">{{ p.paymentDate | date }}<\/td><\/ng-container>
-            <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>الإجراءات</th><td mat-cell *matCellDef="let p"><button mat-icon-button color="primary" [routerLink]="['/financial/place-rent-payments', p.id, 'edit']"><mat-icon>edit</mat-icon><\/button><button mat-icon-button color="warn" (click)="deleteItem(p)"><mat-icon>delete</mat-icon><\/button><\/td><\/ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"><\/tr><tr mat-row *matRowDef="let row; columns: displayedColumns;"><\/tr>
-          <\/table>
-          <mat-paginator [pageSize]="10"><\/mat-paginator>
-        <\/div>
-      <\/mat-card>
-    <\/div>
-  `,
-  styles: [`
-    .container { padding: 24px; }
-    .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
-    .filters { display: flex; gap: 16px; margin-bottom: 20px; }
-    .filters mat-form-field { flex: 1; }
-    .table-container { overflow-x: auto; }
-  `]
+  templateUrl: './place-rent-payment-list.component.html',
+  styleUrls: ['./place-rent-payment-list.component.css']
 })
 export class PlaceRentPaymentListComponent implements OnInit {
   displayedColumns = ['id', 'place', 'rentAmount', 'payedAmount', 'remainedAmount', 'paymentDate', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+  isLoading = false;
   places: any[] = [];
+  rentTypes: any[] = [];
+  
+  filters = { placeId: null as number | null, rentTypeId: null as number | null, paymentDateFrom: null as string | null, paymentDateTo: null as string | null };
+  quickSearch: string = '';
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private financialService: FinancialService, private placeService: PlaceService, private notification: NotificationService) {}
+  constructor(
+    private financialService: FinancialService,
+    private placeService: PlaceService,
+    private notification: NotificationService,
+    private reportService: ReportService,
+    private router: Router
+  ) {}
 
-  ngOnInit() { this.loadData(); this.loadPlaces(); }
+  ngOnInit() { this.loadPlaces(); this.loadRentTypes(); this.loadData(); }
+  ngAfterViewInit() { this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; }
+
+  loadPlaces() { this.placeService.getAllPlacesLookup().subscribe((res: any) => this.places = res.list); }
+  loadRentTypes() { this.financialService.getAllRentTypesLookup().subscribe((res: any) => this.rentTypes = res.list); }
 
   loadData() {
-    this.financialService.getAllPlaceRentPaymentsByFilter().subscribe({
-      next: (res: any) => { this.dataSource.data = res.items; this.dataSource.paginator = this.paginator; },
-      error: () => this.notification.showError('حدث خطأ')
+    this.isLoading = true;
+    const params: any = {};
+    if (this.filters.placeId) params.placeId = this.filters.placeId;
+    if (this.filters.rentTypeId) params.rentTypeId = this.filters.rentTypeId;
+    if (this.filters.paymentDateFrom) params.paymentDateFrom = this.filters.paymentDateFrom;
+    if (this.filters.paymentDateTo) params.paymentDateTo = this.filters.paymentDateTo;
+    if (this.quickSearch) params.quickSearch = this.quickSearch;
+    this.financialService.getAllPlaceRentPaymentsByFilter(params).subscribe({
+      next: (res: any) => { this.dataSource.data = res.items; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.isLoading = false; },
+      error: () => { this.notification.showError('حدث خطأ'); this.isLoading = false; }
     });
   }
 
-  loadPlaces() { this.placeService.getAllPlacesLookup().subscribe((res: any) => this.places = res.list); }
-  applyFilter(event: Event) { this.dataSource.filter = (event.target as HTMLInputElement).value; }
-  filterByPlace(placeId: number) { this.financialService.getAllPlaceRentPaymentsByFilter({ placeId }).subscribe((res: any) => this.dataSource.data = res.items); }
+  applyQuickSearch(event: Event) { this.quickSearch = (event.target as HTMLInputElement).value; this.loadData(); }
+  resetFilters() { this.filters = { placeId: null, rentTypeId: null, paymentDateFrom: null, paymentDateTo: null }; this.quickSearch = ''; this.loadData(); this.notification.showSuccess('تم مسح الفلاتر'); }
 
-  deleteItem(item: any) {
-    if (confirm('هل أنت متأكد من حذف هذه الدفعة؟')) {
+  exportToExcel() {
+    if (this.dataSource.data.length === 0) { this.notification.showWarning('لا توجد بيانات'); return; }
+    const exportData = this.dataSource.data.map((item, index) => ({
+      '#': index + 1, 'الموقع': item.place?.title, 'قيمة الإيجار': item.rentAmount,
+      'المدفوع': item.payedAmount, 'المتبقي': item.remainedAmount, 'تاريخ الدفع': item.paymentDate
+    }));
+    this.reportService.exportToExcel(exportData, 'place-rent-payments-list', 'مدفوعات الإيجار');
+    this.notification.showSuccess('تم تصدير البيانات');
+  }
+
+  exportToPDF() {
+    if (this.dataSource.data.length === 0) { this.notification.showWarning('لا توجد بيانات'); return; }
+    const doc = new jsPDF('l', 'mm', 'a4');
+    doc.setFontSize(18); doc.text('تقرير مدفوعات إيجار المواقع', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
+    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
+    autoTable(doc, {
+      head: [['#', 'الموقع', 'قيمة الإيجار', 'المدفوع', 'المتبقي', 'تاريخ الدفع']],
+      body: this.dataSource.data.map((item, index) => [
+        (index + 1).toString(), item.place?.title || '-', `${item.rentAmount} ريال`,
+        `${item.payedAmount} ريال`, `${item.remainedAmount} ريال`, item.paymentDate
+      ]),
+      startY: 35,
+      styles: { halign: 'right', fontSize: 9 },
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] }
+    });
+    doc.save('place-rent-payments-report.pdf');
+    this.notification.showSuccess('تم تصدير التقرير');
+  }
+
+  editPayment(id: number) { this.router.navigate(['/financial/place-rent-payments', id, 'edit']); }
+  deletePayment(item: any) {
+    if (confirm('حذف الدفعة؟')) {
       this.financialService.deletePlaceRentPayment(item.id).subscribe({
         next: () => { this.notification.showSuccess('تم الحذف'); this.loadData(); },
         error: () => this.notification.showError('حدث خطأ')

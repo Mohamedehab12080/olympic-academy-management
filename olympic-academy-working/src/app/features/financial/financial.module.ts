@@ -22,7 +22,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-
 import { FinancialDashboardComponent } from './pages/financial-dashboard/financial-dashboard.component';
 
 // ============================================
@@ -74,10 +73,10 @@ import { SalaryIncentiveListComponent } from './pages/salary/salary-incentive/sa
 import { SalaryIncentiveFormComponent } from './pages/salary/salary-incentive/salary-incentive-form/salary-incentive-form.component';
 
 // ============================================
-// Salary Deduction Components
+// Salary Deduction Components (Standalone - لا تضعها في declarations)
 // ============================================
-import { SalaryDeductionListComponent } from './pages/salary/salary-deduction/salary-deduction-list/salary-deduction-list.component';
-import { SalaryDeductionFormComponent } from './pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component';
+// import { SalaryDeductionListComponent } from './pages/salary/salary-deduction/salary-deduction-list/salary-deduction-list.component';
+// import { SalaryDeductionFormComponent } from './pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component';
 
 // ============================================
 // Financial Report Component
@@ -131,21 +130,29 @@ const routes: Routes = [
   { path: 'salary-incentives/new', component: SalaryIncentiveFormComponent },
   { path: 'salary-incentives/:id/edit', component: SalaryIncentiveFormComponent },
 
-  // Salary Deductions
-  { path: 'salary-deductions', component: SalaryDeductionListComponent },
-  { path: 'salary-deductions/new', component: SalaryDeductionFormComponent },
-  { path: 'salary-deductions/:id/edit', component: SalaryDeductionFormComponent },
+  // Salary Deductions (Standalone Components - use loadComponent)
+  { 
+    path: 'salary-deductions', 
+    loadComponent: () => import('./pages/salary/salary-deduction/salary-deduction-list/salary-deduction-list.component')
+      .then(m => m.SalaryDeductionListComponent) 
+  },
+  { 
+    path: 'salary-deductions/new', 
+    loadComponent: () => import('./pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component')
+      .then(m => m.SalaryDeductionFormComponent) 
+  },
+  { 
+    path: 'salary-deductions/:id/edit', 
+    loadComponent: () => import('./pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component')
+      .then(m => m.SalaryDeductionFormComponent) 
+  },
 
   // Financial Report
   { path: 'reports', component: FinancialReportComponent },
-
-  // Default redirect
-  { path: '', redirectTo: 'payment-methods', pathMatch: 'full' }
 ];
 
 @NgModule({
   declarations: [
-        
     FinancialDashboardComponent,
 
     // Payment Method
@@ -180,9 +187,8 @@ const routes: Routes = [
     SalaryIncentiveListComponent,
     SalaryIncentiveFormComponent,
 
-    // Salary Deduction
-    SalaryDeductionListComponent,
-    SalaryDeductionFormComponent
+    // ❌ لا تضع SalaryDeductionListComponent و SalaryDeductionFormComponent هنا
+    // لأنها Standalone Components
   ],
   imports: [
     CommonModule,

@@ -170,7 +170,7 @@ export class EnrollmentRefundListComponent implements OnInit {
       body: this.dataSource.data.map((item, index) => [
         (index + 1).toString(),
         item.enrollment?.title || '-',
-        `${item.amountRefunded} ريال`,
+        `${item.amountRefunded} جم`,
         item.refundDate,
         item.paymentMethod?.title || '-',
         item.status?.title || '-',

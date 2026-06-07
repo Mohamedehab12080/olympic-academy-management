@@ -1,109 +1,80 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
+import { ReportService } from '../../../../../../core/services/report.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-rent-type-list',
-  standalone: false,
-  template: `
-    <div class="container">
-      <div class="header">
-        <h1>أنواع الإيجار</h1>
-        <button mat-raised-button color="primary" routerLink="/financial/rent-types/new">
-          <mat-icon>add</mat-icon> نوع إيجار جديد
-        </button>
-      </div>
-
-      <mat-card>
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>بحث</mat-label>
-          <input matInput (keyup)="applyFilter($event)" placeholder="ابحث عن نوع إيجار">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-
-        <div class="table-container">
-          <table mat-table [dataSource]="dataSource" matSort>
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
-              <td mat-cell *matCellDef="let item">{{ item.id }}<\/td>
-            <\/ng-container>
-
-            <ng-container matColumnDef="title">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>الاسم</th>
-              <td mat-cell *matCellDef="let item">{{ item.title }}<\/td>
-            <\/ng-container>
-
-            <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>الوصف</th>
-              <td mat-cell *matCellDef="let item">{{ item.description || '-' }}<\/td>
-            <\/ng-container>
-
-            <ng-container matColumnDef="createdOn">
-              <th mat-header-cell *matHeaderCellDef>تاريخ الإنشاء</th>
-              <td mat-cell *matCellDef="let item">{{ item.createdOn | date:'dd/MM/yyyy' }}<\/td>
-            <\/ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-              <td mat-cell *matCellDef="let item">
-                <button mat-icon-button color="primary" [routerLink]="['/financial/rent-types', item.id, 'edit']">
-                  <mat-icon>edit</mat-icon>
-                <\/button>
-                <button mat-icon-button color="warn" (click)="deleteItem(item)">
-                  <mat-icon>delete</mat-icon>
-                <\/button>
-              <\/td>
-            <\/ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"><\/tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"><\/tr>
-          <\/table>
-          <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons><\/mat-paginator>
-        <\/div>
-      <\/mat-card>
-    <\/div>
-  `,
-  styles: [`
-    .container { padding: 24px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .search-field { width: 100%; margin-bottom: 20px; }
-    .table-container { overflow-x: auto; }
-  `]
+  templateUrl: './rent-type-list.component.html',
+  styleUrls: ['./rent-type-list.component.css']
 })
 export class RentTypeListComponent implements OnInit {
   displayedColumns = ['id', 'title', 'description', 'createdOn', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+  isLoading = false;
+  quickSearch: string = '';
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private financialService: FinancialService,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private reportService: ReportService,
+    private router: Router
   ) {}
 
   ngOnInit() { this.loadData(); }
   ngAfterViewInit() { this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; }
 
   loadData() {
-    this.financialService.getAllRentTypes().subscribe({
-      next: (res: any) => { this.dataSource.data = res.items; },
-      error: () => { this.notification.showError('حدث خطأ في تحميل البيانات'); }
+    this.isLoading = true;
+    const params: any = {};
+    if (this.quickSearch) params.quickSearch = this.quickSearch;
+    this.financialService.getAllRentTypes(params).subscribe({
+      next: (res: any) => { this.dataSource.data = res.items; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.isLoading = false; },
+      error: () => { this.notification.showError('حدث خطأ'); this.isLoading = false; }
     });
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  applyQuickSearch(event: Event) { this.quickSearch = (event.target as HTMLInputElement).value; this.loadData(); }
+
+  exportToExcel() {
+    if (this.dataSource.data.length === 0) { this.notification.showWarning('لا توجد بيانات'); return; }
+    const exportData = this.dataSource.data.map((item, index) => ({ '#': index + 1, 'الاسم': item.title, 'الوصف': item.description || '-', 'تاريخ الإنشاء': item.createdOn }));
+    this.reportService.exportToExcel(exportData, 'rent-types-list', 'أنواع الإيجار');
+    this.notification.showSuccess('تم تصدير البيانات');
   }
 
-  deleteItem(item: any) {
-    if (confirm(`هل أنت متأكد من حذف "${item.title}"؟`)) {
+  exportToPDF() {
+    if (this.dataSource.data.length === 0) { this.notification.showWarning('لا توجد بيانات'); return; }
+    const doc = new jsPDF('l', 'mm', 'a4');
+    doc.setFontSize(18); doc.text('أنواع الإيجار', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
+    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
+    autoTable(doc, {
+      head: [['#', 'الاسم', 'الوصف', 'تاريخ الإنشاء']],
+      body: this.dataSource.data.map((item, index) => [(index + 1).toString(), item.title, item.description || '-', item.createdOn]),
+      startY: 35,
+      styles: { halign: 'right', fontSize: 9 },
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] }
+    });
+    doc.save('rent-types-report.pdf');
+    this.notification.showSuccess('تم تصدير التقرير');
+  }
+
+  editType(id: number) { this.router.navigate(['/financial/rent-types', id, 'edit']); }
+  deleteType(item: any) {
+    if (confirm(`حذف "${item.title}"؟`)) {
       this.financialService.deleteRentType(item.id).subscribe({
-        next: () => { this.notification.showSuccess('تم الحذف بنجاح'); this.loadData(); },
-        error: () => { this.notification.showError('حدث خطأ في الحذف'); }
+        next: () => { this.notification.showSuccess('تم الحذف'); this.loadData(); },
+        error: () => this.notification.showError('حدث خطأ')
       });
     }
   }

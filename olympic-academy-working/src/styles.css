@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
 * {
@@ -72,9 +76,7 @@ html, body {
   height: 100%; 
 }
 
-/* ==================== تنسيقات الإشعارات (Toast Notifications) ==================== */
-
-/* تنسيق Toast المخصص */
+/* ==================== Toast Notifications ==================== */
 .custom-toast {
   padding: 0 !important;
   background: transparent !important;
@@ -88,7 +90,6 @@ html, body {
   min-width: 280px !important;
 }
 
-/* تنسيقات الإشعارات العادية (للأكشن) */
 .notification-snackbar {
   direction: rtl;
   text-align: right;
@@ -121,89 +122,253 @@ html, body {
   border-right: 4px solid #2563eb !important;
 }
 
-/* تنسيق زر الإجراء في الإشعارات */
 .notification-snackbar .mat-mdc-button {
   color: white !important;
   font-weight: 500;
 }
 
-.notification-snackbar .mat-mdc-snack-bar-action {
-  color: white !important;
-  border-right: 1px solid rgba(255,255,255,0.3);
-  margin-right: 8px;
-  padding-right: 8px;
+/* ==================== Searchable Select Styles ==================== */
+/* تنسيق حقل البحث داخل القائمة المنسدلة */
+.search-select-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 4px;
 }
 
-/* تنسيق Toast Component الداخلي */
-.toast-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+.search-select-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
   direction: rtl;
 }
 
-.toast-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+.search-select-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-.toast-message {
+/* تنسيق اللوحة المنبثقة */
+.cdk-overlay-pane .mat-mdc-select-panel {
+  max-height: 400px;
+}
+
+.mat-mdc-option {
+  direction: rtl;
+  text-align: right;
+}
+
+/* تنسيق أيقونة البحث */
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+/* تنسيق الحاوية النسبية للبحث */
+.search-relative {
+  position: relative;
+}
+
+/* تأثير hover على الخيارات */
+.mat-mdc-option:hover {
+  background-color: #f3f4f6;
+}
+
+/* تنسيق الخيار المحدد */
+.mat-mdc-option.mat-mdc-selected {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+/* ==================== Form Styles ==================== */
+.form-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.header-info {
+  flex: 1;
+}
+
+.header-info h2 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.subtitle {
+  margin: 0;
   font-size: 14px;
+  color: #6b7280;
 }
 
-/* ألوان Toast */
-.toast-container.success {
-  background: #10b981;
-  color: white;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 24px;
 }
 
-.toast-container.error {
-  background: #ef4444;
-  color: white;
+.full-width {
+  grid-column: span 2;
 }
 
-.toast-container.warning {
-  background: #f59e0b;
-  color: white;
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
 }
 
-.toast-container.info {
-  background: #3b82f6;
-  color: white;
+.form-actions button {
+  min-width: 120px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
+/* ===================== Table Styles ==================== */
+.table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+}
 
-/* تأثير ظهور الإشعارات */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+.full-width-table {
+  width: 100%;
+}
+
+.table-row {
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background-color: #f9fafb;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.present { background: #d1fae5; color: #065f46; }
+.status-badge.absent { background: #fee2e2; color: #991b1b; }
+.status-badge.late { background: #fef3c7; color: #92400e; }
+.status-badge.excused { background: #dbeafe; color: #1e40af; }
+.status-badge.paid { background: #d1fae5; color: #065f46; }
+.status-badge.pending { background: #fef3c7; color: #92400e; }
+.status-badge.failed { background: #fee2e2; color: #991b1b; }
+.status-badge.refunded { background: #dbeafe; color: #1e40af; }
+
+/* ==================== Filter Styles ==================== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.filter-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* ==================== Loading Styles ==================== */
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* ==================== No Data Styles ==================== */
+.no-data {
+  text-align: center;
+  padding: 60px;
+  color: #6b7280;
+}
+
+.no-data mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  color: #d1d5db;
+}
+
+/* ==================== Page Header Styles ==================== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  
+  .full-width {
+    grid-column: span 1;
   }
-}
-
-.custom-toast,
-.notification-snackbar {
-  animation: slideInRight 0.3s ease-out !important;
-}
-
-/* تأثير اختفاء الإشعارات */
-@keyframes fadeOut {
-  from {
-    opacity: 1;
+  
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
   }
-  to {
-    opacity: 0;
+  
+  .form-actions button {
+    width: 100%;
   }
-}
-
-.notification-snackbar.mat-mdc-snack-bar-container {
-  animation: fadeOut 0.2s ease-in forwards;
-  animation-delay: 3.8s;
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .filter-field {
+    width: 100%;
+  }
 }

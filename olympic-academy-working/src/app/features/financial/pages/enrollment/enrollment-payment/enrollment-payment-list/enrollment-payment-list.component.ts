@@ -167,8 +167,8 @@ export class EnrollmentPaymentListComponent implements OnInit {
       body: this.dataSource.data.map((item, index) => [
         (index + 1).toString(),
         item.enrollment?.title || '-',
-        `${item.paidAmount} ريال`,
-        `${item.remainedValue} ريال`,
+        `${item.paidAmount} جم`,
+        `${item.remainedValue} جم`,
         item.paymentDate,
         item.paymentMethod?.title || '-',
         item.paymentStatus?.title || '-',

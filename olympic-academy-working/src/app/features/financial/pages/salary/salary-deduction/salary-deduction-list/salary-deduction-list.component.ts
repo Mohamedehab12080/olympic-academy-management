@@ -1,189 +1,198 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+
+// Material Imports
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { FinancialService } from '../../../../../../core/services/financial.service';
+import { EmployeeService } from '../../../../../../core/services/employee.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
+import { ReportService } from '../../../../../../core/services/report.service';
 import { SALARY_TYPES } from '../../../../../../core/models/common.model';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-salary-deduction-list',
-  standalone: false,
-  template: `
-    <div class="container">
-      <div class="header">
-        <h1>خصومات الموظفين</h1>
-        <button mat-raised-button color="primary" routerLink="/financial/salary-deductions/new">
-          <mat-icon>add</mat-icon> خصم جديد
-        </button>
-      </div>
-
-      <mat-card>
-        <div class="filters">
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-label>بحث</mat-label>
-            <input matInput (keyup)="applyFilter($event)" placeholder="ابحث عن موظف أو سبب">
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>نوع الراتب</mat-label>
-            <mat-select (selectionChange)="filterBySalaryType($event.value)">
-              <mat-option [value]="null">الكل</mat-option>
-              <mat-option *ngFor="let type of salaryTypes" [value]="type.id">{{ type.title }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>من تاريخ</mat-label>
-            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom" (dateChange)="filterByDate()">
-            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-            <mat-datepicker #fromPicker></mat-datepicker>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>إلى تاريخ</mat-label>
-            <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo" (dateChange)="filterByDate()">
-            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-            <mat-datepicker #toPicker></mat-datepicker>
-          </mat-form-field>
-        </div>
-
-        <div class="table-container">
-          <table mat-table [dataSource]="dataSource" matSort>
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
-              <td mat-cell *matCellDef="let item">{{ item.id }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="employee">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
-              <td mat-cell *matCellDef="let item">{{ item.employee?.title }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="amountDeducted">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>المبلغ</th>
-              <td mat-cell *matCellDef="let item">{{ item.amountDeducted | currency:'SAR ' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="deductionDate">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الخصم</th>
-              <td mat-cell *matCellDef="let item">{{ item.deductionDate | date }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="reason">
-              <th mat-header-cell *matHeaderCellDef>السبب</th>
-              <td mat-cell *matCellDef="let item">{{ item.reason || '-' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="salaryType">
-              <th mat-header-cell *matHeaderCellDef>نوع الراتب</th>
-              <td mat-cell *matCellDef="let item">{{ item.salaryType?.title || '-' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-              <td mat-cell *matCellDef="let item">
-                <button mat-icon-button color="primary" [routerLink]="['/financial/salary-deductions', item.id, 'edit']">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="deleteItem(item)">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-          <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
-        </div>
-      </mat-card>
-    </div>
-  `,
-  styles: [`
-    .container { padding: 24px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
-    .filters mat-form-field { flex: 1; min-width: 150px; }
-    .search-field { flex: 2; }
-    .table-container { overflow-x: auto; }
-  `]
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule
+  ],
+  templateUrl: './salary-deduction-list.component.html',
+  styleUrls: ['./salary-deduction-list.component.css']
 })
 export class SalaryDeductionListComponent implements OnInit {
   displayedColumns = ['id', 'employee', 'amountDeducted', 'deductionDate', 'reason', 'salaryType', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+  isLoading = false;
   salaryTypes = SALARY_TYPES;
-  dateFrom: string = '';
-  dateTo: string = '';
-  allData: any[] = [];
+  employees: any[] = [];
   
+  filters = {
+    employeeId: null as number | null,
+    salaryTypeId: null as number | null,
+    deductionDateFrom: null as string | null,
+    deductionDateTo: null as string | null
+  };
+  
+  quickSearch: string = '';
+  fromPicker: any;
+  toPicker: any;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private financialService: FinancialService,
-    private notification: NotificationService
+    private employeeService: EmployeeService,
+    private notification: NotificationService,
+    private reportService: ReportService,
+    private router: Router
   ) {}
 
-  ngOnInit() { this.loadData(); }
-  
-  ngAfterViewInit() { 
-    this.dataSource.paginator = this.paginator; 
-    this.dataSource.sort = this.sort; 
+  ngOnInit() {
+    this.loadEmployees();
+    this.loadData();
   }
 
-  loadData() {
-    this.financialService.getAllSalaryDeductionsByFilter().subscribe({
-      next: (res: any) => { 
-        this.allData = res.items; 
-        this.dataSource.data = this.allData;
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
+  loadEmployees() {
+    this.employeeService.getAllEmployeesLookup().subscribe({
+      next: (res: any) => {
+        this.employees = res.list;
       },
-      error: () => { this.notification.showError('حدث خطأ في تحميل البيانات'); }
+      error: () => { this.notification.showError('حدث خطأ في تحميل الموظفين'); }
     });
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
-  filterBySalaryType(salaryTypeId: number | null) {
-    if (salaryTypeId) {
-      this.financialService.getAllSalaryDeductionsByFilter({ salaryType: salaryTypeId }).subscribe({
-        next: (res: any) => { this.dataSource.data = res.items; },
-        error: () => { this.notification.showError('حدث خطأ'); }
-      });
-    } else {
-      this.loadData();
-    }
-  }
-
-  filterByDate() {
+  loadData() {
+    this.isLoading = true;
     const params: any = {};
-    if (this.dateFrom) params.deductionDateFrom = this.dateFrom;
-    if (this.dateTo) params.deductionDateTo = this.dateTo;
-    
-    if (this.dateFrom || this.dateTo) {
-      this.financialService.getAllSalaryDeductionsByFilter(params).subscribe({
-        next: (res: any) => { this.dataSource.data = res.items; },
-        error: () => { this.notification.showError('حدث خطأ'); }
-      });
-    } else {
-      this.loadData();
-    }
+    if (this.filters.employeeId) params.employeeId = this.filters.employeeId;
+    if (this.filters.salaryTypeId) params.salaryType = this.filters.salaryTypeId;
+    if (this.filters.deductionDateFrom) params.deductionDateFrom = this.filters.deductionDateFrom;
+    if (this.filters.deductionDateTo) params.deductionDateTo = this.filters.deductionDateTo;
+    if (this.quickSearch) params.quickSearch = this.quickSearch;
+
+    this.financialService.getAllSalaryDeductionsByFilter(params).subscribe({
+      next: (res: any) => {
+        this.dataSource.data = res.items;
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل البيانات');
+        this.isLoading = false;
+      }
+    });
   }
 
-  deleteItem(item: any) {
+  applyQuickSearch(event: Event) {
+    this.quickSearch = (event.target as HTMLInputElement).value;
+    this.loadData();
+  }
+
+  resetFilters() {
+    this.filters = {
+      employeeId: null,
+      salaryTypeId: null,
+      deductionDateFrom: null,
+      deductionDateTo: null
+    };
+    this.quickSearch = '';
+    this.loadData();
+    this.notification.showSuccess('تم مسح جميع الفلاتر');
+  }
+
+  exportToExcel() {
+    if (this.dataSource.data.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+    const exportData = this.dataSource.data.map((item, index) => ({
+      '#': index + 1,
+      'الموظف': item.employee?.title,
+      'المبلغ': item.amountDeducted,
+      'تاريخ الخصم': item.deductionDate,
+      'السبب': item.reason || '-',
+      'نوع الراتب': item.salaryType?.title || '-'
+    }));
+    this.reportService.exportToExcel(exportData, 'salary-deductions-list', 'خصومات الموظفين');
+    this.notification.showSuccess('تم تصدير البيانات بنجاح');
+  }
+
+  exportToPDF() {
+    if (this.dataSource.data.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+    const doc = new jsPDF('l', 'mm', 'a4');
+    doc.setFontSize(18);
+    doc.text('تقرير خصومات الموظفين', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, 14, 25);
+    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, 14, 32);
+    autoTable(doc, {
+      head: [['#', 'الموظف', 'المبلغ', 'تاريخ الخصم', 'السبب', 'نوع الراتب']],
+      body: this.dataSource.data.map((item, index) => [
+        (index + 1).toString(),
+        item.employee?.title || '-',
+        `${item.amountDeducted} ريال`,
+        item.deductionDate,
+        item.reason || '-',
+        item.salaryType?.title || '-'
+      ]),
+      startY: 42,
+      styles: { halign: 'right', fontSize: 9 },
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] }
+    });
+    doc.save('salary-deductions-report.pdf');
+    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+  }
+
+  editDeduction(id: number) {
+    this.router.navigate(['/financial/salary-deductions', id, 'edit']);
+  }
+
+  deleteDeduction(item: any) {
     if (confirm(`هل أنت متأكد من حذف خصم الموظف "${item.employee?.title}"؟`)) {
       this.financialService.deleteSalaryDeduction(item.id).subscribe({
-        next: () => { 
-          this.notification.showSuccess('تم الحذف بنجاح'); 
-          this.loadData(); 
+        next: () => {
+          this.notification.showSuccess('تم الحذف بنجاح');
+          this.loadData();
         },
-        error: () => { this.notification.showError('حدث خطأ في الحذف'); }
+        error: () => this.notification.showError('حدث خطأ في الحذف')
       });
     }
   }

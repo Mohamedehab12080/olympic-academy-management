@@ -46,9 +46,9 @@ public class Expense {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> imagesUrls;
 
-    @Column(name = "notes")
+    @Column(name = "note")
     @Basic
-    private String notes;
+    private String note;
 
     @Column(name = "created_on")
     @Basic

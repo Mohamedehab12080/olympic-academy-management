@@ -5,54 +5,153 @@ import { FinancialService } from '../../../../../../core/services/financial.serv
 import { EmployeeService } from '../../../../../../core/services/employee.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
 import { SALARY_TYPES } from '../../../../../../core/models/common.model';
-import {SALARY_TRANSACTION_TYPES} from '../../../../../../core/models/financial.model';
+import { SALARY_TRANSACTION_TYPES } from '../../../../../../core/models/financial.model';
 
 @Component({
   selector: 'app-salary-incentive-form',
-  template: `
-    <div class="form-container"><mat-card><div class="form-header"><button mat-icon-button routerLink="/financial/salary-incentives"><mat-icon>arrow_forward</mat-icon></button><h2>{{ isEditMode ? 'تعديل حافز' : 'إضافة حافز جديد' }}</h2></div>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()"><div class="form-grid">
-      <mat-form-field appearance="outline"><mat-label>الموظف *</mat-label><mat-select formControlName="employeeId"><mat-option *ngFor="let e of employees" [value]="e.id">{{ e.title }}</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>نوع الحافز *</mat-label><mat-select formControlName="type"><mat-option *ngFor="let t of transactionTypes" [value]="t">{{ t.title }}</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>المبلغ *</mat-label><input matInput type="number" formControlName="amountWithdrawn"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>التاريخ *</mat-label><input matInput [matDatepicker]="datePicker" formControlName="withdrawDate"><mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle><mat-datepicker #datePicker></mat-datepicker></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>طريقة الدفع</mat-label><mat-select formControlName="paymentMethodId"><mat-option *ngFor="let p of paymentMethods" [value]="p.id">{{ p.title }}</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>نوع الراتب</mat-label><mat-select formControlName="salaryType"><mat-option *ngFor="let s of salaryTypes" [value]="s">{{ s.title }}</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline" class="full-width"><mat-label>ملاحظات</mat-label><textarea matInput formControlName="note" rows="3"></textarea></mat-form-field>
-    </div><div class="form-actions"><button mat-raised-button color="primary" type="submit"><mat-icon>save</mat-icon> {{ isEditMode ? 'تحديث' : 'حفظ' }}</button><button mat-stroked-button type="button" routerLink="/financial/salary-incentives">إلغاء</button></div></form></mat-card></div>
-  `,
-  styles: [`.form-container { max-width: 800px; margin: 0 auto; padding: 24px; } .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; } .full-width { grid-column: span 2; } .form-actions { display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px; }`]
+  templateUrl: './salary-incentive-form.component.html',
+  styleUrls: ['./salary-incentive-form.component.css']
 })
 export class SalaryIncentiveFormComponent implements OnInit {
-  form: FormGroup; isEditMode = false; itemId?: number;
-  employees: any[] = []; paymentMethods: any[] = [];
-  transactionTypes = SALARY_TRANSACTION_TYPES; salaryTypes = SALARY_TYPES;
+  form: FormGroup;
+  isEditMode = false;
+  itemId?: number;
+  employees: any[] = [];
+  paymentMethods: any[] = [];
+  transactionTypes = SALARY_TRANSACTION_TYPES;
+  salaryTypes = SALARY_TYPES;
+  
+  // عنوان النموذج حسب نوع المعاملة
+  formTitle: string = 'إضافة معاملة جديدة';
+  transactionTypeName: string = '';
 
-  constructor(private fb: FormBuilder, private financialService: FinancialService, private employeeService: EmployeeService, private notification: NotificationService, private route: ActivatedRoute, private router: Router) {
-    this.form = this.fb.group({ employeeId: [null, Validators.required], type: [null, Validators.required], amountWithdrawn: [null, Validators.required], withdrawDate: [null, Validators.required], paymentMethodId: [null], salaryType: [null], note: [''] });
+  constructor(
+    private fb: FormBuilder,
+    private financialService: FinancialService,
+    private employeeService: EmployeeService,
+    private notification: NotificationService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.form = this.fb.group({
+      employeeId: [null, Validators.required],
+      type: [null, Validators.required],
+      amountWithdrawn: [null, [Validators.required, Validators.min(1)]],
+      withdrawDate: [null, Validators.required],
+      paymentMethodId: [null],
+      salaryType: [null],
+      note: ['']
+    });
   }
 
   ngOnInit() {
-    this.loadEmployees(); this.loadPaymentMethods();
+    this.loadEmployees();
+    this.loadPaymentMethods();
+    
+    // مراقبة تغيير نوع المعاملة لتحديث عنوان النموذج
+    this.form.get('type')?.valueChanges.subscribe((type) => {
+      if (type) {
+        this.transactionTypeName = type.title;
+        this.updateFormTitle();
+      }
+    });
+
     this.itemId = this.route.snapshot.params['id'];
-    if (this.itemId) { this.isEditMode = true; this.financialService.getSalaryIncentiveById(this.itemId).subscribe((res: any) => this.form.patchValue(res)); }
+    if (this.itemId) {
+      this.isEditMode = true;
+      this.loadTransactionData();
+    }
   }
 
-  loadEmployees() { this.employeeService.getAllEmployeesLookup().subscribe((res: any) => this.employees = res.list); }
-  loadPaymentMethods() { this.financialService.getAllPaymentMethodsLookup().subscribe((res: any) => this.paymentMethods = res.list); }
+  loadEmployees() {
+    this.employeeService.getAllEmployeesLookup().subscribe({
+      next: (res: any) => { this.employees = res.list; },
+      error: () => { this.notification.showError('حدث خطأ في تحميل الموظفين'); }
+    });
+  }
+
+  loadPaymentMethods() {
+    this.financialService.getAllPaymentMethodsLookup().subscribe({
+      next: (res: any) => { this.paymentMethods = res.list; },
+      error: () => { this.notification.showError('حدث خطأ في تحميل طرق الدفع'); }
+    });
+  }
+
+  loadTransactionData() {
+    this.financialService.getSalaryIncentiveById(this.itemId!).subscribe({
+      next: (res: any) => {
+        this.form.patchValue({
+          employeeId: res.employee?.id,
+          type: res.type,
+          amountWithdrawn: res.amountWithdrawn,
+          withdrawDate: res.withdrawDate,
+          paymentMethodId: res.paymentMethod?.id,
+          salaryType: res.salaryType,
+          note: res.note
+        });
+        if (res.type) {
+          this.transactionTypeName = res.type.title;
+          this.updateFormTitle();
+        }
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل البيانات');
+        this.router.navigate(['/financial/salary-incentives']);
+      }
+    });
+  }
+
+  updateFormTitle() {
+    if (this.isEditMode) {
+      this.formTitle = `تعديل ${this.transactionTypeName}`;
+    } else {
+      this.formTitle = `إضافة ${this.transactionTypeName} جديد`;
+    }
+  }
+
+  getTransactionTypeClass(typeId: number): string {
+    switch(typeId) {
+      case 1: return 'salary';
+      case 2: return 'incentive';
+      case 3: return 'bonus';
+      case 4: return 'advance';
+      default: return '';
+    }
+  }
 
   onSubmit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
+      return;
+    }
+
+    const formData = this.form.value;
+
     if (this.isEditMode && this.itemId) {
-      this.financialService.updateSalaryIncentive(this.itemId, this.form.value).subscribe({
-        next: () => { this.notification.showSuccess('تم التحديث'); this.router.navigate(['/financial/salary-incentives']); },
-        error: () => this.notification.showError('حدث خطأ')
+      this.financialService.updateSalaryIncentive(this.itemId, formData).subscribe({
+        next: () => {
+          this.notification.showSuccess(`تم تحديث ${this.transactionTypeName} بنجاح`);
+          this.router.navigate(['/financial/salary-incentives']);
+        },
+        error: (err) => {
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في التحديث');
+        }
       });
     } else {
-      this.financialService.createSalaryIncentive(this.form.value).subscribe({
-        next: () => { this.notification.showSuccess('تم الإضافة'); this.router.navigate(['/financial/salary-incentives']); },
-        error: () => this.notification.showError('حدث خطأ')
+      this.financialService.createSalaryIncentive(formData).subscribe({
+        next: () => {
+          this.notification.showSuccess(`تم إضافة ${this.transactionTypeName} بنجاح`);
+          this.router.navigate(['/financial/salary-incentives']);
+        },
+        error: (err) => {
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في الإضافة');
+        }
       });
     }
+  }
+
+  getFormTitle(): string {
+    return this.formTitle;
   }
 }

@@ -112,9 +112,9 @@ export class CourseReportComponent implements OnInit {
       c.department?.title || '-',
       c.courseType?.title || '-',
       `${c.duration || 0} ساعة`,
-      `${c.price || 0} ريال`,
+      `${c.price || 0} جم`,
       (c.enrollmentsCount || 0).toString(),
-      `${c.totalRevenue || 0} ريال`,
+      `${c.totalRevenue || 0} جم`,
       c.isActive ? 'نشطة' : 'غير نشطة'
     ]),
     startY: 35,

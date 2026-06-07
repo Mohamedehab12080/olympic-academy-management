@@ -102,7 +102,7 @@ export class ReportService {
     if (totals && totals.length) {
       doc.setFontSize(12);
       totals.forEach((total, index) => {
-        doc.text(`${total.label}: ${total.value.toLocaleString()} ريال`, 14, startY + (index * 7));
+        doc.text(`${total.label}: ${total.value.toLocaleString()} جم`, 14, startY + (index * 7));
       });
       startY += (totals.length * 7) + 10;
     }
@@ -155,7 +155,7 @@ export class ReportService {
         e.trainer?.title || '-',
         e.startDate || '-',
         e.paymentStatus?.title || '-',
-        e.finalSubscriptionValue ? `${e.finalSubscriptionValue.toLocaleString()} ريال` : '-'
+        e.finalSubscriptionValue ? `${e.finalSubscriptionValue.toLocaleString()} جم` : '-'
       ]),
       startY: yOffset + 10,
       styles: { halign: 'right', font: 'helvetica', cellPadding: 3, fontSize: 9 },

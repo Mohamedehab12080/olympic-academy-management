@@ -1,0 +1,11 @@
+.types-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.page-header h1 { margin: 0; font-size: 28px; }
+.filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; align-items: center; }
+.filter-field { flex: 1; min-width: 250px; }
+.loading { display: flex; justify-content: center; padding: 40px; }
+.table-container { overflow-x: auto; }
+.badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; background: #fee2e2; color: #991b1b; }
+.badge.active { background: #d1fae5; color: #065f46; }
+.no-data { text-align: center; padding: 60px; color: #6b7280; }
+.no-data mat-icon { font-size: 64px; width: 64px; height: 64px; margin-bottom: 16px; color: #d1d5db; }
