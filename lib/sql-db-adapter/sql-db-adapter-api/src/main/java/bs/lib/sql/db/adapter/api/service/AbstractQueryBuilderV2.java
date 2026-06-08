@@ -59,6 +59,7 @@ public abstract class AbstractQueryBuilderV2<ENTITY, FILTER extends SearchFilter
         return query.getResultList();
     }
 
+    // FIXED: Keep Integer return type but convert from Long
     public Integer countAllByFilters(FILTER filters) {
         String hql = "SELECT COUNT(" + (isDistinct() ? "DISTINCT " : " ") + "item) " +
                 "FROM " + ENTITY_CLASS_TYPE.getCanonicalName() + " item "
@@ -70,7 +71,8 @@ public abstract class AbstractQueryBuilderV2<ENTITY, FILTER extends SearchFilter
         if (!conditions.isEmpty())
             hql += this.constructWhereCondition(conditions);
 
-        TypedQuery<Integer> query = em.createQuery(hql, Integer.class);
+        // Use Long for the query (Hibernate returns Long for COUNT)
+        TypedQuery<Long> query = em.createQuery(hql, Long.class);
 
         List<QBCondition> allConditions = new ArrayList<>(conditions);
         if (onConditions != null) {
@@ -78,7 +80,9 @@ public abstract class AbstractQueryBuilderV2<ENTITY, FILTER extends SearchFilter
         }
         this.setParameters(query, allConditions);
 
-        return query.getSingleResult();
+        Long result = query.getSingleResult();
+        // Convert Long to Integer (safe because count won't exceed Integer.MAX_VALUE)
+        return result != null ? result.intValue() : 0;
     }
 
     protected String constructWhereCondition(List<QBCondition> conditions) {
@@ -119,9 +123,6 @@ public abstract class AbstractQueryBuilderV2<ENTITY, FILTER extends SearchFilter
     public Boolean isDistinct() {
         return false;
     }
-
-
-
 
     public abstract List<QBCondition> evaluateWhereConditions(FILTER filters);
     public List<QBCondition> evaluateOnConditions(FILTER filters){return List.of();};

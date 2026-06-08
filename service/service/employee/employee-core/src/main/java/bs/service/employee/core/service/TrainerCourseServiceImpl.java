@@ -43,7 +43,7 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
         Employee trainer = employeeRepository.selectById(trainerId)
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, trainerId));
 
-        if (trainer.getEmployeeType() != EmployeeTypes.TRAINER) {
+        if (!trainer.getEmployeeType().equals(EmployeeTypes.TRAINER.id)) {
             throw new BusinessException(INVALID_EMPLOYEE_TYPE, "Employee is not a trainer");
         }
 

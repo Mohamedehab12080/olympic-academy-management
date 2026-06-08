@@ -1,8 +1,6 @@
 package bs.service.enrollment.model.generated;
 
-import bs.lib.common.model.enums.PaymentStatus;
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.enrollment.model.enums.EnrollmentStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -41,9 +39,9 @@ public class EnrollmentListItem implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate endDate;
 
-    private EnrollmentStatus enrollmentStatus;
+    private LookupVTO enrollmentStatus;
 
-    private PaymentStatus paymentStatus;
+    private LookupVTO paymentStatus;
 
     private Integer finalSubscriptionValue;
 
@@ -175,7 +173,7 @@ public class EnrollmentListItem implements Serializable {
         this.endDate = endDate;
     }
 
-    public EnrollmentListItem enrollmentStatus(EnrollmentStatus enrollmentStatus) {
+    public EnrollmentListItem enrollmentStatus(LookupVTO enrollmentStatus) {
         this.enrollmentStatus = enrollmentStatus;
         return this;
     }
@@ -188,15 +186,15 @@ public class EnrollmentListItem implements Serializable {
     @Valid
     @Schema(name = "enrollmentStatus", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("enrollmentStatus")
-    public EnrollmentStatus getEnrollmentStatus() {
+    public LookupVTO getEnrollmentStatus() {
         return enrollmentStatus;
     }
 
-    public void setEnrollmentStatus(EnrollmentStatus enrollmentStatus) {
+    public void setEnrollmentStatus(LookupVTO enrollmentStatus) {
         this.enrollmentStatus = enrollmentStatus;
     }
 
-    public EnrollmentListItem paymentStatus(PaymentStatus paymentStatus) {
+    public EnrollmentListItem paymentStatus(LookupVTO paymentStatus) {
         this.paymentStatus = paymentStatus;
         return this;
     }
@@ -209,11 +207,11 @@ public class EnrollmentListItem implements Serializable {
     @Valid
     @Schema(name = "paymentStatus", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("paymentStatus")
-    public PaymentStatus getPaymentStatus() {
+    public LookupVTO getPaymentStatus() {
         return paymentStatus;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
+    public void setPaymentStatus(LookupVTO paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 

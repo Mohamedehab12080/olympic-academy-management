@@ -25,7 +25,6 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -97,7 +96,7 @@ public interface CourseController {
             @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
             @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy,
-            @Parameter(name = "courseType", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseType", required = false) CourseTypes courseType,
+            @Parameter(name = "courseType", description = "", in = ParameterIn.QUERY) @Valid CourseTypes courseType,
             @Parameter(name = "startDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "startDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDateFrom,
             @Parameter(name = "startDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "startDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDateTo,
             @Parameter(name = "endDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "endDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDateFrom,

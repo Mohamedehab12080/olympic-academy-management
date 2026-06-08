@@ -1,6 +1,6 @@
 package bs.service.trainee.model.generated;
 
-import bs.lib.common.model.enums.ContactTypes;
+import bs.lib.common.model.generated.LookupVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -25,7 +25,7 @@ public class TraineeContactListItem implements Serializable {
 
     private Integer id;
 
-    private ContactTypes contactType;
+    private LookupVTO contactType;
 
     private String contactValue;
 
@@ -50,7 +50,7 @@ public class TraineeContactListItem implements Serializable {
         this.id = id;
     }
 
-    public TraineeContactListItem contactType(ContactTypes contactType) {
+    public TraineeContactListItem contactType(LookupVTO contactType) {
         this.contactType = contactType;
         return this;
     }
@@ -63,11 +63,11 @@ public class TraineeContactListItem implements Serializable {
     @Valid
     @Schema(name = "contactType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("contactType")
-    public ContactTypes getContactType() {
+    public LookupVTO getContactType() {
         return contactType;
     }
 
-    public void setContactType(ContactTypes contactType) {
+    public void setContactType(LookupVTO contactType) {
         this.contactType = contactType;
     }
 

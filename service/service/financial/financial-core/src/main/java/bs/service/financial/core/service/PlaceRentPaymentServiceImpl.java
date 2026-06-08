@@ -99,7 +99,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
                 .placeId(placeId)
                 .rentTypeId(rentTypeId)
                 .paymentMethodId(paymentMethodId)
-                .status(status)
+                .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)
                 .paymentDateTo(paymentDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

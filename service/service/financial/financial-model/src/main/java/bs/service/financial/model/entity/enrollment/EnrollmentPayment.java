@@ -56,9 +56,9 @@ public class EnrollmentPayment {
     @Basic
     private String note;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "payment_status")
-    private PaymentStatus status;
+    private Integer paymentStatus;
 
     @Column(name = "created_on")
     @Basic

@@ -54,7 +54,7 @@ public class EmployeeContactServiceImpl implements EmployeeContactService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_CONTACT_NOT_FOUND, contactId));
 
-        contact.setContactType(employeeMapper.toContactType(employeeContactDTO.getContactType()));
+        contact.setContactType(employeeContactDTO.getContactType().getId());
         contact.setContactValue(employeeContactDTO.getContactValue());
 
         employeeRepository.update(employee);

@@ -20,8 +20,8 @@
             <column name="gender" type="varchar(100)"/>
             <column name="salary" type="Integer"/>
             <column name="remained_salary" type="Integer"/>
-            <column name="salary_type" type="varchar(100)"/>
-            <column name="employee_type" type="varchar(100)"/>
+            <column name="salary_type" type="int"/>
+            <column name="employee_type" type="int"/>
             <column name="image_url" type="varchar(255)"/>
             <column name="hire_date" type="date"/>
             <column name="is_active" type="boolean" defaultValueBoolean="true"/>
@@ -55,7 +55,7 @@
             <column name="employee_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="contact_type" type="varchar(100)"/>
+            <column name="contact_type" type="int"/>
             <column name="contact_value" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>

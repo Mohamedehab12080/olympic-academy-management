@@ -1,11 +1,12 @@
 package bs.lib.common.model.enums;
 
+import bs.lib.common.model.interfaces.EnumWithIdAndTitle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum PaymentStatus {
+public enum PaymentStatus implements EnumWithIdAndTitle {
     PENDING(1,"قيد الانتظار"),PAID(2,"تم الدفع"),FAILED(3,"فشل"),REFUNDED(4,"تم استرداد المبلغ"),CANCELLED(5,"تم الالغاء"),PARTIAL(6,"جزئي");
 
     public Integer id;

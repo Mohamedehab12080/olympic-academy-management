@@ -21,7 +21,7 @@ public class CourseSessionSearchFilter extends SearchFilter<CourseSessionSearchF
     private Integer courseId;
     private Integer employeeId;
     private Integer placeId;
-    private SessionStatus status;
+    private Integer status;
     private LocalDate sessionDateFrom;
     private LocalDate sessionDateTo;
     private LocalTime startTimeFrom;

@@ -1,120 +1,214 @@
 <div class="deductions-container">
-  <div class="page-header">
-    <h1>خصومات الموظفين</h1>
-    <button mat-raised-button color="primary" routerLink="/financial/salary-deductions/new">
-      <mat-icon>add</mat-icon> خصم جديد
-    </button>
-  </div>
-
-  <mat-card>
-    <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>بحث</mat-label>
-        <input matInput (keyup)="applyQuickSearch($event)" placeholder="بحث...">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>الموظف</mat-label>
-        <mat-select [(ngModel)]="filters.employeeId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>نوع الراتب</mat-label>
-        <mat-select [(ngModel)]="filters.salaryTypeId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let s of salaryTypes" [value]="s.id">{{ s.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>من تاريخ</mat-label>
-        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.deductionDateFrom" (dateChange)="loadData()">
-        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-        <mat-datepicker #fromPicker></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>إلى تاريخ</mat-label>
-        <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.deductionDateTo" (dateChange)="loadData()">
-        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-        <mat-datepicker #toPicker></mat-datepicker>
-      </mat-form-field>
-
-      <button mat-stroked-button (click)="resetFilters()">
-        <mat-icon>clear</mat-icon> مسح
-      </button>
-      <button mat-stroked-button color="accent" (click)="exportToExcel()">
-        <mat-icon>table_chart</mat-icon> Excel
-      </button>
-      <button mat-stroked-button color="warn" (click)="exportToPDF()">
-        <mat-icon>picture_as_pdf</mat-icon> PDF
+  <mat-card class="main-card">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-title">
+        <h1>خصومات الموظفين</h1>
+        <p>إدارة ومتابعة خصومات رواتب الموظفين</p>
+      </div>
+      <button mat-raised-button color="primary" routerLink="/financial/salary-deductions/new" class="add-button">
+        <mat-icon>add</mat-icon>
+        خصم جديد
       </button>
     </div>
 
-    <div class="loading" *ngIf="isLoading">
-      <mat-spinner diameter="40"></mat-spinner>
+    <!-- Filters Section -->
+    <div class="filters-card">
+      <div class="filters-grid">
+        <div class="filters-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>بحث عام</mat-label>
+            <input matInput (keyup)="applyQuickSearch($event)" placeholder="بحث...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <!-- Employee - Searchable Select -->
+          <app-searchable-select
+            [ngModel]="filters.employeeId"
+            (ngModelChange)="filters.employeeId = $event; loadData()"
+            label="الموظف"
+            [options]="employeeOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+
+          <!-- Salary Type - Searchable Select -->
+          <app-searchable-select
+            [ngModel]="filters.salaryTypeId"
+            (ngModelChange)="filters.salaryTypeId = $event; loadData()"
+            label="نوع الراتب"
+            [options]="salaryTypeOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+        </div>
+
+        <div class="filters-row">
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>من تاريخ</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.deductionDateFrom" (dateChange)="loadData()">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>إلى تاريخ</mat-label>
+            <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.deductionDateTo" (dateChange)="loadData()">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+          </mat-form-field>
+
+          <div class="filter-actions">
+            <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+              <mat-icon>refresh</mat-icon>
+              مسح الكل
+            </button>
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+              <mat-icon>grid_on</mat-icon>
+              تصدير Excel
+            </button>
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
+              <mat-icon>picture_as_pdf</mat-icon>
+              تصدير PDF
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="table-container" *ngIf="!isLoading">
-      <table mat-table [dataSource]="dataSource" matSort class="full-width-table">
-        
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef> # </th>
-          <td mat-cell *matCellDef="let d"> {{d.id}} </td>
-        </ng-container>
+    <!-- Statistics Cards -->
+    <div class="stats-grid" *ngIf="!isLoading && dataSource.data.length > 0">
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info">
+          <h3>{{ dataSource.data.length }}</h3>
+          <p>إجمالي الخصومات</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3>{{ totalDeductions | number }} جم</h3>
+          <p>إجمالي المبالغ</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <h3>{{ averageDeduction | number }} جم</h3>
+          <p>متوسط الخصم</p>
+        </div>
+      </div>
+    </div>
 
-        <ng-container matColumnDef="employee">
-          <th mat-header-cell *matHeaderCellDef> الموظف </th>
-          <td mat-cell *matCellDef="let d"> {{d.employee?.title}} </td>
-        </ng-container>
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>جاري تحميل البيانات...</p>
+    </div>
 
-        <ng-container matColumnDef="amountDeducted">
-          <th mat-header-cell *matHeaderCellDef> المبلغ </th>
-          <td mat-cell *matCellDef="let d"> {{d.amountDeducted}} ريال </td>
-        </ng-container>
-
-        <ng-container matColumnDef="deductionDate">
-          <th mat-header-cell *matHeaderCellDef> التاريخ </th>
-          <td mat-cell *matCellDef="let d"> {{d.deductionDate | date}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="reason">
-          <th mat-header-cell *matHeaderCellDef> السبب </th>
-          <td mat-cell *matCellDef="let d"> {{d.reason || '-'}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="salaryType">
-          <th mat-header-cell *matHeaderCellDef> نوع الراتب </th>
-          <td mat-cell *matCellDef="let d"> {{d.salaryType?.title || '-'}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef> الإجراءات </th>
-          <td mat-cell *matCellDef="let d">
-            <button mat-icon-button color="primary" (click)="editDeduction(d.id)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteDeduction(d)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      </table>
-
-      <div class="no-data" *ngIf="dataSource.data.length === 0">
-        <mat-icon>remove_circle</mat-icon>
-        <p>لا توجد خصومات</p>
+    <!-- Table Section -->
+    <div class="table-section" *ngIf="!isLoading">
+      <div class="table-header" *ngIf="dataSource.data.length > 0">
+        <div class="records-count">
+          <mat-icon>info</mat-icon>
+          <span>عدد الخصومات: {{ dataSource.data.length }} خصم</span>
+        </div>
       </div>
 
-      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" matSort class="data-table">
+          <!-- Index Column -->
+          <ng-container matColumnDef="index">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
+            <td mat-cell *matCellDef="let d; let i = index">
+              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+            </td>
+          </ng-container>
+
+          <!-- Employee Column -->
+          <ng-container matColumnDef="employee">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
+            <td mat-cell *matCellDef="let d" class="clickable-cell" (click)="viewDeduction(d.id)">
+              <strong>{{ d.employee?.title }}</strong>
+            </td>
+          </ng-container>
+
+          <!-- Amount Deducted Column -->
+          <ng-container matColumnDef="amountDeducted">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>المبلغ</th>
+            <td mat-cell *matCellDef="let d">
+              <span class="amount-badge">{{ d.amountDeducted | number }} جم</span>
+            </td>
+          </ng-container>
+
+          <!-- Deduction Date Column -->
+          <ng-container matColumnDef="deductionDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الخصم</th>
+            <td mat-cell *matCellDef="let d">
+              <div class="date-info">
+                <mat-icon>event</mat-icon>
+                <span>{{ d.deductionDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Reason Column -->
+          <ng-container matColumnDef="reason">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>السبب</th>
+            <td mat-cell *matCellDef="let d">
+              <span class="reason-text">{{ d.reason || '-' }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Salary Type Column -->
+          <ng-container matColumnDef="salaryType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>نوع الراتب</th>
+            <td mat-cell *matCellDef="let d">
+              <mat-chip [color]="d.salaryType?.id === 1 ? 'primary' : 'accent'" selected>
+                {{ d.salaryType?.title || '-' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
+            <td mat-cell *matCellDef="let d">
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="viewDeduction(d.id)" matTooltip="عرض التفاصيل">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="editDeduction(d.id)" matTooltip="تعديل">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteDeduction(d)" matTooltip="حذف">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewDeduction(row.id)"></tr>
+
+          <!-- No Data Row -->
+          <tr class="mat-row no-data-row" *matNoDataRow>
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+              <div class="no-data-message">
+                <mat-icon>remove_circle</mat-icon>
+                <p>لا توجد خصومات</p>
+                <button mat-raised-button color="primary" routerLink="/financial/salary-deductions/new">
+                  <mat-icon>add</mat-icon>
+                  إضافة خصم جديد
+                </button>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
     </div>
   </mat-card>
 </div>

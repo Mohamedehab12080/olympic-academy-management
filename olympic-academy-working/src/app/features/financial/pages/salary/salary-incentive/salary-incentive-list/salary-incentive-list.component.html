@@ -1,164 +1,259 @@
 <div class="incentives-container">
-  <div class="page-header">
-    <div>
-      <h1>الرواتب والحوافز</h1>
-      <p>إدارة ومتابعة الرواتب والحوافز والمكافآت والسلف للموظفين</p>
-    </div>
-    <button mat-raised-button color="primary" routerLink="/financial/salary-incentives/new">
-      <mat-icon>add</mat-icon> إضافة جديدة
-    </button>
-  </div>
-
-  <mat-card>
-    <!-- صف الفلاتر الأول -->
-    <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>بحث عام</mat-label>
-        <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث عن موظف...">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>الموظف</mat-label>
-        <mat-select [(ngModel)]="filters.employeeId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>نوع المعاملة</mat-label>
-        <mat-select [(ngModel)]="filters.transactionTypeId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let t of transactionTypes" [value]="t.id">{{ t.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <!-- صف الفلاتر الثاني -->
-    <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>طريقة الدفع</mat-label>
-        <mat-select [(ngModel)]="filters.paymentMethodId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let p of paymentMethods" [value]="p.id">{{ p.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>نوع الراتب</mat-label>
-        <mat-select [(ngModel)]="filters.salaryTypeId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let s of salaryTypes" [value]="s.id">{{ s.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>من تاريخ</mat-label>
-        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.withdrawDateFrom" (dateChange)="loadData()">
-        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-        <mat-datepicker #fromPicker></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>إلى تاريخ</mat-label>
-        <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.withdrawDateTo" (dateChange)="loadData()">
-        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-        <mat-datepicker #toPicker></mat-datepicker>
-      </mat-form-field>
-
-      <button mat-stroked-button (click)="resetFilters()">
-        <mat-icon>clear</mat-icon> مسح الفلاتر
-      </button>
-      <button mat-stroked-button color="accent" (click)="exportToExcel()">
-        <mat-icon>table_chart</mat-icon> Excel
-      </button>
-      <button mat-stroked-button color="warn" (click)="exportToPDF()">
-        <mat-icon>picture_as_pdf</mat-icon> PDF
+  <mat-card class="main-card">
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-title">
+        <h1>الرواتب والحوافز</h1>
+        <p>إدارة ومتابعة الرواتب والحوافز والمكافآت والسلف للموظفين</p>
+      </div>
+      <button mat-raised-button color="primary" routerLink="/financial/salary-incentives/new" class="add-button">
+        <mat-icon>add</mat-icon>
+        إضافة جديدة
       </button>
     </div>
 
-    <!-- تحميل -->
-    <div class="loading" *ngIf="isLoading">
-      <mat-spinner diameter="40"></mat-spinner>
+    <!-- Filters Section -->
+    <div class="filters-card">
+      <div class="filters-grid">
+        <div class="filters-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>بحث عام</mat-label>
+            <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث عن موظف...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <!-- Employee - Searchable Select -->
+          <app-searchable-select
+            [ngModel]="filters.employeeId"
+            (ngModelChange)="filters.employeeId = $event; loadData()"
+            label="الموظف"
+            [options]="employeeOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+
+          <!-- Transaction Type - Searchable Select -->
+          <app-searchable-select
+            [ngModel]="filters.transactionTypeId"
+            (ngModelChange)="filters.transactionTypeId = $event; loadData()"
+            label="نوع المعاملة"
+            [options]="transactionTypeOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+        </div>
+
+        <div class="filters-row">
+          <!-- Payment Method - Searchable Select -->
+          <app-searchable-select
+            [ngModel]="filters.paymentMethodId"
+            (ngModelChange)="filters.paymentMethodId = $event; loadData()"
+            label="طريقة الدفع"
+            [options]="paymentMethodOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+
+          <!-- Salary Type - Searchable Select -->
+          <app-searchable-select
+            [ngModel]="filters.salaryTypeId"
+            (ngModelChange)="filters.salaryTypeId = $event; loadData()"
+            label="نوع الراتب"
+            [options]="salaryTypeOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>من تاريخ</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.withdrawDateFrom" (dateChange)="loadData()">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>إلى تاريخ</mat-label>
+            <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.withdrawDateTo" (dateChange)="loadData()">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+            <mat-icon>refresh</mat-icon>
+            مسح الكل
+          </button>
+          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+            <mat-icon>grid_on</mat-icon>
+            تصدير Excel
+          </button>
+          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
+            <mat-icon>picture_as_pdf</mat-icon>
+            تصدير PDF
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- الجدول -->
-    <div class="table-container" *ngIf="!isLoading">
-      <div class="table-info" *ngIf="dataSource.data.length > 0">
-        <p>عدد السجلات: <strong>{{ dataSource.data.length }}</strong> معاملة</p>
+    <!-- Statistics Cards -->
+    <div class="stats-grid" *ngIf="!isLoading && dataSource.data.length > 0">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3>{{ totalAmount | number }} جم</h3>
+          <p>إجمالي المبالغ</p>
+        </div>
+      </div>
+      <div class="stat-card salary">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info">
+          <h3>{{ salaryTotal | number }} جم</h3>
+          <p>رواتب</p>
+        </div>
+      </div>
+      <div class="stat-card incentive">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-info">
+          <h3>{{ incentiveTotal | number }} جم</h3>
+          <p>حوافز</p>
+        </div>
+      </div>
+      <div class="stat-card bonus">
+        <div class="stat-icon">🎁</div>
+        <div class="stat-info">
+          <h3>{{ bonusTotal | number }} جم</h3>
+          <p>مكافآت</p>
+        </div>
+      </div>
+      <div class="stat-card advance">
+        <div class="stat-icon">🏦</div>
+        <div class="stat-info">
+          <h3>{{ advanceTotal | number }} جم</h3>
+          <p>سلف</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>جاري تحميل البيانات...</p>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section" *ngIf="!isLoading">
+      <div class="table-header" *ngIf="dataSource.data.length > 0">
+        <div class="records-count">
+          <mat-icon>info</mat-icon>
+          <span>عدد المعاملات: {{ dataSource.data.length }} معاملة</span>
+        </div>
       </div>
 
-      <table mat-table [dataSource]="dataSource" matSort class="full-width">
-        
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef> # </th>
-          <td mat-cell *matCellDef="let i"> {{i.id}} </td>
-        </ng-container>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" matSort class="data-table">
+          <!-- Index Column -->
+          <ng-container matColumnDef="index">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
+            <td mat-cell *matCellDef="let item; let i = index">
+              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="employee">
-          <th mat-header-cell *matHeaderCellDef> الموظف </th>
-          <td mat-cell *matCellDef="let i"> {{i.employee?.title}} </td>
-        </ng-container>
+          <!-- Employee Column -->
+          <ng-container matColumnDef="employee">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
+            <td mat-cell *matCellDef="let item" class="clickable-cell" (click)="viewTransaction(item.id)">
+              <strong>{{ item.employee?.title }}</strong>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="transactionType">
-          <th mat-header-cell *matHeaderCellDef> نوع المعاملة </th>
-          <td mat-cell *matCellDef="let i">
-            <span class="type-badge" [class.salary]="i.type?.id === 1"
-                                      [class.incentive]="i.type?.id === 2"
-                                      [class.bonus]="i.type?.id === 3"
-                                      [class.advance]="i.type?.id === 4">
-              {{i.type?.title}}
-            </span>
-          </td>
-        </ng-container>
+          <!-- Transaction Type Column -->
+          <ng-container matColumnDef="transactionType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>نوع المعاملة</th>
+            <td mat-cell *matCellDef="let item">
+              <span class="type-badge" [class.salary]="item.type?.id === 1"
+                    [class.incentive]="item.type?.id === 2"
+                    [class.bonus]="item.type?.id === 3"
+                    [class.advance]="item.type?.id === 4">
+                {{ item.type?.title }}
+              </span>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef> المبلغ </th>
-          <td mat-cell *matCellDef="let i"> {{i.amountWithdrawn}} جم </td>
-        </ng-container>
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>المبلغ</th>
+            <td mat-cell *matCellDef="let item">
+              <span class="amount-badge">{{ item.amountWithdrawn | number }} جم</span>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="withdrawDate">
-          <th mat-header-cell *matHeaderCellDef> تاريخ الصرف </th>
-          <td mat-cell *matCellDef="let i"> {{i.withdrawDate | date}} </td>
-        </ng-container>
+          <!-- Withdraw Date Column -->
+          <ng-container matColumnDef="withdrawDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الصرف</th>
+            <td mat-cell *matCellDef="let item">
+              <div class="date-info">
+                <mat-icon>event</mat-icon>
+                <span>{{ item.withdrawDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="paymentMethod">
-          <th mat-header-cell *matHeaderCellDef> طريقة الدفع </th>
-          <td mat-cell *matCellDef="let i"> {{i.paymentMethod?.title || '-'}} </td>
-        </ng-container>
+          <!-- Payment Method Column -->
+          <ng-container matColumnDef="paymentMethod">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>طريقة الدفع</th>
+            <td mat-cell *matCellDef="let item">
+              <mat-chip>{{ item.paymentMethod?.title || '-' }}</mat-chip>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="salaryType">
-          <th mat-header-cell *matHeaderCellDef> نوع الراتب </th>
-          <td mat-cell *matCellDef="let i"> {{i.salaryType?.title || '-'}} </td>
-        </ng-container>
+          <!-- Salary Type Column -->
+          <ng-container matColumnDef="salaryType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>نوع الراتب</th>
+            <td mat-cell *matCellDef="let item">
+              {{ item.salaryType?.title || '-' }}
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef> الإجراءات </th>
-          <td mat-cell *matCellDef="let i">
-            <button mat-icon-button color="primary" (click)="editTransaction(i.id)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteTransaction(i)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
+            <td mat-cell *matCellDef="let item">
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="viewTransaction(item.id)" matTooltip="عرض التفاصيل">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="editTransaction(item.id)" matTooltip="تعديل">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteTransaction(item)" matTooltip="حذف">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewTransaction(row.id)"></tr>
 
-      </table>
-
-      <div class="no-data" *ngIf="dataSource.data.length === 0">
-        <mat-icon>payments</mat-icon>
-        <p>لا توجد معاملات</p>
-        <button mat-raised-button color="primary" routerLink="/financial/salary-incentives/new">
-          <mat-icon>add</mat-icon> إضافة معاملة جديدة
-        </button>
+          <!-- No Data Row -->
+          <tr class="mat-row no-data-row" *matNoDataRow>
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+              <div class="no-data-message">
+                <mat-icon>payments</mat-icon>
+                <p>لا توجد معاملات</p>
+                <button mat-raised-button color="primary" routerLink="/financial/salary-incentives/new">
+                  <mat-icon>add</mat-icon>
+                  إضافة معاملة جديدة
+                </button>
+              </div>
+            </td>
+          </tr>
+        </table>
       </div>
 
-      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
+      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
     </div>
   </mat-card>
 </div>

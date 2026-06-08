@@ -132,10 +132,10 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
         List<EmployeeAttendance> attendances = employeeAttendanceRepository.selectAllByFilters(filter);
 
         long totalEmployees = attendances.size();
-        long present = attendances.stream().filter(a -> a.getStatus() == EmployeeAttendanceStatus.PRESENT).count();
-        long absent = attendances.stream().filter(a -> a.getStatus() == EmployeeAttendanceStatus.ABSENT).count();
-        long late = attendances.stream().filter(a -> a.getStatus() == EmployeeAttendanceStatus.LATE).count();
-        long excused = attendances.stream().filter(a -> a.getStatus() == EmployeeAttendanceStatus.EXCUSED).count();
+        long present = attendances.stream().filter(a -> a.getStatus() .equals(EmployeeAttendanceStatus.PRESENT.id)).count();
+        long absent = attendances.stream().filter(a -> a.getStatus() .equals(EmployeeAttendanceStatus.ABSENT.id)).count();
+        long late = attendances.stream().filter(a -> a.getStatus() .equals(EmployeeAttendanceStatus.LATE.id)).count();
+        long excused = attendances.stream().filter(a -> a.getStatus() .equals(EmployeeAttendanceStatus.EXCUSED.id)).count();
 
         double attendanceRate = totalEmployees > 0 ? (double) (present + late) / totalEmployees * 100 : 0;
 

@@ -20,7 +20,7 @@ public class PlaceRentPaymentSearchFilter extends SearchFilter<PlaceRentPaymentS
     private Integer placeId;
     private Integer rentTypeId;
     private Integer paymentMethodId;
-    private PaymentStatus status;
+    private Integer status;
     private LocalDate paymentDateFrom;
     private LocalDate paymentDateTo;
 

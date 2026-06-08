@@ -106,7 +106,7 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
             }
         }
 
-        traineeAttendance.setStatus(traineeAttendanceDTO.getStatus());
+        traineeAttendance.setStatus(traineeAttendanceDTO.getStatus().getId());
         traineeAttendance.setCheckInTime(parsedCheckIn);
         traineeAttendance.setCheckOutTime(parsedCheckOut);
         traineeAttendance.setLateTime(traineeAttendanceDTO.getLateTime());
@@ -194,16 +194,16 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
 
         long totalTrainees = attendances.size();
         long present = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.PRESENT)
+                .filter(a -> a.getStatus() .equals(TraineeAttendanceStatus.PRESENT.getId()))
                 .count();
         long absent = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.ABSENT)
+                .filter(a -> a.getStatus() .equals(TraineeAttendanceStatus.ABSENT.getId()))
                 .count();
         long late = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.LATE)
+                .filter(a -> a.getStatus() .equals(TraineeAttendanceStatus.LATE.getId()))
                 .count();
         long excused = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.EXCUSED)
+                .filter(a -> a.getStatus() .equals(TraineeAttendanceStatus.EXCUSED.getId()))
                 .count();
 
         double attendanceRate = totalTrainees > 0
@@ -245,16 +245,16 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
 
         long totalTrainees = attendances.size();
         long present = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.PRESENT)
+                .filter(a -> a.getStatus() .equals(TraineeAttendanceStatus.PRESENT.getId()))
                 .count();
         long absent = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.ABSENT)
+                .filter(a -> a.getStatus() .equals( TraineeAttendanceStatus.ABSENT.getId()))
                 .count();
         long late = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.LATE)
+                .filter(a -> a.getStatus() .equals( TraineeAttendanceStatus.LATE.getId()))
                 .count();
         long excused = attendances.stream()
-                .filter(a -> a.getStatus() == TraineeAttendanceStatus.EXCUSED)
+                .filter(a -> a.getStatus() .equals( TraineeAttendanceStatus.EXCUSED.getId()))
                 .count();
 
         double attendanceRate = totalTrainees > 0

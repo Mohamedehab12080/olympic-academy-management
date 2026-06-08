@@ -1138,7 +1138,7 @@ components:
       in: query
       required: false
       schema:
-        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+        $ref: '#/components/schemas/PaymentStatus'
     QPPaymentDateFrom:
       name: paymentDateFrom
       in: query
@@ -1233,7 +1233,7 @@ components:
       in: query
       required: false
       schema:
-        $ref: '#/components/schemas/SalaryTypes'
+        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
     QPDeductionDateFrom:
       name: deductionDateFrom
       in: query
@@ -1250,47 +1250,49 @@ components:
         format: date
 
   schemas:
-    # Enums
+    # ==================== Enums ====================
+    
+    PaymentStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2, 3]
+        code:
+          type: string
+          enum: ["PAID", "PARTIAL", "UNPAID"]
+        arabicLabel:
+          type: string
+          enum: ["مدفوع", "جزئي", "غير مدفوع"]
+
     RefundStatus:
       type: object
       properties:
         id:
           type: integer
-          enum: [ 1, 2, 3, 4 ]
+          enum: [1, 2, 3, 4]
         code:
           type: string
-          enum: [ "PENDING", "APPROVED", "REJECTED", "COMPLETED" ]
+          enum: ["PENDING", "APPROVED", "REJECTED", "COMPLETED"]
         arabicLabel:
           type: string
-          enum: [ "قيد الانتظار", "موافق عليه", "مرفوض", "مكتمل" ]  # Fixed quotes
+          enum: ["قيد الانتظار", "موافق عليه", "مرفوض", "مكتمل"]
 
     SalaryTransactionType:
       type: object
       properties:
         id:
           type: integer
-          enum: [ 1, 2, 3, 4 ]
+          enum: [1, 2, 3, 4]
         code:
           type: string
-          enum: [ "SALARY", "INCENTIVE", "BONUS", "ADVANCE" ]
+          enum: ["SALARY", "INCENTIVE", "BONUS", "ADVANCE"]
         arabicLabel:
           type: string
-          enum: [ "الراتب", "الحافز", "المكافأة", "السلفة" ]  # Fixed quotes
+          enum: ["راتب", "حافز", "مكافأة", "سلفة"]
 
-    SalaryTypes:
-      type: object
-      properties:
-        id:
-          type: integer
-          enum: [ 1, 2, 3, 4 ]
-        code:
-          type: string
-          enum: [ "MONTHLY", "DAILY", "HOURLY", "PERCENTAGE" ]
-        arabicLabel:
-          type: string
-          enum: [ "شهريًا", "يوميًا", "ساعيًا", "نسبة مئوية" ]  # Fixed quotes
-
-    # DTOs
+    # ==================== DTOs ====================
+    
     PaymentMethodDTO:
       type: object
       required:
@@ -1382,7 +1384,7 @@ components:
       required:
         - enrollmentId
         - paymentDate
-        - amountPaid
+        - paidAmount
       properties:
         enrollmentId:
           type: integer
@@ -1407,7 +1409,7 @@ components:
         note:
           type: string
         paymentStatus:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+          $ref: '#/components/schemas/PaymentStatus'
 
     EnrollmentRefundDTO:
       type: object
@@ -1441,7 +1443,7 @@ components:
         - employeeId
         - withdrawDate
         - amountWithdrawn
-        - type
+        - salaryTransactionType
       properties:
         employeeId:
           type: integer
@@ -1458,7 +1460,7 @@ components:
         imageUrl:
           type: string
         salaryType:
-          $ref: '#/components/schemas/SalaryTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
         salaryTransactionType:
           $ref: '#/components/schemas/SalaryTransactionType'
         note:
@@ -1485,11 +1487,12 @@ components:
         reason:
           type: string
         salaryType:
-          $ref: '#/components/schemas/SalaryTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
         note:
           type: string
 
-    # VTOs
+    # ==================== VTOs ====================
+    
     PaymentMethodVTO:
       type: object
       properties:
@@ -1628,7 +1631,7 @@ components:
         note:
           type: string
         paymentStatus:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         createdOn:
           type: string
           format: date-time
@@ -1660,8 +1663,8 @@ components:
           type: string
         note:
           type: string
-        status:
-          $ref: '#/components/schemas/RefundStatus'
+        refundStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         createdOn:
           type: string
           format: date-time
@@ -1691,8 +1694,10 @@ components:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         imageUrl:
           type: string
-        type:
-          $ref: '#/components/schemas/SalaryTransactionType'
+        salaryType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        salaryTransactionType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         note:
           type: string
         createdOn:
@@ -1725,7 +1730,7 @@ components:
         reason:
           type: string
         salaryType:
-          $ref: '#/components/schemas/SalaryTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         note:
           type: string
         createdOn:
@@ -1739,7 +1744,8 @@ components:
         lastModifiedBy:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
 
-    # Result Sets
+    # ==================== Result Sets ====================
+    
     PaymentMethodResultSet:
       type: object
       properties:

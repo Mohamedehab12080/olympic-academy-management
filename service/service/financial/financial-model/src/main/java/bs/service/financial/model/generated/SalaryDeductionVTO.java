@@ -1,6 +1,5 @@
 package bs.service.financial.model.generated;
 
-import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,7 +40,7 @@ public class SalaryDeductionVTO implements Serializable {
 
     private String reason;
 
-    private SalaryTypes salaryType;
+    private LookupVTO salaryType;
 
     private String note;
 
@@ -181,7 +180,7 @@ public class SalaryDeductionVTO implements Serializable {
         this.reason = reason;
     }
 
-    public SalaryDeductionVTO salaryType(SalaryTypes salaryType) {
+    public SalaryDeductionVTO salaryType(LookupVTO salaryType) {
         this.salaryType = salaryType;
         return this;
     }
@@ -194,11 +193,11 @@ public class SalaryDeductionVTO implements Serializable {
     @Valid
     @Schema(name = "salaryType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("salaryType")
-    public SalaryTypes getSalaryType() {
+    public LookupVTO getSalaryType() {
         return salaryType;
     }
 
-    public void setSalaryType(SalaryTypes salaryType) {
+    public void setSalaryType(LookupVTO salaryType) {
         this.salaryType = salaryType;
     }
 

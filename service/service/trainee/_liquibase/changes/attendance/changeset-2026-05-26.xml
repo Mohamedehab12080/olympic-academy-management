@@ -10,6 +10,9 @@
             <column name="id" type="int" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+            <column name="trainee_id" type="int">
+                <constraints  nullable="false"/>
+            </column>
             <column name="course_session_id" type="int">
                 <constraints nullable="false"/>
             </column>
@@ -27,6 +30,13 @@
             <column name="last_modified_by_id" type="int"/>
             <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
         </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_attendance_trainee"
+                baseTableName="oa_trainee_attendance"
+                baseColumnNames="trainee_id"
+                referencedTableName="oa_trainee"
+                referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_trainee_attendance_course_session"

@@ -1,6 +1,6 @@
 package bs.service.trainee.model.generated;
 
-import bs.lib.common.model.enums.Gender;
+import bs.lib.common.model.generated.LookupVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -33,7 +33,7 @@ public class TraineeListItem implements Serializable {
 
     private String academicYear;
 
-    private Gender gender;
+    private LookupVTO gender;
 
     public TraineeListItem id(Integer id) {
         this.id = id;
@@ -140,7 +140,7 @@ public class TraineeListItem implements Serializable {
         this.academicYear = academicYear;
     }
 
-    public TraineeListItem gender(Gender gender) {
+    public TraineeListItem gender(LookupVTO gender) {
         this.gender = gender;
         return this;
     }
@@ -153,11 +153,11 @@ public class TraineeListItem implements Serializable {
     @Valid
     @Schema(name = "gender", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("gender")
-    public Gender getGender() {
+    public LookupVTO getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(LookupVTO gender) {
         this.gender = gender;
     }
 

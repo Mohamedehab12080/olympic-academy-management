@@ -14,160 +14,71 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatDialogModule, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
+import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { ATTENDANCE_STATUSES } from '../../../../core/models/employee.model';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-employee-attendance',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, ReactiveFormsModule, MatCardModule, MatFormFieldModule,
-    MatInputModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatSelectModule,
-    MatTableModule, MatIconModule, MatProgressSpinnerModule, MatPaginatorModule, MatSortModule, MatDialogModule
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatTableModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatDialogModule,
+    MatChipsModule,
+    MatTooltipModule,
+    SearchableSelectComponent
   ],
-  template: `
-    <div class="attendance-container">
-      <mat-card>
-        <div class="header">
-          <div class="header-title">
-            <h1>حضور الموظفين</h1>
-            <p>تسجيل ومتابعة حضور وانصراف الموظفين</p>
-          </div>
-          <div class="header-actions">
-            <button mat-raised-button color="primary" (click)="openAttendanceDialog()" class="add-btn">
-              <mat-icon>add</mat-icon> تسجيل حضور
-            </button>
-          </div>
-        </div>
-
-        <div class="filters">
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>اختر التاريخ</mat-label>
-            <input matInput [matDatepicker]="datePicker" [(ngModel)]="selectedDate" (dateChange)="loadAttendances()">
-            <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-            <mat-datepicker #datePicker></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="filter-field">
-            <mat-label>حالة الحضور</mat-label>
-            <mat-select [(ngModel)]="selectedStatus" (selectionChange)="filterByStatus()">
-              <mat-option [value]="null">الكل</mat-option>
-              <mat-option *ngFor="let s of attendanceStatuses" [value]="s.id">{{ s.title }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div class="action-buttons">
-            <button mat-stroked-button (click)="refreshData()" class="refresh-btn">
-              <mat-icon>refresh</mat-icon> تحديث
-            </button>
-            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
-              <mat-icon>table_chart</mat-icon> Excel
-            </button>
-            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
-              <mat-icon>picture_as_pdf</mat-icon> PDF
-            </button>
-          </div>
-        </div>
-
-        <div class="table-container" *ngIf="!isLoading; else loading">
-          <div class="table-info" *ngIf="dataSource.data.length > 0">
-            <p>عدد السجلات: {{ dataSource.data.length }} سجل</p>
-          </div>
-          <table mat-table [dataSource]="dataSource" matSort class="full-width-table">
-            <ng-container matColumnDef="employee">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
-              <td mat-cell *matCellDef="let a">{{ a.employee?.fullName || a.employee?.title }}<\/td>
-            <\/ng-container>
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
-              <td mat-cell *matCellDef="let a">
-                <span class="status-badge" [class.present]="a.status?.id===1" [class.absent]="a.status?.id===2" [class.late]="a.status?.id===3" [class.excused]="a.status?.id===4">
-                  {{ a.status?.title }}
-                <\/span>
-              <\/td>
-            <\/ng-container>
-            <ng-container matColumnDef="checkInTime">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الدخول</th>
-              <td mat-cell *matCellDef="let a">{{ a.checkInTime || '-' }}<\/td>
-            <\/ng-container>
-            <ng-container matColumnDef="checkOutTime">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الخروج</th>
-              <td mat-cell *matCellDef="let a">{{ a.checkOutTime || '-' }}<\/td>
-            <\/ng-container>
-            <ng-container matColumnDef="lateTime">
-              <th mat-header-cell *matHeaderCellDef>وقت التأخير</th>
-              <td mat-cell *matCellDef="let a">{{ a.lateTime ? a.lateTime + ' دقيقة' : '-' }}<\/td>
-            <\/ng-container>
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-              <td mat-cell *matCellDef="let a">
-                <button mat-icon-button color="primary" (click)="openAttendanceDialog(a.id)" matTooltip="تعديل"><mat-icon>edit<\/mat-icon><\/button>
-                <button mat-icon-button color="warn" (click)="deleteAttendance(a.id)" matTooltip="حذف"><mat-icon>delete<\/mat-icon><\/button>
-              <\/td>
-            <\/ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"><\/tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"><\/tr>
-          <\/table>
-          <div class="no-data" *ngIf="dataSource.data.length === 0">
-            <mat-icon>event_busy</mat-icon>
-            <p>لا توجد سجلات حضور</p>
-            <button mat-raised-button color="primary" (click)="openAttendanceDialog()">
-              <mat-icon>add</mat-icon> تسجيل حضور جديد
-            <\/button>
-          <\/div>
-          <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons><\/mat-paginator>
-        <\/div>
-        <ng-template #loading>
-          <div class="loading"><mat-spinner diameter="40"><\/mat-spinner><p>جاري تحميل البيانات...<\/p><\/div>
-        <\/ng-template>
-      <\/mat-card>
-    <\/div>
-  `,
-  styles: [`
-    .attendance-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-    .header-title h1 { margin: 0 0 8px 0; font-size: 28px; font-weight: 700; color: #1f2937; }
-    .header-title p { margin: 0; color: #6b7280; }
-    .header-actions { display: flex; gap: 12px; }
-    .add-btn { height: 48px; padding: 0 24px; }
-    .filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; align-items: center; }
-    .filter-field { width: 200px; }
-    .action-buttons { display: flex; gap: 12px; align-items: center; }
-    .refresh-btn, .export-btn { height: 56px; padding: 0 24px; }
-    .table-container { overflow-x: auto; }
-    .table-info { margin-bottom: 16px; padding: 8px 12px; background: #f0f9ff; border-radius: 8px; display: inline-block; }
-    .table-info p { margin: 0; color: #0369a1; font-size: 14px; }
-    .full-width-table { width: 100%; }
-    .table-row { transition: background-color 0.2s; cursor: pointer; }
-    .table-row:hover { background-color: #f9fafb; }
-    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; }
-    .status-badge.present { background: #d1fae5; color: #065f46; }
-    .status-badge.absent { background: #fee2e2; color: #991b1b; }
-    .status-badge.late { background: #fef3c7; color: #92400e; }
-    .status-badge.excused { background: #dbeafe; color: #1e40af; }
-    .no-data { text-align: center; padding: 60px; color: #6b7280; }
-    .no-data mat-icon { font-size: 64px; width: 64px; height: 64px; margin-bottom: 16px; color: #d1d5db; }
-    .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; gap: 16px; }
-    .dialog-form { display: flex; flex-direction: column; gap: 16px; min-width: 450px; padding: 16px 0; }
-    .full-width { width: 100%; }
-    @media (max-width: 768px) { .action-buttons { width: 100%; justify-content: flex-start; } }
-  `]
+  templateUrl: './employee-attendance.component.html',
+  styleUrls: ['./employee-attendance.component.css']
 })
 export class EmployeeAttendanceComponent implements OnInit {
-  displayedColumns = ['employee', 'status', 'checkInTime', 'checkOutTime', 'lateTime', 'actions'];
+  displayedColumns: string[] = ['index', 'employee', 'status', 'checkInTime', 'checkOutTime', 'lateTime', 'note', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isLoading = false;
+  
   employees: any[] = [];
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedStatus: number | null = null;
+  selectedEmployeeId: number | null = null;
   attendanceStatuses = ATTENDANCE_STATUSES;
+  
+  // Options for searchable selects
+  statusOptions: SelectOption[] = [];
+  employeeOptions: SelectOption[] = [];
+  
   attendanceForm: FormGroup;
   editMode = false;
   editId: number | null = null;
+  
+  summaryStats = {
+    total: 0,
+    present: 0,
+    absent: 0,
+    late: 0,
+    excused: 0,
+    attendanceRate: 0
+  };
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -182,7 +93,7 @@ export class EmployeeAttendanceComponent implements OnInit {
     this.attendanceForm = this.fb.group({
       employeeId: [null, Validators.required],
       status: [null, Validators.required],
-      attendanceDate: [new Date().toISOString().split('T')[0], Validators.required],
+      attendanceDate: [this.selectedDate, Validators.required],
       checkInTime: ['', Validators.required],
       checkOutTime: [''],
       lateTime: [null],
@@ -190,107 +101,91 @@ export class EmployeeAttendanceComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.loadSelectOptions();
     this.loadEmployees();
     this.loadAttendances();
   }
 
-  loadEmployees() {
+  loadSelectOptions(): void {
+    this.statusOptions = [
+      { value: null, label: 'الكل' },
+      ...this.attendanceStatuses.map(s => ({ value: s.id, label: s.title }))
+    ];
+  }
+
+  loadEmployees(): void {
     this.employeeService.getAllEmployeesLookup().subscribe({
-      next: (res: any) => { this.employees = res.list; },
-      error: () => { this.notification.showError('حدث خطأ'); }
+      next: (res: any) => {
+        this.employees = res.list || [];
+        this.employeeOptions = [
+          { value: null, label: 'الكل' },
+          ...this.employees.map((e: any) => ({ value: e.id, label: e.title }))
+        ];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل الموظفين');
+      }
     });
   }
 
-  loadAttendances() {
+  loadAttendances(): void {
     this.isLoading = true;
     const params: any = { attendanceDate: this.selectedDate };
     if (this.selectedStatus) params.status = this.selectedStatus;
+    if (this.selectedEmployeeId) params.employeeId = this.selectedEmployeeId;
 
     this.employeeService.getAllEmployeesAttendances(params).subscribe({
       next: (res: any) => {
-        this.dataSource.data = res.items;
+        this.dataSource.data = res.items || [];
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
+        this.calculateSummary();
         this.isLoading = false;
       },
-      error: () => { this.notification.showError('حدث خطأ'); this.isLoading = false; }
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات الحضور');
+        this.isLoading = false;
+      }
     });
   }
 
-  filterByStatus() { this.loadAttendances(); }
-
-  refreshData() { this.loadAttendances(); this.notification.showSuccess('تم تحديث البيانات'); }
-
-  // ==================== دوال التصدير ====================
-
-  exportToExcel() {
-    if (this.dataSource.data.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      return;
-    }
-
-    const exportData = this.dataSource.data.map((item, index) => ({
-      '#': index + 1,
-      'الموظف': item.employee?.fullName || item.employee?.title,
-      'حالة الحضور': item.status?.title,
-      'وقت الدخول': item.checkInTime || '-',
-      'وقت الخروج': item.checkOutTime || '-',
-      'وقت التأخير': item.lateTime ? `${item.lateTime} دقيقة` : '-',
-      'ملاحظات': item.note || '-'
-    }));
-
-    this.reportService.exportToExcel(exportData, `employee-attendance-${this.selectedDate}`, 'حضور الموظفين');
-    this.notification.showSuccess('تم تصدير البيانات بنجاح');
+  calculateSummary(): void {
+    const data = this.dataSource.data;
+    const present = data.filter(a => a.status?.id === 1).length;
+    const absent = data.filter(a => a.status?.id === 2).length;
+    const late = data.filter(a => a.status?.id === 3).length;
+    const excused = data.filter(a => a.status?.id === 4).length;
+    const total = data.length;
+    
+    this.summaryStats = {
+      total: total,
+      present: present,
+      absent: absent,
+      late: late,
+      excused: excused,
+      attendanceRate: total > 0 ? Math.round(((present + late) / total) * 100) : 0
+    };
   }
 
-  exportToPDF() {
-    if (this.dataSource.data.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      return;
-    }
-
-    const doc = new jsPDF('l', 'mm', 'a4');
-    
-    // عنوان التقرير
-    doc.setFontSize(18);
-    doc.text('تقرير حضور الموظفين', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-    
-    // معلومات الفلترة
-    doc.setFontSize(10);
-    doc.text(`التاريخ: ${this.selectedDate}`, 14, 25);
-    if (this.selectedStatus) {
-      const status = this.attendanceStatuses.find(s => s.id === this.selectedStatus);
-      doc.text(`حالة الحضور: ${status?.title || ''}`, 14, 32);
-    }
-    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
-    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
-
-    // إنشاء الجدول
-    autoTable(doc, {
-      head: [['#', 'الموظف', 'حالة الحضور', 'وقت الدخول', 'وقت الخروج', 'وقت التأخير', 'ملاحظات']],
-      body: this.dataSource.data.map((item, index) => [
-        (index + 1).toString(),
-        item.employee?.fullName || item.employee?.title,
-        item.status?.title || '-',
-        item.checkInTime || '-',
-        item.checkOutTime || '-',
-        item.lateTime ? `${item.lateTime} دقيقة` : '-',
-        item.note || '-'
-      ]),
-      startY: 40,
-      styles: { halign: 'right', fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' },
-      alternateRowStyles: { fillColor: [243, 244, 246] }
-    });
-
-    doc.save(`employee-attendance-report-${this.selectedDate}.pdf`);
-    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+  filterByStatus(): void {
+    this.loadAttendances();
   }
 
-  // ==================== دوال الحضور ====================
+  resetFilters(): void {
+    this.selectedStatus = null;
+    this.selectedEmployeeId = null;
+    this.selectedDate = new Date().toISOString().split('T')[0];
+    this.loadAttendances();
+    this.notification.showSuccess('تم مسح جميع الفلاتر');
+  }
 
-  openAttendanceDialog(attendanceId?: number) {
+  refreshData(): void {
+    this.loadAttendances();
+    this.notification.showSuccess('تم تحديث البيانات');
+  }
+
+  openAttendanceDialog(attendanceId?: number): void {
     this.editMode = !!attendanceId;
     this.editId = attendanceId || null;
 
@@ -308,7 +203,9 @@ export class EmployeeAttendanceComponent implements OnInit {
           });
           this.openDialog();
         },
-        error: () => { this.notification.showError('حدث خطأ'); }
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل البيانات');
+        }
       });
     } else {
       this.attendanceForm.reset({
@@ -318,13 +215,14 @@ export class EmployeeAttendanceComponent implements OnInit {
         lateTime: null,
         note: ''
       });
+      this.attendanceForm.get('attendanceDate')?.setValue(this.selectedDate);
       this.openDialog();
     }
   }
 
-  openDialog() {
+  openDialog(): void {
     const dialogRef = this.dialog.open(EmployeeAttendanceDialogComponent, {
-      width: '550px',
+      width: '600px',
       data: {
         form: this.attendanceForm,
         employees: this.employees,
@@ -339,45 +237,147 @@ export class EmployeeAttendanceComponent implements OnInit {
       if (result) {
         if (this.editMode && this.editId) {
           this.employeeService.updateEmployeeAttendance(result.employeeId, this.editId, result).subscribe({
-            next: () => { this.notification.showSuccess('تم التحديث'); this.loadAttendances(); },
-            error: () => { this.notification.showError('حدث خطأ'); }
+            next: () => {
+              this.notification.showSuccess('تم تحديث سجل الحضور بنجاح');
+              this.loadAttendances();
+            },
+            error: () => {
+              this.notification.showError('حدث خطأ في تحديث سجل الحضور');
+            }
           });
         } else {
           this.employeeService.createEmployeeAttendance(result.employeeId, result).subscribe({
-            next: () => { this.notification.showSuccess('تم الإضافة'); this.loadAttendances(); },
-            error: () => { this.notification.showError('حدث خطأ'); }
+            next: () => {
+              this.notification.showSuccess('تم إضافة سجل الحضور بنجاح');
+              this.loadAttendances();
+            },
+            error: () => {
+              this.notification.showError('حدث خطأ في إضافة سجل الحضور');
+            }
           });
         }
       }
     });
   }
 
-  deleteAttendance(id: number) {
+  deleteAttendance(id: number): void {
     if (confirm('هل أنت متأكد من حذف سجل الحضور؟')) {
       this.employeeService.deleteEmployeeAttendance(0, id).subscribe({
-        next: () => { this.notification.showSuccess('تم الحذف'); this.loadAttendances(); },
-        error: () => { this.notification.showError('حدث خطأ'); }
+        next: () => {
+          this.notification.showSuccess('تم حذف سجل الحضور بنجاح');
+          this.loadAttendances();
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في حذف سجل الحضور');
+        }
       });
     }
   }
+
+  exportToExcel(): void {
+    if (this.dataSource.data.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+
+    const exportData = this.dataSource.data.map((item, index) => ({
+      '#': index + 1,
+      'الموظف': item.employee?.fullName || item.employee?.title || '-',
+      'حالة الحضور': item.status?.title || '-',
+      'وقت الدخول': item.checkInTime || '-',
+      'وقت الخروج': item.checkOutTime || '-',
+      'وقت التأخير': item.lateTime ? `${item.lateTime} دقيقة` : '-',
+      'ملاحظات': item.note || '-'
+    }));
+
+    this.reportService.exportToExcel(exportData, `employee-attendance-${this.selectedDate}`, 'حضور الموظفين');
+    this.notification.showSuccess('تم تصدير البيانات بنجاح');
+  }
+
+  exportToPDF(): void {
+    if (this.dataSource.data.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    doc.setFontSize(18);
+    doc.text('تقرير حضور الموظفين', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    
+    doc.setFontSize(10);
+    let yOffset = 25;
+    doc.text(`التاريخ: ${this.selectedDate}`, 14, yOffset);
+    yOffset += 6;
+    
+    if (this.selectedStatus) {
+      const status = this.attendanceStatuses.find(s => s.id === this.selectedStatus);
+      if (status) doc.text(`حالة الحضور: ${status.title}`, 14, yOffset);
+      yOffset += 6;
+    }
+    
+    if (this.selectedEmployeeId) {
+      const employee = this.employees.find(e => e.id === this.selectedEmployeeId);
+      if (employee) doc.text(`الموظف: ${employee.title}`, 14, yOffset);
+      yOffset += 6;
+    }
+    
+    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
+    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
+    doc.text(`نسبة الحضور: ${this.summaryStats.attendanceRate}%`, 14, yOffset + 6);
+
+    autoTable(doc, {
+      head: [['#', 'الموظف', 'حالة الحضور', 'وقت الدخول', 'وقت الخروج', 'وقت التأخير', 'ملاحظات']],
+      body: this.dataSource.data.map((item, index) => [
+        (index + 1).toString(),
+        item.employee?.fullName || item.employee?.title || '-',
+        item.status?.title || '-',
+        item.checkInTime || '-',
+        item.checkOutTime || '-',
+        item.lateTime ? `${item.lateTime} دقيقة` : '-',
+        item.note || '-'
+      ]),
+      startY: yOffset + 15,
+      styles: { halign: 'right', fontSize: 9, cellPadding: 2 },
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' },
+      alternateRowStyles: { fillColor: [243, 244, 246] }
+    });
+
+    doc.save(`employee-attendance-report-${this.selectedDate}.pdf`);
+    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+  }
 }
 
-// ==================== Dialog Component ====================
+// Dialog Component
 @Component({
   selector: 'app-employee-attendance-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatSelectModule, MatButtonModule, MatIconModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    SearchableSelectComponent
+  ],
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>
       <form [formGroup]="data.form" class="dialog-form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>الموظف *</mat-label>
-          <mat-select formControlName="employeeId">
-            <mat-option *ngFor="let e of data.employees" [value]="e.id">{{ e.title }}</mat-option>
-          </mat-select>
-          <mat-error *ngIf="data.form.get('employeeId')?.hasError('required')">الموظف مطلوب</mat-error>
-        </mat-form-field>
+        <app-searchable-select
+          [ngModel]="data.form.get('employeeId')?.value"
+          (ngModelChange)="data.form.get('employeeId')?.setValue($event)"
+          label="الموظف *"
+          [options]="employeeOptions"
+          [required]="true"
+          class="full-width">
+        </app-searchable-select>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>التاريخ *</mat-label>
@@ -387,13 +387,14 @@ export class EmployeeAttendanceComponent implements OnInit {
           <mat-error *ngIf="data.form.get('attendanceDate')?.hasError('required')">التاريخ مطلوب</mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>حالة الحضور *</mat-label>
-          <mat-select formControlName="status">
-            <mat-option *ngFor="let s of data.attendanceStatuses" [value]="s">{{ s.title }}</mat-option>
-          </mat-select>
-          <mat-error *ngIf="data.form.get('status')?.hasError('required')">حالة الحضور مطلوبة</mat-error>
-        </mat-form-field>
+        <app-searchable-select
+          [ngModel]="data.form.get('status')?.value?.id"
+          (ngModelChange)="data.form.get('status')?.setValue($event)"
+          label="حالة الحضور *"
+          [options]="statusOptions"
+          [required]="true"
+          class="full-width">
+        </app-searchable-select>
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>وقت الدخول *</mat-label>
@@ -424,14 +425,55 @@ export class EmployeeAttendanceComponent implements OnInit {
       </button>
     </mat-dialog-actions>
   `,
-  styles: [`.dialog-form { display: flex; flex-direction: column; gap: 16px; min-width: 450px; } .full-width { width: 100%; }`]
+  styles: [`
+    .dialog-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 450px;
+      padding: 16px 0;
+    }
+    .full-width {
+      width: 100%;
+    }
+  `]
 })
 export class EmployeeAttendanceDialogComponent {
-  constructor(public dialogRef: MatDialogRef<EmployeeAttendanceDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {}
-  
-  save() { 
+  employeeOptions: SelectOption[] = [];
+  statusOptions: SelectOption[] = [];
+
+  constructor(
+    public dialogRef: MatDialogRef<EmployeeAttendanceDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.employeeOptions = [
+      ...(data.employees || []).map((e: any) => ({ 
+        value: e.id, 
+        label: e.title 
+      }))
+    ];
+    
+    this.statusOptions = [
+      ...(data.attendanceStatuses || []).map((s: any) => ({ 
+        value: s, 
+        label: s.title 
+      }))
+    ];
+  }
+
+  save(): void {
     if (this.data.form.valid) {
-      this.dialogRef.close(this.data.form.value);
+      const formValue = this.data.form.value;
+      const attendanceData = {
+        employeeId: formValue.employeeId,
+        status: formValue.status,
+        attendanceDate: formValue.attendanceDate,
+        checkInTime: formValue.checkInTime,
+        checkOutTime: formValue.checkOutTime,
+        lateTime: formValue.lateTime,
+        note: formValue.note
+      };
+      this.dialogRef.close(attendanceData);
     }
   }
 }

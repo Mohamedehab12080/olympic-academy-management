@@ -430,7 +430,7 @@ paths:
           in: query
           required: false
           schema:
-             $ref: '#/components/schemas/TraineeAttendanceStatus'
+            $ref: '#/components/schemas/TraineeAttendanceStatus'
         - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckInFrom'
         - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckInTo'
         - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckOutFrom'
@@ -674,6 +674,23 @@ components:
         format: int32
 
   schemas:
+    # ==================== Enums ====================
+
+    TraineeAttendanceStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2, 3, 4]
+        code:
+          type: string
+          enum: ["PRESENT", "ABSENT", "LATE", "EXCUSED"]
+        arabicLabel:
+          type: string
+          enum: ["حاضر", "غائب", "متأخر", "معذور"]
+
+
+    # ==================== DTOs ====================
     TraineeDTO:
       type: object
       required:
@@ -704,7 +721,7 @@ components:
       type: object
       properties:
         contactType:
-          type: string
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/ContactTypes'
         contactValue:
           type: string
 
@@ -737,211 +754,6 @@ components:
           type: string
         note:
           type: string
-
-    TraineeVTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        fullName:
-          type: string
-        nationalId:
-          type: string
-        academicYear:
-          type: string
-        birthDate:
-          type: string
-          format: date
-        gender:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
-        isActive:
-          type: boolean
-        address:
-          type: string
-        imageUrl:
-          type: string
-        contacts:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeContactVTO'
-        certificates:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeCertificateVTO'
-        healthConditions:
-          type: array
-          items:
-            $ref: '#/components/schemas/HealthConditionVTO'
-        createdOn:
-          type: string
-          format: date-time
-        createdBy:
-          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
-        lastModifiedOn:
-          type: string
-          format: date-time
-        lastModifiedBy:
-          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
-
-    TraineeContactVTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        contactType:
-          type: string
-        contactValue:
-          type: string
-
-    TraineeCertificateVTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        certificateNumber:
-          type: string
-        certificateName:
-          type: string
-        course:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
-        issueDate:
-          type: string
-          format: date
-        grade:
-          type: string
-
-    HealthConditionVTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        title:
-          type: string
-        description:
-          type: string
-        medication:
-          type: string
-        note:
-          type: string
-
-    TraineeResultSet:
-      type: object
-      properties:
-        total:
-          type: integer
-          format: int32
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeListItem'
-
-    TraineeListItem:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        fullName:
-          type: string
-        nationalId:
-          type: string
-        isActive:
-          type: boolean
-        academicYear:
-          type: string
-        gender:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
-
-    TraineeContactResultSet:
-      type: object
-      properties:
-        total:
-          type: integer
-          format: int32
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeContactListItem'
-
-    TraineeContactListItem:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        contactType:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/ContactTypes'
-        contactValue:
-          type: string
-
-    TraineeCertificateResultSet:
-      type: object
-      properties:
-        total:
-          type: integer
-          format: int32
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeCertificateVTO'
-
-    HealthConditionResultSet:
-      type: object
-      properties:
-        total:
-          type: integer
-          format: int32
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/HealthConditionVTO'
-
-    # ==================== Trainee Attendance Schemas ====================
-    DailyAttendanceReport:
-      type: object
-      properties:
-        attendanceDate:
-          type: string
-          format: date
-        totalNumber:
-          type: integer
-          format: int32
-        present:
-          type: integer
-          format: int32
-        absent:
-          type: integer
-          format: int32
-        late:
-          type: integer
-          format: int32
-        excused:
-          type: integer
-          format: int32
-        attendanceRate:
-          type: number
-          format: double
-        details:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeAttendanceListItem'
-
-    TraineeAttendanceStatus:
-      type: object
-      properties:
-        id:
-          type: integer
-          enum: [1, 2, 3, 4]
-        code:
-          type: string
-          enum: ["PRESENT", "ABSENT", "LATE", "EXCUSED"]
-        arabicLabel:
-          type: string
-          enum: ["حاضر", "غائب", "متأخر", "معذور"]
 
     TraineeAttendanceDTO:
       type: object
@@ -979,6 +791,97 @@ components:
           type: string
           description: "Additional notes"
 
+    # ==================== VTOs ====================
+    TraineeVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        academicYear:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        isActive:
+          type: boolean
+        address:
+          type: string
+        imageUrl:
+          type: string
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeContactVTO'
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeCertificateVTO'
+        healthConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthConditionVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    TraineeContactVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        contactType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        contactValue:
+          type: string
+
+    TraineeCertificateVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        certificateNumber:
+          type: string
+        certificateName:
+          type: string
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        issueDate:
+          type: string
+          format: date
+        grade:
+          type: string
+
+    HealthConditionVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        medication:
+          type: string
+        note:
+          type: string
+
     TraineeAttendanceVTO:
       type: object
       properties:
@@ -992,7 +895,7 @@ components:
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         status:
-          $ref: '#/components/schemas/TraineeAttendanceStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         attendanceDate:
           type: string
           format: date
@@ -1018,6 +921,90 @@ components:
         lastModifiedBy:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
 
+    # ==================== Result Sets ====================
+    TraineeResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeListItem'
+
+    TraineeListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        isActive:
+          type: boolean
+        academicYear:
+          type: string
+        gender:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+
+    TraineeContactResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeContactListItem'
+
+    TraineeContactListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        contactType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        contactValue:
+          type: string
+
+    TraineeCertificateResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeCertificateVTO'
+
+    HealthConditionResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthConditionVTO'
+
+    TraineeAttendanceResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeAttendanceListItem'
+
     TraineeAttendanceListItem:
       type: object
       properties:
@@ -1034,7 +1021,7 @@ components:
           type: string
           format: date
         status:
-          $ref: '#/components/schemas/TraineeAttendanceStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         checkInTime:
           type: string
           format: time
@@ -1045,27 +1032,35 @@ components:
           type: integer
           format: int32
 
-    TraineeAttendanceResultSet:
+    # ==================== Reports ====================
+    DailyAttendanceReport:
       type: object
       properties:
-        total:
+        attendanceDate:
+          type: string
+          format: date
+        totalNumber:
           type: integer
           format: int32
-        items:
+        present:
+          type: integer
+          format: int32
+        absent:
+          type: integer
+          format: int32
+        late:
+          type: integer
+          format: int32
+        excused:
+          type: integer
+          format: int32
+        attendanceRate:
+          type: number
+          format: double
+        details:
           type: array
           items:
             $ref: '#/components/schemas/TraineeAttendanceListItem'
-
-    TraineeAttendanceListResultSet:
-      type: object
-      properties:
-        total:
-          type: integer
-          format: int32
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/TraineeAttendanceVTO'
 
     SessionAttendanceReport:
       type: object

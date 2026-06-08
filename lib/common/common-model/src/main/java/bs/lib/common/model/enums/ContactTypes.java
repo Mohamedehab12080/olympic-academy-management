@@ -1,13 +1,15 @@
 package bs.lib.common.model.enums;
 
+import bs.lib.common.model.interfaces.EnumWithIdAndTitle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum ContactTypes {
-    EMAIL(1,"ايميل"),PHONE(2,"هاتف");
+public enum ContactTypes implements EnumWithIdAndTitle {
+    EMAIL(1, "بريد إلكتروني"),
+    PHONE(2, "جوال");
 
-    public Integer id;
-    public String title;
+    private final Integer id;
+    private final String title;
 }

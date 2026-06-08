@@ -52,7 +52,7 @@
                 <column name="trainee_id" type="int">
                     <constraints nullable="false"/>
                 </column>
-                <column name="contact_type" type="varchar(100)"/>
+                <column name="contact_type" type="int"/>
                 <column name="contact_value" type="varchar(255)">
                     <constraints nullable="false"/>
                 </column>

@@ -37,8 +37,8 @@
             <column name="enrollment_type_id" type="int"/>
             <column name="start_date" type="date"/>
             <column name="end_date" type="date"/>
-            <column name="enrollment_status" type="varchar(100)"/>
-            <column name="payment_status" type="varchar(100)"/>
+            <column name="enrollment_status" type="int"/>
+            <column name="payment_status" type="int"/>
             <column name="subscription_value" type="Integer"/>
             <column name="discount_amount" type="integer" defaultValueNumeric="0"/>
             <column name="discount_percentage" type="decimal(5,2)" defaultValueNumeric="0.00"/>

@@ -1,6 +1,6 @@
 package bs.service.trainee.model.generated;
 
-import bs.service.trainee.model.enums.TraineeAttendanceStatus;
+import bs.lib.common.model.generated.LookupVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -36,7 +36,7 @@ public class TraineeAttendanceListItem implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate sessionDate;
 
-    private TraineeAttendanceStatus status;
+    private LookupVTO status;
 
     private String checkInTime;
 
@@ -149,7 +149,7 @@ public class TraineeAttendanceListItem implements Serializable {
         this.sessionDate = sessionDate;
     }
 
-    public TraineeAttendanceListItem status(TraineeAttendanceStatus status) {
+    public TraineeAttendanceListItem status(LookupVTO status) {
         this.status = status;
         return this;
     }
@@ -162,11 +162,11 @@ public class TraineeAttendanceListItem implements Serializable {
     @Valid
     @Schema(name = "status", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("status")
-    public TraineeAttendanceStatus getStatus() {
+    public LookupVTO getStatus() {
         return status;
     }
 
-    public void setStatus(TraineeAttendanceStatus status) {
+    public void setStatus(LookupVTO status) {
         this.status = status;
     }
 

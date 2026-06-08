@@ -50,7 +50,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
         Employee employee = employeeRepository.selectById(courseSessionDTO.getTrainerId())
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, courseSessionDTO.getTrainerId()));
 
-        if (employee.getEmployeeType() != EmployeeTypes.TRAINER) {
+        if (employee.getEmployeeType().equals(EmployeeTypes.TRAINER.id)) {
             throw new BusinessException(INVALID_EMPLOYEE_TYPE, "Only trainers can be assigned to course sessions");
         }
 
@@ -111,7 +111,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
     public CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
         CourseSessionSearchFilter filter = CourseSessionSearchFilter.builder()
                 .courseId(courseId)
-                .status(status)
+                .status(status!=null?status.getId():null)
                 .sessionDateFrom(sessionDateFrom)
                 .sessionDateTo(sessionDateTo)
                 .startTimeFrom(LocalTime.parse(startTimeFrom))
@@ -138,13 +138,13 @@ public class CourseSessionServiceImpl implements CourseSessionService {
                 .courseId(courseId)
                 .employeeId(trainerId)
                 .placeId(placeId)
-                .status(status)
+                .status(status!=null?status.getId():null)
                 .sessionDateFrom(sessionDateFrom)
                 .sessionDateTo(sessionDateTo)
-                .startTimeFrom(LocalTime.parse(startTimeFrom))
-                .startTimeTo(LocalTime.parse(startTimeTo))
-                .endTimeFrom(LocalTime.parse(endTimeFrom))
-                .endTimeTo(LocalTime.parse(endTimeTo))
+                .startTimeFrom(startTimeFrom!=null?LocalTime.parse(startTimeFrom):null)
+                .startTimeTo(startTimeTo!=null ? LocalTime.parse(startTimeTo): null)
+                .endTimeFrom(endTimeFrom!=null ? LocalTime.parse(endTimeFrom) : null)
+                .endTimeTo(endTimeTo!=null ? LocalTime.parse(endTimeTo): null)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(CourseSessionSearchFilter.OrderByAttributes.SESSION_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))

@@ -1,8 +1,6 @@
 package bs.service.employee.model.generated;
 
-import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.employee.model.enums.EmployeeTypes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -35,9 +33,9 @@ public class EmployeeListItem implements Serializable {
 
     private String nationalId;
 
-    private Gender gender;
+    private LookupVTO gender;
 
-    private EmployeeTypes employeeType;
+    private LookupVTO employeeType;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate hireDate;
@@ -110,7 +108,7 @@ public class EmployeeListItem implements Serializable {
         this.nationalId = nationalId;
     }
 
-    public EmployeeListItem gender(Gender gender) {
+    public EmployeeListItem gender(LookupVTO gender) {
         this.gender = gender;
         return this;
     }
@@ -123,15 +121,15 @@ public class EmployeeListItem implements Serializable {
     @Valid
     @Schema(name = "gender", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("gender")
-    public Gender getGender() {
+    public LookupVTO getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(LookupVTO gender) {
         this.gender = gender;
     }
 
-    public EmployeeListItem employeeType(EmployeeTypes employeeType) {
+    public EmployeeListItem employeeType(LookupVTO employeeType) {
         this.employeeType = employeeType;
         return this;
     }
@@ -144,11 +142,11 @@ public class EmployeeListItem implements Serializable {
     @Valid
     @Schema(name = "employeeType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("employeeType")
-    public EmployeeTypes getEmployeeType() {
+    public LookupVTO getEmployeeType() {
         return employeeType;
     }
 
-    public void setEmployeeType(EmployeeTypes employeeType) {
+    public void setEmployeeType(LookupVTO employeeType) {
         this.employeeType = employeeType;
     }
 

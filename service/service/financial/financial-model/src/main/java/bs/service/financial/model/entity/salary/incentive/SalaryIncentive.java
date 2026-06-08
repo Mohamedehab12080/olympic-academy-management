@@ -45,13 +45,11 @@ public class SalaryIncentive {
     @Basic
     private String imageUrl;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "salary_type")
-    private SalaryTypes salaryType;
+    private Integer salaryType;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "salary_transaction_type")
-    private SalaryTransactionType salaryTransactionType;
+    private Integer salaryTransactionType;
 
     @Column(name = "note")
     @Basic

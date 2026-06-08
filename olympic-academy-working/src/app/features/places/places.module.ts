@@ -9,12 +9,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-// Components - قم بإنشاء هذه الملفات
 import { PlaceListComponent } from './pages/place-list/place-list.component';
 import { PlaceFormComponent } from './pages/place-form/place-form.component';
 
@@ -25,10 +28,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [
-    PlaceListComponent,
-    PlaceFormComponent
-  ],
+  declarations: [], // Remove PlaceListComponent from declarations
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -40,10 +40,16 @@ const routes: Routes = [
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatPaginatorModule,
     MatSortModule,
+    MatDialogModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    MatTooltipModule,
+    PlaceListComponent, // Import the standalone component
+    PlaceFormComponent   // Import the standalone component if it's also standalone
   ]
 })
 export class PlacesModule { }

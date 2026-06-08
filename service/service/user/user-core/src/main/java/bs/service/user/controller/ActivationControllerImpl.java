@@ -8,7 +8,6 @@ import bs.service.user.model.util.ActivationVTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -19,7 +18,6 @@ public class ActivationControllerImpl implements ActivationController {
     private final UserService userService;
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ActivationVTO> activateAccount(String token) {
         log.info("GET /auth/activate - Activating account with token");
 
@@ -35,7 +33,6 @@ public class ActivationControllerImpl implements ActivationController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ActivationVTO> verifyActivateAccount(String token) {
         log.info("GET /auth/activate/verify - Verify activate token");
 
@@ -51,7 +48,6 @@ public class ActivationControllerImpl implements ActivationController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ActivationVTO> resetPasswordActivate(String token) {
         userService.resetPasswordVerification(token);
         ActivationVTO response = ActivationVTO.builder()
@@ -63,7 +59,6 @@ public class ActivationControllerImpl implements ActivationController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ActivationVTO> resendActivationEmail(String email) {
         log.info("POST /auth/resend-activation - Resending activation email to: {}", email);
 
@@ -78,7 +73,6 @@ public class ActivationControllerImpl implements ActivationController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ActivationVTO> forgotPassword(ForgotPasswordRequestDTO request) {
         log.info("POST /auth/forgot-password - Forgot password for email: {}", request.getEmail());
 
@@ -93,7 +87,6 @@ public class ActivationControllerImpl implements ActivationController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<ActivationVTO> resetPassword(ResetPasswordDTO request) {
         log.info("POST /auth/reset-password - Resetting password");
 

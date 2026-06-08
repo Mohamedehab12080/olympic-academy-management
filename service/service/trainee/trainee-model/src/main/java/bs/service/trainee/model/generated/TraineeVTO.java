@@ -1,6 +1,6 @@
 package bs.service.trainee.model.generated;
 
-import bs.lib.common.model.enums.Gender;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,7 +40,7 @@ public class TraineeVTO implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
 
-    private Gender gender;
+    private LookupVTO gender;
 
     private Boolean isActive;
 
@@ -172,7 +172,7 @@ public class TraineeVTO implements Serializable {
         this.birthDate = birthDate;
     }
 
-    public TraineeVTO gender(Gender gender) {
+    public TraineeVTO gender(LookupVTO gender) {
         this.gender = gender;
         return this;
     }
@@ -185,11 +185,11 @@ public class TraineeVTO implements Serializable {
     @Valid
     @Schema(name = "gender", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("gender")
-    public Gender getGender() {
+    public LookupVTO getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(LookupVTO gender) {
         this.gender = gender;
     }
 

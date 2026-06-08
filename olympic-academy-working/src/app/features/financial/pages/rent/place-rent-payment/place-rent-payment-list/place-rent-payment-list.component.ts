@@ -78,8 +78,8 @@ export class PlaceRentPaymentListComponent implements OnInit {
     autoTable(doc, {
       head: [['#', 'الموقع', 'قيمة الإيجار', 'المدفوع', 'المتبقي', 'تاريخ الدفع']],
       body: this.dataSource.data.map((item, index) => [
-        (index + 1).toString(), item.place?.title || '-', `${item.rentAmount} ريال`,
-        `${item.payedAmount} ريال`, `${item.remainedAmount} ريال`, item.paymentDate
+        (index + 1).toString(), item.place?.title || '-', `${item.rentAmount} جم`,
+        `${item.payedAmount} جم`, `${item.remainedAmount} جم`, item.paymentDate
       ]),
       startY: 35,
       styles: { halign: 'right', fontSize: 9 },

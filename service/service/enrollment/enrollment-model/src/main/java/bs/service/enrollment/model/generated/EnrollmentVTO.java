@@ -1,8 +1,6 @@
 package bs.service.enrollment.model.generated;
 
-import bs.lib.common.model.enums.PaymentStatus;
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.enrollment.model.enums.EnrollmentStatus;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,9 +43,9 @@ public class EnrollmentVTO implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate endDate;
 
-    private EnrollmentStatus enrollmentStatus;
+    private LookupVTO enrollmentStatus;
 
-    private PaymentStatus paymentStatus;
+    private LookupVTO paymentStatus;
 
     private Integer subscriptionValue;
 
@@ -220,7 +218,7 @@ public class EnrollmentVTO implements Serializable {
         this.endDate = endDate;
     }
 
-    public EnrollmentVTO enrollmentStatus(EnrollmentStatus enrollmentStatus) {
+    public EnrollmentVTO enrollmentStatus(LookupVTO enrollmentStatus) {
         this.enrollmentStatus = enrollmentStatus;
         return this;
     }
@@ -233,15 +231,15 @@ public class EnrollmentVTO implements Serializable {
     @Valid
     @Schema(name = "enrollmentStatus", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("enrollmentStatus")
-    public EnrollmentStatus getEnrollmentStatus() {
+    public LookupVTO getEnrollmentStatus() {
         return enrollmentStatus;
     }
 
-    public void setEnrollmentStatus(EnrollmentStatus enrollmentStatus) {
+    public void setEnrollmentStatus(LookupVTO enrollmentStatus) {
         this.enrollmentStatus = enrollmentStatus;
     }
 
-    public EnrollmentVTO paymentStatus(PaymentStatus paymentStatus) {
+    public EnrollmentVTO paymentStatus(LookupVTO paymentStatus) {
         this.paymentStatus = paymentStatus;
         return this;
     }
@@ -254,11 +252,11 @@ public class EnrollmentVTO implements Serializable {
     @Valid
     @Schema(name = "paymentStatus", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("paymentStatus")
-    public PaymentStatus getPaymentStatus() {
+    public LookupVTO getPaymentStatus() {
         return paymentStatus;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
+    public void setPaymentStatus(LookupVTO paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 

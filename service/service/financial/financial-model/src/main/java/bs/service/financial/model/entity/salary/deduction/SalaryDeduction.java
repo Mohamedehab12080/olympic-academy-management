@@ -40,13 +40,13 @@ public class SalaryDeduction {
     @Basic
     private String reason;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "salary_type")
-    private SalaryTypes salaryTypes;
+    private Integer salaryType;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "deduction_type")
-    private DeductionTypes deductionType;
+    private Integer deductionType;
 
     @Column(name = "note")
     @Basic

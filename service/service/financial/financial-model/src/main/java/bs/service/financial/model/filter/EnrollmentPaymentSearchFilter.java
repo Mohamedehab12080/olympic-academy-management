@@ -19,7 +19,7 @@ public class EnrollmentPaymentSearchFilter extends SearchFilter<EnrollmentPaymen
 
     private Integer enrollmentId;
     private Integer paymentMethodId;
-    private PaymentStatus status;
+    private Integer status;
     private LocalDate paymentDateFrom;
     private LocalDate paymentDateTo;
 

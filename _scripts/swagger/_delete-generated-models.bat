@@ -72,6 +72,7 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "Gender.java"
         call :delete_file "ContactTypes.java"
         call :delete_file "PaymentStatus.java"
+        call :delete_file "SalaryTypes.java"
     )
 
     if "!MODULE!"=="employee" (

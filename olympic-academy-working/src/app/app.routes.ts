@@ -25,7 +25,7 @@ export const routes: Routes = [
       { path: 'departments', loadChildren: () => import('./features/departments/department.module').then(m => m.DepartmentsModule) },
       { path: 'courses', loadChildren: () => import('./features/courses/course.module').then(m => m.CoursesModule) },
       { path: 'employees', loadChildren: () => import('./features/employees/employees.module').then(m => m.EmployeesModule) },
-      { path: 'trainees', loadChildren: () => import('./features/trainees/trainess.module').then(m => m.TraineesModule) },
+      { path: 'trainees', loadChildren: () => import('./features/trainees/trainees.module').then(m => m.TraineesModule) },
       { path: 'enrollments', loadChildren: () => import('./features/enrollments/enrollments.module').then(m => m.EnrollmentsModule) },
       { path: 'places', loadChildren: () => import('./features/places/places.module').then(m => m.PlacesModule) },
       { path: 'financial', loadChildren: () => import('./features/financial/financial.module').then(m => m.FinancialModule) },
@@ -37,11 +37,16 @@ export const routes: Routes = [
       path: 'attendance/employee', 
       loadComponent: () => import('./features/employees/pages/employee-attendance/employee-attendance.component')
         .then(m => m.EmployeeAttendanceComponent) 
-    },
+     },
       { 
     path: 'trainees/attendance', 
     loadComponent: () => import('./features/trainees/pages/trainee-attendance/trainee-attendance.component')
       .then(m => m.TraineeAttendanceComponent) 
+    },
+
+    {
+      path: 'sessions',
+      loadChildren: () => import('./features/course-session/course-session.module').then(m => m.CourseSessionModule)
     },
       
       // ============================================
@@ -69,7 +74,7 @@ export const routes: Routes = [
       },
       { 
         path: 'reports/course', 
-        loadComponent: () => import('./features/courses/reports/course-report/course-report.component')
+        loadComponent: () => import('./features/courses/reports/courses-reports/course-report.component')
           .then(m => m.CourseReportComponent) 
       },
       { 

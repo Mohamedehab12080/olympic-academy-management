@@ -9,22 +9,28 @@ import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.course.model.entity.Course;
 import bs.service.employee.api.repository.EmployeeRepository;
+import bs.service.employee.api.repository.TrainerCourseRepository;
 import bs.service.employee.api.service.EmployeeService;
 import bs.service.employee.core.mapper.EmployeeMapper;
 import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.entity.EmployeeContact;
+import bs.service.employee.model.entity.TrainerCourse;
 import bs.service.employee.model.enums.EmployeeAttendanceStatus;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.filter.EmployeeSearchFilter;
+import bs.service.employee.model.filter.TrainerCourseSearchFilter;
 import bs.service.employee.model.generated.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_CONTACT_NOT_FOUND;
 import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_NOT_FOUND;
@@ -35,6 +41,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+    private final TrainerCourseRepository trainerCourseRepository;
 
     @Override
     @Transactional
@@ -68,7 +75,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeVTO getEmployeeById(Integer employeeId) {
         Employee employee = employeeRepository.selectById(employeeId)
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
-        return employeeMapper.toEmployeeVTO(employee);
+        TrainerCourseSearchFilter trainerCourseSearchFilter=TrainerCourseSearchFilter.builder()
+                .trainerId(employeeId)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<TrainerCourse> trainerCourses=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter);
+        List<Course> courses=trainerCourses.stream().map(TrainerCourse::getCourse).toList();
+        List<LookupVTO> lookupVTOs=employeeMapper.toLookupCourseVTOs(courses);
+        EmployeeVTO employeeVTO= employeeMapper.toEmployeeVTO(employee);
+        employeeVTO.setCourses(lookupVTOs);
+        return employeeVTO;
     }
 
     @Override
@@ -88,7 +104,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .hireDateTo(hireDateTo)
                 .gender(gender!=null ? gender.title :null)
                 .employeeTypeId(employeeType!=null ? employeeType.id:null)
-                .salaryType(salaryType)
+                .salaryType(salaryType.id!=null?salaryType.id:null)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(EmployeeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))

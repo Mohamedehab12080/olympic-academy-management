@@ -17,8 +17,8 @@
             <column name="amount_deducted" type="Integer"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="reason" type="text"/>
-            <column name="salary_type" type="varchar(100)"/>
-            <column name="deduction_type" type="varchar(100)"/>
+            <column name="salary_type" type="int"/>
+            <column name="deduction_type" type="int"/>
             <column name="note" type="text"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>

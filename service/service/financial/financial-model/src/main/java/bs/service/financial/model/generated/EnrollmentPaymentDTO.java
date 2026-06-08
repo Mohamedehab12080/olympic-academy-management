@@ -118,8 +118,8 @@ public class EnrollmentPaymentDTO implements Serializable {
      *
      * @return paidAmount
      */
-
-    @Schema(name = "paidAmount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @NotNull
+    @Schema(name = "paidAmount", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("paidAmount")
     public Integer getPaidAmount() {
         return paidAmount;

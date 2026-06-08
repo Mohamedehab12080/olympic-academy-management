@@ -53,11 +53,11 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
         enrollment.setRemainedSubscriptionValue(remainedAmount);
 
         if (enrollment.getRemainedSubscriptionValue() <= 0) {
-            enrollment.setPaymentStatus(PaymentStatus.PAID);
-            payment.setStatus(PaymentStatus.PAID);
+            enrollment.setPaymentStatus(PaymentStatus.PAID.id);
+            payment.setPaymentStatus(PaymentStatus.PAID.id);
         } else if (enrollmentPaymentDTO.getPaidAmount() > 0) {
-            enrollment.setPaymentStatus(PaymentStatus.PARTIAL);
-            payment.setStatus(PaymentStatus.PARTIAL);
+            enrollment.setPaymentStatus(PaymentStatus.PARTIAL.id);
+            payment.setPaymentStatus(PaymentStatus.PARTIAL.id);
         }
         payment = enrollmentPaymentRepository.insert(payment);
         enrollmentRepository.update(enrollment);
@@ -102,7 +102,7 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
         EnrollmentPaymentSearchFilter filter = EnrollmentPaymentSearchFilter.builder()
                 .enrollmentId(enrollmentId)
                 .paymentMethodId(paymentMethodId)
-                .status(status)
+                .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)
                 .paymentDateTo(paymentDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

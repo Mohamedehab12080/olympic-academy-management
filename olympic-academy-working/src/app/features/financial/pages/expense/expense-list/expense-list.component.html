@@ -16,7 +16,7 @@
       <table mat-table [dataSource]="dataSource" matSort>
         <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let e">{{ e.id }}</td></ng-container>
         <ng-container matColumnDef="expenseType"><th mat-header-cell *matHeaderCellDef>النوع</th><td mat-cell *matCellDef="let e">{{ e.expenseType?.title }}</td></ng-container>
-        <ng-container matColumnDef="amountExpensed"><th mat-header-cell *matHeaderCellDef>المبلغ</th><td mat-cell *matCellDef="let e">{{ e.amountExpensed }} ريال</td></ng-container>
+        <ng-container matColumnDef="amountExpensed"><th mat-header-cell *matHeaderCellDef>المبلغ</th><td mat-cell *matCellDef="let e">{{ e.amountExpensed }} جم</td></ng-container>
         <ng-container matColumnDef="expenseDate"><th mat-header-cell *matHeaderCellDef>التاريخ</th><td mat-cell *matCellDef="let e">{{ e.expenseDate | date }}</td></ng-container>
         <ng-container matColumnDef="paymentMethod"><th mat-header-cell *matHeaderCellDef>طريقة الدفع</th><td mat-cell *matCellDef="let e">{{ e.paymentMethod?.title || '-' }}</td></ng-container>
         <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>الإجراءات</th><td mat-cell *matCellDef="let e"><button mat-icon-button color="primary" (click)="editExpense(e.id)"><mat-icon>edit</mat-icon></button><button mat-icon-button color="warn" (click)="deleteExpense(e)"><mat-icon>delete</mat-icon></button></td></ng-container>

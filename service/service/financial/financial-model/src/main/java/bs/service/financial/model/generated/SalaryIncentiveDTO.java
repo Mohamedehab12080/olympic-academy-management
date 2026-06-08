@@ -180,8 +180,9 @@ public class SalaryIncentiveDTO implements Serializable {
      *
      * @return salaryTransactionType
      */
+    @NotNull
     @Valid
-    @Schema(name = "salaryTransactionType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(name = "salaryTransactionType", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("salaryTransactionType")
     public SalaryTransactionType getSalaryTransactionType() {
         return salaryTransactionType;

@@ -1,8 +1,10 @@
 package bs.service.trainee.model.generated;
 
+import bs.lib.common.model.generated.LookupVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.*;
@@ -23,7 +25,7 @@ public class TraineeContactVTO implements Serializable {
 
     private Integer id;
 
-    private String contactType;
+    private LookupVTO contactType;
 
     private String contactValue;
 
@@ -48,7 +50,7 @@ public class TraineeContactVTO implements Serializable {
         this.id = id;
     }
 
-    public TraineeContactVTO contactType(String contactType) {
+    public TraineeContactVTO contactType(LookupVTO contactType) {
         this.contactType = contactType;
         return this;
     }
@@ -58,14 +60,14 @@ public class TraineeContactVTO implements Serializable {
      *
      * @return contactType
      */
-
+    @Valid
     @Schema(name = "contactType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("contactType")
-    public String getContactType() {
+    public LookupVTO getContactType() {
         return contactType;
     }
 
-    public void setContactType(String contactType) {
+    public void setContactType(LookupVTO contactType) {
         this.contactType = contactType;
     }
 

@@ -1,38 +1,73 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+
+// Material Imports
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { EmployeeService } from '../../../../../../core/services/employee.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
 import { ReportService } from '../../../../../../core/services/report.service';
-import { SALARY_TRANSACTION_TYPES} from '../../../../../../core/models/financial.model';
-import {SALARY_TYPES} from '../../../../../../core/models/common.model';
+import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
+import { SALARY_TRANSACTION_TYPES } from '../../../../../../core/models/financial.model';
+import { SALARY_TYPES } from '../../../../../../core/models/common.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-salary-incentive-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatChipsModule,
+    SearchableSelectComponent
+  ],
   templateUrl: './salary-incentive-list.component.html',
   styleUrls: ['./salary-incentive-list.component.css']
 })
-export class SalaryIncentiveListComponent implements OnInit {
-  displayedColumns = ['id', 'employee', 'transactionType', 'amount', 'withdrawDate', 'paymentMethod', 'salaryType', 'actions'];
+export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
+  displayedColumns: string[] = ['index', 'employee', 'transactionType', 'amount', 'withdrawDate', 'paymentMethod', 'salaryType', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isLoading = false;
   transactionTypes = SALARY_TRANSACTION_TYPES;
   salaryTypes = SALARY_TYPES;
   
-  // قوائم للفلترة
   employees: any[] = [];
   paymentMethods: any[] = [];
   
-  // معايير الفلترة
   filters = {
     employeeId: null as number | null,
-    transactionTypeId: null as number | null,  // نوع المعاملة (راتب، حافز، مكافأة، سلفة)
+    transactionTypeId: null as number | null,
     paymentMethodId: null as number | null,
     salaryTypeId: null as number | null,
     withdrawDateFrom: null as string | null,
@@ -40,9 +75,36 @@ export class SalaryIncentiveListComponent implements OnInit {
   };
   
   quickSearch: string = '';
+  
+  // Options for searchable selects
+  employeeOptions: SelectOption[] = [];
+  transactionTypeOptions: SelectOption[] = [];
+  paymentMethodOptions: SelectOption[] = [];
+  salaryTypeOptions: SelectOption[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+
+  // Statistics
+  get totalAmount(): number {
+    return this.dataSource.data.reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+  }
+
+  get salaryTotal(): number {
+    return this.dataSource.data.filter(item => item.type?.id === 1).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+  }
+
+  get incentiveTotal(): number {
+    return this.dataSource.data.filter(item => item.type?.id === 2).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+  }
+
+  get bonusTotal(): number {
+    return this.dataSource.data.filter(item => item.type?.id === 3).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+  }
+
+  get advanceTotal(): number {
+    return this.dataSource.data.filter(item => item.type?.id === 4).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+  }
 
   constructor(
     private financialService: FinancialService,
@@ -53,6 +115,7 @@ export class SalaryIncentiveListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadSelectOptions();
     this.loadLookupData();
     this.loadData();
   }
@@ -62,17 +125,43 @@ export class SalaryIncentiveListComponent implements OnInit {
     this.dataSource.sort = this.sort;
   }
 
+  loadSelectOptions(): void {
+    this.transactionTypeOptions = [
+      { value: null, label: 'الكل' },
+      ...this.transactionTypes.map(t => ({ value: t.id, label: t.title }))
+    ];
+    
+    this.salaryTypeOptions = [
+      { value: null, label: 'الكل' },
+      ...this.salaryTypes.map(s => ({ value: s.id, label: s.title }))
+    ];
+  }
+
   loadLookupData() {
-    // تحميل الموظفين للفلترة
     this.employeeService.getAllEmployeesLookup().subscribe({
-      next: (res: any) => { this.employees = res.list; },
-      error: () => { this.notification.showError('حدث خطأ في تحميل الموظفين'); }
+      next: (res: any) => { 
+        this.employees = res.list || [];
+        this.employeeOptions = [
+          { value: null, label: 'الكل' },
+          ...this.employees.map(e => ({ value: e.id, label: e.title }))
+        ];
+      },
+      error: () => { 
+        this.notification.showError('حدث خطأ في تحميل الموظفين'); 
+      }
     });
 
-    // تحميل طرق الدفع
     this.financialService.getAllPaymentMethodsLookup().subscribe({
-      next: (res: any) => { this.paymentMethods = res.list; },
-      error: () => { this.notification.showError('حدث خطأ في تحميل طرق الدفع'); }
+      next: (res: any) => { 
+        this.paymentMethods = res.list || [];
+        this.paymentMethodOptions = [
+          { value: null, label: 'الكل' },
+          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+        ];
+      },
+      error: () => { 
+        this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
+      }
     });
   }
 
@@ -90,7 +179,7 @@ export class SalaryIncentiveListComponent implements OnInit {
 
     this.financialService.getAllSalaryIncentivesByFilter(params).subscribe({
       next: (res: any) => {
-        this.dataSource.data = res.items;
+        this.dataSource.data = res.items || [];
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
         this.isLoading = false;
@@ -121,11 +210,6 @@ export class SalaryIncentiveListComponent implements OnInit {
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
-  getTransactionTypeTitle(typeId: number): string {
-    const type = this.transactionTypes.find(t => t.id === typeId);
-    return type?.title || '-';
-  }
-
   getTransactionTypeClass(typeId: number): string {
     switch(typeId) {
       case 1: return 'salary';
@@ -133,6 +217,27 @@ export class SalaryIncentiveListComponent implements OnInit {
       case 3: return 'bonus';
       case 4: return 'advance';
       default: return '';
+    }
+  }
+
+  viewTransaction(id: number) {
+    this.router.navigate(['/financial/salary-incentives', id]);
+  }
+
+  editTransaction(id: number) {
+    this.router.navigate(['/financial/salary-incentives', id, 'edit']);
+  }
+
+  deleteTransaction(item: any) {
+    const typeName = item.type?.title || 'المعاملة';
+    if (confirm(`هل أنت متأكد من حذف ${typeName} للموظف "${item.employee?.title}"؟`)) {
+      this.financialService.deleteSalaryIncentive(item.id).subscribe({
+        next: () => {
+          this.notification.showSuccess('تم الحذف بنجاح');
+          this.loadData();
+        },
+        error: () => this.notification.showError('حدث خطأ في الحذف')
+      });
     }
   }
 
@@ -179,6 +284,7 @@ export class SalaryIncentiveListComponent implements OnInit {
     
     doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
     doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
+    doc.text(`إجمالي المبالغ: ${this.totalAmount} جم`, 14, yOffset + 18);
 
     autoTable(doc, {
       head: [['#', 'الموظف', 'نوع المعاملة', 'المبلغ', 'تاريخ الصرف', 'طريقة الدفع', 'نوع الراتب', 'ملاحظات']],
@@ -192,7 +298,7 @@ export class SalaryIncentiveListComponent implements OnInit {
         item.salaryType?.title || '-',
         item.note || '-'
       ]),
-      startY: yOffset + 25,
+      startY: yOffset + 30,
       styles: { halign: 'right', fontSize: 9, cellPadding: 2 },
       headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' },
       alternateRowStyles: { fillColor: [243, 244, 246] }
@@ -200,26 +306,5 @@ export class SalaryIncentiveListComponent implements OnInit {
 
     doc.save('salary-incentives-report.pdf');
     this.notification.showSuccess('تم تصدير التقرير بنجاح');
-  }
-
-  viewTransaction(id: number) {
-    this.router.navigate(['/financial/salary-incentives', id]);
-  }
-
-  editTransaction(id: number) {
-    this.router.navigate(['/financial/salary-incentives', id, 'edit']);
-  }
-
-  deleteTransaction(item: any) {
-    const typeName = item.type?.title || 'المعاملة';
-    if (confirm(`هل أنت متأكد من حذف ${typeName} للموظف "${item.employee?.title}"؟`)) {
-      this.financialService.deleteSalaryIncentive(item.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم الحذف بنجاح');
-          this.loadData();
-        },
-        error: () => this.notification.showError('حدث خطأ في الحذف')
-      });
-    }
   }
 }

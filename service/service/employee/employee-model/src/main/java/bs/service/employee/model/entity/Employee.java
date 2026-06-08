@@ -38,9 +38,8 @@ public class Employee {
     @Basic
     private LocalDate birthDate;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private Gender gender;
+    private Integer gender;
 
     @Column(name = "salary")
     @Basic
@@ -50,13 +49,11 @@ public class Employee {
     @Basic
     private Integer remainedSalary;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "salary_type")
-    private SalaryTypes salaryType;
+    private Integer salaryType;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "employee_type")
-    private EmployeeTypes employeeType;
+    private Integer employeeType;
 
     @Column(name = "image_url")
     @Basic

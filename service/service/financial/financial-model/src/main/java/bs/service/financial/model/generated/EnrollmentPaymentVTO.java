@@ -1,6 +1,5 @@
 package bs.service.financial.model.generated;
 
-import bs.lib.common.model.enums.PaymentStatus;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,7 +46,7 @@ public class EnrollmentPaymentVTO implements Serializable {
 
     private String note;
 
-    private PaymentStatus paymentStatus;
+    private LookupVTO paymentStatus;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
@@ -248,7 +247,7 @@ public class EnrollmentPaymentVTO implements Serializable {
         this.note = note;
     }
 
-    public EnrollmentPaymentVTO paymentStatus(PaymentStatus paymentStatus) {
+    public EnrollmentPaymentVTO paymentStatus(LookupVTO paymentStatus) {
         this.paymentStatus = paymentStatus;
         return this;
     }
@@ -261,11 +260,11 @@ public class EnrollmentPaymentVTO implements Serializable {
     @Valid
     @Schema(name = "paymentStatus", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("paymentStatus")
-    public PaymentStatus getPaymentStatus() {
+    public LookupVTO getPaymentStatus() {
         return paymentStatus;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
+    public void setPaymentStatus(LookupVTO paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 

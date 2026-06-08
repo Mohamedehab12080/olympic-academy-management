@@ -49,8 +49,8 @@ public class EnrollmentRefundServiceImpl implements EnrollmentRefundService {
         EnrollmentRefund refund = financialMapper.toEnrollmentRefund(enrollmentRefundDTO);
         refund.setEnrollment(enrollment);
         refund = enrollmentRefundRepository.insert(refund);
-        enrollment.setPaymentStatus(PaymentStatus.REFUNDED);
-        enrollment.setEnrollmentStatus(EnrollmentStatus.CANCELLED);
+        enrollment.setPaymentStatus(PaymentStatus.REFUNDED.id);
+        enrollment.setEnrollmentStatus(EnrollmentStatus.CANCELLED.id);
         enrollment.setRemainedSubscriptionValue(enrollmentRefundDTO.getAmountRefunded()-paidAmount);
         enrollmentRepository.update(enrollment);
 
@@ -94,7 +94,7 @@ public class EnrollmentRefundServiceImpl implements EnrollmentRefundService {
         EnrollmentRefundSearchFilter filter = EnrollmentRefundSearchFilter.builder()
                 .enrollmentId(enrollmentId)
                 .paymentMethodId(paymentMethodId)
-                .status(status)
+                .status(status!=null ? status.getId():null)
                 .refundDateFrom(refundDateFrom)
                 .refundDateTo(refundDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

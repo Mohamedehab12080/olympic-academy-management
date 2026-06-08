@@ -16,7 +16,7 @@
                 <constraints nullable="true"/>
             </column>
 
-            <column name="token_type" type="VARCHAR(100)">
+            <column name="token_type" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
 

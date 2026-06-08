@@ -24,6 +24,10 @@ export class TraineeService {
     return this.api.get('/trainees', params);
   }
 
+  uploadTraineeImage(formData: FormData): Observable<{ imageUrl: string }> {
+    return this.api.post('/trainees/upload-image', formData);
+  }
+
   getTraineeById(id: number): Observable<TraineeVTO> {
     return this.api.get(`/trainees/${id}`);
   }

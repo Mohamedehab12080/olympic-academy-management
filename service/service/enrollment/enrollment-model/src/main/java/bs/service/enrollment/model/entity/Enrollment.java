@@ -50,13 +50,13 @@ public class Enrollment {
     @Basic
     private LocalDate endDate;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "enrollment_status")
-    private EnrollmentStatus enrollmentStatus;
+    private Integer enrollmentStatus;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "payment_status")
-    private PaymentStatus paymentStatus;
+    private Integer paymentStatus;
 
     @Column(name = "subscription_value")
     @Basic

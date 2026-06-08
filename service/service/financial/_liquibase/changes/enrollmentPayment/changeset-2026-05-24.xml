@@ -31,7 +31,7 @@
             <column name="payment_method_id" type="int"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="note" type="text"/>
-            <column name="payment_status" type="varchar(100)"/>
+            <column name="payment_status" type="int"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>
             <column name="created_by_id" type="int"/>
@@ -82,7 +82,7 @@
             <column name="payment_method_id" type="int"/>
             <column name="image_url" type="varchar(250)"/>
             <column name="note" type="text"/>
-            <column name="refund_status" type="varchar(100)"/>
+            <column name="refund_status" type="int"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="last_modified_on" type="timestamp"/>
             <column name="created_by_id" type="int"/>

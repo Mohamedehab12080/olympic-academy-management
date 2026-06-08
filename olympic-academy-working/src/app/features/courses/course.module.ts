@@ -18,6 +18,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CourseListComponent } from './pages/course-list/course-list.component';
 import { CourseFormComponent } from './pages/course-form/course-form.component';
@@ -29,7 +30,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [CourseListComponent, CourseFormComponent],
+  // Remove CourseListComponent from declarations since it's standalone
+  declarations: [CourseFormComponent], // Only non-standalone components
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -49,7 +51,9 @@ const routes: Routes = [
     MatProgressSpinnerModule,
     MatSelectModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatTooltipModule,
+    CourseListComponent // Import the standalone component here
   ]
 })
 export class CoursesModule { }

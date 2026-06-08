@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public class CourseSearchFilter extends SearchFilter<CourseSearchFilter.OrderByAttributes> {
 
     private String quickSearchQuery;
-    private String courseType;
+    private Integer courseType;
     private Boolean isActive;
     private LocalDate startDateFrom;
     private LocalDate startDateTo;

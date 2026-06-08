@@ -1,7 +1,6 @@
 package bs.service.financial.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.financial.model.enums.RefundStatus;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,7 +42,7 @@ public class EnrollmentRefundVTO implements Serializable {
 
     private String note;
 
-    private RefundStatus status;
+    private LookupVTO refundStatus;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
@@ -202,25 +201,25 @@ public class EnrollmentRefundVTO implements Serializable {
         this.note = note;
     }
 
-    public EnrollmentRefundVTO status(RefundStatus status) {
-        this.status = status;
+    public EnrollmentRefundVTO refundStatus(LookupVTO refundStatus) {
+        this.refundStatus = refundStatus;
         return this;
     }
 
     /**
-     * Get status
+     * Get refundStatus
      *
-     * @return status
+     * @return refundStatus
      */
     @Valid
-    @Schema(name = "status", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("status")
-    public RefundStatus getStatus() {
-        return status;
+    @Schema(name = "refundStatus", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("refundStatus")
+    public LookupVTO getRefundStatus() {
+        return refundStatus;
     }
 
-    public void setStatus(RefundStatus status) {
-        this.status = status;
+    public void setRefundStatus(LookupVTO refundStatus) {
+        this.refundStatus = refundStatus;
     }
 
     public EnrollmentRefundVTO createdOn(LocalDateTime createdOn) {
@@ -323,7 +322,7 @@ public class EnrollmentRefundVTO implements Serializable {
                 && Objects.equals(this.paymentMethod, enrollmentRefundVTO.paymentMethod)
                 && Objects.equals(this.imageUrl, enrollmentRefundVTO.imageUrl)
                 && Objects.equals(this.note, enrollmentRefundVTO.note)
-                && Objects.equals(this.status, enrollmentRefundVTO.status)
+                && Objects.equals(this.refundStatus, enrollmentRefundVTO.refundStatus)
                 && Objects.equals(this.createdOn, enrollmentRefundVTO.createdOn)
                 && Objects.equals(this.createdBy, enrollmentRefundVTO.createdBy)
                 && Objects.equals(this.lastModifiedOn, enrollmentRefundVTO.lastModifiedOn)
@@ -332,7 +331,7 @@ public class EnrollmentRefundVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, enrollment, refundDate, amountRefunded, paymentMethod, imageUrl, note, status,
+        return Objects.hash(id, enrollment, refundDate, amountRefunded, paymentMethod, imageUrl, note, refundStatus,
                 createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
@@ -347,7 +346,7 @@ public class EnrollmentRefundVTO implements Serializable {
         sb.append("    paymentMethod: ").append(toIndentedString(paymentMethod)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    note: ").append(toIndentedString(note)).append("\n");
-        sb.append("    status: ").append(toIndentedString(status)).append("\n");
+        sb.append("    refundStatus: ").append(toIndentedString(refundStatus)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("    lastModifiedOn: ").append(toIndentedString(lastModifiedOn)).append("\n");

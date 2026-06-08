@@ -53,9 +53,8 @@ public class CourseSession {
     @Basic
     private LocalTime endTime;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private SessionStatus status;
+    private Integer status;
 
     @Column(name = "note")
     @Basic

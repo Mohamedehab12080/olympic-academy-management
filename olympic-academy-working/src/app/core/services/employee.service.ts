@@ -27,7 +27,11 @@ export class EmployeeService {
   getAllEmployeesLookup(): Observable<LookupResultSet> {
     return this.api.get('/lookup/employees');
   }
-
+  
+  uploadEmployeeImage(formData: FormData): Observable<{ imageUrl: string }> {
+    return this.api.post('/employees/upload-image', formData);
+  }
+  
   getAllTrainersLookup(): Observable<LookupResultSet> {
     return this.api.get('/lookup/trainers');
   }

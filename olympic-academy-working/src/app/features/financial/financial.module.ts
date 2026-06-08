@@ -73,13 +73,13 @@ import { SalaryIncentiveListComponent } from './pages/salary/salary-incentive/sa
 import { SalaryIncentiveFormComponent } from './pages/salary/salary-incentive/salary-incentive-form/salary-incentive-form.component';
 
 // ============================================
-// Salary Deduction Components (Standalone - لا تضعها في declarations)
+// Salary Deduction Components (Standalone)
 // ============================================
 // import { SalaryDeductionListComponent } from './pages/salary/salary-deduction/salary-deduction-list/salary-deduction-list.component';
 // import { SalaryDeductionFormComponent } from './pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component';
 
 // ============================================
-// Financial Report Component
+// Financial Report Component (Standalone)
 // ============================================
 import { FinancialReportComponent } from './reports/financial-report/financial-report.component';
 
@@ -183,12 +183,10 @@ const routes: Routes = [
     EnrollmentRefundListComponent,
     EnrollmentRefundFormComponent,
 
-    // Salary Incentive
-    SalaryIncentiveListComponent,
+    // Salary Incentive Form (NOT standalone - keep in declarations)
     SalaryIncentiveFormComponent,
 
-    // ❌ لا تضع SalaryDeductionListComponent و SalaryDeductionFormComponent هنا
-    // لأنها Standalone Components
+    // Financial Report - REMOVED (standalone)
   ],
   imports: [
     CommonModule,
@@ -212,7 +210,9 @@ const routes: Routes = [
     MatDialogModule,
     MatSlideToggleModule,
     MatTooltipModule,
-    FinancialReportComponent
+    // Add ONLY standalone components here
+    SalaryIncentiveListComponent,  // Standalone
+    FinancialReportComponent        // Standalone
   ]
 })
 export class FinancialModule { }

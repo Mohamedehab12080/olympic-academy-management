@@ -42,7 +42,7 @@ public class CourseQueryBuilder extends AbstractQueryBuilderV2<Course, CourseSea
             conditions.add(QBCondition.builder().placeHolder("title").value("%" + filters.getQuickSearchQuery() + "%")
                     .condition("item.title LIKE :PH").build());
 
-        if (filters.getCourseType() != null && !filters.getCourseType().isEmpty()) {
+        if (filters.getCourseType() != null) {
             conditions.add(QBCondition.builder().placeHolder("courseType").value(filters.getCourseType())
                     .condition("item.courseType = :PH").build());
         }

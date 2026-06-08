@@ -24,7 +24,7 @@
             <column name="start_date" type="date"/>
             <column name="end_date" type="date"/>
             <column name="image_url" type="varchar(255)"/>
-            <column name="course_type" type="varchar(50)"/>
+            <column name="course_type" type="int"/>
             <column name="price" type="Integer"/>
             <column name="is_active" type="boolean" defaultValueComputed="1"/>
             <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>

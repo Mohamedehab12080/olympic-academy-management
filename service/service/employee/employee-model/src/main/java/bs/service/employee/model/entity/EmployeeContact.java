@@ -26,9 +26,9 @@ public class EmployeeContact {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "contact_type")
-    private ContactTypes contactType;
+    private Integer contactType;
 
     @Column(name = "contact_value")
     @Basic

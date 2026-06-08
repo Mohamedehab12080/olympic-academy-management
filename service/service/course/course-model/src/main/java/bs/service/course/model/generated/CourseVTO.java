@@ -1,7 +1,6 @@
 package bs.service.course.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.course.model.enums.CourseTypes;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -48,7 +47,7 @@ public class CourseVTO implements Serializable {
 
     private String imageUrl;
 
-    private CourseTypes courseType;
+    private LookupVTO courseType;
 
     private Integer price;
 
@@ -253,7 +252,7 @@ public class CourseVTO implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public CourseVTO courseType(CourseTypes courseType) {
+    public CourseVTO courseType(LookupVTO courseType) {
         this.courseType = courseType;
         return this;
     }
@@ -266,11 +265,11 @@ public class CourseVTO implements Serializable {
     @Valid
     @Schema(name = "courseType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("courseType")
-    public CourseTypes getCourseType() {
+    public LookupVTO getCourseType() {
         return courseType;
     }
 
-    public void setCourseType(CourseTypes courseType) {
+    public void setCourseType(LookupVTO courseType) {
         this.courseType = courseType;
     }
 

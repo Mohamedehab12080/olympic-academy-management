@@ -19,7 +19,7 @@ public class EnrollmentRefundSearchFilter extends SearchFilter<EnrollmentRefundS
 
     private Integer enrollmentId;
     private Integer paymentMethodId;
-    private RefundStatus status;
+    private Integer status;
     private LocalDate refundDateFrom;
     private LocalDate refundDateTo;
 

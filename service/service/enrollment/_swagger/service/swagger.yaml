@@ -309,19 +309,21 @@ components:
         format: date
 
   schemas:
+    # ==================== Enums ====================
     EnrollmentStatus:
       type: object
       properties:
         id:
           type: integer
-          enum: [ 1, 2,3 ]
+          enum: [1, 2, 3]
         code:
           type: string
-          enum: [ "PENDING","COMPLETED","CANCELLED"]
+          enum: ["PENDING", "COMPLETED", "CANCELLED"]
         arabicLabel:
           type: string
-          enum: [ "قيد الانتظار", "مكتمل","تم الالغاء" ]
+          enum: ["قيد الانتظار", "مكتمل", "تم الإلغاء"]
 
+    # ==================== Enrollment Type ====================
     EnrollmentTypeDTO:
       type: object
       required:
@@ -359,6 +361,7 @@ components:
           items:
             $ref: '#/components/schemas/EnrollmentTypeVTO'
 
+    # ==================== Enrollment ====================
     EnrollmentDTO:
       type: object
       required:
@@ -428,9 +431,9 @@ components:
           type: string
           format: date
         enrollmentStatus:
-          $ref: '#/components/schemas/EnrollmentStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         paymentStatus:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         subscriptionValue:
           type: integer
           format: int32
@@ -491,9 +494,9 @@ components:
           type: string
           format: date
         enrollmentStatus:
-          $ref: '#/components/schemas/EnrollmentStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         paymentStatus:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         finalSubscriptionValue:
           type: integer
           format: int32

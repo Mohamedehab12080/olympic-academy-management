@@ -1,9 +1,13 @@
 package bs.service.trainee.core.mapper;
 
+import bs.lib.common.model.Utils.EnumMapperUtils;
+import bs.lib.common.model.enums.ContactTypes;
+import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.course.model.entity.Course;
 import bs.service.employee.model.entity.CourseSession;
 import bs.service.trainee.model.entity.*;
+import bs.service.trainee.model.enums.TraineeAttendanceStatus;
 import bs.service.trainee.model.generated.*;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.generated.LightUserVTO;
@@ -16,8 +20,26 @@ import java.util.List;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR,
+        uses = {EnumMapperUtils.class},  // Add this to make EnumMapperUtils available
         imports = {OffsetDateTime.class, ZoneOffset.class})
 public abstract class TraineeMapper {
+
+    // ==================== Named Qualifiers for Enum to LookupVTO Conversion ====================
+
+    @Named("genderToLookup")
+    public LookupVTO genderToLookup(Integer genderId) {
+        return EnumMapperUtils.toLookupVTO(genderId, Gender.class);
+    }
+
+    @Named("contactTypeToLookup")
+    public LookupVTO contactTypeToLookup(Integer contactTypeId) {
+        return EnumMapperUtils.toLookupVTO(contactTypeId, ContactTypes.class);
+    }
+
+    @Named("attendanceStatusToLookup")
+    public LookupVTO attendanceStatusToLookup(Integer statusId) {
+        return EnumMapperUtils.toLookupVTO(statusId, TraineeAttendanceStatus.class);
+    }
 
     // ==================== User Mapping ====================
 
@@ -26,15 +48,29 @@ public abstract class TraineeMapper {
     // ==================== Lookup Mappings ====================
 
     public abstract LookupVTO toLookupVTO(Course course);
-    public abstract LookupVTO toLookupVTOFromCourseSession(CourseSession courseSession) ;
-    public abstract LookupVTO toLookupVTOFromTrainee(Trainee trainee) ;
+    public abstract LookupVTO toLookupVTOFromCourseSession(CourseSession courseSession);
+    public abstract LookupVTO toLookupVTOFromTrainee(Trainee trainee);
     public abstract LookupVTO toLookupVTOSession(CourseSession courseSession);
 
     // ==================== Contact Mappings ====================
 
+    // DTO to Entity - extract ID from ContactTypes object
+    @Mapping(target = "contactType", source = "contactType.id")
     public abstract TraineeContact toTraineeContact(TraineeContactDTO traineeContactDTO);
 
     public abstract List<TraineeContact> toTraineeContacts(List<TraineeContactDTO> traineeContactDTOs);
+
+    // Map TraineeContact entity to TraineeContactVTO (for VTO)
+    @Mapping(target = "contactType", qualifiedByName = "contactTypeToLookup")
+    public abstract TraineeContactVTO toTraineeContactVTO(TraineeContact traineeContact);
+
+    public abstract List<TraineeContactVTO> toTraineeContactVTOs(List<TraineeContact> traineeContacts);
+
+    // Map TraineeContact entity to TraineeContactListItem (for ListItem)
+    @Mapping(target = "contactType", qualifiedByName = "contactTypeToLookup")
+    public abstract TraineeContactListItem toTraineeContactListItem(TraineeContact traineeContact);
+
+    public abstract List<TraineeContactListItem> toTraineeContactListItems(List<TraineeContact> traineeContacts);
 
     // ==================== Certificate Mappings ====================
 
@@ -42,27 +78,27 @@ public abstract class TraineeMapper {
     public abstract TraineeCertificate toTraineeCertificate(TraineeCertificateDTO traineeCertificateDTO);
 
     public abstract TraineeCertificateVTO toTraineeCertificateVTO(TraineeCertificate traineeCertificate);
-
     public abstract List<TraineeCertificateVTO> toTraineeCertificateVTOs(List<TraineeCertificate> traineeCertificates);
 
     // ==================== Health Condition Mappings ====================
 
     public abstract HealthCondition toHealthCondition(HealthConditionDTO healthConditionDTO);
-
     public abstract HealthConditionVTO toHealthConditionVTO(HealthCondition healthCondition);
-
     public abstract List<HealthConditionVTO> toHealthConditionVTOs(List<HealthCondition> healthConditions);
 
     // ==================== Trainee Mappings ====================
 
+    // DTO to Entity - convert LookupVTO to ID
+    @Mapping(target = "gender", source = "gender.id")
     public abstract Trainee toTrainee(TraineeDTO traineeDTO);
 
+    // Entity to VTO - use qualifiedByName to specify which converter to use
+    @Mapping(target = "gender", qualifiedByName = "genderToLookup")
+    @Mapping(target = "contacts", source = "contacts")  // This will use toTraineeContactVTOs
     public abstract TraineeVTO toTraineeVTO(Trainee trainee);
 
-    public abstract TraineeContactListItem toTraineeContactListItem(TraineeContact traineeContact);
-
-    public abstract List<TraineeContactListItem> toTraineeContactListItems(List<TraineeContact> traineeContacts);
-
+    // List Item mapping - use qualifiedByName
+    @Mapping(target = "gender", qualifiedByName = "genderToLookup")
     public abstract TraineeListItem toTraineeListItem(Trainee trainee);
 
     public abstract List<TraineeListItem> toTraineeListItems(List<Trainee> trainees);
@@ -73,13 +109,18 @@ public abstract class TraineeMapper {
      * Convert TraineeAttendanceDTO to TraineeAttendance entity
      */
     @Mapping(target = "isDeleted", constant = "false")
+    @Mapping(target = "status", source = "status.id")
     public abstract TraineeAttendance toTraineeAttendance(TraineeAttendanceDTO dto);
 
     /**
      * Convert TraineeAttendance entity to TraineeAttendanceVTO
+     *
+     * Important: The source property 'status' from entity is Integer,
+     * target property 'status' is LookupVTO
      */
     @Mapping(target = "trainee", expression = "java(toLookupVTOFromTrainee(entity.getTrainee()))")
     @Mapping(target = "session", expression = "java(toLookupVTOSession(entity.getCourseSession()))")
+    @Mapping(target = "status", qualifiedByName = "attendanceStatusToLookup")
     public abstract TraineeAttendanceVTO toTraineeAttendanceVTO(TraineeAttendance entity);
 
     /**
@@ -89,6 +130,7 @@ public abstract class TraineeMapper {
     @Mapping(target = "sessionTitle", source = "courseSession.title")
     @Mapping(target = "courseTitle", source = "courseSession.course.title")
     @Mapping(target = "sessionDate", source = "courseSession.sessionDate")
+    @Mapping(target = "status", qualifiedByName = "attendanceStatusToLookup")
     public abstract TraineeAttendanceListItem toTraineeAttendanceListItem(TraineeAttendance entity);
 
     /**
@@ -100,6 +142,4 @@ public abstract class TraineeMapper {
      * Convert list of TraineeAttendance entities to list of TraineeAttendanceVTO
      */
     public abstract List<TraineeAttendanceVTO> toTraineeAttendanceVTOs(List<TraineeAttendance> entities);
-
-
 }

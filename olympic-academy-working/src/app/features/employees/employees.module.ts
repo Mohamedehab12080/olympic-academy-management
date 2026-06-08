@@ -25,19 +25,21 @@ import { MatTabsModule } from '@angular/material/tabs';
 // Components
 import { EmployeeListComponent } from './pages/employee-list/employee-list.component';
 import { EmployeeFormComponent } from './pages/employee-form/employee-form.component';
+import { EmployeeProfileComponent } from './pages/employee-profile/employee-profile.component';
+import { EmployeeAttendanceComponent } from './pages/employee-attendance/employee-attendance.component';
+import { AssignCourseDialogComponent } from './pages/employee-form/employee-form.component';
 
 // Routes
 const routes: Routes = [
   { path: '', component: EmployeeListComponent },
   { path: 'new', component: EmployeeFormComponent },
+  { path: 'attendance', component: EmployeeAttendanceComponent },
+  { path: ':id', component: EmployeeProfileComponent },
   { path: ':id/edit', component: EmployeeFormComponent }
 ];
 
 @NgModule({
-  declarations: [
-    EmployeeListComponent,
-    EmployeeFormComponent
-  ],
+  declarations: [], // Empty - all components are standalone
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -59,7 +61,12 @@ const routes: Routes = [
     MatProgressSpinnerModule,
     MatChipsModule,
     MatTooltipModule,
-    MatTabsModule
+    MatTabsModule,
+    // Import all standalone components here
+    EmployeeListComponent,
+    EmployeeFormComponent,
+    EmployeeProfileComponent,
+    EmployeeAttendanceComponent
   ]
 })
 export class EmployeesModule { }

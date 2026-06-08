@@ -1,9 +1,6 @@
 package bs.service.employee.model.generated;
 
-import bs.lib.common.model.enums.Gender;
-import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,15 +38,15 @@ public class EmployeeVTO implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
 
-    private Gender gender;
+    private LookupVTO gender;
 
     private Integer salary;
 
     private Integer remainedSalary;
 
-    private SalaryTypes salaryType;
+    private LookupVTO salaryType;
 
-    private EmployeeTypes employeeType;
+    private LookupVTO employeeType;
 
     private String imageUrl;
 
@@ -164,7 +161,7 @@ public class EmployeeVTO implements Serializable {
         this.birthDate = birthDate;
     }
 
-    public EmployeeVTO gender(Gender gender) {
+    public EmployeeVTO gender(LookupVTO gender) {
         this.gender = gender;
         return this;
     }
@@ -177,11 +174,11 @@ public class EmployeeVTO implements Serializable {
     @Valid
     @Schema(name = "gender", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("gender")
-    public Gender getGender() {
+    public LookupVTO getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(LookupVTO gender) {
         this.gender = gender;
     }
 
@@ -227,7 +224,7 @@ public class EmployeeVTO implements Serializable {
         this.remainedSalary = remainedSalary;
     }
 
-    public EmployeeVTO salaryType(SalaryTypes salaryType) {
+    public EmployeeVTO salaryType(LookupVTO salaryType) {
         this.salaryType = salaryType;
         return this;
     }
@@ -240,15 +237,15 @@ public class EmployeeVTO implements Serializable {
     @Valid
     @Schema(name = "salaryType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("salaryType")
-    public SalaryTypes getSalaryType() {
+    public LookupVTO getSalaryType() {
         return salaryType;
     }
 
-    public void setSalaryType(SalaryTypes salaryType) {
+    public void setSalaryType(LookupVTO salaryType) {
         this.salaryType = salaryType;
     }
 
-    public EmployeeVTO employeeType(EmployeeTypes employeeType) {
+    public EmployeeVTO employeeType(LookupVTO employeeType) {
         this.employeeType = employeeType;
         return this;
     }
@@ -261,11 +258,11 @@ public class EmployeeVTO implements Serializable {
     @Valid
     @Schema(name = "employeeType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("employeeType")
-    public EmployeeTypes getEmployeeType() {
+    public LookupVTO getEmployeeType() {
         return employeeType;
     }
 
-    public void setEmployeeType(EmployeeTypes employeeType) {
+    public void setEmployeeType(LookupVTO employeeType) {
         this.employeeType = employeeType;
     }
 

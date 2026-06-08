@@ -127,7 +127,7 @@ public interface TraineeService {
 //    @Basic
 //    private LocalDate birthDate;
 //
-//    @Enumerated(EnumType.STRING)
+//    
 //    @Column(name = "gender")
 //    private Gender gender;
 //
@@ -327,9 +327,9 @@ public interface TraineeService {
 //    @JoinColumn(name = "trainee_id")
 //    private Trainee trainee;
 //
-//    @Enumerated(EnumType.STRING)
+//    
 //    @Column(name = "contact_type")
-//    private ContactTypes contactType;
+//    private Integer contactType;
 //
 //    @Column(name = "contact_value")
 //    @Basic

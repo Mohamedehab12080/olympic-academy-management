@@ -21,7 +21,6 @@ public class AuthControllerImpl implements AuthController {
     private final UserService userService;
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<RegisterUserVTO> register(RegisterUserDTO request) {
         log.info("POST /auth/register - Registering new user with email: {}", request.getEmail());
         RegisterUserVTO response = userService.register(request);
@@ -29,7 +28,6 @@ public class AuthControllerImpl implements AuthController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LoginUserVTO> login(LoginUserDTO request) {
         log.info("POST /auth/login - Login attempt for email: {}", request.getEmail());
         LoginUserVTO response = userService.login(request);
@@ -37,7 +35,6 @@ public class AuthControllerImpl implements AuthController {
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> logout() {
         log.info("POST /auth/logout - User logged out");
         return ResponseEntity.noContent().build();

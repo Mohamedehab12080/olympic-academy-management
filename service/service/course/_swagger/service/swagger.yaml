@@ -103,6 +103,21 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /lookup/course-types:
+    get:
+      tags:
+        - Lookup
+      summary: Get all course types for lookup
+      operationId: getAllCourseTypesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
 components:
   parameters:
@@ -149,9 +164,22 @@ components:
         format: date
 
   schemas:
+    # ==================== Enums ====================
+
     CourseTypes:
-      type: string
-      enum: [ "QUALIFICATION", "TRAINING" ]
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2]
+        code:
+          type: string
+          enum: ["QUALIFICATION", "TRAINING"]
+        arabicLabel:
+          type: string
+          enum: ["تأهيل", "تدريب"]
+
+    # ==================== DTOs ====================
 
     CourseDTO:
       type: object
@@ -191,6 +219,8 @@ components:
           type: integer
           format: int32
 
+    # ==================== VTOs ====================
+
     CourseVTO:
       type: object
       properties:
@@ -218,7 +248,7 @@ components:
         imageUrl:
           type: string
         courseType:
-          $ref: '#/components/schemas/CourseTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         price:
           type: integer
           format: int32
@@ -235,6 +265,8 @@ components:
         lastModifiedBy:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
 
+    # ==================== Result Sets ====================
+
     CourseResultSet:
       type: object
       properties:
@@ -245,4 +277,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CourseVTO'
-

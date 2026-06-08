@@ -30,10 +30,9 @@ public class EmployeeAttendance {
     @Column(name = "attendance_date")
     @Basic
     private LocalDate attendanceDate;
-
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
-    private EmployeeAttendanceStatus status;
+    private Integer status;
 
     @Column(name = "check_in_time")
     @Basic

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 public class SalaryDeductionSearchFilter extends SearchFilter<SalaryDeductionSearchFilter.OrderByAttributes> {
 
     private Integer employeeId;
-    private SalaryTypes salaryType;
+    private Integer salaryType;
     private LocalDate deductionDateFrom;
     private LocalDate deductionDateTo;
 

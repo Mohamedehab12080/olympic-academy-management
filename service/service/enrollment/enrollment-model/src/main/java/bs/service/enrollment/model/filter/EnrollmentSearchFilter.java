@@ -24,8 +24,8 @@ public class EnrollmentSearchFilter extends SearchFilter<EnrollmentSearchFilter.
     private Integer courseId;
     private Integer trainerId;
     private Integer enrollmentTypeId;
-    private EnrollmentStatus enrollmentStatus;
-    private PaymentStatus paymentStatus;
+    private Integer enrollmentStatus;
+    private Integer paymentStatus;
     private LocalDate startDateFrom;
     private LocalDate startDateTo;
     private LocalDate endDateFrom;

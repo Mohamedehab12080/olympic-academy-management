@@ -136,7 +136,7 @@ export class ExpenseListComponent implements OnInit {
       head: [['#', 'نوع المصروف', 'المبلغ', 'التاريخ', 'طريقة الدفع', 'ملاحظات']],
       body: this.dataSource.data.map((item, index) => [
         (index + 1).toString(), item.expenseType?.title || '-',
-        `${item.amountExpensed} ريال`, item.expenseDate,
+        `${item.amountExpensed} جم`, item.expenseDate,
         item.paymentMethod?.title || '-', item.note || '-'
       ]),
       startY: yOffset + 20,

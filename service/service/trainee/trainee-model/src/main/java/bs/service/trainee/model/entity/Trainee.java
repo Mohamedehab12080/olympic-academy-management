@@ -40,9 +40,8 @@ public class Trainee {
     @Basic
     private LocalDate birthDate;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private Gender gender;
+    private Integer gender;
 
     @Column(name = "address")
     @Basic

@@ -105,6 +105,19 @@ components:
           type: string
           enum: [ "قيد الانتظار", "تم الدفع","فشل","تم استرداد المبلغ","تم الالغاء" ]
 
+    SalaryTypes:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [ 1, 2, 3, 4 ]
+        code:
+          type: string
+          enum: [ "MONTHLY", "DAILY", "HOURLY", "PERCENTAGE" ]
+        arabicLabel:
+          type: string
+          enum: [ "شهري", "يومي", "بالساعة", "نسبة" ]
+
     ContactTypes:
       type: object
       properties:

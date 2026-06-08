@@ -33,9 +33,8 @@ public class TraineeAttendance {
     @JoinColumn(name = "course_session_id")
     private CourseSession courseSession;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private TraineeAttendanceStatus status;
+    private Integer status;
 
     @Column(name = "check_in_time")
     private LocalTime checkInTime;
@@ -58,11 +57,11 @@ public class TraineeAttendance {
     @Column(name = "last_modified_on")
     private LocalDateTime lastModifiedOn;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "created_by_id")
     private User createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "last_modified_by_id")
     private User lastModifiedBy;
 

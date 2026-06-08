@@ -1,8 +1,10 @@
 package bs.service.trainee.model.generated;
 
+import bs.lib.common.model.enums.ContactTypes;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.*;
@@ -21,11 +23,11 @@ public class TraineeContactDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String contactType;
+    private ContactTypes contactType;
 
     private String contactValue;
 
-    public TraineeContactDTO contactType(String contactType) {
+    public TraineeContactDTO contactType(ContactTypes contactType) {
         this.contactType = contactType;
         return this;
     }
@@ -35,14 +37,14 @@ public class TraineeContactDTO implements Serializable {
      *
      * @return contactType
      */
-
+    @Valid
     @Schema(name = "contactType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("contactType")
-    public String getContactType() {
+    public ContactTypes getContactType() {
         return contactType;
     }
 
-    public void setContactType(String contactType) {
+    public void setContactType(ContactTypes contactType) {
         this.contactType = contactType;
     }
 

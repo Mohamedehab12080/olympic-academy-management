@@ -22,6 +22,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 
 import { EnrollmentListComponent } from './pages/enrollment-list/enrollment-list.component';
 import { EnrollmentWizardComponent } from './pages/enrollment-wizard/enrollment-wizard.component';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 
 const routes: Routes = [
   { path: '', component: EnrollmentListComponent },
@@ -51,7 +52,8 @@ const routes: Routes = [
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatStepperModule
+    MatStepperModule,
+    SearchableSelectComponent // Add this line
   ]
 })
 export class EnrollmentsModule { }

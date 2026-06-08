@@ -75,7 +75,7 @@ public class CourseServiceImpl implements CourseService {
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(CourseSearchFilter.OrderByAttributes.START_DATE,OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
-                .courseType(courseType!=null ?courseType.getTitle() :null)
+                .courseType(courseType!=null ?courseType.getId() :null)
                 .startDateFrom(startDateFrom)
                 .startDateTo(startDateTo)
                 .endDateFrom(endDateFrom)

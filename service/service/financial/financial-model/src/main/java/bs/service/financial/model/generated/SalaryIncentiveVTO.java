@@ -1,7 +1,6 @@
 package bs.service.financial.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.financial.model.enums.SalaryTransactionType;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,7 +40,9 @@ public class SalaryIncentiveVTO implements Serializable {
 
     private String imageUrl;
 
-    private SalaryTransactionType type;
+    private LookupVTO salaryType;
+
+    private LookupVTO salaryTransactionType;
 
     private String note;
 
@@ -181,25 +182,46 @@ public class SalaryIncentiveVTO implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public SalaryIncentiveVTO type(SalaryTransactionType type) {
-        this.type = type;
+    public SalaryIncentiveVTO salaryType(LookupVTO salaryType) {
+        this.salaryType = salaryType;
         return this;
     }
 
     /**
-     * Get type
+     * Get salaryType
      *
-     * @return type
+     * @return salaryType
      */
     @Valid
-    @Schema(name = "type", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("type")
-    public SalaryTransactionType getType() {
-        return type;
+    @Schema(name = "salaryType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("salaryType")
+    public LookupVTO getSalaryType() {
+        return salaryType;
     }
 
-    public void setType(SalaryTransactionType type) {
-        this.type = type;
+    public void setSalaryType(LookupVTO salaryType) {
+        this.salaryType = salaryType;
+    }
+
+    public SalaryIncentiveVTO salaryTransactionType(LookupVTO salaryTransactionType) {
+        this.salaryTransactionType = salaryTransactionType;
+        return this;
+    }
+
+    /**
+     * Get salaryTransactionType
+     *
+     * @return salaryTransactionType
+     */
+    @Valid
+    @Schema(name = "salaryTransactionType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("salaryTransactionType")
+    public LookupVTO getSalaryTransactionType() {
+        return salaryTransactionType;
+    }
+
+    public void setSalaryTransactionType(LookupVTO salaryTransactionType) {
+        this.salaryTransactionType = salaryTransactionType;
     }
 
     public SalaryIncentiveVTO note(String note) {
@@ -322,7 +344,8 @@ public class SalaryIncentiveVTO implements Serializable {
                 && Objects.equals(this.amountWithdrawn, salaryIncentiveVTO.amountWithdrawn)
                 && Objects.equals(this.paymentMethod, salaryIncentiveVTO.paymentMethod)
                 && Objects.equals(this.imageUrl, salaryIncentiveVTO.imageUrl)
-                && Objects.equals(this.type, salaryIncentiveVTO.type)
+                && Objects.equals(this.salaryType, salaryIncentiveVTO.salaryType)
+                && Objects.equals(this.salaryTransactionType, salaryIncentiveVTO.salaryTransactionType)
                 && Objects.equals(this.note, salaryIncentiveVTO.note)
                 && Objects.equals(this.createdOn, salaryIncentiveVTO.createdOn)
                 && Objects.equals(this.createdBy, salaryIncentiveVTO.createdBy)
@@ -332,8 +355,8 @@ public class SalaryIncentiveVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, employee, withdrawDate, amountWithdrawn, paymentMethod, imageUrl, type, note, createdOn,
-                createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, employee, withdrawDate, amountWithdrawn, paymentMethod, imageUrl, salaryType,
+                salaryTransactionType, note, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -346,7 +369,8 @@ public class SalaryIncentiveVTO implements Serializable {
         sb.append("    amountWithdrawn: ").append(toIndentedString(amountWithdrawn)).append("\n");
         sb.append("    paymentMethod: ").append(toIndentedString(paymentMethod)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
-        sb.append("    type: ").append(toIndentedString(type)).append("\n");
+        sb.append("    salaryType: ").append(toIndentedString(salaryType)).append("\n");
+        sb.append("    salaryTransactionType: ").append(toIndentedString(salaryTransactionType)).append("\n");
         sb.append("    note: ").append(toIndentedString(note)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");

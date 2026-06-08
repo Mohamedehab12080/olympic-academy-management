@@ -756,7 +756,7 @@ components:
       in: query
       required: false
       schema:
-        $ref: '#/components/schemas/SalaryTypes'
+        $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
     QPHireDateFrom:
       name: hireDateFrom
       in: query
@@ -902,18 +902,6 @@ components:
           type: string
           enum: ["مدرب", "مدير"]
 
-    SalaryTypes:
-      type: object
-      properties:
-        id:
-          type: integer
-          enum: [1, 2, 3, 4]
-        code:
-          type: string
-          enum: ["MONTHLY", "DAILY", "HOURLY", "PERCENTAGE"]
-        arabicLabel:
-          type: string
-          enum: ["شهري", "يومي", "بالساعة", "نسبة"]
 
     EmployeeAttendanceStatus:
       type: object
@@ -969,7 +957,7 @@ components:
           type: integer
           format: int32
         salaryType:
-          $ref: '#/components/schemas/SalaryTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
         employeeType:
           $ref: '#/components/schemas/EmployeeTypes'
         imageUrl:
@@ -991,7 +979,7 @@ components:
       type: object
       properties:
         contactType:
-          type: string
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/ContactTypes'
         contactValue:
           type: string
 
@@ -1079,7 +1067,7 @@ components:
           type: string
           format: date
         gender:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         salary:
           type: integer
           format: int32
@@ -1087,9 +1075,9 @@ components:
           type: integer
           format: int32
         salaryType:
-          $ref: '#/components/schemas/SalaryTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         employeeType:
-          $ref: '#/components/schemas/EmployeeTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         imageUrl:
           type: string
         hireDate:
@@ -1131,7 +1119,7 @@ components:
           type: integer
           format: int32
         contactType:
-          type: string
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         contactValue:
           type: string
 
@@ -1147,7 +1135,7 @@ components:
           type: string
           format: date
         status:
-          $ref: '#/components/schemas/EmployeeAttendanceStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         checkInTime:
           type: string
           format: time
@@ -1223,9 +1211,9 @@ components:
         nationalId:
           type: string
         gender:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/Gender'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         employeeType:
-          $ref: '#/components/schemas/EmployeeTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         hireDate:
           type: string
           format: date
@@ -1267,7 +1255,8 @@ components:
         contactValue:
           type: string
         contactType:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/ContactTypes'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+
 
     EmployeeAttendanceListItem:
       type: object
@@ -1281,7 +1270,7 @@ components:
           type: string
           format: date
         status:
-          $ref: '#/components/schemas/EmployeeAttendanceStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         checkInTime:
           type: string
           format: time
@@ -1367,7 +1356,7 @@ components:
           type: string
           format: time
         status:
-          $ref: '#/components/schemas/SessionStatus'
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         note:
           type: string
         createdOn:
