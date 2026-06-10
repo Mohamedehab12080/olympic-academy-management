@@ -500,5 +500,8 @@ components:
         finalSubscriptionValue:
           type: integer
           format: int32
+        remainedSubscriptionValue:
+          type: integer
+          format: int32
         isActive:
           type: boolean

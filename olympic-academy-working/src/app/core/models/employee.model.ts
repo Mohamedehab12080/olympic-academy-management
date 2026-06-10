@@ -1,6 +1,7 @@
-import { LookupVTO, LightUserVTO, Gender, SalaryType, ContactType } from './common.model';
+import { LookupVTO, LightUserVTO, Gender, ContactType, SalaryType } from './common.model';
 
-// أنواع الموظفين من Java Enum
+// ==================== Enums (specific to Employee module) ====================
+
 export interface EmployeeType {
   id: number;
   title: string; // "مدرب" أو "مدير"
@@ -11,7 +12,6 @@ export const EMPLOYEE_TYPES: EmployeeType[] = [
   { id: 2, title: 'مدير' }
 ];
 
-// حالة حضور الموظف من Java Enum
 export interface EmployeeAttendanceStatus {
   id: number;
   title: string; // "حاضر", "غائب", "متأخر", "معتذر"
@@ -24,7 +24,6 @@ export const ATTENDANCE_STATUSES: EmployeeAttendanceStatus[] = [
   { id: 4, title: 'معتذر' }
 ];
 
-// حالة الجلسة من Java Enum
 export interface SessionStatus {
   id: number;
   title: string; // "مجدول", "في تقدم", "مكتمل", "ملغي"
@@ -37,8 +36,10 @@ export const SESSION_STATUSES: SessionStatus[] = [
   { id: 4, title: 'ملغي' }
 ];
 
+// ==================== DTOs (sent to backend - use enum objects with id and title) ====================
+
 export interface EmployeeContactDTO {
-  contactType: ContactType;
+  contactType: ContactType;  // From common.model
   contactValue: string;
 }
 
@@ -46,30 +47,15 @@ export interface EmployeeDTO {
   fullName: string;
   nationalId: string;
   birthDate?: string;
-  gender?: Gender;
+  gender?: Gender;  // From common.model
   salary?: number;
   remainedSalary?: number;
-  salaryType?: SalaryType;
+  salaryType?: SalaryType;  // From common.model
   employeeType: EmployeeType;
   imageUrl?: string;
   hireDate?: string;
   departmentIds: number[];
   contacts: EmployeeContactDTO[];
-}
-
-export interface EmployeeAttendanceVTO {
-  id: number;
-  employee: LookupVTO;
-  attendanceDate: string;
-  status: EmployeeAttendanceStatus;
-  checkInTime: string;
-  checkOutTime?: string;
-  lateTime?: number;
-  note?: string;
-  createdOn: string;
-  createdBy: LightUserVTO;
-  lastModifiedOn?: string;
-  lastModifiedBy?: LightUserVTO;
 }
 
 export interface EmployeeAttendanceDTO {
@@ -89,20 +75,23 @@ export interface CourseSessionDTO {
   sessionDate: string;
   startTime: string;
   endTime: string;
-  status?: SessionStatus;
+  status?: SessionStatus;  // { id: number; title: string }
   note?: string;
 }
+
+
+// ==================== VTOs (received from backend - use LookupVTO for enums) ====================
 
 export interface EmployeeVTO {
   id: number;
   fullName: string;
   nationalId: string;
   birthDate?: string;
-  gender?: Gender;
+  gender?: LookupVTO;  // From common.model
   salary?: number;
   remainedSalary?: number;
-  salaryType?: SalaryType;
-  employeeType: EmployeeType;
+  salaryType?: LookupVTO;  // From common.model
+  employeeType: LookupVTO;
   imageUrl?: string;
   hireDate?: string;
   isActive: boolean;
@@ -118,8 +107,23 @@ export interface EmployeeVTO {
 
 export interface EmployeeContactVTO {
   id: number;
-  contactType: ContactType;
+  contactType: LookupVTO;  // From common.model
   contactValue: string;
+}
+
+export interface EmployeeAttendanceVTO {
+  id: number;
+  employee: LookupVTO;
+  attendanceDate: string;
+  status: LookupVTO;
+  checkInTime: string;
+  checkOutTime?: string;
+  lateTime?: number;
+  note?: string;
+  createdOn: string;
+  createdBy: LightUserVTO;
+  lastModifiedOn?: string;
+  lastModifiedBy?: LightUserVTO;
 }
 
 export interface CourseSessionVTO {
@@ -131,7 +135,7 @@ export interface CourseSessionVTO {
   sessionDate: string;
   startTime: string;
   endTime: string;
-  status: SessionStatus;
+  status: LookupVTO;  // SessionStatus as LookupVTO
   note?: string;
   createdOn: string;
   createdBy: LightUserVTO;
@@ -146,9 +150,15 @@ export interface TrainerCourseVTO {
   createdBy: LightUserVTO;
 }
 
-export interface AssignCourseDTO {
-  courseId: number;
+export interface TrainerCourseAssignmentVTO {
+  id: number;
+  trainer: LookupVTO;
+  course: LookupVTO;
+  createdOn: string;
+  createdBy: LightUserVTO;
 }
+
+// ==================== Result Sets ====================
 
 export interface EmployeeResultSet {
   total: number;
@@ -159,8 +169,8 @@ export interface EmployeeListItem {
   id: number;
   fullName: string;
   nationalId: string;
-  gender: Gender;
-  employeeType: EmployeeType;
+  gender: LookupVTO;
+  employeeType: LookupVTO;
   hireDate: string;
   isActive: boolean;
   departments: LookupVTO[];
@@ -175,21 +185,10 @@ export interface EmployeeAttendanceListItem {
   id: number;
   employee: LightUserVTO;
   attendanceDate: string;
-  status: EmployeeAttendanceStatus;
+  status: LookupVTO;
   checkInTime: string;
   checkOutTime?: string;
   lateTime?: number;
-}
-
-export interface DailyAttendanceReport {
-  attendanceDate: string;
-  totalEmployees: number;
-  present: number;
-  absent: number;
-  late: number;
-  excused: number;
-  attendanceRate: number;
-  details: EmployeeAttendanceListItem[];
 }
 
 export interface TrainerCourseResultSet {
@@ -202,15 +201,26 @@ export interface TrainerCourseAssignmentResultSet {
   items: TrainerCourseAssignmentVTO[];
 }
 
-export interface TrainerCourseAssignmentVTO {
-  id: number;
-  trainer: LookupVTO;
-  course: LookupVTO;
-  createdOn: string;
-  createdBy: LightUserVTO;
-}
-
 export interface CourseSessionResultSet {
   total: number;
   items: CourseSessionVTO[];
+}
+
+// ==================== Reports ====================
+
+export interface DailyAttendanceReport {
+  attendanceDate: string;
+  totalEmployees: number;
+  present: number;
+  absent: number;
+  late: number;
+  excused: number;
+  attendanceRate: number;
+  details: EmployeeAttendanceListItem[];
+}
+
+// ==================== DTO for Assigning Course to Trainer ====================
+
+export interface AssignCourseDTO {
+  courseId: number;
 }

@@ -1,0 +1,368 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">receipt</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل دفعة تسجيل' : 'دفعة جديدة - تسجيل' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="paymentForm">
+      
+      <!-- Step 0: Select Enrollment -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>school</mat-icon>
+          <h3>اختر التسجيل</h3>
+        </div>
+        
+        <div class="step-description">
+          يرجى اختيار التسجيل الذي تريد إضافة دفعة له
+        </div>
+
+        <div class="form-section">
+          <app-searchable-select
+            formControlName="enrollmentId"
+            label="التسجيل"
+            [options]="enrollmentOptions"
+            [required]="true"
+            class="full-width"
+            (ngModelChange)="onEnrollmentSelect()">
+          </app-searchable-select>
+
+          <!-- Enrollment Details Preview -->
+          <div class="enrollment-preview" *ngIf="selectedEnrollment">
+            <div class="preview-header">
+              <mat-icon>info</mat-icon>
+              <span>تفاصيل التسجيل</span>
+            </div>
+            <div class="preview-content">
+              <div class="preview-row">
+                <span class="label">المتدرب:</span>
+                <span class="value">{{ selectedEnrollment.trainee?.title }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">الدورة:</span>
+                <span class="value">{{ selectedEnrollment.course?.title }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">تاريخ البداية:</span>
+                <span class="value">{{ selectedEnrollment.startDate | date }}</span>
+              </div>
+              <div class="preview-row highlight">
+                <span class="label">قيمة التسجيل:</span>
+                <span class="value">{{ selectedEnrollment.finalSubscriptionValue }} جم</span>
+              </div>
+              <div class="preview-row warning" *ngIf="selectedEnrollment.remainedSubscriptionValue > 0">
+                <span class="label">المتبقي قبل الدفعة:</span>
+                <span class="value">{{ selectedEnrollment.remainedSubscriptionValue }} جم</span>
+              </div>
+              <div class="preview-row success" *ngIf="selectedEnrollment.remainedSubscriptionValue === 0">
+                <span class="label">حالة الدفع:</span>
+                <span class="value">مدفوع بالكامل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Payment Details -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>payments</mat-icon>
+          <h3>تفاصيل الدفعة</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل المبلغ المدفوع وتاريخ الدفع
+        </div>
+
+        <div class="form-section">
+          <!-- Current Payment Status Info -->
+          <div class="payment-status-info" *ngIf="getCurrentRemaining() > 0">
+            <div class="info-card">
+              <mat-icon>info</mat-icon>
+              <span>المبلغ المتبقي الحالي: <strong>{{ getCurrentRemaining() }} جم</strong></span>
+            </div>
+          </div>
+
+          <div class="payment-status-info" *ngIf="getCurrentRemaining() === 0 && selectedEnrollment">
+            <div class="info-card success-card">
+              <mat-icon>check_circle</mat-icon>
+              <span>هذا التسجيل مدفوع بالكامل بالفعل</span>
+            </div>
+          </div>
+
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المبلغ المدفوع</mat-label>
+              <input matInput type="number" formControlName="paidAmount" placeholder="0" [max]="getCurrentRemaining()">
+              <span matTextSuffix>جم</span>
+              <mat-error *ngIf="paymentForm.get('paidAmount')?.hasError('required')">
+                المبلغ المدفوع مطلوب
+              </mat-error>
+              <mat-error *ngIf="paymentForm.get('paidAmount')?.hasError('min')">
+                يجب أن يكون المبلغ أكبر من 0
+              </mat-error>
+              <mat-error *ngIf="paymentForm.get('paidAmount')?.hasError('exceedsRemaining')">
+                المبلغ المدفوع لا يمكن أن يتجاوز {{ getCurrentRemaining() }} جم
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>تاريخ الدفع</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="paymentDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="paymentForm.get('paymentDate')?.hasError('required')">
+                تاريخ الدفع مطلوب
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>قيمة التسجيل الإجمالية</mat-label>
+              <input matInput type="number" formControlName="enrollmentValue" readonly>
+              <span matTextSuffix>جم</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>إجمالي المدفوع سابقاً</mat-label>
+              <input matInput type="number" formControlName="totalPaidAmount" readonly>
+              <span matTextSuffix>جم</span>
+            </mat-form-field>
+          </div>
+
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المتبقي قبل الدفعة</mat-label>
+              <input matInput type="number" formControlName="currentRemaining" readonly>
+              <span matTextSuffix>جم</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المتبقي بعد الدفعة</mat-label>
+              <input matInput type="number" formControlName="newRemainingValue" readonly>
+              <span matTextSuffix>جم</span>
+            </mat-form-field>
+          </div>
+
+          <!-- Payment Summary Card -->
+          <div class="payment-summary">
+            <div class="summary-header">
+              <mat-icon>receipt_long</mat-icon>
+              <span>ملخص الدفعة</span>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row">
+                <span>قيمة التسجيل الإجمالية:</span>
+                <strong>{{ paymentForm.get('enrollmentValue')?.value || 0 }} جم</strong>
+              </div>
+              <div class="summary-row">
+                <span>إجمالي المدفوع سابقاً:</span>
+                <strong>{{ paymentForm.get('totalPaidAmount')?.value || 0 }} جم</strong>
+              </div>
+              <div class="summary-row">
+                <span>المتبقي قبل الدفعة:</span>
+                <strong>{{ getCurrentRemaining() }} جم</strong>
+              </div>
+              <div class="summary-row highlight">
+                <span>المبلغ المدفوع الآن:</span>
+                <strong class="paid-amount">{{ getTotalAmount() }} جم</strong>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-row total">
+                <span>المتبقي بعد الدفعة:</span>
+                <strong [class.zero]="getNewRemaining() === 0">{{ getNewRemaining() }} جم</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment Information -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-title">
+          <mat-icon>credit_card</mat-icon>
+          <h3>معلومات الدفع</h3>
+        </div>
+        
+        <div class="step-description">
+          اختر طريقة الدفع وحالة الدفعة
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <app-searchable-select
+              formControlName="paymentMethodId"
+              label="طريقة الدفع"
+              [options]="paymentMethodOptions"
+              [required]="true"
+              class="full-width">
+            </app-searchable-select>
+
+            <app-searchable-select
+              formControlName="paymentStatusObj"
+              label="حالة الدفع"
+              [options]="paymentStatusOptions"
+              [required]="true"
+              class="full-width">
+            </app-searchable-select>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>ملاحظات</mat-label>
+            <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+            <mat-icon matSuffix>note</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد الدفعة</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <!-- Enrollment Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>school</mat-icon>
+              <span>معلومات التسجيل</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">المتدرب:</span>
+                <span class="info-value">{{ selectedEnrollment?.trainee?.title }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">الدورة:</span>
+                <span class="info-value">{{ selectedEnrollment?.course?.title }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ البداية:</span>
+                <span class="info-value">{{ selectedEnrollment?.startDate | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">قيمة التسجيل:</span>
+                <span class="info-value">{{ paymentForm.get('enrollmentValue')?.value }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">إجمالي المدفوع سابقاً:</span>
+                <span class="info-value">{{ paymentForm.get('totalPaidAmount')?.value || 0 }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المتبقي قبل الدفعة:</span>
+                <span class="info-value">{{ getCurrentRemaining() }} جم</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Payment Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>payments</mat-icon>
+              <span>معلومات الدفعة</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">المبلغ المدفوع:</span>
+                <span class="info-value highlight">{{ getTotalAmount() }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المبلغ المتبقي بعد الدفعة:</span>
+                <span class="info-value" [class.success]="getNewRemaining() === 0">{{ getNewRemaining() }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ الدفع:</span>
+                <span class="info-value">{{ paymentForm.get('paymentDate')?.value | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">طريقة الدفع:</span>
+                <span class="info-value">{{ getPaymentMethodLabel() }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">حالة الدفع:</span>
+                <span class="info-value">
+                  <span class="status-badge" 
+                        [class.paid]="getNewRemaining() === 0 && getTotalAmount() > 0" 
+                        [class.partial]="getNewRemaining() > 0 && getTotalAmount() > 0"
+                        [class.pending]="getTotalAmount() === 0">
+                    {{ getPaymentStatusLabel() }}
+                  </span>
+                </span>
+              </div>
+              <div class="info-item full-width" *ngIf="paymentForm.get('note')?.value">
+                <span class="info-label">الملاحظات:</span>
+                <span class="info-value">{{ paymentForm.get('note')?.value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" [disabled]="isSubmitting">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" [disabled]="isSubmitting">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -34,7 +34,7 @@ public class CourseSession {
     private Course course;
 
     @ManyToOne
-    @JoinColumn(name = "trainer_id")
+    @JoinColumn(name = "employee_id")
     private Employee trainer;
 
     @ManyToOne

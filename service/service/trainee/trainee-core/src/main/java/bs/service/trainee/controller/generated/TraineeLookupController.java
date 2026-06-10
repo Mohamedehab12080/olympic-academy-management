@@ -26,6 +26,22 @@ import org.springframework.web.bind.annotation.*;
 public interface TraineeLookupController {
 
     /**
+     * GET /lookup/trainees : Get all trainees lookup
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllTraineesLookup", summary = "Get all trainees lookup", tags = {
+            "TraineeLookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/lookup/trainees", produces = { "application/json" })
+
+    ResponseEntity<LookupResultSet> _getAllTraineesLookup(
+
+    );
+
+    /**
      * GET /lookup/trainee/attendance/status : Get all trainee attendance statuses for lookup
      *
      * @return OK (status code 200) or Bad Request (status code 400)

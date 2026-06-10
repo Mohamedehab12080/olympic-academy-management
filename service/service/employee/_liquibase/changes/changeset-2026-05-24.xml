@@ -17,7 +17,7 @@
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="birth_date" type="date"/>
-            <column name="gender" type="varchar(100)"/>
+            <column name="gender" type="int"/>
             <column name="salary" type="Integer"/>
             <column name="remained_salary" type="Integer"/>
             <column name="salary_type" type="int"/>

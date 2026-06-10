@@ -17,7 +17,7 @@
                 <constraints nullable="false"/>
             </column>
 <!--            'present', 'absent', 'late', 'excused'-->
-            <column name="status" type="varchar(50)">
+            <column name="status" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="check_in_time" type="time"/>
@@ -75,7 +75,7 @@
                 <column name="session_date" type="date"/>
                 <column name="start_time" type="time"/>
                 <column name="end_time" type="time"/>
-                <column name="status" type="varchar(100)"/>
+                <column name="status" type="int"/>
                 <column name="note" type="text"/>
                 <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
                 <column name="last_modified_on" type="timestamp"/>

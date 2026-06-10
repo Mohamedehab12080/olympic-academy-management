@@ -77,6 +77,11 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.enrollment</groupId>
+            <artifactId>enrollment-proxy</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.financial</groupId>
             <artifactId>financial-core</artifactId>
         </dependency>

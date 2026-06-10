@@ -1,28 +1,23 @@
 import { LookupVTO, LightUserVTO, PaymentStatus } from './common.model';
 
-// حالة التسجيل من Java Enum
+// ==================== Enums (specific to Enrollment module) ====================
+
 export interface EnrollmentStatus {
   id: number;
-  title: string; // "قيد الانتظار", "مكتمل", "تم الالغاء"
+  title: string; // "قيد الانتظار", "مكتمل", "تم الإلغاء"
 }
 
 export const ENROLLMENT_STATUSES: EnrollmentStatus[] = [
   { id: 1, title: 'قيد الانتظار' },
   { id: 2, title: 'مكتمل' },
-  { id: 3, title: 'تم الالغاء' }
+  { id: 3, title: 'تم الإلغاء' }
 ];
+
+// ==================== DTOs (sent to backend - use enum objects with id and title) ====================
 
 export interface EnrollmentTypeDTO {
   title: string;
   description?: string;
-}
-
-export interface EnrollmentTypeVTO {
-  id: number;
-  title: string;
-  description?: string;
-  createdOn: string;
-  createdBy: LightUserVTO;
 }
 
 export interface EnrollmentDTO {
@@ -32,14 +27,24 @@ export interface EnrollmentDTO {
   enrollmentTypeId?: number;
   startDate: string;
   endDate?: string;
-  enrollmentStatus?: EnrollmentStatus;
-  paymentStatus?: PaymentStatus;
+  enrollmentStatus?: EnrollmentStatus;  // { id: number; title: string }
+  paymentStatus?: PaymentStatus;        // From common.model
   subscriptionValue?: number;
   discountAmount?: number;
   discountPercentage?: number;
   finalSubscriptionValue?: number;
   remainedSubscriptionValue?: number;
   note?: string;
+}
+
+// ==================== VTOs (received from backend - use LookupVTO for enums) ====================
+
+export interface EnrollmentTypeVTO {
+  id: number;
+  title: string;
+  description?: string;
+  createdOn: string;
+  createdBy: LightUserVTO;
 }
 
 export interface EnrollmentVTO {
@@ -50,8 +55,8 @@ export interface EnrollmentVTO {
   enrollmentType?: LookupVTO;
   startDate: string;
   endDate?: string;
-  enrollmentStatus: EnrollmentStatus;
-  paymentStatus: PaymentStatus;
+  enrollmentStatus: LookupVTO;   // { id: number; title: string; imageUrl: string | null }
+  paymentStatus: LookupVTO;      // { id: number; title: string; imageUrl: string | null }
   subscriptionValue?: number;
   discountAmount?: number;
   discountPercentage?: number;
@@ -65,6 +70,8 @@ export interface EnrollmentVTO {
   lastModifiedBy?: LightUserVTO;
 }
 
+// ==================== Result Sets ====================
+
 export interface EnrollmentResultSet {
   total: number;
   items: EnrollmentListItem[];
@@ -77,9 +84,10 @@ export interface EnrollmentListItem {
   trainer: LookupVTO;
   startDate: string;
   endDate?: string;
-  enrollmentStatus: EnrollmentStatus;
-  paymentStatus: PaymentStatus;
+  enrollmentStatus: LookupVTO;   // { id: number; title: string; imageUrl: string | null }
+  paymentStatus: LookupVTO;      // { id: number; title: string; imageUrl: string | null }
   finalSubscriptionValue?: number;
+  remainedSubscriptionValue?:number;
   isActive: boolean;
 }
 

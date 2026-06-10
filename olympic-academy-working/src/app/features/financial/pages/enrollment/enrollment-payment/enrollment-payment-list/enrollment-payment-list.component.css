@@ -12,6 +12,8 @@
 .page-header h1 {
   margin: 0;
   font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .filters {
@@ -53,4 +55,203 @@
   width: 48px;
   height: 48px;
   margin-bottom: 16px;
+}
+
+/* Totals Section Styles */
+.totals-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.totals-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.totals-header mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.total-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.total-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.total-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.total-icon mat-icon {
+  color: white;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.total-info {
+  flex: 1;
+}
+
+.total-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.total-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+/* Color variations for different cards */
+.total-payments .total-icon {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+}
+
+.total-amount .total-icon {
+  background: linear-gradient(135deg, #10b981, #047857);
+}
+
+.total-remaining .total-icon {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.total-average .total-icon {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Table Styles */
+.mat-mdc-table {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mat-mdc-header-row {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.mat-mdc-header-cell {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+  border-bottom-color: #e2e8f0;
+}
+
+.data-row:hover {
+  background-color: #f8fafc;
+  transition: background-color 0.2s ease;
+}
+
+.mat-mdc-cell {
+  color: #334155;
+  border-bottom-color: #f1f5f9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .payments-container {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .page-header h1 {
+    text-align: center;
+  }
+  
+  .totals-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .total-card {
+    padding: 12px;
+  }
+  
+  .total-value {
+    font-size: 20px;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .filter-field {
+    width: 100%;
+  }
+}
+
+/* Print styles */
+@media print {
+  .payments-container {
+    padding: 0;
+  }
+  
+  .page-header button,
+  .filters button,
+  .mat-paginator,
+  .total-card:hover {
+    display: none;
+  }
+  
+  .totals-section {
+    background: #f3f4f6;
+    break-inside: avoid;
+  }
+  
+  .totals-header {
+    color: #1f2937;
+    border-bottom-color: #d1d5db;
+  }
+  
+  .total-card {
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .mat-mdc-table {
+    box-shadow: none;
+  }
 }

@@ -77,6 +77,8 @@ public interface EnrollmentPaymentController {
      *
      * @param enrollmentId
      *            (optional)
+     * @param courseId
+     *            (optional)
      * @param paymentMethodId
      *            (optional)
      * @param status
@@ -105,6 +107,7 @@ public interface EnrollmentPaymentController {
 
     ResponseEntity<EnrollmentPaymentResultSet> _getAllEnrollmentPaymentsByFilter(
             @Parameter(name = "enrollmentId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enrollmentId", required = false) Integer enrollmentId,
+            @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
             @Parameter(name = "paymentMethodId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentMethodId", required = false) Integer paymentMethodId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid PaymentStatus status,
             @Parameter(name = "paymentDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate paymentDateFrom,

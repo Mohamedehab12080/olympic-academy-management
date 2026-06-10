@@ -1,21 +1,26 @@
+import { LookupVTO } from '../../core/models/common.model';
+import {CourseSessionVTO} from '../../core/models/employee.model';
+
+// ==================== Enum for DTOs (sent to backend) - Trainee specific ====================
+
 export interface TraineeAttendanceStatus {
   id: number;
-  code: string;
-  arabicLabel: string;
   title: string;
 }
 
 export const TRAINEE_ATTENDANCE_STATUSES: TraineeAttendanceStatus[] = [
-  { id: 1, code: 'PRESENT', arabicLabel: 'حاضر', title: 'حاضر' },
-  { id: 2, code: 'ABSENT', arabicLabel: 'غائب', title: 'غائب' },
-  { id: 3, code: 'LATE', arabicLabel: 'متأخر', title: 'متأخر' },
-  { id: 4, code: 'EXCUSED', arabicLabel: 'معذور', title: 'معذور' }
+  { id: 1, title: 'حاضر' },
+  { id: 2, title: 'غائب' },
+  { id: 3, title: 'متأخر' },
+  { id: 4, title: 'معذور' }
 ];
+
+// ==================== DTOs (sent to backend - uses enum object with id and title) ====================
 
 export interface TraineeAttendanceDTO {
   courseSessionId: number;
   traineeId: number;
-  status: TraineeAttendanceStatus;
+  status: TraineeAttendanceStatus;  // { id: number; title: string }
   attendanceDate?: string;
   checkInTime?: string;
   checkOutTime?: string;
@@ -23,12 +28,14 @@ export interface TraineeAttendanceDTO {
   note?: string;
 }
 
+// ==================== VTOs (received from backend - uses LookupVTO) ====================
+
 export interface TraineeAttendanceVTO {
   id: number;
-  trainee: { id: number; title: string };
-  session: { id: number; title: string };
-  course: { id: number; title: string };
-  status: TraineeAttendanceStatus;
+  trainee: LookupVTO;      // { id: number; title: string; imageUrl: string | null }
+  session: CourseSessionVTO;      // { id: number; title: string; imageUrl: string | null }
+  course: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
+  status: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
   attendanceDate: string;
   checkInTime?: string;
   checkOutTime?: string;
@@ -36,6 +43,8 @@ export interface TraineeAttendanceVTO {
   note?: string;
   createdOn: string;
   createdBy: { id: number; fullName: string };
+  lastModifiedOn?: string;
+  lastModifiedBy?: { id: number; fullName: string };
 }
 
 export interface TraineeAttendanceListItem {
@@ -44,16 +53,20 @@ export interface TraineeAttendanceListItem {
   sessionTitle: string;
   courseTitle: string;
   sessionDate: string;
-  status: TraineeAttendanceStatus;
+  status: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
   checkInTime?: string;
   checkOutTime?: string;
   lateTime?: number;
 }
 
+// ==================== Result Sets ====================
+
 export interface TraineeAttendanceResultSet {
   total: number;
   items: TraineeAttendanceListItem[];
 }
+
+// ==================== Reports ====================
 
 export interface DailyAttendanceReport {
   attendanceDate: string;

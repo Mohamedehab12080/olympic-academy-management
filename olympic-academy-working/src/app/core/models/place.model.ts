@@ -21,11 +21,6 @@ export interface PlaceVTO {
   lastModifiedBy?: LightUserVTO;
 }
 
-export interface PlaceResultSet {
-  total: number;
-  items: PlaceListItem[];
-}
-
 export interface PlaceListItem {
   id: number;
   title: string;
@@ -33,4 +28,9 @@ export interface PlaceListItem {
   remainedValue?: number;
   address?: string;
   phoneNumber?: string;
+}
+
+export interface PlaceResultSet {
+  total: number;
+  items: PlaceListItem[];
 }

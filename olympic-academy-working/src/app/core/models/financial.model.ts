@@ -1,22 +1,24 @@
 import { LookupVTO, LightUserVTO, PaymentStatus, SalaryType } from './common.model';
+import { EmployeeVTO } from './employee.model';
+import { EnrollmentVTO } from './enrollment.model';
 
-// حالة استرداد المبلغ من Java Enum
+// ==================== Enums (specific to Financial module) ====================
+
 export interface RefundStatus {
   id: number;
-  title: string; // "قيد الانتظار", "موافق", "مرفوض", "مكتمل"
+  title: string;
 }
 
 export const REFUND_STATUSES: RefundStatus[] = [
   { id: 1, title: 'قيد الانتظار' },
-  { id: 2, title: 'موافق' },
+  { id: 2, title: 'موافق عليه' },
   { id: 3, title: 'مرفوض' },
   { id: 4, title: 'مكتمل' }
 ];
 
-// نوع معاملة الراتب من Java Enum
 export interface SalaryTransactionType {
   id: number;
-  title: string; // "راتب", "حافز", "مكافأة", "سلفة"
+  title: string;
 }
 
 export const SALARY_TRANSACTION_TYPES: SalaryTransactionType[] = [
@@ -26,10 +28,9 @@ export const SALARY_TRANSACTION_TYPES: SalaryTransactionType[] = [
   { id: 4, title: 'سلفة' }
 ];
 
-// نوع الخصم من Java Enum
 export interface DeductionType {
   id: number;
-  title: string; // "غياب", "تأخير"
+  title: string;
 }
 
 export const DEDUCTION_TYPES: DeductionType[] = [
@@ -37,12 +38,9 @@ export const DEDUCTION_TYPES: DeductionType[] = [
   { id: 2, title: 'تأخير' }
 ];
 
-export interface PaymentMethodDTO {
-  title: string;
-}
+// ==================== DTOs (sent to backend - use enum objects with id and title) ====================
 
-export interface PaymentMethodVTO {
-  id: number;
+export interface PaymentMethodDTO {
   title: string;
 }
 
@@ -51,27 +49,10 @@ export interface RentTypeDTO {
   description?: string;
 }
 
-export interface RentTypeVTO {
-  id: number;
-  title: string;
-  description?: string;
-  createdOn: string;
-  createdBy: LightUserVTO;
-}
-
 export interface ExpenseTypeDTO {
   title: string;
   description?: string;
   isActive?: boolean;
-}
-
-export interface ExpenseTypeVTO {
-  id: number;
-  title: string;
-  description?: string;
-  isActive: boolean;
-  createdOn: string;
-  createdBy: LightUserVTO;
 }
 
 export interface PlaceRentPaymentDTO {
@@ -82,6 +63,82 @@ export interface PlaceRentPaymentDTO {
   rentTypeId?: number;
   paymentDate: string;
   paymentMethodId?: number;
+}
+
+export interface ExpenseDTO {
+  expenseDate: string;
+  amountExpensed: number;
+  paymentMethodId?: number;
+  expenseTypeId: number;
+  imagesUrls?: string[];
+  note?: string;
+}
+
+export interface EnrollmentPaymentDTO {
+  enrollmentId: number;
+  paymentDate: string;
+  enrollmentValue?: number;
+  paidAmount: number;
+  remainedValue?: number;
+  paymentMethodId?: number;
+  imageUrl?: string;
+  note?: string;
+  paymentStatus?: PaymentStatus;  // From common.model
+}
+
+export interface EnrollmentRefundDTO {
+  enrollmentId: number;
+  refundDate: string;
+  amountRefunded: number;
+  paymentMethodId?: number;
+  imageUrl?: string;
+  note?: string;
+  status?: RefundStatus;  // { id: number; title: string }
+}
+
+export interface SalaryIncentiveDTO {
+  employeeId: number;
+  withdrawDate: string;
+  amountWithdrawn: number;
+  paymentMethodId?: number;
+  imageUrl?: string;
+  salaryType?: SalaryType;  // From common.model
+  salaryTransactionType?: SalaryTransactionType;  // { id: number; title: string }
+  note?: string;
+}
+
+export interface SalaryDeductionDTO {
+  employeeId: number;
+  deductionDate: string;
+  amountDeducted: number;
+  imageUrl?: string;
+  reason?: string;
+  salaryType?: SalaryType;  // From common.model
+  note?: string;
+}
+
+// ==================== VTOs (received from backend - use LookupVTO for enums) ====================
+
+export interface PaymentMethodVTO {
+  id: number;
+  title: string;
+}
+
+export interface RentTypeVTO {
+  id: number;
+  title: string;
+  description?: string;
+  createdOn: string;
+  createdBy: LightUserVTO;
+}
+
+export interface ExpenseTypeVTO {
+  id: number;
+  title: string;
+  description?: string;
+  isActive: boolean;
+  createdOn: string;
+  createdBy: LightUserVTO;
 }
 
 export interface PlaceRentPaymentVTO {
@@ -99,15 +156,6 @@ export interface PlaceRentPaymentVTO {
   lastModifiedBy?: LightUserVTO;
 }
 
-export interface ExpenseDTO {
-  expenseDate: string;
-  amountExpensed: number;
-  paymentMethodId?: number;
-  expenseTypeId: number;
-  imagesUrls?: string[];
-  note?: string;
-}
-
 export interface ExpenseVTO {
   id: number;
   expenseDate: string;
@@ -122,21 +170,9 @@ export interface ExpenseVTO {
   lastModifiedBy?: LightUserVTO;
 }
 
-export interface EnrollmentPaymentDTO {
-  enrollmentId: number;
-  paymentDate: string;
-  enrollmentValue?: number;
-  paidAmount: number;
-  remainedValue?: number;
-  paymentMethodId?: number;
-  imageUrl?: string;
-  note?: string;
-  paymentStatus?: PaymentStatus;
-}
-
 export interface EnrollmentPaymentVTO {
   id: number;
-  enrollment: LookupVTO;
+  enrollment: EnrollmentVTO;
   paymentDate: string;
   enrollmentValue: number;
   paidAmount: number;
@@ -144,72 +180,42 @@ export interface EnrollmentPaymentVTO {
   paymentMethod: LookupVTO;
   imageUrl?: string;
   note?: string;
-  paymentStatus: PaymentStatus;
+  paymentStatus: LookupVTO;  // From common.model
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
-}
-
-export interface EnrollmentRefundDTO {
-  enrollmentId: number;
-  refundDate: string;
-  amountRefunded: number;
-  paymentMethodId?: number;
-  imageUrl?: string;
-  note?: string;
-  status?: RefundStatus;
 }
 
 export interface EnrollmentRefundVTO {
   id: number;
-  enrollment: LookupVTO;
+  enrollment: EnrollmentVTO;
   refundDate: string;
   amountRefunded: number;
   paymentMethod: LookupVTO;
   imageUrl?: string;
   note?: string;
-  status: RefundStatus;
+  refundStatus: LookupVTO;  // Changed from 'status' to 'refundStatus' to match Swagger
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
-}
-
-export interface SalaryIncentiveDTO {
-  employeeId: number;
-  withdrawDate: string;
-  amountWithdrawn: number;
-  paymentMethodId?: number;
-  imageUrl?: string;
-  salaryType?: SalaryType;
-  salaryTransactionType?: SalaryTransactionType;
-  note?: string;
 }
 
 export interface SalaryIncentiveVTO {
   id: number;
-  employee: LookupVTO;
+  employee: EmployeeVTO;
   withdrawDate: string;
   amountWithdrawn: number;
   paymentMethod: LookupVTO;
   imageUrl?: string;
-  type: SalaryTransactionType;
+  salaryType: LookupVTO;  // From common.model
+  salaryTransactionType: LookupVTO;  // { id: number; title: string; imageUrl: string | null }
   note?: string;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
-}
-
-export interface SalaryDeductionDTO {
-  employeeId: number;
-  deductionDate: string;
-  amountDeducted: number;
-  imageUrl?: string;
-  reason?: string;
-  salaryType?: SalaryType;
-  note?: string;
 }
 
 export interface SalaryDeductionVTO {
@@ -219,13 +225,15 @@ export interface SalaryDeductionVTO {
   amountDeducted: number;
   imageUrl?: string;
   reason?: string;
-  salaryType: SalaryType;
+  salaryType: LookupVTO;  // From common.model
   note?: string;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
 }
+
+// ==================== Result Sets ====================
 
 export interface PaymentMethodResultSet {
   total: number;

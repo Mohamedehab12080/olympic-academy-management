@@ -39,23 +39,23 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
         // Validate enrollment exists
         Enrollment enrollment = enrollmentRepository.selectById(enrollmentPaymentDTO.getEnrollmentId())
                 .orElseThrow(() -> new BusinessException(ENROLLMENT_NOT_FOUND_FOR_PAYMENT, enrollmentPaymentDTO.getEnrollmentId()));
-
         // Validate payment amount doesn't exceed remaining amount
-        Integer remainedAmount = enrollment.getFinalSubscriptionValue() - enrollmentPaymentDTO.getPaidAmount();
+        Integer remainedAmount = enrollment.getRemainedSubscriptionValue();
+        System.out.println("remained : "+remainedAmount);
         if (enrollmentPaymentDTO.getPaidAmount() > remainedAmount) {
             throw new BusinessException(PAYMENT_AMOUNT_EXCEEDS_REMAINING);
         }
-
+        enrollment.setRemainedSubscriptionValue(remainedAmount-enrollmentPaymentDTO.getPaidAmount());
         EnrollmentPayment payment = financialMapper.toEnrollmentPayment(enrollmentPaymentDTO);
         payment.setEnrollment(enrollment);
-
+        payment.setRemainedValue(enrollment.getRemainedSubscriptionValue());
+        payment.setEnrollmentValue(enrollment.getFinalSubscriptionValue());
         // Update enrollment payment status and amounts
-        enrollment.setRemainedSubscriptionValue(remainedAmount);
 
         if (enrollment.getRemainedSubscriptionValue() <= 0) {
             enrollment.setPaymentStatus(PaymentStatus.PAID.id);
             payment.setPaymentStatus(PaymentStatus.PAID.id);
-        } else if (enrollmentPaymentDTO.getPaidAmount() > 0) {
+        } else {
             enrollment.setPaymentStatus(PaymentStatus.PARTIAL.id);
             payment.setPaymentStatus(PaymentStatus.PARTIAL.id);
         }
@@ -94,13 +94,14 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
     }
 
     @Override
-    public EnrollmentPaymentResultSet getAllEnrollmentPaymentsByFilter(Integer enrollmentId, Integer paymentMethodId,
+    public EnrollmentPaymentResultSet getAllEnrollmentPaymentsByFilter(Integer enrollmentId,Integer courseId, Integer paymentMethodId,
                                                                        PaymentStatus status, LocalDate paymentDateFrom,
                                                                        LocalDate paymentDateTo, Integer pageNum,
                                                                        Integer pageSize, OrderDirections orderDir,
                                                                        String orderBy) {
         EnrollmentPaymentSearchFilter filter = EnrollmentPaymentSearchFilter.builder()
                 .enrollmentId(enrollmentId)
+                .courseId(courseId)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)

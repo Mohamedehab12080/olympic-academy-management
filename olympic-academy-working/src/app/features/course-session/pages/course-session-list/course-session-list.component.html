@@ -6,10 +6,12 @@
         <h1>جلسات الدورات</h1>
         <p>إدارة ومتابعة جلسات الدورات التدريبية</p>
       </div>
-      <button mat-raised-button color="primary" routerLink="/sessions/new" class="add-button">
+      <div class="add-button-container">
+      <button mat-raised-button color="primary" (click)="openAddModal()" class="add-btn">
         <mat-icon>add</mat-icon>
-        جلسة جديدة
+        إضافة جلسة جديدة
       </button>
+    </div>
     </div>
 
     <!-- Filters Section -->
@@ -31,9 +33,10 @@
             <app-searchable-select
               [ngModel]="filters.courseId"
               (ngModelChange)="filters.courseId = $event; loadSessions()"
-              placeholder="اختر الدورة"
+              [label]="'اختر الدورة'"
               [options]="courseOptions"
-              [required]="false">
+              [required]="false"
+              [ngModelOptions]="{standalone: true}">
             </app-searchable-select>
           </div>
 
@@ -43,9 +46,10 @@
             <app-searchable-select
               [ngModel]="filters.trainerId"
               (ngModelChange)="filters.trainerId = $event; loadSessions()"
-              placeholder="اختر المدرب"
+              [label]="'اختر المدرب'"
               [options]="trainerOptions"
-              [required]="false">
+              [required]="false"
+              [ngModelOptions]="{standalone: true}">
             </app-searchable-select>
           </div>
 
@@ -55,9 +59,10 @@
             <app-searchable-select
               [ngModel]="filters.placeId"
               (ngModelChange)="filters.placeId = $event; loadSessions()"
-              placeholder="اختر المكان"
+              [label]="'اختر المكان'"
               [options]="placeOptions"
-              [required]="false">
+              [required]="false"
+              [ngModelOptions]="{standalone: true}">
             </app-searchable-select>
           </div>
         </div>
@@ -69,9 +74,10 @@
             <app-searchable-select
               [ngModel]="filters.status"
               (ngModelChange)="filters.status = $event; loadSessions()"
-              placeholder="اختر الحالة"
+              [label]="'اختر الحالة'"
               [options]="statusOptions"
-              [required]="false">
+              [required]="false"
+              [ngModelOptions]="{standalone: true}">
             </app-searchable-select>
           </div>
 
@@ -181,7 +187,7 @@
           <!-- Title Column -->
           <ng-container matColumnDef="title">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>عنوان الجلسة</th>
-            <td mat-cell *matCellDef="let session" class="clickable-cell" (click)="viewSession(session)">
+            <td mat-cell *matCellDef="let session" class="clickable-cell">
               <strong>{{ session.title }}</strong>
             </td>
           </ng-container>
@@ -233,22 +239,22 @@
             <td mat-cell *matCellDef="let session">
               <div class="time-info">
                 <mat-icon>access_time</mat-icon>
-                <span>{{ session.startTime }}</span>
+                <span>{{ formatTime(session.startTime) }}</span>
               </div>
             </td>
           </ng-container>
 
           <!-- End Time Column -->
-          <ng-container matColumnDef="endTime">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الانتهاء</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="time-info">
-                <mat-icon>access_time</mat-icon>
-                <span>{{ session.endTime }}</span>
-              </div>
-            </td>
-          </ng-container>
-
+        <ng-container matColumnDef="endTime">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الانتهاء</th>
+          <td mat-cell *matCellDef="let session">
+            <div class="time-info">
+              <mat-icon>access_time</mat-icon>
+              <span>{{ formatTime(session.endTime) }}</span>
+            </div>
+          </td>
+        </ng-container>
+        
           <!-- Status Column -->
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
@@ -264,13 +270,13 @@
             <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
             <td mat-cell *matCellDef="let session">
               <div class="action-buttons">
-                <button mat-icon-button color="primary" (click)="viewSession(session)" matTooltip="عرض التفاصيل">
+                <button mat-icon-button color="primary" (click)="viewSessionDetails(session); $event.stopPropagation()" matTooltip="عرض التفاصيل">
                   <mat-icon>visibility</mat-icon>
                 </button>
-                <button mat-icon-button color="accent" (click)="editSession(session)" matTooltip="تعديل">
+                <button mat-icon-button color="accent" (click)="editSession(session); $event.stopPropagation()" matTooltip="تعديل">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteSession(session)" matTooltip="حذف">
+                <button mat-icon-button color="warn" (click)="deleteSession(session); $event.stopPropagation()" matTooltip="حذف">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -278,7 +284,7 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewSession(row)"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
           <!-- No Data Row -->
           <tr class="mat-row no-data-row" *matNoDataRow>

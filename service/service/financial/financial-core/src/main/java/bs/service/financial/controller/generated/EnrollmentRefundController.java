@@ -77,6 +77,8 @@ public interface EnrollmentRefundController {
      *
      * @param enrollmentId
      *            (optional)
+     * @param courseId
+     *            (optional)
      * @param paymentMethodId
      *            (optional)
      * @param status
@@ -105,6 +107,7 @@ public interface EnrollmentRefundController {
 
     ResponseEntity<EnrollmentRefundResultSet> _getAllEnrollmentRefundsByFilter(
             @Parameter(name = "enrollmentId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enrollmentId", required = false) Integer enrollmentId,
+            @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
             @Parameter(name = "paymentMethodId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentMethodId", required = false) Integer paymentMethodId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid RefundStatus status,
             @Parameter(name = "refundDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "refundDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate refundDateFrom,

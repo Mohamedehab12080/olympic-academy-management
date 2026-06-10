@@ -86,13 +86,14 @@ public class EnrollmentRefundServiceImpl implements EnrollmentRefundService {
     }
 
     @Override
-    public EnrollmentRefundResultSet getAllEnrollmentRefundsByFilter(Integer enrollmentId, Integer paymentMethodId,
+    public EnrollmentRefundResultSet getAllEnrollmentRefundsByFilter(Integer enrollmentId,Integer courseId, Integer paymentMethodId,
                                                                      RefundStatus status, LocalDate refundDateFrom,
                                                                      LocalDate refundDateTo, Integer pageNum,
                                                                      Integer pageSize, OrderDirections orderDir,
                                                                      String orderBy) {
         EnrollmentRefundSearchFilter filter = EnrollmentRefundSearchFilter.builder()
                 .enrollmentId(enrollmentId)
+                .courseId(courseId)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null ? status.getId():null)
                 .refundDateFrom(refundDateFrom)

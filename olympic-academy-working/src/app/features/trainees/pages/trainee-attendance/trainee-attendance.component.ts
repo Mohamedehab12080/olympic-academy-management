@@ -16,6 +16,7 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatDialogModule, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TraineeAttendanceDetailsModalComponent } from './trainee-attendance-details/trainee-attendance-details-modal.component';
 
 import { TraineeAttendanceService } from '../../../../core/services/trainee-attendance.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -23,9 +24,8 @@ import { EnrollmentService } from '../../../../core/services/enrollment.service'
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { TRAINEE_ATTENDANCE_STATUSES, TraineeAttendanceListItem } from '../../../../core/models/trainee-attendance.model';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { TRAINEE_ATTENDANCE_STATUSES, TraineeAttendanceListItem ,TraineeAttendanceVTO} from '../../../../core/models/trainee-attendance.model';
+import { LookupVTO } from '../../../../core/models/common.model';
 
 @Component({
   selector: 'app-trainee-attendance',
@@ -195,8 +195,12 @@ export class TraineeAttendanceComponent implements OnInit {
     this.traineeAttendanceService.getAllAttendances(params).subscribe({
       next: (res: any) => {
         this.dataSource.data = res.items || [];
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        if (this.dataSource.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
+        if (this.dataSource.sort) {
+          this.dataSource.sort = this.sort;
+        }
         this.calculateSummary();
         this.isLoading = false;
       },
@@ -321,6 +325,21 @@ export class TraineeAttendanceComponent implements OnInit {
     });
   }
 
+  viewAttendance(id: number): void {
+  this.traineeAttendanceService.getAttendanceById(id).subscribe({
+    next: (attendance: TraineeAttendanceVTO) => {
+      this.dialog.open(TraineeAttendanceDetailsModalComponent, {
+        data: attendance,
+        width: '650px',
+        maxWidth: '90vw'
+      });
+    },
+    error: () => {
+      this.notification.showError('حدث خطأ في تحميل بيانات سجل الحضور');
+    }
+  });
+}
+
   deleteAttendance(id: number): void {
     if (confirm('هل أنت متأكد من حذف سجل الحضور؟')) {
       this.traineeAttendanceService.deleteAttendance(id).subscribe({
@@ -363,61 +382,228 @@ export class TraineeAttendanceComponent implements OnInit {
       return;
     }
 
-    const doc = new jsPDF('l', 'mm', 'a4');
-    
-    doc.setFontSize(18);
-    doc.text('تقرير حضور المتدربين', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-    
-    doc.setFontSize(10);
-    let yOffset = 25;
-    
+    this.isLoading = true;
+
+    // Build filter text
+    const filterTexts: string[] = [];
     if (this.selectedCourseId) {
       const course = this.courses.find(c => c.id === this.selectedCourseId);
-      if (course) doc.text(`الدورة: ${course.title}`, 14, yOffset);
-      yOffset += 6;
+      if (course) filterTexts.push(`الدورة: ${course.title}`);
     }
     if (this.selectedSessionId) {
       const session = this.sessions.find(s => s.id === this.selectedSessionId);
-      if (session) doc.text(`الجلسة: ${session.title}`, 14, yOffset);
-      yOffset += 6;
+      if (session) filterTexts.push(`الجلسة: ${session.title}`);
     }
     if (this.selectedStatus) {
       const status = this.attendanceStatuses.find(s => s.id === this.selectedStatus);
-      if (status) doc.text(`حالة الحضور: ${status.title}`, 14, yOffset);
-      yOffset += 6;
+      if (status) filterTexts.push(`حالة الحضور: ${status.title}`);
     }
-    if (this.fromDate) doc.text(`من تاريخ: ${this.fromDate}`, 14, yOffset);
-    if (this.toDate) doc.text(`إلى تاريخ: ${this.toDate}`, 14, yOffset + 6);
-    
-    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
-    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
-    doc.text(`نسبة الحضور: ${this.summaryStats.attendanceRate}%`, 14, yOffset + 12);
+    if (this.fromDate) filterTexts.push(`من تاريخ: ${this.fromDate}`);
+    if (this.toDate) filterTexts.push(`إلى تاريخ: ${this.toDate}`);
 
-    autoTable(doc, {
-      head: [['#', 'المتدرب', 'الدورة', 'الجلسة', 'تاريخ الجلسة', 'الحالة', 'وقت الدخول', 'وقت الخروج', 'وقت التأخير']],
-      body: this.dataSource.data.map((item, index) => [
-        (index + 1).toString(),
-        item.traineeName || '-',
-        item.courseTitle || '-',
-        item.sessionTitle || '-',
-        item.sessionDate || '-',
-        item.status?.title || '-',
-        item.checkInTime || '-',
-        item.checkOutTime || '-',
-        item.lateTime ? `${item.lateTime} دقيقة` : '-'
-      ]),
-      startY: yOffset + 20,
-      styles: { halign: 'right', fontSize: 9, cellPadding: 2 },
-      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' },
-      alternateRowStyles: { fillColor: [243, 244, 246] }
+    // Build table rows
+    let tableRows = '';
+    this.dataSource.data.forEach((item: TraineeAttendanceListItem, index: number) => {
+      const statusClass = this.getStatusClass(item.status?.id);
+      let statusStyle = '';
+      if (statusClass === 'present') statusStyle = 'background-color: #d1fae5; color: #065f46;';
+      else if (statusClass === 'absent') statusStyle = 'background-color: #fee2e2; color: #991b1b;';
+      else if (statusClass === 'late') statusStyle = 'background-color: #fef3c7; color: #92400e;';
+      else if (statusClass === 'excused') statusStyle = 'background-color: #dbeafe; color: #1e40af;';
+      
+      tableRows += `
+        <tr>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${item.traineeName || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.courseTitle || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.sessionTitle || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.sessionDate || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
+            ${item.status?.title || '-'}
+          </td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.checkInTime || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.checkOutTime || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.lateTime ? item.lateTime + ' دقيقة' : '-'}</td>
+        </tr>
+      `;
     });
 
-    doc.save('trainee-attendance-report.pdf');
-    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+    // Create print container
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>تقرير حضور المتدربين</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @media print {
+            body { margin: 0; padding: 20px; }
+            .no-print { display: none; }
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            border-radius: 8px;
+          }
+          .header h1 { margin: 0; font-size: 24px; }
+          .header p { margin: 10px 0 0 0; font-size: 12px; }
+          .filters {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            font-size: 12px;
+          }
+          .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            flex-wrap: wrap;
+          }
+          .stat-item {
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
+          }
+          .stat-label { font-size: 12px; color: #6b7280; }
+          .stat-value { font-size: 20px; font-weight: bold; color: #8b5cf6; }
+          .stat-value.present { color: #10b981; }
+          .stat-value.absent { color: #ef4444; }
+          .stat-value.late { color: #f59e0b; }
+          .stat-value.excused { color: #3b82f6; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+          }
+          th {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-weight: bold;
+          }
+          td { padding: 8px; border: 1px solid #ddd; }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 10px;
+            color: #666;
+          }
+          @media (max-width: 768px) {
+            .stats { flex-direction: column; }
+            .stat-item { min-width: auto; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>تقرير حضور المتدربين</h1>
+          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+          <p>عدد السجلات: ${this.dataSource.data.length} سجل</p>
+        </div>
+        ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value">${this.summaryStats.total}</div>
+            <div class="stat-label">إجمالي السجلات</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value present">${this.summaryStats.present}</div>
+            <div class="stat-label">حاضر</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value absent">${this.summaryStats.absent}</div>
+            <div class="stat-label">غائب</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value late">${this.summaryStats.late}</div>
+            <div class="stat-label">متأخر</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value excused">${this.summaryStats.excused}</div>
+            <div class="stat-label">معتذر</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${this.summaryStats.attendanceRate}%</div>
+            <div class="stat-label">نسبة الحضور</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>المتدرب</th>
+              <th>الدورة</th>
+              <th>الجلسة</th>
+              <th>تاريخ الجلسة</th>
+              <th>الحالة</th>
+              <th>وقت الدخول</th>
+              <th>وقت الخروج</th>
+              <th>وقت التأخير</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        <div class="footer">
+          تم التصدير من نظام إدارة الأكاديمية الأولمبية
+        </div>
+        <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">
+            🖨️ طباعة / حفظ كـ PDF
+          </button>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Open in new window for printing
+    const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        document.body.removeChild(printContainer);
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
+    }
+  }
+
+  getStatusClass(statusId: number): string {
+    const classes: { [key: number]: string } = {
+      1: 'present',
+      2: 'absent',
+      3: 'late',
+      4: 'excused'
+    };
+    return classes[statusId] || '';
   }
 }
 
-// Dialog Component
+// Dialog Component remains the same
 @Component({
   selector: 'app-trainee-attendance-dialog',
   standalone: true,

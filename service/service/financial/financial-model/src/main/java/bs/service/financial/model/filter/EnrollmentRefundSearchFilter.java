@@ -18,6 +18,7 @@ import java.time.LocalDate;
 public class EnrollmentRefundSearchFilter extends SearchFilter<EnrollmentRefundSearchFilter.OrderByAttributes> {
 
     private Integer enrollmentId;
+    private Integer courseId;
     private Integer paymentMethodId;
     private Integer status;
     private LocalDate refundDateFrom;

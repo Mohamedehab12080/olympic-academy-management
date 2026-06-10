@@ -1,7 +1,7 @@
 /* Main Container */
 .incentives-container {
   padding: 24px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   background: #f5f7fa;
   min-height: calc(100vh - 64px);
@@ -83,15 +83,26 @@
 }
 
 .reset-btn,
-.export-btn {
+.export-btn,
+.print-btn {
   padding: 0 20px;
   height: 44px;
   transition: all 0.2s;
 }
 
 .reset-btn:hover,
-.export-btn:hover {
+.export-btn:hover,
+.print-btn:hover {
   transform: translateY(-1px);
+}
+
+.print-btn {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.print-btn:hover {
+  background-color: rgba(16, 185, 129, 0.1);
 }
 
 /* Statistics Cards */
@@ -136,6 +147,7 @@
   color: #6b7280;
 }
 
+.stat-card.total .stat-info h3 { color: #10b981; }
 .stat-card.salary .stat-info h3 { color: #3b82f6; }
 .stat-card.incentive .stat-info h3 { color: #10b981; }
 .stat-card.bonus .stat-info h3 { color: #f59e0b; }
@@ -169,6 +181,8 @@
   padding: 12px 16px;
   background: #ecfdf5;
   border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .records-count {
@@ -186,6 +200,21 @@
   height: 18px;
 }
 
+.total-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #059669;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.total-amount mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .table-wrapper {
   overflow-x: auto;
   border-radius: 12px;
@@ -195,7 +224,7 @@
 
 .data-table {
   width: 100%;
-  min-width: 900px;
+  min-width: 1200px;
 }
 
 .data-table .mat-header-cell {
@@ -223,20 +252,53 @@
   background-color: #f8fafc;
 }
 
-.clickable-cell {
-  cursor: pointer;
+/* Employee Info */
+.employee-info strong {
+  color: #1f2937;
   font-weight: 600;
-  color: #10b981;
 }
 
-.clickable-cell:hover {
-  text-decoration: underline;
+/* Salary Badge */
+.salary-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Remained Badge */
+.remained-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #f3e8ff;
+  color: #6b21a5;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.remained-badge.warning {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* Type Badges */
+.type-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .type-badge {
-  display: inline-block;
-  padding: 4px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
@@ -341,9 +403,15 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -384,12 +452,13 @@
   }
 
   .reset-btn,
-  .export-btn {
+  .export-btn,
+  .print-btn {
     width: 100%;
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
     padding: 16px;
   }
@@ -415,10 +484,121 @@
     align-items: flex-start;
     gap: 12px;
   }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 1000px;
+  }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+  
+  .stat-info h3 {
+    font-size: 16px;
+  }
+  
+  .header-title h1 {
+    font-size: 20px;
+  }
+  
+  .header-title p {
+    font-size: 11px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .incentives-container {
+    padding: 0;
+    background: white;
+  }
+  
+  .page-header button,
+  .filters-card,
+  .stats-grid,
+  .table-header,
+  .action-buttons,
+  .custom-paginator,
+  .filter-actions,
+  .add-button,
+  .print-btn,
+  .export-btn,
+  .reset-btn {
+    display: none !important;
+  }
+  
+  .main-card {
+    box-shadow: none;
+    border: none;
+  }
+  
+  .data-table {
+    min-width: 100%;
+  }
+  
+  .data-table .mat-header-cell {
+    background: #e5e7eb;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .type-badge,
+  .salary-badge,
+  .remained-badge,
+  .amount-badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Chip Styles */
+.mat-mdc-chip {
+  background-color: #f3f4f6 !important;
+  font-size: 12px !important;
+  min-height: 28px !important;
+}
+
+/* Tooltip Styles */
+.mat-tooltip {
+  font-size: 12px;
+  background-color: #1f2937;
+}
+
+/* Loading Spinner Color */
+::ng-deep .mat-progress-spinner circle,
+::ng-deep .mat-spinner circle {
+  stroke: #10b981 !important;
+}
+
+/* Selection Color */
+::selection {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #1f2937;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

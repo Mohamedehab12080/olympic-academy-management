@@ -11,7 +11,10 @@ import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.enums.EmployeeAttendanceStatus;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.enums.SessionStatus;
+import bs.service.employee.model.generated.EmployeeVTO;
 import bs.service.enrollment.model.entity.Enrollment;
+import bs.service.enrollment.model.enums.EnrollmentStatus;
+import bs.service.enrollment.model.generated.EnrollmentVTO;
 import bs.service.financial.model.entity.*;
 import bs.service.financial.model.entity.enrollment.EnrollmentPayment;
 import bs.service.financial.model.entity.enrollment.EnrollmentRefund;
@@ -25,6 +28,7 @@ import bs.service.financial.model.enums.RefundStatus;
 import bs.service.financial.model.enums.SalaryTransactionType;
 import bs.service.financial.model.generated.*;
 import bs.service.place.model.entity.Place;
+import bs.service.trainee.model.entity.Trainee;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.generated.LightUserVTO;
 import org.mapstruct.*;
@@ -52,6 +56,9 @@ public abstract class FinancialMapper {
     public abstract LookupVTO toLookupVTO(Employee employee);
     public abstract LookupVTO toLookupVTO(Enrollment enrollment);
     public abstract LookupVTO toLookupVTO(Course course);
+    @Mapping(target = "title", source = "fullName")
+    public abstract LookupVTO toLookupVTO(Trainee trainee);
+
 
     // ==================== Direct Enum to LookupVTO Mappings ====================
 
@@ -63,12 +70,20 @@ public abstract class FinancialMapper {
         return EnumMapperUtils.toLookupVTO(paymentStatusId, PaymentStatus.class);
     }
 
+    LookupVTO toLookupVTOFromEnrollmentStatus (Integer enrollmentStatusId){
+        return EnumMapperUtils.toLookupVTO(enrollmentStatusId, EnrollmentStatus.class);
+    }
+
     LookupVTO toLookupVTOFromSalaryType(Integer salaryTypeId) {
         return EnumMapperUtils.toLookupVTO(salaryTypeId, SalaryTypes.class);
     }
 
     LookupVTO toLookupVTOFromSalaryTransactionType(Integer salaryTransactionTypeId) {
         return EnumMapperUtils.toLookupVTO(salaryTransactionTypeId, SalaryTransactionType.class);
+    }
+
+    LookupVTO toLookupVTOFromEmployeeType(Integer employeeTypeId) {
+        return EnumMapperUtils.toLookupVTO(employeeTypeId, EmployeeTypes.class);
     }
 
     LookupVTO toLookupVTOFromGender(Integer genderId) {
@@ -126,6 +141,21 @@ public abstract class FinancialMapper {
     public abstract List<ExpenseVTO> toExpenseVTOs(List<Expense> expenses);
 
     // Use direct enum to LookupVTO mapping
+
+
+    @Mapping(target = "employeeType", expression = "java(toLookupVTOFromEmployeeType(employee.getEmployeeType()))")
+    @Mapping(target = "gender", expression = "java(toLookupVTOFromGender(employee.getGender()))")
+    @Mapping(target = "salaryType", expression = "java(toLookupVTOFromSalaryType(employee.getSalaryType()))")
+    @Mapping(target = "departments", ignore = true)
+    @Mapping(target = "courses", ignore = true)
+    @Mapping(target = "sessions", ignore = true)
+    @Mapping(target = "contacts", ignore = true)
+    public abstract EmployeeVTO toEmployeeVTO(Employee employee);
+
+    @Mapping(target = "enrollmentStatus", expression = "java(toLookupVTOFromEnrollmentStatus(enrollment.getEnrollmentStatus()))")
+    @Mapping(target = "paymentStatus", expression = "java(toLookupVTOFromPaymentStatus(enrollment.getPaymentStatus()))")
+    public abstract EnrollmentVTO toEnrollmentVTO(Enrollment enrollment);
+
     @Mapping(target = "paymentStatus", expression = "java(toLookupVTOFromPaymentStatus(enrollmentPayment.getPaymentStatus()))")
     public abstract EnrollmentPaymentVTO toEnrollmentPaymentVTO(EnrollmentPayment enrollmentPayment);
 

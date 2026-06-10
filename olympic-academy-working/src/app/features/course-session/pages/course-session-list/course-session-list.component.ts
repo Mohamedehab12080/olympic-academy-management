@@ -17,8 +17,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 import { CourseSessionService } from '../../../../core/services/course-session.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -27,7 +25,9 @@ import { PlaceService } from '../../../../core/services/place.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { SESSION_STATUSES } from '../../../../core/models/employee.model';
+import { SESSION_STATUSES, CourseSessionVTO } from '../../../../core/models/employee.model';
+import { CourseSessionDetailsModalComponent } from './../course-session-details/course-session-details-modal.component';
+import { CourseSessionFormModalComponent } from './../course-session-form/course-session-form-modal.component';
 
 @Component({
   selector: 'app-course-session-list',
@@ -198,15 +198,122 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
-  viewSession(session: any): void {
-    this.router.navigate(['/sessions', session.id]);
+  // Helper method to format time to 12-hour format with AM/PM
+  formatTime(time: string): string {
+    if (!time) return '-';
+    
+    // If time is already in HH:mm format (24-hour)
+    const [hours, minutes] = time.split(':');
+    let hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'م' : 'ص';
+    hour = hour % 12;
+    hour = hour ? hour : 12; // Convert 0 to 12
+    const hourStr = hour.toString().padStart(2, '0');
+    return `${hourStr}:${minutes} ${ampm}`;
   }
 
+  // Open Add Modal
+  openAddModal(): void {
+    const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: {
+        mode: 'add'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'saved') {
+        this.loadSessions();
+      }
+    });
+  }
+
+  // Open Edit Modal
   editSession(session: any): void {
-    this.router.navigate(['/sessions', session.id, 'edit']);
+    // Fetch full session details including all fields
+    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
+      next: (fullSession: CourseSessionVTO) => {
+        const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
+          width: '800px',
+          maxWidth: '90vw',
+          disableClose: true,
+          data: {
+            mode: 'edit',
+            session: fullSession,
+            courseId: session.course.id,
+            sessionId: session.id
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'updated') {
+            this.loadSessions();
+          }
+        });
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات الجلسة');
+      }
+    });
   }
 
-  deleteSession(session: any): void {
+  viewSessionDetails(session: any): void {
+    // Fetch full session details including createdBy, lastModifiedBy
+    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
+      next: (fullSession: CourseSessionVTO) => {
+        const dialogRef = this.dialog.open(CourseSessionDetailsModalComponent, {
+          data: fullSession,
+          width: '650px',
+          maxWidth: '90vw'
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result?.action === 'delete') {
+            this.confirmAndDelete(result.session);
+          } else if (result?.action === 'edit') {
+            // Open edit modal when user clicks Edit from details
+            this.openEditModalFromDetails(result.session);
+          }
+        });
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل تفاصيل الجلسة');
+      }
+    });
+  }
+
+  // Add this new method to handle edit from details modal
+  openEditModalFromDetails(session: any): void {
+    // Fetch full session details including all fields
+    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
+      next: (fullSession: CourseSessionVTO) => {
+        const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
+          width: '800px',
+          maxWidth: '90vw',
+          disableClose: true,
+          data: {
+            mode: 'edit',
+            session: fullSession,
+            courseId: session.course.id,
+            sessionId: session.id
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'updated') {
+            this.loadSessions();
+          }
+        });
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات الجلسة');
+      }
+    });
+  }
+
+  confirmAndDelete(session: any): void {
     if (confirm(`هل أنت متأكد من حذف الجلسة "${session.title}"؟`)) {
       this.sessionService.deleteCourseSession(session.course.id, session.id).subscribe({
         next: () => {
@@ -218,26 +325,30 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getStatusCount(statusId: number): number {
-  return this.dataSource.data.filter(s => s.status?.id === statusId).length;
-}
+  deleteSession(session: any): void {
+    this.confirmAndDelete(session);
+  }
 
-    getStatusClass(statusId: number): string {
-      const classes: { [key: number]: string } = {
-        1: 'status-scheduled',
-        2: 'status-in-progress',
-        3: 'status-completed',
-        4: 'status-cancelled'
-      };
-      return classes[statusId] || '';
-    }
+  getStatusCount(statusId: number): number {
+    return this.dataSource.data.filter(s => s.status?.id === statusId).length;
+  }
+
+  getStatusClass(statusId: number): string {
+    const classes: { [key: number]: string } = {
+      1: 'status-scheduled',
+      2: 'status-in-progress',
+      3: 'status-completed',
+      4: 'status-cancelled'
+    };
+    return classes[statusId] || '';
+  }
 
   getStatusColor(statusId: number): string {
     const colors: { [key: number]: string } = {
-      1: 'primary',   // Scheduled
-      2: 'accent',    // In Progress
-      3: 'primary',   // Completed
-      4: 'warn'       // Cancelled
+      1: 'primary',
+      2: 'accent',
+      3: 'primary',
+      4: 'warn'
     };
     return colors[statusId] || 'default';
   }
@@ -255,8 +366,8 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
       'المدرب': session.trainer?.title,
       'المكان': session.place?.title,
       'التاريخ': session.sessionDate,
-      'وقت البدء': session.startTime,
-      'وقت الانتهاء': session.endTime,
+      'وقت البدء': this.formatTime(session.startTime),
+      'وقت الانتهاء': this.formatTime(session.endTime),
       'الحالة': session.status?.title,
       'ملاحظات': session.note || '-'
     }));
@@ -271,50 +382,169 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const doc = new jsPDF('l', 'mm', 'a4');
-    
-    doc.setFontSize(18);
-    doc.text('تقرير جلسات الدورات', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-    
-    doc.setFontSize(10);
-    let yOffset = 25;
-    
+    this.isLoading = true;
+
+    // Build filter text
+    const filterTexts: string[] = [];
     if (this.filters.courseId) {
       const course = this.courses.find(c => c.id === this.filters.courseId);
-      if (course) doc.text(`الدورة: ${course.title}`, 14, yOffset);
-      yOffset += 6;
+      if (course) filterTexts.push(`الدورة: ${course.title}`);
     }
     if (this.filters.trainerId) {
       const trainer = this.trainers.find(t => t.id === this.filters.trainerId);
-      if (trainer) doc.text(`المدرب: ${trainer.title}`, 14, yOffset);
-      yOffset += 6;
+      if (trainer) filterTexts.push(`المدرب: ${trainer.title}`);
     }
-    if (this.filters.sessionDateFrom) doc.text(`من تاريخ: ${this.filters.sessionDateFrom}`, 14, yOffset);
-    if (this.filters.sessionDateTo) doc.text(`إلى تاريخ: ${this.filters.sessionDateTo}`, 14, yOffset + 6);
-    
-    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
-    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
+    if (this.filters.placeId) {
+      const place = this.places.find(p => p.id === this.filters.placeId);
+      if (place) filterTexts.push(`المكان: ${place.title}`);
+    }
+    if (this.filters.status) {
+      const status = this.sessionStatuses.find(s => s.id === this.filters.status);
+      if (status) filterTexts.push(`الحالة: ${status.title}`);
+    }
+    if (this.filters.sessionDateFrom) filterTexts.push(`من تاريخ: ${this.filters.sessionDateFrom}`);
+    if (this.filters.sessionDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.sessionDateTo}`);
+    if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
-    autoTable(doc, {
-      head: [['#', 'عنوان الجلسة', 'الدورة', 'المدرب', 'المكان', 'التاريخ', 'وقت البدء', 'وقت الانتهاء', 'الحالة']],
-      body: this.dataSource.data.map((session: any, index: number) => [
-        (index + 1).toString(),
-        session.title || '-',
-        session.course?.title || '-',
-        session.trainer?.title || '-',
-        session.place?.title || '-',
-        session.sessionDate || '-',
-        session.startTime || '-',
-        session.endTime || '-',
-        session.status?.title || '-'
-      ]),
-      startY: yOffset + 15,
-      styles: { halign: 'right', fontSize: 9, cellPadding: 2 },
-      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' },
-      alternateRowStyles: { fillColor: [243, 244, 246] }
+    // Build table rows
+    let tableRows = '';
+    this.dataSource.data.forEach((session: any, index: number) => {
+      const statusClass = this.getStatusClass(session.status?.id);
+      let statusStyle = '';
+      if (statusClass === 'status-scheduled') statusStyle = 'background-color: #dbeafe; color: #1e40af;';
+      else if (statusClass === 'status-in-progress') statusStyle = 'background-color: #fed7aa; color: #92400e;';
+      else if (statusClass === 'status-completed') statusStyle = 'background-color: #d1fae5; color: #065f46;';
+      else if (statusClass === 'status-cancelled') statusStyle = 'background-color: #fee2e2; color: #991b1b;';
+      
+      tableRows += `
+        <tr>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${session.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${session.course?.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${session.trainer?.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${session.place?.title || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${session.sessionDate || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.formatTime(session.startTime)}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.formatTime(session.endTime)}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
+            ${session.status?.title || '-'}
+          </td>
+        </td>
+      `;
     });
 
-    doc.save('course-sessions-report.pdf');
-    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+    // Create print container
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>تقرير جلسات الدورات</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @media print {
+            body { margin: 0; padding: 20px; }
+            .no-print { display: none; }
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+          }
+          .header h1 { margin: 0; font-size: 24px; }
+          .header p { margin: 10px 0 0 0; font-size: 12px; }
+          .filters {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            font-size: 12px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+          }
+          th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-weight: bold;
+          }
+          td { padding: 8px; border: 1px solid #ddd; }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 10px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>تقرير جلسات الدورات</h1>
+          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+          <p>عدد السجلات: ${this.dataSource.data.length} جلسة</p>
+        </div>
+        ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>عنوان الجلسة</th>
+              <th>الدورة</th>
+              <th>المدرب</th>
+              <th>المكان</th>
+              <th>التاريخ</th>
+              <th>وقت البدء</th>
+              <th>وقت الانتهاء</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        <div class="footer">
+          تم التصدير من نظام إدارة الأكاديمية الأولمبية
+        </div>
+        <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">
+            🖨️ طباعة / حفظ كـ PDF
+          </button>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Open in new window for printing
+    const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
+    } else {
+      // Fallback
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        document.body.removeChild(printContainer);
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
+    }
   }
 }

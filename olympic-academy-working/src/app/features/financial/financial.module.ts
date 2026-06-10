@@ -58,19 +58,16 @@ import { ExpenseFormComponent } from './pages/expense/expense-form/expense-form.
 // Enrollment Payment Components
 // ============================================
 import { EnrollmentPaymentListComponent } from './pages/enrollment/enrollment-payment/enrollment-payment-list/enrollment-payment-list.component';
-import { EnrollmentPaymentFormComponent } from './pages/enrollment/enrollment-payment/enrollment-payment-form/enrollment-payment-form.component';
 
 // ============================================
 // Enrollment Refund Components
 // ============================================
 import { EnrollmentRefundListComponent } from './pages/enrollment/enrollment-refund/enrollment-refund-list/enrollment-refund-list.component';
-import { EnrollmentRefundFormComponent } from './pages/enrollment/enrollment-refund/enrollment-refund-form/enrollment-refund-form.component';
 
 // ============================================
 // Salary Incentive Components
 // ============================================
 import { SalaryIncentiveListComponent } from './pages/salary/salary-incentive/salary-incentive-list/salary-incentive-list.component';
-import { SalaryIncentiveFormComponent } from './pages/salary/salary-incentive/salary-incentive-form/salary-incentive-form.component';
 
 // ============================================
 // Salary Deduction Components (Standalone)
@@ -117,18 +114,12 @@ const routes: Routes = [
 
   // Enrollment Payments
   { path: 'enrollment-payments', component: EnrollmentPaymentListComponent },
-  { path: 'enrollment-payments/new', component: EnrollmentPaymentFormComponent },
-  { path: 'enrollment-payments/:id/edit', component: EnrollmentPaymentFormComponent },
 
   // Enrollment Refunds
   { path: 'enrollment-refunds', component: EnrollmentRefundListComponent },
-  { path: 'enrollment-refunds/new', component: EnrollmentRefundFormComponent },
-  { path: 'enrollment-refunds/:id/edit', component: EnrollmentRefundFormComponent },
 
   // Salary Incentives
   { path: 'salary-incentives', component: SalaryIncentiveListComponent },
-  { path: 'salary-incentives/new', component: SalaryIncentiveFormComponent },
-  { path: 'salary-incentives/:id/edit', component: SalaryIncentiveFormComponent },
 
   // Salary Deductions (Standalone Components - use loadComponent)
   { 
@@ -174,18 +165,6 @@ const routes: Routes = [
     // Expense
     ExpenseListComponent,
     ExpenseFormComponent,
-
-    // Enrollment Payment
-    EnrollmentPaymentListComponent,
-    EnrollmentPaymentFormComponent,
-
-    // Enrollment Refund
-    EnrollmentRefundListComponent,
-    EnrollmentRefundFormComponent,
-
-    // Salary Incentive Form (NOT standalone - keep in declarations)
-    SalaryIncentiveFormComponent,
-
     // Financial Report - REMOVED (standalone)
   ],
   imports: [
@@ -210,9 +189,12 @@ const routes: Routes = [
     MatDialogModule,
     MatSlideToggleModule,
     MatTooltipModule,
-    // Add ONLY standalone components here
-    SalaryIncentiveListComponent,  // Standalone
-    FinancialReportComponent        // Standalone
+    
+    // ✅ ADD standalone components here
+    EnrollmentRefundListComponent,
+    EnrollmentPaymentListComponent,  
+    SalaryIncentiveListComponent,
+    FinancialReportComponent
   ]
 })
 export class FinancialModule { }

@@ -37,7 +37,7 @@ export class EmployeeService {
   }
 
   // Employee CRUD
-  createEmployee(data: EmployeeDTO): Observable<NewRecordVTO> {
+  createEmployee(data: any): Observable<NewRecordVTO> {
     return this.api.post('/employees', data);
   }
 
@@ -49,10 +49,9 @@ export class EmployeeService {
     return this.api.get(`/employees/${id}`);
   }
 
-  updateEmployee(id: number, data: EmployeeDTO): Observable<NewRecordVTO> {
+  updateEmployee(id: number, data: any): Observable<NewRecordVTO> {
     return this.api.put(`/employees/${id}`, data);
   }
-
   deleteEmployee(id: number): Observable<void> {
     return this.api.delete(`/employees/${id}`);
   }

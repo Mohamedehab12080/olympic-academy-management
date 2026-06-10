@@ -26,8 +26,8 @@ public class CourseSessionQueryBuilder extends AbstractQueryBuilderV2<CourseSess
                     .condition("item.course.id = :PH").build());
 
         if (filters.getEmployeeId() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("employeeId").value(filters.getEmployeeId())
-                    .condition("item.employee.id = :PH").build());
+            qbConditions.add(QBCondition.builder().placeHolder("trainerId").value(filters.getEmployeeId())
+                    .condition("item.trainer.id = :PH").build());
 
         if (filters.getPlaceId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("placeId").value(filters.getPlaceId())

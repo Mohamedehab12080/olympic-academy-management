@@ -57,8 +57,8 @@ public abstract class EmployeeMapper {
     public abstract LookupVTO toLookupVTO(Department department);
     public abstract List<LookupVTO> toLookupVTO(List<Department> departments);
 
+    @Mapping(target = "title", source = "fullName")
     public abstract LookupVTO toLookupVTO(Employee employee);
-    public abstract List<LookupVTO> toLookupEmployeeVTOs(List<Employee> employees);
 
     // ==================== Contact Mappings ====================
 

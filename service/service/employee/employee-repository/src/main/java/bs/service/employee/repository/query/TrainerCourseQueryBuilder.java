@@ -23,7 +23,7 @@ public class TrainerCourseQueryBuilder extends AbstractQueryBuilderV2<TrainerCou
 
         if (filters.getTrainerId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("trainerId").value(filters.getTrainerId())
-                    .condition("item.employee.id = :PH").build());
+                    .condition("item.trainer.id = :PH").build());
 
         if (filters.getCourseId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("courseId").value(filters.getCourseId())

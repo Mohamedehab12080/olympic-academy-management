@@ -35,16 +35,22 @@
   opacity: 0.9;
 }
 
-.add-button {
-  background: white !important;
-  color: #667eea !important;
-  font-weight: 600;
-  padding: 0 24px;
+.add-button-container {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
-.add-button:hover {
+.add-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  padding: 0 24px;
+  height: 44px;
+  font-weight: 600;
+}
+
+.add-btn:hover {
   transform: translateY(-2px);
-  transition: transform 0.2s;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* Filters Card */

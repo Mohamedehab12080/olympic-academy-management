@@ -1,6 +1,7 @@
 package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.employee.model.generated.CourseSessionVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,7 +32,7 @@ public class TraineeAttendanceVTO implements Serializable {
 
     private LookupVTO trainee;
 
-    private LookupVTO session;
+    private CourseSessionVTO session;
 
     private LookupVTO course;
 
@@ -100,7 +101,7 @@ public class TraineeAttendanceVTO implements Serializable {
         this.trainee = trainee;
     }
 
-    public TraineeAttendanceVTO session(LookupVTO session) {
+    public TraineeAttendanceVTO session(CourseSessionVTO session) {
         this.session = session;
         return this;
     }
@@ -113,11 +114,11 @@ public class TraineeAttendanceVTO implements Serializable {
     @Valid
     @Schema(name = "session", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("session")
-    public LookupVTO getSession() {
+    public CourseSessionVTO getSession() {
         return session;
     }
 
-    public void setSession(LookupVTO session) {
+    public void setSession(CourseSessionVTO session) {
         this.session = session;
     }
 

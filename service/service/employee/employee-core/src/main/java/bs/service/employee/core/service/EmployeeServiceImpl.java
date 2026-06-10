@@ -104,7 +104,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .hireDateTo(hireDateTo)
                 .gender(gender!=null ? gender.title :null)
                 .employeeTypeId(employeeType!=null ? employeeType.id:null)
-                .salaryType(salaryType.id!=null?salaryType.id:null)
+                .salaryType(salaryType!=null?salaryType.id:null)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(EmployeeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))

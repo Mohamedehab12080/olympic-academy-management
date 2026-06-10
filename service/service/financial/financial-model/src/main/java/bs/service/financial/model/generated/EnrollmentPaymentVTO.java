@@ -1,6 +1,7 @@
 package bs.service.financial.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.enrollment.model.generated.EnrollmentVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +30,7 @@ public class EnrollmentPaymentVTO implements Serializable {
 
     private Integer id;
 
-    private LookupVTO enrollment;
+    private EnrollmentVTO enrollment;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate paymentDate;
@@ -79,7 +80,7 @@ public class EnrollmentPaymentVTO implements Serializable {
         this.id = id;
     }
 
-    public EnrollmentPaymentVTO enrollment(LookupVTO enrollment) {
+    public EnrollmentPaymentVTO enrollment(EnrollmentVTO enrollment) {
         this.enrollment = enrollment;
         return this;
     }
@@ -92,11 +93,11 @@ public class EnrollmentPaymentVTO implements Serializable {
     @Valid
     @Schema(name = "enrollment", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("enrollment")
-    public LookupVTO getEnrollment() {
+    public EnrollmentVTO getEnrollment() {
         return enrollment;
     }
 
-    public void setEnrollment(LookupVTO enrollment) {
+    public void setEnrollment(EnrollmentVTO enrollment) {
         this.enrollment = enrollment;
     }
 

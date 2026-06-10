@@ -1,7 +1,23 @@
-import { Gender, LightUserVTO, LookupVTO, ContactType } from './common.model';
+import { LightUserVTO, LookupVTO, Gender, ContactType } from './common.model';
+
+// ==================== Enums (specific to Trainee module) ====================
+
+export interface TraineeAttendanceStatus {
+  id: number;
+  title: string;
+}
+
+export const TRAINEE_ATTENDANCE_STATUSES: TraineeAttendanceStatus[] = [
+  { id: 1, title: 'حاضر' },
+  { id: 2, title: 'غائب' },
+  { id: 3, title: 'متأخر' },
+  { id: 4, title: 'معذور' }
+];
+
+// ==================== DTOs (sent to backend - use enum objects with id and title) ====================
 
 export interface TraineeContactDTO {
-  contactType: ContactType;
+  contactType: ContactType;  // From common.model
   contactValue: string;
 }
 
@@ -10,7 +26,8 @@ export interface TraineeDTO {
   nationalId: string;
   academicYear?: string;
   birthDate?: string;
-  gender?: Gender;
+  isActive?:boolean;
+  gender?: Gender;  // From common.model
   address?: string;
   imageUrl?: string;
   contacts: TraineeContactDTO[];
@@ -31,13 +48,15 @@ export interface HealthConditionDTO {
   note?: string;
 }
 
+// ==================== VTOs (received from backend - use LookupVTO for enums) ====================
+
 export interface TraineeVTO {
   id: number;
   fullName: string;
   nationalId: string;
   academicYear?: string;
   birthDate?: string;
-  gender?: Gender;
+  gender?: LookupVTO;  // From common.model
   isActive: boolean;
   address?: string;
   imageUrl?: string;
@@ -52,7 +71,7 @@ export interface TraineeVTO {
 
 export interface TraineeContactVTO {
   id: number;
-  contactType: ContactType;
+  contactType: LookupVTO;  // From common.model
   contactValue: string;
 }
 
@@ -60,7 +79,7 @@ export interface TraineeCertificateVTO {
   id: number;
   certificateNumber: string;
   certificateName: string;
-  course: LookupVTO;
+  course: LookupVTO;  // From common.model
   issueDate: string;
   grade: string;
 }
@@ -73,6 +92,8 @@ export interface HealthConditionVTO {
   note?: string;
 }
 
+// ==================== Result Sets ====================
+
 export interface TraineeResultSet {
   total: number;
   items: TraineeListItem[];
@@ -84,7 +105,7 @@ export interface TraineeListItem {
   nationalId: string;
   isActive: boolean;
   academicYear: string;
-  gender: Gender;
+  gender: LookupVTO;  // From common.model
 }
 
 export interface TraineeContactResultSet {
@@ -94,7 +115,7 @@ export interface TraineeContactResultSet {
 
 export interface TraineeContactListItem {
   id: number;
-  contactType: ContactType;
+  contactType: LookupVTO;  // From common.model
   contactValue: string;
 }
 

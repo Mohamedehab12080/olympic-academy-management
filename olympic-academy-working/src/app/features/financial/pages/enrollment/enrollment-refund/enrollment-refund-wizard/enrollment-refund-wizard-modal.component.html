@@ -1,0 +1,374 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">receipt</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل استرداد' : 'استرداد جديد' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="refundForm">
+      
+      <!-- Step 0: Select Enrollment -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>school</mat-icon>
+          <h3>اختر التسجيل</h3>
+        </div>
+        
+        <div class="step-description">
+          يرجى اختيار التسجيل الذي تريد استرداد مبلغ له
+        </div>
+
+        <div class="form-section">
+          <app-searchable-select
+            formControlName="enrollmentId"
+            label="التسجيل"
+            [options]="enrollmentOptions"
+            [required]="true"
+            class="full-width"
+            (ngModelChange)="onEnrollmentSelect()">
+          </app-searchable-select>
+
+          <!-- Enrollment Details Preview -->
+          <div class="enrollment-preview" *ngIf="selectedEnrollment">
+            <div class="preview-header">
+              <mat-icon>info</mat-icon>
+              <span>تفاصيل التسجيل</span>
+            </div>
+            <div class="preview-content">
+              <div class="preview-row">
+                <span class="label">المتدرب:</span>
+                <span class="value">{{ selectedEnrollment.trainee?.title }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">الدورة:</span>
+                <span class="value">{{ selectedEnrollment.course?.title }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">تاريخ البداية:</span>
+                <span class="value">{{ selectedEnrollment.startDate | date }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">قيمة التسجيل:</span>
+                <span class="value">{{ selectedEnrollment.finalSubscriptionValue }} جم</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">المبلغ المدفوع:</span>
+                <span class="value paid-amount">{{ selectedEnrollment.totalPaidAmount }} جم</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">المبلغ المتبقي:</span>
+                <span class="value">{{ selectedEnrollment.remainedSubscriptionValue }} جم</span>
+              </div>
+              <div class="preview-row warning" *ngIf="selectedEnrollment.totalRefundedSoFar > 0">
+                <span class="label">تم استرداده سابقاً:</span>
+                <span class="value">{{ selectedEnrollment.totalRefundedSoFar }} جم</span>
+              </div>
+              <div class="preview-row highlight" *ngIf="selectedEnrollment.availableForRefund > 0">
+                <span class="label">المتاح للاسترداد:</span>
+                <span class="value">{{ selectedEnrollment.availableForRefund }} جم</span>
+              </div>
+              <div class="preview-row error" *ngIf="selectedEnrollment.availableForRefund === 0 && selectedEnrollment.totalPaidAmount > 0">
+                <span class="label">ملاحظة:</span>
+                <span class="value">تم استرداد كامل المبلغ المدفوع مسبقاً</span>
+              </div>
+              <div class="preview-row error" *ngIf="selectedEnrollment.totalPaidAmount === 0">
+                <span class="label">ملاحظة:</span>
+                <span class="value">لم يتم دفع أي مبلغ لهذا التسجيل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Refund Details -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>payments</mat-icon>
+          <h3>تفاصيل الاسترداد</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل المبلغ المسترد وتاريخ الاسترداد
+        </div>
+
+        <div class="form-section">
+          <!-- Available Refund Info -->
+          <div class="refund-status-info" *ngIf="getAvailableForRefund() > 0">
+            <div class="info-card success-card">
+              <mat-icon>info</mat-icon>
+              <span>المبلغ المتاح للاسترداد: <strong>{{ getAvailableForRefund() }} جم</strong></span>
+            </div>
+          </div>
+
+          <div class="refund-status-info" *ngIf="getAvailableForRefund() === 0 && getTotalPaidAmount() > 0">
+            <div class="info-card warning-card">
+              <mat-icon>warning</mat-icon>
+              <span>تم استرداد كامل المبلغ المدفوع سابقاً ({{ getTotalPaidAmount() }} جم)</span>
+            </div>
+          </div>
+
+          <div class="refund-status-info" *ngIf="getTotalPaidAmount() === 0">
+            <div class="info-card error-card">
+              <mat-icon>error</mat-icon>
+              <span>لا يوجد مبلغ مدفوع لهذا التسجيل لعمل استرداد</span>
+            </div>
+          </div>
+
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المبلغ المسترد</mat-label>
+              <input matInput type="number" formControlName="amountRefunded" placeholder="0" [max]="getAvailableForRefund()">
+              <span matTextSuffix>جم</span>
+              <mat-error *ngIf="refundForm.get('amountRefunded')?.hasError('required')">
+                المبلغ المسترد مطلوب
+              </mat-error>
+              <mat-error *ngIf="refundForm.get('amountRefunded')?.hasError('min')">
+                يجب أن يكون المبلغ أكبر من 0
+              </mat-error>
+              <mat-error *ngIf="refundForm.get('amountRefunded')?.hasError('max')">
+                المبلغ المسترد لا يمكن أن يتجاوز {{ getAvailableForRefund() }} جم
+              </mat-error>
+              <mat-error *ngIf="refundForm.get('amountRefunded')?.hasError('exceedsAvailable')">
+                المبلغ المسترد لا يمكن أن يتجاوز المبلغ المتاح للاسترداد
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>تاريخ الاسترداد</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="refundDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="refundForm.get('refundDate')?.hasError('required')">
+                تاريخ الاسترداد مطلوب
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Financial Summary -->
+          <div class="financial-summary">
+            <div class="summary-header">
+              <mat-icon>account_balance_wallet</mat-icon>
+              <span>الملخص المالي للتسجيل</span>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row">
+                <span>قيمة التسجيل الإجمالية:</span>
+                <strong>{{ refundForm.get('finalSubscriptionValue')?.value || 0 }} جم</strong>
+              </div>
+              <div class="summary-row">
+                <span>المبلغ المدفوع:</span>
+                <strong class="paid">{{ getTotalPaidAmount() }} جم</strong>
+              </div>
+              <div class="summary-row">
+                <span>المبلغ المتبقي:</span>
+                <strong>{{ refundForm.get('remainedSubscriptionValue')?.value || 0 }} جم</strong>
+              </div>
+              <div class="summary-row" *ngIf="getPreviouslyRefunded() > 0">
+                <span>تم استرداده سابقاً:</span>
+                <strong class="refunded">{{ getPreviouslyRefunded() }} جم</strong>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-row highlight">
+                <span>المبلغ المسترد الآن:</span>
+                <strong class="refund-amount">{{ getRefundAmount() }} جم</strong>
+              </div>
+              <div class="summary-row total">
+                <span>المتبقي بعد الاسترداد:</span>
+                <strong [class.zero]="getRemainingAfterRefund() === 0">{{ getRemainingAfterRefund() }} جم</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment Information -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-title">
+          <mat-icon>credit_card</mat-icon>
+          <h3>معلومات الدفع</h3>
+        </div>
+        
+        <div class="step-description">
+          اختر طريقة الدفع وحالة الاسترداد
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <app-searchable-select
+              formControlName="paymentMethodId"
+              label="طريقة الدفع"
+              [options]="paymentMethodOptions"
+              [required]="true"
+              class="full-width">
+            </app-searchable-select>
+
+            <app-searchable-select
+              formControlName="refundStatusObj"
+              label="حالة الاسترداد"
+              [options]="refundStatusOptions"
+              [required]="true"
+              class="full-width">
+            </app-searchable-select>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>ملاحظات</mat-label>
+            <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+            <mat-icon matSuffix>note</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد الاسترداد</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <!-- Enrollment Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>school</mat-icon>
+              <span>معلومات التسجيل</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">المتدرب:</span>
+                <span class="info-value">{{ selectedEnrollment?.trainee?.title }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">الدورة:</span>
+                <span class="info-value">{{ selectedEnrollment?.course?.title }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ البداية:</span>
+                <span class="info-value">{{ selectedEnrollment?.startDate | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">قيمة التسجيل:</span>
+                <span class="info-value">{{ refundForm.get('finalSubscriptionValue')?.value }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المبلغ المدفوع:</span>
+                <span class="info-value paid">{{ getTotalPaidAmount() }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المبلغ المتبقي:</span>
+                <span class="info-value">{{ refundForm.get('remainedSubscriptionValue')?.value || 0 }} جم</span>
+              </div>
+              <div class="info-item" *ngIf="getPreviouslyRefunded() > 0">
+                <span class="info-label">تم استرداده سابقاً:</span>
+                <span class="info-value refunded">{{ getPreviouslyRefunded() }} جم</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Refund Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>payments</mat-icon>
+              <span>معلومات الاسترداد</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">المبلغ المسترد:</span>
+                <span class="info-value highlight">{{ getRefundAmount() }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المتبقي بعد الاسترداد:</span>
+                <span class="info-value" [class.success]="getRemainingAfterRefund() === 0">{{ getRemainingAfterRefund() }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ الاسترداد:</span>
+                <span class="info-value">{{ refundForm.get('refundDate')?.value | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">طريقة الدفع:</span>
+                <span class="info-value">{{ getPaymentMethodLabel() }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">حالة الاسترداد:</span>
+                <span class="info-value">
+                  <span class="status-badge" 
+                        [class.completed]="getRemainingAfterRefund() === 0 && getRefundAmount() > 0" 
+                        [class.pending]="getRemainingAfterRefund() > 0 && getRefundAmount() > 0"
+                        [class.approved]="refundForm.get('refundStatusObj')?.value?.id === 2">
+                    {{ getRefundStatusLabel() }}
+                  </span>
+                </span>
+              </div>
+              <div class="info-item full-width" *ngIf="refundForm.get('note')?.value">
+                <span class="info-label">الملاحظات:</span>
+                <span class="info-value">{{ refundForm.get('note')?.value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" [disabled]="isSubmitting || getTotalPaidAmount() === 0">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" [disabled]="isSubmitting || getTotalPaidAmount() === 0">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>

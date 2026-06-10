@@ -2,6 +2,7 @@ package bs.service.trainee.core.service;
 
 import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
@@ -92,5 +93,17 @@ public class TraineeServiceImpl implements TraineeService {
                 .items(items)
                 .total(items.size())
                 .build();
+    }
+
+    @Override
+    public LookupResultSet getAllTraineesLookup() {
+        TraineeSearchFilter filter = TraineeSearchFilter.builder()
+                .isActive(true)
+                .isDeleted(false)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+
+        List<Trainee> trainees = traineeRepository.selectAllByFilters(filter);
+        return LookupResultSet.builder()._list(traineeMapper.toLookupVTOsFromTrainees(trainees)).total(trainees.size()).build();
     }
 }

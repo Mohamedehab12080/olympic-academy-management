@@ -567,6 +567,22 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /lookup/trainees:
+    get:
+      tags:
+        - TraineeLookup
+      summary: Get all trainees lookup
+      operationId: getAllTraineesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /lookup/trainee/attendance/status:
     get:
       tags:
@@ -712,6 +728,8 @@ components:
           type: string
         imageUrl:
           type: string
+        isActive:
+          type: boolean
         contacts:
           type: array
           items:
@@ -891,7 +909,7 @@ components:
         trainee:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         session:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/CourseSessionVTO'
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         status:

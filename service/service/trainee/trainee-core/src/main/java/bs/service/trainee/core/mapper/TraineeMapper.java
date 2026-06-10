@@ -6,6 +6,9 @@ import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.course.model.entity.Course;
 import bs.service.employee.model.entity.CourseSession;
+import bs.service.employee.model.enums.SessionStatus;
+import bs.service.employee.model.generated.CourseSessionDTO;
+import bs.service.employee.model.generated.CourseSessionVTO;
 import bs.service.trainee.model.entity.*;
 import bs.service.trainee.model.enums.TraineeAttendanceStatus;
 import bs.service.trainee.model.generated.*;
@@ -49,7 +52,11 @@ public abstract class TraineeMapper {
 
     public abstract LookupVTO toLookupVTO(Course course);
     public abstract LookupVTO toLookupVTOFromCourseSession(CourseSession courseSession);
+    @Mapping(target = "title", source = "fullName")
     public abstract LookupVTO toLookupVTOFromTrainee(Trainee trainee);
+    public abstract List<LookupVTO> toLookupVTOsFromTrainees(List<Trainee> trainees);
+
+    @Mapping(target = "title", source = "title")
     public abstract LookupVTO toLookupVTOSession(CourseSession courseSession);
 
     // ==================== Contact Mappings ====================
@@ -112,6 +119,14 @@ public abstract class TraineeMapper {
     @Mapping(target = "status", source = "status.id")
     public abstract TraineeAttendance toTraineeAttendance(TraineeAttendanceDTO dto);
 
+    LookupVTO toLookupVTOFromSessionStatus(Integer sessionStatusId) {
+        return EnumMapperUtils.toLookupVTO(sessionStatusId, SessionStatus.class);
+    }
+
+    @Mapping(target = "status", expression = "java(toLookupVTOFromSessionStatus(courseSession.getStatus()))")
+    public abstract CourseSessionVTO toCourseSessionVTO(CourseSession courseSession);
+    public abstract List<CourseSessionVTO> toCourseSessionVTOs(List<CourseSession> courseSessions);
+
     /**
      * Convert TraineeAttendance entity to TraineeAttendanceVTO
      *
@@ -119,7 +134,8 @@ public abstract class TraineeMapper {
      * target property 'status' is LookupVTO
      */
     @Mapping(target = "trainee", expression = "java(toLookupVTOFromTrainee(entity.getTrainee()))")
-    @Mapping(target = "session", expression = "java(toLookupVTOSession(entity.getCourseSession()))")
+    @Mapping(target = "session", source = "courseSession")
+    @Mapping(target = "course", source = "courseSession.course")
     @Mapping(target = "status", qualifiedByName = "attendanceStatusToLookup")
     public abstract TraineeAttendanceVTO toTraineeAttendanceVTO(TraineeAttendance entity);
 

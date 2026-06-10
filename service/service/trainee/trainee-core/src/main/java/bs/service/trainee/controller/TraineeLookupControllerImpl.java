@@ -2,6 +2,7 @@ package bs.service.trainee.controller;
 
 import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.trainee.api.service.TraineeService;
 import bs.service.trainee.controller.generated.TraineeLookupController;
 import bs.service.trainee.model.enums.TraineeAttendanceStatus;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 public class TraineeLookupControllerImpl implements TraineeLookupController {
+
+    private final TraineeService traineeService;
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<LookupResultSet> _getAllTraineesLookup() {
+        return ResponseEntity.ok(traineeService.getAllTraineesLookup());
+    }
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})

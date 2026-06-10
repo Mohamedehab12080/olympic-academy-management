@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @SuperBuilder
@@ -20,8 +21,10 @@ public class EnrollmentSearchFilter extends SearchFilter<EnrollmentSearchFilter.
 
     private String quickSearchQuery;
     private Boolean isActive;
+    private Boolean isDeleted;
     private Integer traineeId;
     private Integer courseId;
+    private List<Integer> courseIds;
     private Integer trainerId;
     private Integer enrollmentTypeId;
     private Integer enrollmentStatus;

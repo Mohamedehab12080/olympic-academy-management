@@ -16,7 +16,7 @@
             <column name="course_session_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="varchar(50)">
+            <column name="status" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="attendance_date" type="date"/>

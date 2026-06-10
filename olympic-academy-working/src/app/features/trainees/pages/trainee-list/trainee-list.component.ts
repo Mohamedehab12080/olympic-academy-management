@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -13,15 +13,16 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterLink, Router } from '@angular/router';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 import { TraineeService } from '../../../../core/services/trainee.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { SearchableSelectComponent } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { GENDERS } from '../../../../core/models/common.model';
+import { TraineeDetailsModalComponent } from './../trainee-details/trainee-details-modal.component';
+import { TraineeWizardModalComponent } from '../trainee-wizard/trainee-wizard-modal.component';
 
 interface Trainee {
   id: number;
@@ -41,22 +42,22 @@ interface Trainee {
 @Component({
   selector: 'app-trainee-list',
   standalone: true,
-  schemas: [NO_ERRORS_SCHEMA],
   imports: [
-    CommonModule, 
-    FormsModule, 
-    MatCardModule, 
-    MatFormFieldModule, 
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
     MatInputModule,
-    MatButtonModule, 
-    MatIconModule, 
-    MatTableModule, 
-    MatPaginatorModule, 
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatPaginatorModule,
     MatSortModule,
-    MatChipsModule, 
+    MatChipsModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTooltipModule,
+    MatDialogModule,
     RouterLink,
     SearchableSelectComponent
   ],
@@ -74,8 +75,15 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
   statusFilter: boolean | null = null;
   academicYearFilter: string | null = null;
   
-  genderOptions: any[] = [];
-  statusOptions: any[] = [];
+  genderOptions: { value: number | null; label: string }[] = [];
+  statusOptions: { value: boolean | null; label: string }[] = [];
+  academicYearOptions: { value: string | null; label: string }[] = [
+    { value: null, label: 'الكل' },
+    { value: 'الأولى', label: 'السنة الأولى' },
+    { value: 'الثانية', label: 'السنة الثانية' },
+    { value: 'الثالثة', label: 'السنة الثالثة' },
+    { value: 'الرابعة', label: 'السنة الرابعة' }
+  ];
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -92,7 +100,8 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
     private traineeService: TraineeService,
     private reportService: ReportService,
     private notification: NotificationService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -176,8 +185,47 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
   }
 
   viewTrainee(id: number): void {
-    this.router.navigate(['/trainees', id]);
+    this.traineeService.getTraineeById(id).subscribe({
+      next: (trainee) => {
+        this.dialog.open(TraineeDetailsModalComponent, {
+          data: trainee,
+          width: '700px',
+          maxWidth: '90vw'
+        });
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
+      }
+    });
   }
+  
+editTrainee(id: number): void {
+  const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
+    data: { traineeId: id },
+    width: '900px',
+    maxWidth: '90vw'
+  });
+  
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.loadTrainees();
+    }
+  });
+}
+
+openNewTraineeModal(): void {
+  const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
+    data: {},
+    width: '900px',
+    maxWidth: '90vw'
+  });
+  
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.loadTrainees();
+    }
+  });
+}
 
   deleteTrainee(trainee: Trainee): void {
     if (confirm(`هل أنت متأكد من حذف المتدرب "${trainee.fullName}"؟`)) {
@@ -202,7 +250,7 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
       'الاسم': t.fullName,
       'رقم الهوية': t.nationalId,
       'السنة الدراسية': t.academicYear || '-',
-      'الجنس': t.gender?.title,
+      'الجنس': t.gender?.title || '-',
       'الحالة': t.isActive ? 'نشط' : 'غير نشط'
     }));
     
@@ -216,26 +264,179 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
       return;
     }
     
-    const doc = new jsPDF('l', 'mm', 'a4');
-    doc.setFontSize(18);
-    doc.text('قائمة المتدربين', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-    
-    autoTable(doc, {
-      head: [['#', 'الاسم', 'رقم الهوية', 'السنة الدراسية', 'الجنس', 'الحالة']],
-      body: this.dataSource.filteredData.map((t: Trainee, i: number) => [
-        (i + 1).toString(),
-        t.fullName || '-',
-        t.nationalId || '-',
-        t.academicYear || '-',
-        t.gender?.title || '-',
-        t.isActive ? 'نشط' : 'غير نشط'
-      ]),
-      startY: 35,
-      styles: { halign: 'right', fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' }
+    this.isLoading = true;
+
+    // Build filter text
+    const filterTexts: string[] = [];
+    if (this.genderFilter !== null) {
+      const gender = GENDERS.find(g => g.id === this.genderFilter);
+      if (gender) filterTexts.push(`الجنس: ${gender.title}`);
+    }
+    if (this.statusFilter !== null) {
+      filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
+    }
+    if (this.academicYearFilter) {
+      filterTexts.push(`السنة الدراسية: ${this.academicYearFilter}`);
+    }
+    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
+
+    // Build table rows
+    let tableRows = '';
+    this.dataSource.filteredData.forEach((t: Trainee, index: number) => {
+      const statusClass = t.isActive ? 'active' : 'inactive';
+      const statusStyle = t.isActive 
+        ? 'background-color: #d1fae5; color: #065f46;' 
+        : 'background-color: #fee2e2; color: #991b1b;';
+      
+      tableRows += `
+        <tr>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${t.fullName || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${t.nationalId || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${t.academicYear || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${t.gender?.title || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">${t.isActive ? 'نشط' : 'غير نشط'}</td>
+        </tr>
+      `;
     });
+
+    // Create print container
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
     
-    doc.save('trainees-list.pdf');
-    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>قائمة المتدربين</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @media print {
+            body { margin: 0; padding: 20px; }
+            .no-print { display: none; }
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+          }
+          .header h1 { margin: 0; font-size: 24px; }
+          .header p { margin: 10px 0 0 0; font-size: 12px; }
+          .filters {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            font-size: 12px;
+          }
+          .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+          }
+          .stat-item {
+            flex: 1;
+            text-align: center;
+          }
+          .stat-label { font-size: 12px; color: #6b7280; }
+          .stat-value { font-size: 20px; font-weight: bold; color: #667eea; }
+          .stat-value.active { color: #10b981; }
+          .stat-value.inactive { color: #f59e0b; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+          }
+          th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-weight: bold;
+          }
+          td { padding: 8px; border: 1px solid #ddd; }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 10px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>قائمة المتدربين</h1>
+          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+          <p>عدد السجلات: ${this.dataSource.filteredData.length} متدرب</p>
+        </div>
+        ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value">${this.allTrainees.length}</div>
+            <div class="stat-label">إجمالي المتدربين</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value active">${this.activeCount}</div>
+            <div class="stat-label">نشط</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value inactive">${this.inactiveCount}</div>
+            <div class="stat-label">غير نشط</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الاسم</th>
+              <th>رقم الهوية</th>
+              <th>السنة الدراسية</th>
+              <th>الجنس</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        <div class="footer">
+          تم التصدير من نظام إدارة الأكاديمية الأولمبية
+        </div>
+        <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">
+            🖨️ طباعة / حفظ كـ PDF
+          </button>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        document.body.removeChild(printContainer);
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
+    }
   }
 }

@@ -1,13 +1,13 @@
 <div class="payments-container">
   <div class="page-header">
     <h1>مدفوعات التسجيلات</h1>
-    <button mat-raised-button color="primary" routerLink="/financial/enrollment-payments/new">
+    <button mat-raised-button color="primary" (click)="openNewPaymentModal()">
       <mat-icon>add</mat-icon> دفعة جديدة
     </button>
   </div>
 
   <mat-card>
-    <!-- صف الفلاتر الأول -->
+    <!-- Filter Section - Row 1 -->
     <div class="filters">
       <mat-form-field appearance="outline" class="filter-field">
         <mat-label>بحث عام</mat-label>
@@ -15,32 +15,48 @@
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>التسجيل</mat-label>
-        <mat-select [(ngModel)]="filters.enrollmentId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let e of enrollments" [value]="e.id">{{ e.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <app-searchable-select
+        [ngModel]="filters.courseId"
+        (ngModelChange)="filters.courseId = $event; loadData()"
+        label="الدورة"
+        [options]="courseOptions"
+        [required]="false"
+        class="filter-select"
+        [ngModelOptions]="{standalone: true}">
+      </app-searchable-select>
 
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>طريقة الدفع</mat-label>
-        <mat-select [(ngModel)]="filters.paymentMethodId" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let p of paymentMethods" [value]="p.id">{{ p.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <app-searchable-select
+        [ngModel]="filters.enrollmentId"
+        (ngModelChange)="filters.enrollmentId = $event; loadData()"
+        label="التسجيل"
+        [options]="enrollmentOptions"
+        [required]="false"
+        class="filter-select"
+        [ngModelOptions]="{standalone: true}">
+      </app-searchable-select>
+
+      <app-searchable-select
+        [ngModel]="filters.paymentMethodId"
+        (ngModelChange)="filters.paymentMethodId = $event; loadData()"
+        label="طريقة الدفع"
+        [options]="paymentMethodOptions"
+        [required]="false"
+        class="filter-select"
+        [ngModelOptions]="{standalone: true}">
+      </app-searchable-select>
     </div>
 
-    <!-- صف الفلاتر الثاني -->
+    <!-- Filter Section - Row 2 -->
     <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>حالة الدفع</mat-label>
-        <mat-select [(ngModel)]="filters.paymentStatus" (selectionChange)="loadData()">
-          <mat-option [value]="null">الكل</mat-option>
-          <mat-option *ngFor="let s of paymentStatuses" [value]="s.id">{{ s.title }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+      <app-searchable-select
+        [ngModel]="filters.paymentStatus"
+        (ngModelChange)="filters.paymentStatus = $event; loadData()"
+        label="حالة الدفع"
+        [options]="paymentStatusOptions"
+        [required]="false"
+        class="filter-select"
+        [ngModelOptions]="{standalone: true}">
+      </app-searchable-select>
 
       <mat-form-field appearance="outline" class="filter-field">
         <mat-label>من تاريخ</mat-label>
@@ -67,52 +83,107 @@
       </button>
     </div>
 
-    <!-- تحميل -->
+    <!-- Loading Spinner -->
     <div class="loading" *ngIf="isLoading">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
 
-    <!-- الجدول -->
+    <!-- Data Table -->
     <div class="table-container" *ngIf="!isLoading">
+      
+      <!-- Totals Section -->
+      <div class="totals-section">
+        <div class="totals-header">
+          <mat-icon>assessment</mat-icon>
+          <span>ملخص المدفوعات</span>
+        </div>
+        <div class="totals-grid">
+          <div class="total-card total-payments">
+            <div class="total-icon">
+              <mat-icon>receipt</mat-icon>
+            </div>
+            <div class="total-info">
+              <div class="total-label">عدد المدفوعات</div>
+              <div class="total-value">{{ getTotalPaymentsCount() }}</div>
+            </div>
+          </div>
+          
+          <div class="total-card total-amount">
+            <div class="total-icon">
+              <mat-icon>payments</mat-icon>
+            </div>
+            <div class="total-info">
+              <div class="total-label">إجمالي المدفوعات</div>
+              <div class="total-value">{{ getTotalPaidAmount() | number }} جم</div>
+            </div>
+          </div>
+          
+          <div class="total-card total-remaining">
+            <div class="total-icon">
+              <mat-icon>account_balance_wallet</mat-icon>
+            </div>
+            <div class="total-info">
+              <div class="total-label">إجمالي المتبقي</div>
+              <div class="total-value">{{ getTotalRemainingAmount() | number }} جم</div>
+            </div>
+          </div>
+          
+          <div class="total-card total-average">
+            <div class="total-icon">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <div class="total-info">
+              <div class="total-label">متوسط الدفعة</div>
+              <div class="total-value">{{ getAveragePayment() | number }} جم</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <table mat-table [dataSource]="dataSource" matSort class="full-width">
         
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef> رقم </th>
-          <td mat-cell *matCellDef="let p"> {{p.id}} </td>
+          <td mat-cell *matCellDef="let p"> {{ p.id }} </td>
         </ng-container>
 
-        <ng-container matColumnDef="enrollment">
-          <th mat-header-cell *matHeaderCellDef> التسجيل </th>
-          <td mat-cell *matCellDef="let p"> {{p.enrollment?.title}} </td>
+        <ng-container matColumnDef="trainee">
+          <th mat-header-cell *matHeaderCellDef> المتدرب </th>
+          <td mat-cell *matCellDef="let p"> {{ p.enrollment?.trainee?.title }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="course">
+          <th mat-header-cell *matHeaderCellDef> الدورة </th>
+          <td mat-cell *matCellDef="let p"> {{ p.enrollment?.course?.title }} </td>
         </ng-container>
 
         <ng-container matColumnDef="paidAmount">
           <th mat-header-cell *matHeaderCellDef> المبلغ المدفوع </th>
-          <td mat-cell *matCellDef="let p"> {{p.paidAmount}} جم </td>
+          <td mat-cell *matCellDef="let p"> {{ p.paidAmount }} جم </td>
         </ng-container>
 
         <ng-container matColumnDef="remainedValue">
           <th mat-header-cell *matHeaderCellDef> المبلغ المتبقي </th>
-          <td mat-cell *matCellDef="let p"> {{p.remainedValue}} جم </td>
+          <td mat-cell *matCellDef="let p"> {{ p.remainedValue }} جم </td>
         </ng-container>
 
         <ng-container matColumnDef="paymentDate">
           <th mat-header-cell *matHeaderCellDef> تاريخ الدفع </th>
-          <td mat-cell *matCellDef="let p"> {{p.paymentDate | date}} </td>
+          <td mat-cell *matCellDef="let p"> {{ p.paymentDate | date }} </td>
         </ng-container>
 
         <ng-container matColumnDef="paymentMethod">
           <th mat-header-cell *matHeaderCellDef> طريقة الدفع </th>
-          <td mat-cell *matCellDef="let p"> {{p.paymentMethod?.title || '-'}} </td>
+          <td mat-cell *matCellDef="let p"> {{ p.paymentMethod?.title || '-' }} </td>
         </ng-container>
 
         <ng-container matColumnDef="paymentStatus">
           <th mat-header-cell *matHeaderCellDef> الحالة </th>
           <td mat-cell *matCellDef="let p"> 
-            <span [style.background]="p.paymentStatus?.id === 2 ? '#d1fae5' : '#fef3c7'" 
-                  [style.color]="p.paymentStatus?.id === 2 ? '#065f46' : '#92400e'"
+            <span [style.background]="getPaymentStatusColor(p.paymentStatus?.id)" 
+                  [style.color]="getPaymentStatusTextColor(p.paymentStatus?.id)"
                   style="padding: 4px 12px; border-radius: 20px;">
-              {{p.paymentStatus?.title}}
+              {{ p.paymentStatus?.title }}
             </span>
           </td>
         </ng-container>
@@ -120,18 +191,20 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef> الإجراءات </th>
           <td mat-cell *matCellDef="let p">
-            <button mat-icon-button color="primary" [routerLink]="['/financial/enrollment-payments', p.id, 'edit']">
+            <button mat-icon-button color="primary" (click)="viewPayment(p.id); $event.stopPropagation()" matTooltip="عرض التفاصيل">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="editPayment(p.id); $event.stopPropagation()" matTooltip="تعديل">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="deletePayment(p)">
+            <button mat-icon-button color="warn" (click)="deletePayment(p); $event.stopPropagation()" matTooltip="حذف">
               <mat-icon>delete</mat-icon>
             </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
       </table>
 
       <div class="no-data" *ngIf="dataSource.data.length === 0">

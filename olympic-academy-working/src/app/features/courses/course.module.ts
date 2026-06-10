@@ -21,17 +21,14 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CourseListComponent } from './pages/course-list/course-list.component';
-import { CourseFormComponent } from './pages/course-form/course-form.component';
 
 const routes: Routes = [
-  { path: '', component: CourseListComponent },
-  { path: 'new', component: CourseFormComponent },
-  { path: ':id/edit', component: CourseFormComponent }
+  { path: '', component: CourseListComponent }
 ];
 
 @NgModule({
   // Remove CourseListComponent from declarations since it's standalone
-  declarations: [CourseFormComponent], // Only non-standalone components
+  declarations: [], // Only non-standalone components
   imports: [
     CommonModule,
     RouterModule.forChild(routes),

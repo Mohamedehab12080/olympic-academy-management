@@ -90,6 +90,16 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "OrderDirections.java"
     )
 
+    if not "!MODULE!"=="employee" (
+        call :delete_file "CourseSessionVTO.java"
+        call :delete_file "EmployeeVTO.java"
+        call :delete_file "EmployeeContactVTO.java"
+    )
+
+    if not "!MODULE!"=="enrollment" (
+        call :delete_file "EnrollmentVTO.java"
+    )
+
 
 	REM if not "!PROJECT!"=="service"(
     REM )

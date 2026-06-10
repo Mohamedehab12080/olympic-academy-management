@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import {
+  DepartmentDTO,
+  DepartmentVTO,
+  DepartmentResultSet
+} from '../models/department.model';
 import { NewRecordVTO, LookupResultSet } from '../models/common.model';
 
 @Injectable({
@@ -15,19 +20,23 @@ export class DepartmentService {
   }
 
   // CRUD endpoints
-  createDepartment(data: any): Observable<NewRecordVTO> {
+  createDepartment(data: DepartmentDTO): Observable<NewRecordVTO> {
     return this.api.post('/departments', data);
   }
 
-  getAllDepartments(params?: any): Observable<any> {
+  getAllDepartments(params?: any): Observable<DepartmentResultSet> {
     return this.api.get('/departments', params);
   }
 
-  getDepartmentById(id: number): Observable<any> {
+  getDepartmentById(id: number): Observable<DepartmentVTO> {
     return this.api.get(`/departments/${id}`);
   }
 
-  updateDepartment(id: number, data: any): Observable<NewRecordVTO> {
+  updateDepartment(id: number, data: DepartmentDTO): Observable<NewRecordVTO> {
     return this.api.put(`/departments/${id}`, data);
+  }
+
+  deleteDepartment(id: number): Observable<void> {
+    return this.api.delete(`/departments/${id}`);
   }
 }

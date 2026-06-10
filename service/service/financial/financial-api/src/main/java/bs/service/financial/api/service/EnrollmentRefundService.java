@@ -14,7 +14,7 @@ public interface EnrollmentRefundService {
     NewRecordVTO updateEnrollmentRefund(Integer refundId, EnrollmentRefundDTO enrollmentRefundDTO);
     void deleteEnrollmentRefund(Integer refundId);
     EnrollmentRefundVTO getEnrollmentRefundById(Integer refundId);
-    EnrollmentRefundResultSet getAllEnrollmentRefundsByFilter(Integer enrollmentId, Integer paymentMethodId,
+    EnrollmentRefundResultSet getAllEnrollmentRefundsByFilter(Integer enrollmentId,Integer courseId, Integer paymentMethodId,
                                                               RefundStatus status, LocalDate refundDateFrom,
                                                               LocalDate refundDateTo, Integer pageNum,
                                                               Integer pageSize, OrderDirections orderDir,

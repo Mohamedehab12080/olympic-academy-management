@@ -1,0 +1,1147 @@
+import { Component, OnInit, Inject, AfterViewInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatStepperModule, MatStepper } from '@angular/material/stepper';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
+import { EnrollmentService } from '../../../../core/services/enrollment.service';
+import { TraineeService } from '../../../../core/services/trainee.service';
+import { CourseService } from '../../../../core/services/course.service';
+import { EmployeeService } from '../../../../core/services/employee.service';
+import { FinancialService } from '../../../../core/services/financial.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { PAYMENT_STATUSES } from '../../../../core/models/common.model';
+import { ENROLLMENT_STATUSES } from '../../../../core/models/enrollment.model';
+import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+
+@Component({
+  selector: 'app-enrollment-wizard-modal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatStepperModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatProgressSpinnerModule,
+    MatDividerModule,
+    MatCardModule,
+    MatTooltipModule,
+    MatCheckboxModule,
+    SearchableSelectComponent
+  ],
+  template: `
+    <div class="wizard-container" dir="rtl">
+      <!-- Header -->
+      <div class="wizard-header">
+        <div class="header-title">
+          <mat-icon>{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
+          <h2>{{ isEditMode ? 'تعديل التسجيل' : 'تسجيل جديد' }}</h2>
+        </div>
+        <div class="header-actions">
+          <button mat-icon-button (click)="printPreview()" matTooltip="معاينة الطباعة">
+            <mat-icon>print</mat-icon>
+          </button>
+          <button mat-icon-button mat-dialog-close class="close-btn">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+      <mat-divider></mat-divider>
+      
+      <!-- Scrollable Stepper Container -->
+      <div class="stepper-container">
+        <mat-stepper [linear]="true" #stepper class="custom-stepper">
+          
+          <!-- Step 1: Select Trainee -->
+          <mat-step [stepControl]="step1Form">
+            <ng-template matStepLabel>
+              <div class="step-label">
+                <mat-icon>person</mat-icon>
+                <span>المتدرب</span>
+              </div>
+            </ng-template>
+            <div class="step-content">
+              <form [formGroup]="step1Form">
+                <div class="form-field full-width">
+                  <app-searchable-select
+                    [ngModel]="step1Form.get('traineeId')?.value"
+                    (ngModelChange)="step1Form.get('traineeId')?.setValue($event)"
+                    label="المتدرب *"
+                    [options]="traineeOptions"
+                    [required]="true"
+                    [ngModelOptions]="{standalone: true}">
+                  </app-searchable-select>
+                </div>
+              </form>
+            </div>
+            <div class="step-actions">
+              <button mat-raised-button color="primary" matStepperNext [disabled]="step1Form.invalid">
+                التالي <mat-icon>arrow_back</mat-icon>
+              </button>
+            </div>
+          </mat-step>
+
+          <!-- Step 2: Select Course -->
+          <mat-step [stepControl]="step2Form">
+            <ng-template matStepLabel>
+              <div class="step-label">
+                <mat-icon>school</mat-icon>
+                <span>الدورة</span>
+              </div>
+            </ng-template>
+            <div class="step-content">
+              <form [formGroup]="step2Form">
+                <div class="form-field full-width">
+                  <app-searchable-select
+                    [ngModel]="step2Form.get('courseId')?.value"
+                    (ngModelChange)="step2Form.get('courseId')?.setValue($event); onCourseSelect()"
+                    label="الدورة *"
+                    [options]="courseOptions"
+                    [required]="true"
+                    [ngModelOptions]="{standalone: true}">
+                  </app-searchable-select>
+                </div>
+                
+                <!-- Course Information Card -->
+                <mat-card class="course-info-card" *ngIf="selectedCourse">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar>info</mat-icon>
+                    <mat-card-title>معلومات الدورة</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="info-grid">
+                      <div class="info-item">
+                        <span class="info-label">المدة:</span>
+                        <span class="info-value">{{ selectedCourse.duration }} ساعة</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">السعر:</span>
+                        <span class="info-value price">{{ selectedCourse.price | currency:'EGP' }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">تاريخ البدء:</span>
+                        <span class="info-value">{{ selectedCourse.startDate | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-label">تاريخ الانتهاء:</span>
+                        <span class="info-value">{{ selectedCourse.endDate | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                      <div class="info-item full-width" *ngIf="selectedCourse.description">
+                        <span class="info-label">الوصف:</span>
+                        <span class="info-value">{{ selectedCourse.description }}</span>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </form>
+            </div>
+            <div class="step-actions">
+              <button mat-stroked-button matStepperPrevious>
+                <mat-icon>arrow_forward</mat-icon> السابق
+              </button>
+              <button mat-raised-button color="primary" matStepperNext [disabled]="step2Form.invalid">
+                التالي <mat-icon>arrow_back</mat-icon>
+              </button>
+            </div>
+          </mat-step>
+
+          <!-- Step 3: Select Trainer -->
+          <mat-step [stepControl]="step3Form">
+            <ng-template matStepLabel>
+              <div class="step-label">
+                <mat-icon>badge</mat-icon>
+                <span>المدرب</span>
+              </div>
+            </ng-template>
+            <div class="step-content">
+              <form [formGroup]="step3Form">
+                <div class="form-field full-width">
+                  <app-searchable-select
+                    [ngModel]="step3Form.get('trainerId')?.value"
+                    (ngModelChange)="step3Form.get('trainerId')?.setValue($event)"
+                    label="المدرب *"
+                    [options]="trainerOptions"
+                    [required]="true"
+                    [ngModelOptions]="{standalone: true}">
+                  </app-searchable-select>
+                </div>
+              </form>
+            </div>
+            <div class="step-actions">
+              <button mat-stroked-button matStepperPrevious>
+                <mat-icon>arrow_forward</mat-icon> السابق
+              </button>
+              <button mat-raised-button color="primary" matStepperNext [disabled]="step3Form.invalid">
+                التالي <mat-icon>arrow_back</mat-icon>
+              </button>
+            </div>
+          </mat-step>
+
+          <!-- Step 4: Enrollment Details -->
+          <mat-step [stepControl]="enrollmentForm">
+            <ng-template matStepLabel>
+              <div class="step-label">
+                <mat-icon>receipt</mat-icon>
+                <span>تفاصيل التسجيل</span>
+              </div>
+            </ng-template>
+            <div class="step-content">
+              <!-- Course Date Range Info -->
+              <div class="course-date-info" *ngIf="selectedCourse">
+                <mat-icon>event_range</mat-icon>
+                <div class="date-range">
+                  <span class="range-label">فترة الدورة:</span>
+                  <span class="range-value">{{ selectedCourse.startDate | date:'dd/MM/yyyy' }} - {{ selectedCourse.endDate | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+
+              <form [formGroup]="enrollmentForm">
+                <!-- First Row -->
+                <div class="form-row">
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>نوع التسجيل</mat-label>
+                      <mat-select formControlName="enrollmentTypeId">
+                        <mat-option [value]="null">-- اختر --</mat-option>
+                        <mat-option *ngFor="let type of enrollmentTypes" [value]="type.id">{{ type.title }}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>تاريخ البدء *</mat-label>
+                      <input matInput [matDatepicker]="startPicker" formControlName="startDate" (dateChange)="validateDates()">
+                      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #startPicker></mat-datepicker>
+                      <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('required')">تاريخ البدء مطلوب</mat-error>
+                      <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('beforeCourseStart')">تاريخ البدء يجب أن يكون بعد تاريخ بدء الدورة ({{ selectedCourse?.startDate | date:'dd/MM/yyyy' }})</mat-error>
+                      <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('afterCourseEnd')">تاريخ البدء يجب أن يكون قبل تاريخ انتهاء الدورة ({{ selectedCourse?.endDate | date:'dd/MM/yyyy' }})</mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Second Row -->
+                <div class="form-row">
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>تاريخ الانتهاء</mat-label>
+                      <input matInput [matDatepicker]="endPicker" formControlName="endDate" (dateChange)="validateDates()">
+                      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #endPicker></mat-datepicker>
+                      <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('afterCourseEnd')">تاريخ الانتهاء يجب أن يكون قبل تاريخ انتهاء الدورة ({{ selectedCourse?.endDate | date:'dd/MM/yyyy' }})</mat-error>
+                      <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('beforeStartDate')">تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء</mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>حالة التسجيل</mat-label>
+                      <mat-select formControlName="enrollmentStatus">
+                        <mat-option *ngFor="let status of enrollmentStatuses" [value]="status">{{ status.title }}</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Third Row -->
+                <div class="form-row">
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>قيمة الاشتراك</mat-label>
+                      <input matInput type="number" formControlName="subscriptionValue" (input)="calculateFinalValue()">
+                      <span matSuffix>جم</span>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field"></div>
+                </div>
+
+                <!-- Fourth Row - Discount with Auto Calculation -->
+                <div class="form-row discount-row">
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>قيمة الخصم</mat-label>
+                      <input matInput type="number" formControlName="discountAmount" (input)="onDiscountAmountChange()">
+                      <span matSuffix>جم</span>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>نسبة الخصم</mat-label>
+                      <input matInput type="number" formControlName="discountPercentage" (input)="onDiscountPercentageChange()">
+                      <span matSuffix>%</span>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <!-- Fifth Row - Final Amount -->
+                <div class="form-row highlight">
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>المبلغ النهائي</mat-label>
+                      <input matInput type="number" formControlName="finalSubscriptionValue" readonly>
+                      <span matSuffix>جم</span>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-field"></div>
+                </div>
+
+                <!-- Payment Option -->
+                <div class="payment-option">
+                  <mat-checkbox color="primary" (change)="onPaymentOptionChange($event)">
+                    <span class="payment-checkbox-label">إجراء دفعة مباشرة</span>
+                  </mat-checkbox>
+                  <div class="payment-info-hint" *ngIf="showPaymentSection">
+                    <mat-icon>info</mat-icon>
+                    <span>سيتم نقلك إلى صفحة الدفع بعد حفظ التسجيل</span>
+                  </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-field full-width">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>ملاحظات</mat-label>
+                    <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+                  </mat-form-field>
+                </div>
+              </form>
+            </div>
+            <div class="step-actions">
+              <button mat-stroked-button matStepperPrevious>
+                <mat-icon>arrow_forward</mat-icon> السابق
+              </button>
+              <button mat-raised-button color="primary" (click)="submitEnrollment()" [disabled]="isSubmitting || enrollmentForm.invalid">
+                <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+                <span *ngIf="!isSubmitting">{{ isEditMode ? 'تحديث' : 'تأكيد التسجيل' }}</span>
+              </button>
+              <button mat-stroked-button color="accent" (click)="printPreview()" [disabled]="isSubmitting">
+                <mat-icon>print</mat-icon>
+                معاينة الطباعة
+              </button>
+            </div>
+          </mat-step>
+        </mat-stepper>
+      </div>
+      
+      <!-- Loading Overlay -->
+      <div class="loading-overlay" *ngIf="isLoading">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>جاري التحميل...</p>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .wizard-container {
+      min-width: 650px;
+      max-width: 850px;
+      max-height: 90vh;
+      direction: rtl;
+      background: #f5f7fa;
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .wizard-header {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #ec489a 0%, #be185d 100%);
+      color: white;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-title mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+    .wizard-header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .close-btn {
+      color: white;
+      transition: transform 0.2s;
+    }
+    .close-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Scrollable Stepper Container */
+    .stepper-container {
+      flex: 1;
+      overflow-y: auto;
+      max-height: calc(90vh - 80px);
+      padding: 0 24px;
+    }
+
+    /* Custom Stepper */
+    .custom-stepper {
+      background: transparent;
+      padding: 24px 0;
+    }
+    .step-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-label mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Step Content */
+    .step-content {
+      padding: 24px 0;
+      min-height: 280px;
+    }
+
+    /* Step Actions - Sticky at bottom */
+    .step-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      padding: 16px 0;
+      border-top: 1px solid #e5e7eb;
+      margin-top: 16px;
+      background: #f5f7fa;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+    .step-actions button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 24px;
+    }
+
+    /* Course Date Info */
+    .course-date-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .course-date-info mat-icon {
+      color: #0369a1;
+    }
+    .date-range {
+      flex: 1;
+    }
+    .range-label {
+      font-weight: 600;
+      color: #0369a1;
+      margin-left: 8px;
+    }
+    .range-value {
+      color: #1e293b;
+      font-weight: 500;
+    }
+
+    /* Form Layout */
+    .form-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .form-field {
+      flex: 1;
+    }
+    .full-width {
+      width: 100%;
+    }
+
+    /* Course Info Card */
+    .course-info-card {
+      margin-top: 24px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 16px;
+    }
+    .course-info-card mat-card-header {
+      padding: 16px 16px 0 16px;
+    }
+    .course-info-card mat-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0369a1;
+    }
+    .course-info-card mat-card-content {
+      padding: 16px;
+    }
+    .info-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .info-item {
+      flex: 1;
+      min-width: 150px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .info-item.full-width {
+      flex: 100%;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #475569;
+      font-size: 13px;
+    }
+    .info-value {
+      color: #1e293b;
+      font-size: 13px;
+    }
+    .info-value.price {
+      font-weight: 700;
+      color: #ec489a;
+      font-size: 16px;
+    }
+
+    /* Discount Row */
+    .discount-row {
+      background: #fefce8;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+
+    /* Highlight Row */
+    .highlight {
+      background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+      padding: 20px;
+      border-radius: 16px;
+      margin: 20px 0;
+    }
+    .highlight .mat-form-field {
+      background: white;
+      border-radius: 8px;
+    }
+
+    /* Payment Option */
+    .payment-option {
+      background: #e0e7ff;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .payment-checkbox-label {
+      font-weight: 500;
+      color: #3730a3;
+    }
+    .payment-info-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #4338ca;
+    }
+    .payment-info-hint mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border-radius: 24px;
+      z-index: 1000;
+    }
+    .loading-overlay p {
+      color: #ec489a;
+      font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .wizard-container {
+        min-width: 90vw;
+        max-width: 90vw;
+        max-height: 95vh;
+      }
+      .stepper-container {
+        max-height: calc(95vh - 80px);
+      }
+      .form-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .step-actions {
+        flex-direction: column;
+      }
+      .step-actions button {
+        width: 100%;
+        justify-content: center;
+      }
+      .info-grid {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .info-item {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .course-date-info {
+        flex-direction: column;
+        text-align: center;
+      }
+      .payment-option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  `]
+})
+export class EnrollmentWizardModalComponent implements OnInit {
+  @ViewChild('stepper') stepper!: MatStepper;
+  
+  step1Form: FormGroup;
+  step2Form: FormGroup;
+  step3Form: FormGroup;
+  enrollmentForm: FormGroup;
+  
+  trainees: any[] = [];
+  courses: any[] = [];
+  trainers: any[] = [];
+  enrollmentTypes: any[] = [];
+  paymentStatuses = PAYMENT_STATUSES;
+  enrollmentStatuses = ENROLLMENT_STATUSES;
+  paymentMethods: any[] = [];
+  
+  traineeOptions: SelectOption[] = [];
+  courseOptions: SelectOption[] = [];
+  trainerOptions: SelectOption[] = [];
+  paymentMethodOptions: SelectOption[] = [];
+  
+  selectedCourse: any = null;
+  isLoading = false;
+  isSubmitting = false;
+  isEditMode = false;
+  enrollmentId: number | null = null;
+  showPaymentSection: boolean = false;
+  makePaymentDirectly: boolean = false;
+
+  constructor(
+    private dialog: MatDialog,
+    private dialogRef: MatDialogRef<EnrollmentWizardModalComponent>,
+    @Inject(MAT_DIALOG_DATA) private data: { enrollmentId?: number },
+    private fb: FormBuilder,
+    private enrollmentService: EnrollmentService,
+    private traineeService: TraineeService,
+    private courseService: CourseService,
+    private employeeService: EmployeeService,
+    private financialService: FinancialService,
+    private notification: NotificationService
+  ) {
+    this.isEditMode = !!data?.enrollmentId;
+    this.enrollmentId = data?.enrollmentId || null;
+    
+    this.step1Form = this.fb.group({ traineeId: [null, Validators.required] });
+    this.step2Form = this.fb.group({ courseId: [null, Validators.required] });
+    this.step3Form = this.fb.group({ trainerId: [null, Validators.required] });
+    this.enrollmentForm = this.fb.group({
+      enrollmentTypeId: [null],
+      startDate: [null, [Validators.required]],
+      endDate: [null],
+      enrollmentStatus: [null],
+      subscriptionValue: [null],
+      discountAmount: [null],
+      discountPercentage: [null],
+      finalSubscriptionValue: [{ value: null, disabled: true }],
+      note: ['']
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadLookupData();
+    this.loadPaymentMethods();
+    if (this.isEditMode && this.enrollmentId) {
+      this.loadEnrollmentData();
+    }
+  }
+
+  loadLookupData(): void {
+    this.isLoading = true;
+    
+    this.traineeService.getAllTraineesLookup().subscribe({
+      next: (res: any) => {
+        this.trainees = res.list || [];
+        this.traineeOptions = [
+          ...this.trainees.map(t => ({ value: t.id, label: t.title }))
+        ];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل المتدربين');
+      }
+    });
+
+    this.courseService.getAllCourses().subscribe({
+      next: (res: any) => {
+        this.courses = res.items || [];
+        this.courseOptions = [
+          ...this.courses.map(c => ({ value: c.id, label: c.title }))
+        ];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل الدورات');
+      }
+    });
+
+    this.employeeService.getAllTrainersLookup().subscribe({
+      next: (res: any) => {
+        this.trainers = res.list || [];
+        this.trainerOptions = [
+          ...this.trainers.map(t => ({ value: t.id, label: t.title }))
+        ];
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل المدربين');
+        this.isLoading = false;
+      }
+    });
+
+    this.enrollmentService.getAllEnrollmentTypes().subscribe({
+      next: (res: any) => {
+        this.enrollmentTypes = res.items || [];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل أنواع التسجيل');
+      }
+    });
+  }
+
+  loadPaymentMethods(): void {
+    this.financialService.getAllPaymentMethodsLookup().subscribe({
+      next: (res: any) => {
+        this.paymentMethods = res.list || [];
+        this.paymentMethodOptions = this.paymentMethods.map((p: any) => ({ 
+          value: p.id, 
+          label: p.title 
+        }));
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل طرق الدفع');
+      }
+    });
+  }
+
+  loadEnrollmentData(): void {
+    this.isLoading = true;
+    this.enrollmentService.getEnrollmentById(this.enrollmentId!).subscribe({
+      next: (enrollment: any) => {
+        this.step1Form.patchValue({ traineeId: enrollment.trainee?.id });
+        this.step2Form.patchValue({ courseId: enrollment.course?.id });
+        this.step3Form.patchValue({ trainerId: enrollment.trainer?.id });
+        
+        this.onCourseSelect();
+        
+        let enrollmentStatusObj = null;
+        if (enrollment.enrollmentStatus) {
+          switch(enrollment.enrollmentStatus) {
+            case 'PENDING':
+              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 1);
+              break;
+            case 'COMPLETED':
+              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 2);
+              break;
+            case 'CANCELLED':
+              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 3);
+              break;
+            default:
+              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 1);
+          }
+        }
+        
+        this.enrollmentForm.patchValue({
+          enrollmentTypeId: enrollment.enrollmentType?.id,
+          startDate: enrollment.startDate,
+          endDate: enrollment.endDate,
+          enrollmentStatus: enrollmentStatusObj,
+          subscriptionValue: enrollment.subscriptionValue,
+          discountAmount: enrollment.discountAmount,
+          discountPercentage: enrollment.discountPercentage,
+          note: enrollment.note
+        });
+        
+        this.calculateFinalValue();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onCourseSelect(): void {
+    const courseId = this.step2Form.get('courseId')?.value;
+    this.selectedCourse = this.courses.find(c => c.id === courseId);
+    if (this.selectedCourse) {
+      this.enrollmentForm.patchValue({ 
+        subscriptionValue: this.selectedCourse.price 
+      });
+      
+      const currentStartDate = this.enrollmentForm.get('startDate')?.value;
+      if (!currentStartDate && this.selectedCourse.startDate) {
+        this.enrollmentForm.patchValue({ startDate: this.selectedCourse.startDate });
+      }
+      
+      this.setDateValidators();
+      this.calculateFinalValue();
+    }
+  }
+
+  setDateValidators(): void {
+    if (!this.selectedCourse) return;
+    
+    const courseStartDate = new Date(this.selectedCourse.startDate);
+    const courseEndDate = new Date(this.selectedCourse.endDate);
+    
+    const startDateValidator = (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      const selectedDate = new Date(control.value);
+      
+      if (selectedDate < courseStartDate) {
+        return { beforeCourseStart: true };
+      }
+      if (selectedDate > courseEndDate) {
+        return { afterCourseEnd: true };
+      }
+      return null;
+    };
+    
+    const endDateValidator = (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      const selectedDate = new Date(control.value);
+      const startDate = this.enrollmentForm.get('startDate')?.value;
+      
+      if (selectedDate > courseEndDate) {
+        return { afterCourseEnd: true };
+      }
+      if (startDate && selectedDate < new Date(startDate)) {
+        return { beforeStartDate: true };
+      }
+      return null;
+    };
+    
+    this.enrollmentForm.get('startDate')?.setValidators([Validators.required, startDateValidator]);
+    this.enrollmentForm.get('endDate')?.setValidators([endDateValidator]);
+    this.enrollmentForm.get('startDate')?.updateValueAndValidity();
+    this.enrollmentForm.get('endDate')?.updateValueAndValidity();
+  }
+
+  validateDates(): void {
+    this.enrollmentForm.get('startDate')?.updateValueAndValidity();
+    this.enrollmentForm.get('endDate')?.updateValueAndValidity();
+  }
+
+  onDiscountAmountChange(): void {
+    const subscriptionValue = this.enrollmentForm.get('subscriptionValue')?.value || 0;
+    const discountAmount = this.enrollmentForm.get('discountAmount')?.value || 0;
+    
+    if (subscriptionValue > 0 && discountAmount > 0) {
+      const discountPercentage = (discountAmount / subscriptionValue) * 100;
+      this.enrollmentForm.patchValue({ discountPercentage: Math.round(discountPercentage * 100) / 100 }, { emitEvent: false });
+    } else if (discountAmount === 0) {
+      this.enrollmentForm.patchValue({ discountPercentage: null }, { emitEvent: false });
+    }
+    
+    this.calculateFinalValue();
+  }
+
+  onDiscountPercentageChange(): void {
+    const subscriptionValue = this.enrollmentForm.get('subscriptionValue')?.value || 0;
+    const discountPercentage = this.enrollmentForm.get('discountPercentage')?.value || 0;
+    
+    if (subscriptionValue > 0 && discountPercentage > 0) {
+      const discountAmount = (subscriptionValue * discountPercentage) / 100;
+      this.enrollmentForm.patchValue({ discountAmount: Math.round(discountAmount * 100) / 100 }, { emitEvent: false });
+    } else if (discountPercentage === 0) {
+      this.enrollmentForm.patchValue({ discountAmount: null }, { emitEvent: false });
+    }
+    
+    this.calculateFinalValue();
+  }
+
+  calculateFinalValue(): void {
+    const subscriptionValue = this.enrollmentForm.get('subscriptionValue')?.value || 0;
+    const discountAmount = this.enrollmentForm.get('discountAmount')?.value || 0;
+    const discountPercentage = this.enrollmentForm.get('discountPercentage')?.value || 0;
+    
+    let finalValue = subscriptionValue;
+    
+    if (discountAmount > 0) {
+      finalValue = subscriptionValue - discountAmount;
+    } else if (discountPercentage > 0) {
+      finalValue = subscriptionValue - (subscriptionValue * discountPercentage / 100);
+    }
+    
+    finalValue = Math.max(0, finalValue);
+    this.enrollmentForm.patchValue({ finalSubscriptionValue: finalValue }, { emitEvent: false });
+  }
+
+  onPaymentOptionChange(event: any): void {
+    this.makePaymentDirectly = event.checked;
+    this.showPaymentSection = event.checked;
+  }
+
+  printPreview(): void {
+    const traineeId = this.step1Form.get('traineeId')?.value;
+    const trainee = this.trainees.find(t => t.id === traineeId);
+    
+    const courseId = this.step2Form.get('courseId')?.value;
+    const course = this.courses.find(c => c.id === courseId);
+    
+    const trainerId = this.step3Form.get('trainerId')?.value;
+    const trainer = this.trainers.find(t => t.id === trainerId);
+    
+    const previewData = {
+      id: this.enrollmentId || 'جديد',
+      trainee: trainee,
+      course: course,
+      trainer: trainer,
+      enrollmentType: this.enrollmentTypes.find(t => t.id === this.enrollmentForm.get('enrollmentTypeId')?.value),
+      startDate: this.enrollmentForm.get('startDate')?.value,
+      endDate: this.enrollmentForm.get('endDate')?.value,
+      enrollmentStatus: this.enrollmentForm.get('enrollmentStatus')?.value,
+      subscriptionValue: this.enrollmentForm.get('subscriptionValue')?.value,
+      discountAmount: this.enrollmentForm.get('discountAmount')?.value,
+      discountPercentage: this.enrollmentForm.get('discountPercentage')?.value,
+      finalSubscriptionValue: this.enrollmentForm.get('finalSubscriptionValue')?.value,
+      note: this.enrollmentForm.get('note')?.value,
+      isNewEnrollment: !this.isEditMode
+    };
+    
+    this.generatePrintDocument(previewData);
+  }
+
+  generatePrintDocument(data: any): void {
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.maxWidth = '800px';
+    printContainer.style.margin = '0 auto';
+    
+    const today = new Date().toLocaleDateString('ar-EG');
+    const applicationNumber = data.isNewEnrollment ? `NEW-${Date.now()}` : `ENR-${data.id}`;
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>طلب تسجيل - ${data.trainee?.title || 'جديد'}</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
+          .container { max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #ec489a 0%, #be185d 100%); color: white; border-radius: 12px; }
+          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+          .info-item { border-bottom: 1px solid #e5e7eb; padding: 8px 0; }
+          .info-label { font-weight: 600; color: #374151; }
+          .info-value { color: #1f2937; }
+          .amount { font-weight: 700; color: #ec489a; font-size: 18px; }
+          .footer { text-align: center; margin-top: 30px; padding: 16px; font-size: 10px; color: #9ca3af; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header"><h1>طلب تسجيل في دورة تدريبية</h1><p>${applicationNumber} - ${today}</p></div>
+          <h3>معلومات المتدرب</h3>
+          <div class="info-grid"><div class="info-item"><div class="info-label">الاسم:</div><div class="info-value">${data.trainee?.title || '-'}</div></div></div>
+          <h3>معلومات الدورة</h3>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">الدورة:</div><div class="info-value">${data.course?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">المدرب:</div><div class="info-value">${data.trainer?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">تاريخ البدء:</div><div class="info-value">${data.startDate ? new Date(data.startDate).toLocaleDateString('ar-EG') : '-'}</div></div>
+            <div class="info-item"><div class="info-label">تاريخ الانتهاء:</div><div class="info-value">${data.endDate ? new Date(data.endDate).toLocaleDateString('ar-EG') : '-'}</div></div>
+          </div>
+          <h3>تفاصيل الدفع</h3>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">قيمة الاشتراك:</div><div class="info-value amount">${(data.subscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
+            ${data.discountAmount ? `<div class="info-item"><div class="info-label">الخصم:</div><div class="info-value">${data.discountAmount.toLocaleString('ar-EG')} جم</div></div>` : ''}
+            <div class="info-item"><div class="info-label">المبلغ النهائي:</div><div class="info-value amount">${(data.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
+          </div>
+          ${data.note ? `<h3>ملاحظات</h3><p>${data.note}</p>` : ''}
+          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.notification.showSuccess('تم فتح نموذج الطلب');
+    }
+  }
+
+  openPaymentModal(enrollmentId: number, finalAmount: number): void {
+    // Close the current dialog first
+    this.dialogRef.close(true);
+    
+    // Use a timeout to ensure the current dialog is fully closed
+    setTimeout(() => {
+      import('../../../financial/pages/enrollment/enrollment-payment/enrollment-payment-wizard/enrollment-payment-wizard-modal.component')
+        .then(module => {
+          const paymentDialog = this.dialog.open(module.EnrollmentPaymentWizardModalComponent, {
+            width: '800px',
+            maxWidth: '90vw',
+            data: { enrollmentId: enrollmentId }
+          });
+          
+          paymentDialog.afterClosed().subscribe((result: any) => {
+            if (result) {
+              this.notification.showSuccess('تم إضافة الدفعة بنجاح');
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Error loading payment modal:', error);
+          this.notification.showError('حدث خطأ في فتح نافذة الدفع');
+        });
+    }, 100);
+  }
+
+  submitEnrollment(): void {
+    if (this.step1Form.invalid || this.step2Form.invalid || this.step3Form.invalid) {
+      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
+      return;
+    }
+
+    if (this.enrollmentForm.invalid) {
+      this.notification.showWarning('يرجى التحقق من صحة التواريخ المدخلة');
+      return;
+    }
+    
+    this.isSubmitting = true;
+    
+    const enrollmentStatusObj = this.enrollmentForm.get('enrollmentStatus')?.value;
+    let enrollmentStatusEnum = null;
+    if (enrollmentStatusObj) {
+      switch(enrollmentStatusObj.id) {
+        case 1: enrollmentStatusEnum = 'PENDING'; break;
+        case 2: enrollmentStatusEnum = 'COMPLETED'; break;
+        case 3: enrollmentStatusEnum = 'CANCELLED'; break;
+        default: enrollmentStatusEnum = 'PENDING';
+      }
+    }
+    
+    const finalSubscriptionValue = this.enrollmentForm.get('finalSubscriptionValue')?.value || 0;
+    
+    const enrollmentData = {
+      traineeId: this.step1Form.get('traineeId')?.value,
+      courseId: this.step2Form.get('courseId')?.value,
+      trainerId: this.step3Form.get('trainerId')?.value,
+      enrollmentTypeId: this.enrollmentForm.get('enrollmentTypeId')?.value,
+      startDate: this.enrollmentForm.get('startDate')?.value,
+      endDate: this.enrollmentForm.get('endDate')?.value,
+      enrollmentStatus: enrollmentStatusEnum,
+      paymentStatus: this.makePaymentDirectly ? 'PARTIAL' : 'PENDING',
+      subscriptionValue: this.enrollmentForm.get('subscriptionValue')?.value,
+      discountAmount: this.enrollmentForm.get('discountAmount')?.value,
+      discountPercentage: this.enrollmentForm.get('discountPercentage')?.value,
+      finalSubscriptionValue: finalSubscriptionValue,
+      remainedSubscriptionValue: finalSubscriptionValue,
+      note: this.enrollmentForm.get('note')?.value
+    };
+
+    console.log('Submitting enrollment data:', enrollmentData);
+    console.log('Make payment directly:', this.makePaymentDirectly);
+    console.log('Final amount:', finalSubscriptionValue);
+
+    if (this.isEditMode && this.enrollmentId) {
+      this.enrollmentService.updateEnrollment(this.enrollmentId, enrollmentData as any).subscribe({
+        next: (res: any) => {
+          this.notification.showSuccess('تم تحديث التسجيل بنجاح');
+          if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
+            this.openPaymentModal(this.enrollmentId!, finalSubscriptionValue);
+          } else {
+            this.dialogRef.close(true);
+          }
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          console.error('Update error:', err);
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث التسجيل');
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      this.enrollmentService.createEnrollment(enrollmentData as any).subscribe({
+        next: (res: any) => {
+          this.notification.showSuccess('تم إضافة التسجيل بنجاح');
+          const newEnrollmentId = res.id;
+          console.log('New enrollment ID:', newEnrollmentId);
+          if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
+            this.openPaymentModal(newEnrollmentId, finalSubscriptionValue);
+          } else {
+            this.dialogRef.close(true);
+          }
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          console.error('Create error:', err);
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة التسجيل');
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+}

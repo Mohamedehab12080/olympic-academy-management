@@ -35,6 +35,7 @@ public class EnrollmentRefundControllerImpl implements EnrollmentRefundControlle
     @Override
     public ResponseEntity<EnrollmentRefundResultSet> _getAllEnrollmentRefundsByFilter(
             Integer enrollmentId,
+            Integer courseId,
             Integer paymentMethodId,
             RefundStatus status,
             LocalDate refundDateFrom,
@@ -46,6 +47,7 @@ public class EnrollmentRefundControllerImpl implements EnrollmentRefundControlle
 
         EnrollmentRefundResultSet result = enrollmentRefundService.getAllEnrollmentRefundsByFilter(
                 enrollmentId,
+                courseId,
                 paymentMethodId,
                 status,
                 refundDateFrom,

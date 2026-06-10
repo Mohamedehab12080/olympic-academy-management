@@ -22,7 +22,7 @@ public class TrainerCourse {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "trainer_id")
+    @JoinColumn(name = "employee_id")
     private Employee trainer;
 
     @ManyToOne

@@ -18,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { EmployeeService } from '../../../../../../core/services/employee.service';
@@ -26,8 +27,7 @@ import { ReportService } from '../../../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { SALARY_TRANSACTION_TYPES } from '../../../../../../core/models/financial.model';
 import { SALARY_TYPES } from '../../../../../../core/models/common.model';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { SalaryIncentiveWizardModalComponent } from '../salary-incentive-wizard/salary-incentive-wizard-modal.component.ts';
 
 @Component({
   selector: 'app-salary-incentive-list',
@@ -50,13 +50,14 @@ import autoTable from 'jspdf-autotable';
     MatProgressSpinnerModule,
     MatTooltipModule,
     MatChipsModule,
+    MatDialogModule,
     SearchableSelectComponent
   ],
   templateUrl: './salary-incentive-list.component.html',
   styleUrls: ['./salary-incentive-list.component.css']
 })
 export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['index', 'employee', 'transactionType', 'amount', 'withdrawDate', 'paymentMethod', 'salaryType', 'actions'];
+  displayedColumns: string[] = ['index', 'employee', 'salary', 'remainedSalary', 'transactionType', 'amount', 'withdrawDate', 'paymentMethod', 'salaryType', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isLoading = false;
   transactionTypes = SALARY_TRANSACTION_TYPES;
@@ -91,19 +92,19 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
   }
 
   get salaryTotal(): number {
-    return this.dataSource.data.filter(item => item.type?.id === 1).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+    return this.dataSource.data.filter(item => item.salaryTransactionType?.id === 1).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get incentiveTotal(): number {
-    return this.dataSource.data.filter(item => item.type?.id === 2).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+    return this.dataSource.data.filter(item => item.salaryTransactionType?.id === 2).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get bonusTotal(): number {
-    return this.dataSource.data.filter(item => item.type?.id === 3).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+    return this.dataSource.data.filter(item => item.salaryTransactionType?.id === 3).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get advanceTotal(): number {
-    return this.dataSource.data.filter(item => item.type?.id === 4).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+    return this.dataSource.data.filter(item => item.salaryTransactionType?.id === 4).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   constructor(
@@ -111,7 +112,8 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     private employeeService: EmployeeService,
     private notification: NotificationService,
     private reportService: ReportService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -180,11 +182,16 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     this.financialService.getAllSalaryIncentivesByFilter(params).subscribe({
       next: (res: any) => {
         this.dataSource.data = res.items || [];
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        if (this.dataSource.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
+        if (this.dataSource.sort) {
+          this.dataSource.sort = this.sort;
+        }
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading data:', err);
         this.notification.showError('حدث خطأ في تحميل البيانات');
         this.isLoading = false;
       }
@@ -210,27 +217,280 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
-  getTransactionTypeClass(typeId: number): string {
-    switch(typeId) {
-      case 1: return 'salary';
-      case 2: return 'incentive';
-      case 3: return 'bonus';
-      case 4: return 'advance';
-      default: return '';
-    }
+  openNewTransactionModal() {
+    const dialogRef = this.dialog.open(SalaryIncentiveWizardModalComponent, {
+      data: {},
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
+      }
+    });
   }
 
   viewTransaction(id: number) {
-    this.router.navigate(['/financial/salary-incentives', id]);
+    this.financialService.getSalaryIncentiveById(id).subscribe({
+      next: (transaction) => {
+        this.openDetailsModal(transaction);
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات المعاملة');
+      }
+    });
+  }
+
+  openDetailsModal(transaction: any): void {
+    const modalContainer = document.createElement('div');
+    modalContainer.style.position = 'fixed';
+    modalContainer.style.top = '0';
+    modalContainer.style.left = '0';
+    modalContainer.style.width = '100%';
+    modalContainer.style.height = '100%';
+    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modalContainer.style.display = 'flex';
+    modalContainer.style.justifyContent = 'center';
+    modalContainer.style.alignItems = 'center';
+    modalContainer.style.zIndex = '10000';
+    modalContainer.style.direction = 'rtl';
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.borderRadius = '16px';
+    modalContent.style.maxWidth = '700px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxHeight = '85vh';
+    modalContent.style.overflow = 'auto';
+    modalContent.style.position = 'relative';
+    modalContent.style.padding = '0';
+    
+    const today = new Date().toLocaleDateString('ar-EG');
+    const transactionNumber = `TRX-${transaction.id}`;
+    
+    const getTransactionTypeClass = (typeId: number): string => {
+      switch(typeId) {
+        case 1: return 'salary';
+        case 2: return 'incentive';
+        case 3: return 'bonus';
+        case 4: return 'advance';
+        default: return '';
+      }
+    };
+    
+    const typeClass = getTransactionTypeClass(transaction.salaryTransactionType?.id);
+    
+    modalContent.innerHTML = `
+      <div style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+          <h2 style="margin: 0; color: #10b981; font-size: 20px;">تفاصيل المعاملة</h2>
+          <button id="closeModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div style="max-width: 100%;">
+          <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px;">
+            <h1 style="margin: 0; font-size: 18px;">إيصال صرف</h1>
+            <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة الأكاديمية الأولمبية</p>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
+            <div><strong>رقم الإيصال:</strong> ${transactionNumber}</div>
+            <div><strong>تاريخ الإصدار:</strong> ${today}</div>
+          </div>
+          
+          <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">👤 معلومات الموظف</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">الموظف</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.fullName || '-'}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">الراتب الأساسي</div><div style="color: #1f2937; font-size: 12px;">${(transaction.employee?.salary || 0).toLocaleString('ar-EG')} جم</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">الراتب المتبقي</div><div style="color: ${transaction.employee?.remainedSalary < transaction.employee?.salary ? '#d97706' : '#1f2937'}; font-size: 12px; font-weight: 500;">${(transaction.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</div></div>
+          </div>
+          
+          <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">💰 تفاصيل المعاملة</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع المعاملة</div><div style="color: #1f2937; font-size: 12px;"><span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; ${typeClass === 'salary' ? 'background: #dbeafe; color: #1e40af;' : typeClass === 'incentive' ? 'background: #d1fae5; color: #065f46;' : typeClass === 'bonus' ? 'background: #fef3c7; color: #92400e;' : 'background: #fee2e2; color: #991b1b;'}">${transaction.salaryTransactionType?.title || '-'}</span></div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المبلغ</div><div style="color: #dc2626; font-size: 16px; font-weight: 700;">${transaction.amountWithdrawn.toLocaleString('ar-EG')} جم</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">تاريخ الصرف</div><div style="color: #1f2937; font-size: 12px;">${new Date(transaction.withdrawDate).toLocaleDateString('ar-EG')}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">طريقة الدفع</div><div style="color: #1f2937; font-size: 12px;">${transaction.paymentMethod?.title || '-'}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع الراتب</div><div style="color: #1f2937; font-size: 12px;">${transaction.salaryType?.title || '-'}</div></div>
+          </div>
+          
+          ${transaction.note ? `
+          <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">📝 ملاحظات</h3>
+          <div style="padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 15px;"><div style="color: #1f2937; font-size: 12px;">${transaction.note}</div></div>
+          ` : ''}
+          
+          <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+            <div style="text-align: center; flex: 1;"><div style="width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px;"></div><div style="font-size: 11px;">توقيع المستلم</div><div style="font-size: 9px; color: #6b7280; margin-top: 5px;">التاريخ: ___ / ___ / _____</div></div>
+            <div style="text-align: center; flex: 1;"><div style="width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px;"></div><div style="font-size: 11px;">توقيع المحاسب</div><div style="font-size: 9px; color: #6b7280; margin-top: 5px;">التاريخ: ___ / ___ / _____</div></div>
+            <div style="text-align: center; flex: 1;"><div style="width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px;"></div><div style="font-size: 11px;">ختم الأكاديمية</div><div style="font-size: 9px; color: #6b7280; margin-top: 5px;">التاريخ: ___ / ___ / _____</div></div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px; padding: 10px; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb;">
+            تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>
+            هذا المستند معتمد ويحتوي على جميع بيانات المعاملة
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+          <button id="printTransactionBtn" style="padding: 10px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
+            🖨️ طباعة الإيصال
+          </button>
+          <button id="closeModalBtn2" style="padding: 10px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
+            إغلاق
+          </button>
+        </div>
+      </div>
+    `;
+    
+    modalContainer.appendChild(modalContent);
+    document.body.appendChild(modalContainer);
+    
+    // Close modal handlers
+    const closeModal = () => {
+      document.body.removeChild(modalContainer);
+    };
+    
+    const printTransaction = () => {
+      this.printTransactionDetails(transaction);
+      closeModal();
+    };
+    
+    modalContent.querySelector('#closeModalBtn')?.addEventListener('click', closeModal);
+    modalContent.querySelector('#closeModalBtn2')?.addEventListener('click', closeModal);
+    modalContent.querySelector('#printTransactionBtn')?.addEventListener('click', printTransaction);
+    
+    // Close on backdrop click
+    modalContainer.addEventListener('click', (e) => {
+      if (e.target === modalContainer) {
+        closeModal();
+      }
+    });
+  }
+
+  printTransactionDetails(transaction: any): void {
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.maxWidth = '100%';
+    printContainer.style.margin = '0';
+    
+    const today = new Date().toLocaleDateString('ar-EG');
+    const transactionNumber = `TRX-${transaction.id}`;
+    
+    const getTransactionTypeClass = (typeId: number): string => {
+      switch(typeId) {
+        case 1: return 'salary';
+        case 2: return 'incentive';
+        case 3: return 'bonus';
+        case 4: return 'advance';
+        default: return '';
+      }
+    };
+    
+    const typeClass = getTransactionTypeClass(transaction.salaryTransactionType?.id);
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>إيصال صرف - ${transactionNumber}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @page { size: A4 portrait; margin: 10mm; }
+          @media print { body { margin: 0; padding: 0; } .no-print { display: none; } }
+          body { background: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+          .container { max-width: 700px; width: 100%; margin: 0 auto; background: white; border-radius: 12px; padding: 20px; }
+          .header { text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px; }
+          .header h1 { margin: 0; font-size: 20px; }
+          .header p { margin: 5px 0 0 0; font-size: 11px; opacity: 0.9; }
+          .transaction-details { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px; }
+          h2 { color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px; }
+          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+          .info-item { border-bottom: 1px solid #e5e7eb; padding: 5px 0; }
+          .info-label { font-weight: 600; color: #374151; font-size: 11px; margin-bottom: 2px; }
+          .info-value { color: #1f2937; font-size: 12px; font-weight: 500; }
+          .info-value.amount { font-weight: 700; color: #dc2626; font-size: 16px; }
+          .full-width { grid-column: span 2; }
+          .type-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; ${typeClass === 'salary' ? 'background: #dbeafe; color: #1e40af;' : typeClass === 'incentive' ? 'background: #d1fae5; color: #065f46;' : typeClass === 'bonus' ? 'background: #fef3c7; color: #92400e;' : 'background: #fee2e2; color: #991b1b;'} }
+          .signature-section { margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
+          .signature-box { text-align: center; flex: 1; }
+          .signature-line { width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px; }
+          .signature-date { font-size: 9px; color: #6b7280; margin-top: 5px; }
+          .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
+          @media (max-width: 600px) { .container { padding: 15px; } .info-grid { grid-template-columns: 1fr; gap: 8px; } .signature-section { flex-direction: column; align-items: center; gap: 20px; } .signature-box { width: 100%; } }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header"><h1>إيصال صرف</h1><p>نظام إدارة الأكاديمية الأولمبية</p></div>
+          <div class="transaction-details"><div><strong>رقم الإيصال:</strong> ${transactionNumber}</div><div><strong>تاريخ الإصدار:</strong> ${today}</div></div>
+          <h2>👤 معلومات الموظف</h2>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">الموظف</div><div class="info-value">${transaction.employee?.fullName || '-'}</div></div>
+            <div class="info-item"><div class="info-label">الراتب الأساسي</div><div class="info-value">${(transaction.employee?.salary || 0).toLocaleString('ar-EG')} جم</div></div>
+            <div class="info-item"><div class="info-label">الراتب المتبقي</div><div class="info-value">${(transaction.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</div></div>
+          </div>
+          <h2>💰 تفاصيل المعاملة</h2>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">نوع المعاملة</div><div class="info-value"><span class="type-badge">${transaction.salaryTransactionType?.title || '-'}</span></div></div>
+            <div class="info-item"><div class="info-label">المبلغ</div><div class="info-value amount">${transaction.amountWithdrawn.toLocaleString('ar-EG')} جم</div></div>
+            <div class="info-item"><div class="info-label">تاريخ الصرف</div><div class="info-value">${new Date(transaction.withdrawDate).toLocaleDateString('ar-EG')}</div></div>
+            <div class="info-item"><div class="info-label">طريقة الدفع</div><div class="info-value">${transaction.paymentMethod?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">نوع الراتب</div><div class="info-value">${transaction.salaryType?.title || '-'}</div></div>
+          </div>
+          ${transaction.note ? `<h2>📝 ملاحظات</h2><div class="info-item full-width"><div class="info-value">${transaction.note}</div></div>` : ''}
+          <div class="signature-section">
+            <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">توقيع المستلم</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
+            <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">توقيع المحاسب</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
+            <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">ختم الأكاديمية</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
+          </div>
+          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>هذا المستند معتمد ويحتوي على جميع بيانات المعاملة</div>
+        </div>
+        <div class="no-print" style="text-align: center; margin-top: 15px; padding: 10px;">
+          <button onclick="window.print();" style="padding: 8px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🖨️ طباعة / حفظ كـ PDF</button>
+        </div>
+        <script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };</script>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.notification.showSuccess('تم فتح إيصال الصرف - جاري تحضير الطباعة...');
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => { 
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer);
+        }
+      }, 500);
+    }
   }
 
   editTransaction(id: number) {
-    this.router.navigate(['/financial/salary-incentives', id, 'edit']);
+    const dialogRef = this.dialog.open(SalaryIncentiveWizardModalComponent, {
+      data: { transactionId: id },
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
+      }
+    });
   }
 
   deleteTransaction(item: any) {
-    const typeName = item.type?.title || 'المعاملة';
-    if (confirm(`هل أنت متأكد من حذف ${typeName} للموظف "${item.employee?.title}"؟`)) {
+    const typeName = item.salaryTransactionType?.title || 'المعاملة';
+    if (confirm(`هل أنت متأكد من حذف ${typeName} للموظف "${item.employee?.fullName}"؟`)) {
       this.financialService.deleteSalaryIncentive(item.id).subscribe({
         next: () => {
           this.notification.showSuccess('تم الحذف بنجاح');
@@ -241,6 +501,31 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getTransactionTypeClass(typeId: number): string {
+    switch(typeId) {
+      case 1: return 'salary';
+      case 2: return 'incentive';
+      case 3: return 'bonus';
+      case 4: return 'advance';
+      default: return '';
+    }
+  }
+
+  getTransactionTypeIcon(typeId: number): string {
+    switch(typeId) {
+      case 1: return 'attach_money';
+      case 2: return 'star';
+      case 3: return 'celebration';
+      case 4: return 'account_balance_wallet';
+      default: return 'receipt';
+    }
+  }
+
+  // Totals Methods
+  getTotalTransactionsCount(): number {
+    return this.dataSource.data.length;
+  }
+
   exportToExcel() {
     if (this.dataSource.data.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
@@ -249,12 +534,14 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
 
     const exportData = this.dataSource.data.map((item, index) => ({
       '#': index + 1,
-      'الموظف': item.employee?.title,
-      'نوع المعاملة': item.type?.title,
+      'الموظف': item.employee?.fullName || '-',
+      'الراتب الأساسي': item.employee?.salary || 0,
+      'الراتب المتبقي': item.employee?.remainedSalary || 0,
+      'نوع المعاملة': item.salaryTransactionType?.title || '-',
       'المبلغ': item.amountWithdrawn,
       'تاريخ الصرف': item.withdrawDate,
-      'طريقة الدفع': item.paymentMethod?.title,
-      'نوع الراتب': item.salaryType?.title,
+      'طريقة الدفع': item.paymentMethod?.title || '-',
+      'نوع الراتب': item.salaryType?.title || '-',
       'ملاحظات': item.note || '-'
     }));
 
@@ -262,49 +549,127 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     this.notification.showSuccess('تم تصدير البيانات بنجاح');
   }
 
-  exportToPDF() {
+  printList(): void {
     if (this.dataSource.data.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      this.notification.showWarning('لا توجد بيانات للطباعة');
       return;
     }
 
-    const doc = new jsPDF('l', 'mm', 'a4');
-    
-    doc.setFontSize(18);
-    doc.text('تقرير الرواتب والحوافز', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-    
-    doc.setFontSize(10);
-    let yOffset = 25;
-    if (this.filters.withdrawDateFrom) doc.text(`من تاريخ: ${this.filters.withdrawDateFrom}`, 14, yOffset);
-    if (this.filters.withdrawDateTo) doc.text(`إلى تاريخ: ${this.filters.withdrawDateTo}`, 14, yOffset + 6);
+    const filterTexts: string[] = [];
+    if (this.filters.employeeId) {
+      const employee = this.employees.find(e => e.id === this.filters.employeeId);
+      if (employee) filterTexts.push(`الموظف: ${employee.title}`);
+    }
     if (this.filters.transactionTypeId) {
       const type = this.transactionTypes.find(t => t.id === this.filters.transactionTypeId);
-      if (type) doc.text(`نوع المعاملة: ${type.title}`, 14, yOffset + 12);
+      if (type) filterTexts.push(`نوع المعاملة: ${type.title}`);
     }
-    
-    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
-    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
-    doc.text(`إجمالي المبالغ: ${this.totalAmount} جم`, 14, yOffset + 18);
+    if (this.filters.paymentMethodId) {
+      const paymentMethod = this.paymentMethods.find(p => p.id === this.filters.paymentMethodId);
+      if (paymentMethod) filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
+    }
+    if (this.filters.salaryTypeId) {
+      const salaryType = this.salaryTypes.find(s => s.id === this.filters.salaryTypeId);
+      if (salaryType) filterTexts.push(`نوع الراتب: ${salaryType.title}`);
+    }
+    if (this.filters.withdrawDateFrom) filterTexts.push(`من تاريخ: ${this.filters.withdrawDateFrom}`);
+    if (this.filters.withdrawDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.withdrawDateTo}`);
+    if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
-    autoTable(doc, {
-      head: [['#', 'الموظف', 'نوع المعاملة', 'المبلغ', 'تاريخ الصرف', 'طريقة الدفع', 'نوع الراتب', 'ملاحظات']],
-      body: this.dataSource.data.map((item, index) => [
-        (index + 1).toString(),
-        item.employee?.title || '-',
-        item.type?.title || '-',
-        `${item.amountWithdrawn} جم`,
-        item.withdrawDate,
-        item.paymentMethod?.title || '-',
-        item.salaryType?.title || '-',
-        item.note || '-'
-      ]),
-      startY: yOffset + 30,
-      styles: { halign: 'right', fontSize: 9, cellPadding: 2 },
-      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], halign: 'right' },
-      alternateRowStyles: { fillColor: [243, 244, 246] }
+    let tableRows = '';
+    this.dataSource.data.forEach((item: any, index: number) => {
+      const typeClass = this.getTransactionTypeClass(item.salaryTransactionType?.id);
+      tableRows += `
+        <tr>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.employee?.fullName || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${(item.employee?.salary || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${(item.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">
+            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 12px; ${typeClass === 'salary' ? 'background: #dbeafe; color: #1e40af;' : typeClass === 'incentive' ? 'background: #d1fae5; color: #065f46;' : typeClass === 'bonus' ? 'background: #fef3c7; color: #92400e;' : 'background: #fee2e2; color: #991b1b;'}">
+              ${item.salaryTransactionType?.title || '-'}
+            </span>
+          </td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.amountWithdrawn.toLocaleString('ar-EG')} جم</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.withdrawDate || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.paymentMethod?.title || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.salaryType?.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.note || '-'}</td>
+        </tr>
+      `;
     });
 
-    doc.save('salary-incentives-report.pdf');
-    this.notification.showSuccess('تم تصدير التقرير بنجاح');
+    const printWindow = window.open('', '_blank', 'width=1400,height=800,scrollbars=yes,toolbar=yes,menubar=yes');
+    
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>تقرير الرواتب والحوافز</title>
+          <style>
+            * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+            @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } button { display: none; } }
+            body { padding: 20px; margin: 0; }
+            .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 8px; }
+            .header h1 { margin: 0; font-size: 24px; }
+            .header p { margin: 10px 0 0 0; font-size: 12px; }
+            .filters { margin-bottom: 20px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; }
+            .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
+            .stat-item { flex: 1; text-align: center; }
+            .stat-label { font-size: 12px; color: #6b7280; }
+            .stat-value { font-size: 20px; font-weight: bold; color: #10b981; }
+            table { width: 100%; border-collapse: collapse; direction: rtl; }
+            th { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
+            td { padding: 8px; border: 1px solid #ddd; }
+            .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>تقرير الرواتب والحوافز</h1>
+            <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+            <p>عدد السجلات: ${this.dataSource.data.length} معاملة</p>
+          </div>
+          ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+          <div class="stats">
+            <div class="stat-item"><div class="stat-value">${this.dataSource.data.length}</div><div class="stat-label">عدد المعاملات</div></div>
+            <div class="stat-item"><div class="stat-value">${this.totalAmount.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المبالغ</div></div>
+            <div class="stat-item"><div class="stat-value">${this.salaryTotal.toLocaleString('ar-EG')} جم</div><div class="stat-label">رواتب</div></div>
+            <div class="stat-item"><div class="stat-value">${this.incentiveTotal.toLocaleString('ar-EG')} جم</div><div class="stat-label">حوافز</div></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>الموظف</th>
+                <th>الراتب الأساسي</th>
+                <th>الراتب المتبقي</th>
+                <th>نوع المعاملة</th>
+                <th>المبلغ</th>
+                <th>تاريخ الصرف</th>
+                <th>طريقة الدفع</th>
+                <th>نوع الراتب</th>
+                <th>ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+          <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
+            <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة التقرير</button>
+          </div>
+          <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); };</script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      this.notification.showSuccess('تم فتح التقرير - جاري تحضير الطباعة...');
+    } else {
+      this.notification.showError('الرجاء السماح للنوافذ المنبثقة في المتصفح');
+    }
   }
 }

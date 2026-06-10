@@ -1,0 +1,412 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">payments</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل معاملة' : 'معاملة جديدة' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="transactionForm">
+      
+      <!-- Step 0: Select Transaction Type -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>category</mat-icon>
+          <h3>اختر نوع المعاملة</h3>
+        </div>
+        
+        <div class="step-description">
+          يرجى اختيار نوع المعاملة التي تريد إضافتها
+        </div>
+
+        <div class="form-section">
+          <app-searchable-select
+            formControlName="transactionTypeObj"
+            label="نوع المعاملة *"
+            [options]="transactionTypeOptions"
+            [required]="true"
+            class="full-width">
+          </app-searchable-select>
+
+          <!-- Transaction Type Info Cards -->
+          <div class="transaction-types-info">
+            <div class="info-card salary-info" *ngIf="selectedTransactionType?.id === 1">
+              <mat-icon>attach_money</mat-icon>
+              <div class="info-content">
+                <strong>الراتب</strong>
+                <p>صرف الراتب الأساسي للموظف - يجب ألا يتجاوز المبلغ الراتب المتبقي</p>
+              </div>
+            </div>
+            <div class="info-card incentive-info" *ngIf="selectedTransactionType?.id === 2">
+              <mat-icon>star</mat-icon>
+              <div class="info-content">
+                <strong>حافز</strong>
+                <p>صرف حافز إضافي للموظف - لا يوجد حد أقصى للمبلغ</p>
+              </div>
+            </div>
+            <div class="info-card bonus-info" *ngIf="selectedTransactionType?.id === 3">
+              <mat-icon>celebration</mat-icon>
+              <div class="info-content">
+                <strong>مكافأة</strong>
+                <p>صرف مكافأة للموظف - لا يوجد حد أقصى للمبلغ</p>
+              </div>
+            </div>
+            <div class="info-card advance-info" *ngIf="selectedTransactionType?.id === 4">
+              <mat-icon>account_balance_wallet</mat-icon>
+              <div class="info-content">
+                <strong>سلفة</strong>
+                <p>صرف سلفة للموظف - لا يوجد حد أقصى للمبلغ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Select Employee -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>person</mat-icon>
+          <h3>اختر الموظف</h3>
+        </div>
+        
+        <div class="step-description">
+          يرجى اختيار الموظف الذي تريد إضافة معاملة له
+        </div>
+
+        <div class="form-section">
+          <app-searchable-select
+            formControlName="employeeId"
+            label="الموظف"
+            [options]="employeeOptions"
+            [required]="true"
+            class="full-width"
+            (ngModelChange)="onEmployeeSelect()">
+          </app-searchable-select>
+
+          <!-- Employee Details Preview -->
+          <div class="employee-preview" *ngIf="selectedEmployee">
+            <div class="preview-header">
+              <mat-icon>info</mat-icon>
+              <span>معلومات الموظف</span>
+            </div>
+            <div class="preview-content">
+              <div class="preview-row">
+                <span class="label">الاسم:</span>
+                <span class="value">{{ selectedEmployee.fullName }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">الراتب الأساسي:</span>
+                <span class="value">{{ selectedEmployee.salary | number }} جم</span>
+              </div>
+              <div class="preview-row highlight" *ngIf="isSalaryTransaction">
+                <span class="label">الراتب المتبقي:</span>
+                <span class="value" [class.warning]="selectedEmployee.remainedSalary < selectedEmployee.salary">
+                  {{ selectedEmployee.remainedSalary | number }} جم
+                </span>
+              </div>
+              <div class="preview-row" *ngIf="selectedEmployee.salaryType">
+                <span class="label">نوع الراتب:</span>
+                <span class="value">{{ selectedEmployee.salaryType?.title }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning for zero remained salary (only for salary transactions) -->
+          <div class="remained-warning" *ngIf="isSalaryTransaction && getCurrentRemained() === 0 && selectedEmployee">
+            <div class="warning-card">
+              <mat-icon>warning</mat-icon>
+              <span>لا يوجد راتب متبقي للموظف - لا يمكن صرف راتب</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Transaction Details -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-title">
+          <mat-icon>payments</mat-icon>
+          <h3>تفاصيل المعاملة</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل المبلغ وتاريخ الصرف
+        </div>
+
+        <div class="form-section">
+          <!-- Current Remained Info (only for salary) -->
+          <div class="remained-info" *ngIf="isSalaryTransaction && getCurrentRemained() > 0">
+            <div class="info-card">
+              <mat-icon>account_balance_wallet</mat-icon>
+              <span>الراتب المتبقي المتاح: <strong>{{ getCurrentRemained() | number }} جم</strong></span>
+            </div>
+          </div>
+
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المبلغ *</mat-label>
+              <input matInput type="number" formControlName="amountWithdrawn" placeholder="0" [max]="isSalaryTransaction ? getCurrentRemained() : null">
+              <span matTextSuffix>جم</span>
+              <mat-error *ngIf="transactionForm.get('amountWithdrawn')?.hasError('required')">
+                المبلغ مطلوب
+              </mat-error>
+              <mat-error *ngIf="transactionForm.get('amountWithdrawn')?.hasError('min')">
+                يجب أن يكون المبلغ أكبر من 0
+              </mat-error>
+              <mat-error *ngIf="transactionForm.get('amountWithdrawn')?.hasError('max')">
+                المبلغ لا يمكن أن يتجاوز {{ getCurrentRemained() }} جم
+              </mat-error>
+              <mat-error *ngIf="transactionForm.get('amountWithdrawn')?.hasError('exceedsRemained')">
+                المبلغ لا يمكن أن يتجاوز الراتب المتبقي
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>تاريخ الصرف *</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="withdrawDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="transactionForm.get('withdrawDate')?.hasError('required')">
+                تاريخ الصرف مطلوب
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Remaining after withdrawal (only for salary) -->
+          <div class="two-columns" *ngIf="isSalaryTransaction">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>الراتب المتبقي بعد الصرف</mat-label>
+              <input matInput type="number" formControlName="newRemainedSalary" readonly>
+              <span matTextSuffix>جم</span>
+            </mat-form-field>
+          </div>
+
+          <!-- Transaction Summary Card -->
+          <div class="transaction-summary">
+            <div class="summary-header">
+              <mat-icon>receipt_long</mat-icon>
+              <span>ملخص المعاملة</span>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row">
+                <span>الموظف:</span>
+                <strong>{{ transactionForm.get('employeeFullName')?.value }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>نوع المعاملة:</span>
+                <strong>{{ getTransactionTypeLabel() }}</strong>
+              </div>
+              <div class="summary-row" *ngIf="isSalaryTransaction">
+                <span>الراتب الأساسي:</span>
+                <strong>{{ transactionForm.get('employeeSalary')?.value | number }} جم</strong>
+              </div>
+              <div class="summary-row" *ngIf="isSalaryTransaction">
+                <span>الراتب المتبقي قبل الصرف:</span>
+                <strong>{{ getCurrentRemained() | number }} جم</strong>
+              </div>
+              <div class="summary-row highlight">
+                <span>المبلغ المطلوب:</span>
+                <strong class="amount">{{ getAmountWithdrawn() | number }} جم</strong>
+              </div>
+              <div class="summary-divider" *ngIf="isSalaryTransaction"></div>
+              <div class="summary-row total" *ngIf="isSalaryTransaction">
+                <span>الراتب المتبقي بعد الصرف:</span>
+                <strong [class.zero]="getNewRemained() === 0">{{ getNewRemained() | number }} جم</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Payment Information -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <div class="step-title">
+          <mat-icon>credit_card</mat-icon>
+          <h3>معلومات الدفع</h3>
+        </div>
+        
+        <div class="step-description">
+          اختر طريقة الدفع ونوع الراتب (اختياري)
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <app-searchable-select
+              formControlName="paymentMethodId"
+              label="طريقة الدفع *"
+              [options]="paymentMethodOptions"
+              [required]="true"
+              class="full-width">
+            </app-searchable-select>
+
+            <app-searchable-select
+              formControlName="salaryTypeObj"
+              label="نوع الراتب"
+              [options]="salaryTypeOptions"
+              [required]="false"
+              class="full-width">
+            </app-searchable-select>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>ملاحظات</mat-label>
+            <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+            <mat-icon matSuffix>note</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Step 4: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 4">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد المعاملة</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <!-- Transaction Type Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>category</mat-icon>
+              <span>نوع المعاملة</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">نوع المعاملة:</span>
+                <span class="info-value">
+                  <span class="type-badge" [class.salary]="getTransactionTypeClass() === 'salary'"
+                        [class.incentive]="getTransactionTypeClass() === 'incentive'"
+                        [class.bonus]="getTransactionTypeClass() === 'bonus'"
+                        [class.advance]="getTransactionTypeClass() === 'advance'">
+                    <mat-icon class="type-icon">{{ getTransactionTypeIcon() }}</mat-icon>
+                    {{ getTransactionTypeLabel() }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Employee Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>person</mat-icon>
+              <span>معلومات الموظف</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">الموظف:</span>
+                <span class="info-value">{{ transactionForm.get('employeeFullName')?.value }}</span>
+              </div>
+              <div class="info-item" *ngIf="isSalaryTransaction">
+                <span class="info-label">الراتب الأساسي:</span>
+                <span class="info-value">{{ transactionForm.get('employeeSalary')?.value | number }} جم</span>
+              </div>
+              <div class="info-item" *ngIf="isSalaryTransaction">
+                <span class="info-label">الراتب المتبقي قبل الصرف:</span>
+                <span class="info-value">{{ getCurrentRemained() | number }} جم</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Transaction Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>payments</mat-icon>
+              <span>معلومات المعاملة</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">المبلغ:</span>
+                <span class="info-value highlight">{{ getAmountWithdrawn() | number }} جم</span>
+              </div>
+              <div class="info-item" *ngIf="isSalaryTransaction">
+                <span class="info-label">الراتب المتبقي بعد الصرف:</span>
+                <span class="info-value" [class.success]="getNewRemained() === 0">{{ getNewRemained() | number }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ الصرف:</span>
+                <span class="info-value">{{ transactionForm.get('withdrawDate')?.value | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">طريقة الدفع:</span>
+                <span class="info-value">{{ getPaymentMethodLabel() }}</span>
+              </div>
+              <div class="info-item" *ngIf="transactionForm.get('salaryTypeObj')?.value">
+                <span class="info-label">نوع الراتب:</span>
+                <span class="info-value">{{ getSalaryTypeLabel() }}</span>
+              </div>
+              <div class="info-item full-width" *ngIf="transactionForm.get('note')?.value">
+                <span class="info-label">الملاحظات:</span>
+                <span class="info-value">{{ transactionForm.get('note')?.value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" 
+              [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0 && currentStep === 1)">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" 
+              [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0)">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -174,6 +174,18 @@
 									bs.service.trainee.model.enums.TraineeAttendanceStatus
 								</importMapping>
 
+								<importMapping>EmployeeVTO =
+									bs.service.employee.model.generated.EmployeeVTO
+								</importMapping>
+								<importMapping>EmployeeContactVTO =
+									bs.service.employee.model.generated.EmployeeContactVTO
+								</importMapping>
+								<importMapping>EnrollmentVTO =
+									bs.service.enrollment.model.generated.EnrollmentVTO
+								</importMapping>
+								<importMapping>CourseSessionVTO =
+									bs.service.employee.model.generated.CourseSessionVTO
+								</importMapping>
 								<importMapping>CourseTypes =
 									bs.service.course.model.enums.CourseTypes
 								</importMapping>
@@ -296,6 +308,18 @@
 										bs.lib.common.model.enums.Gender
 									</importMapping>
 
+									<importMapping>EmployeeVTO =
+										bs.service.employee.model.generated.EmployeeVTO
+									</importMapping>
+									<importMapping>EmployeeContactVTO =
+										bs.service.employee.model.generated.EmployeeContactVTO
+									</importMapping>
+									<importMapping>EnrollmentVTO =
+										bs.service.enrollment.model.generated.EnrollmentVTO
+									</importMapping>
+									<importMapping>CourseSessionVTO =
+										bs.service.employee.model.generated.CourseSessionVTO
+									</importMapping>
 									<importMapping>TraineeAttendanceStatus =
 										bs.service.trainee.model.enums.TraineeAttendanceStatus
 									</importMapping>

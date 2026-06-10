@@ -45,6 +45,8 @@ public class EnrollmentListItem implements Serializable {
 
     private Integer finalSubscriptionValue;
 
+    private Integer remainedSubscriptionValue;
+
     private Boolean isActive;
 
     public EnrollmentListItem id(Integer id) {
@@ -236,6 +238,27 @@ public class EnrollmentListItem implements Serializable {
         this.finalSubscriptionValue = finalSubscriptionValue;
     }
 
+    public EnrollmentListItem remainedSubscriptionValue(Integer remainedSubscriptionValue) {
+        this.remainedSubscriptionValue = remainedSubscriptionValue;
+        return this;
+    }
+
+    /**
+     * Get remainedSubscriptionValue
+     *
+     * @return remainedSubscriptionValue
+     */
+
+    @Schema(name = "remainedSubscriptionValue", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("remainedSubscriptionValue")
+    public Integer getRemainedSubscriptionValue() {
+        return remainedSubscriptionValue;
+    }
+
+    public void setRemainedSubscriptionValue(Integer remainedSubscriptionValue) {
+        this.remainedSubscriptionValue = remainedSubscriptionValue;
+    }
+
     public EnrollmentListItem isActive(Boolean isActive) {
         this.isActive = isActive;
         return this;
@@ -275,13 +298,14 @@ public class EnrollmentListItem implements Serializable {
                 && Objects.equals(this.enrollmentStatus, enrollmentListItem.enrollmentStatus)
                 && Objects.equals(this.paymentStatus, enrollmentListItem.paymentStatus)
                 && Objects.equals(this.finalSubscriptionValue, enrollmentListItem.finalSubscriptionValue)
+                && Objects.equals(this.remainedSubscriptionValue, enrollmentListItem.remainedSubscriptionValue)
                 && Objects.equals(this.isActive, enrollmentListItem.isActive);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, trainee, course, trainer, startDate, endDate, enrollmentStatus, paymentStatus,
-                finalSubscriptionValue, isActive);
+                finalSubscriptionValue, remainedSubscriptionValue, isActive);
     }
 
     @Override
@@ -297,6 +321,7 @@ public class EnrollmentListItem implements Serializable {
         sb.append("    enrollmentStatus: ").append(toIndentedString(enrollmentStatus)).append("\n");
         sb.append("    paymentStatus: ").append(toIndentedString(paymentStatus)).append("\n");
         sb.append("    finalSubscriptionValue: ").append(toIndentedString(finalSubscriptionValue)).append("\n");
+        sb.append("    remainedSubscriptionValue: ").append(toIndentedString(remainedSubscriptionValue)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("}");
         return sb.toString();

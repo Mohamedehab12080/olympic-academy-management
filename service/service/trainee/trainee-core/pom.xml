@@ -35,6 +35,12 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.place</groupId>
+            <artifactId>place-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.user</groupId>
             <artifactId>user-model</artifactId>
             <scope>provided</scope>

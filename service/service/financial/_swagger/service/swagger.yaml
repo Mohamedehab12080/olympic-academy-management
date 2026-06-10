@@ -551,6 +551,7 @@ paths:
       operationId: getAllEnrollmentPaymentsByFilter
       parameters:
         - $ref: '#/components/parameters/QPEnrollmentId'
+        - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPPaymentMethodId'
         - $ref: '#/components/parameters/QPPaymentStatus'
         - $ref: '#/components/parameters/QPPaymentDateFrom'
@@ -653,6 +654,7 @@ paths:
       operationId: getAllEnrollmentRefundsByFilter
       parameters:
         - $ref: '#/components/parameters/QPEnrollmentId'
+        - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPPaymentMethodId'
         - $ref: '#/components/parameters/QPRefundStatus'
         - $ref: '#/components/parameters/QPRefundDateFrom'
@@ -1181,6 +1183,13 @@ components:
       schema:
         type: integer
         format: int32
+    QPCourseId:
+      name: courseId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
     QPRefundStatus:
       name: status
       in: query
@@ -1611,7 +1620,7 @@ components:
           type: integer
           format: int32
         enrollment:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/enrollment/_swagger/service/swagger.yaml#/components/schemas/EnrollmentVTO'
         paymentDate:
           type: string
           format: date
@@ -1650,7 +1659,7 @@ components:
           type: integer
           format: int32
         enrollment:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/enrollment/_swagger/service/swagger.yaml#/components/schemas/EnrollmentVTO'
         refundDate:
           type: string
           format: date
@@ -1683,7 +1692,7 @@ components:
           type: integer
           format: int32
         employee:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/EmployeeVTO'
         withdrawDate:
           type: string
           format: date

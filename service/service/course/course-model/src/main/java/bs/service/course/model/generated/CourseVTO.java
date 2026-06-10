@@ -35,6 +35,10 @@ public class CourseVTO implements Serializable {
 
     private LookupVTO department;
 
+    private Integer enrollmentsCount;
+
+    private Integer totalRevenue;
+
     private Integer duration;
 
     private Integer maxCapacity;
@@ -145,6 +149,48 @@ public class CourseVTO implements Serializable {
 
     public void setDepartment(LookupVTO department) {
         this.department = department;
+    }
+
+    public CourseVTO enrollmentsCount(Integer enrollmentsCount) {
+        this.enrollmentsCount = enrollmentsCount;
+        return this;
+    }
+
+    /**
+     * Get enrollmentsCount
+     *
+     * @return enrollmentsCount
+     */
+
+    @Schema(name = "enrollmentsCount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("enrollmentsCount")
+    public Integer getEnrollmentsCount() {
+        return enrollmentsCount;
+    }
+
+    public void setEnrollmentsCount(Integer enrollmentsCount) {
+        this.enrollmentsCount = enrollmentsCount;
+    }
+
+    public CourseVTO totalRevenue(Integer totalRevenue) {
+        this.totalRevenue = totalRevenue;
+        return this;
+    }
+
+    /**
+     * Get totalRevenue
+     *
+     * @return totalRevenue
+     */
+
+    @Schema(name = "totalRevenue", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalRevenue")
+    public Integer getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public void setTotalRevenue(Integer totalRevenue) {
+        this.totalRevenue = totalRevenue;
     }
 
     public CourseVTO duration(Integer duration) {
@@ -411,6 +457,8 @@ public class CourseVTO implements Serializable {
         return Objects.equals(this.id, courseVTO.id) && Objects.equals(this.title, courseVTO.title)
                 && Objects.equals(this.description, courseVTO.description)
                 && Objects.equals(this.department, courseVTO.department)
+                && Objects.equals(this.enrollmentsCount, courseVTO.enrollmentsCount)
+                && Objects.equals(this.totalRevenue, courseVTO.totalRevenue)
                 && Objects.equals(this.duration, courseVTO.duration)
                 && Objects.equals(this.maxCapacity, courseVTO.maxCapacity)
                 && Objects.equals(this.startDate, courseVTO.startDate)
@@ -425,8 +473,9 @@ public class CourseVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, department, duration, maxCapacity, startDate, endDate, imageUrl,
-                courseType, price, isActive, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, title, description, department, enrollmentsCount, totalRevenue, duration, maxCapacity,
+                startDate, endDate, imageUrl, courseType, price, isActive, createdOn, createdBy, lastModifiedOn,
+                lastModifiedBy);
     }
 
     @Override
@@ -437,6 +486,8 @@ public class CourseVTO implements Serializable {
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    description: ").append(toIndentedString(description)).append("\n");
         sb.append("    department: ").append(toIndentedString(department)).append("\n");
+        sb.append("    enrollmentsCount: ").append(toIndentedString(enrollmentsCount)).append("\n");
+        sb.append("    totalRevenue: ").append(toIndentedString(totalRevenue)).append("\n");
         sb.append("    duration: ").append(toIndentedString(duration)).append("\n");
         sb.append("    maxCapacity: ").append(toIndentedString(maxCapacity)).append("\n");
         sb.append("    startDate: ").append(toIndentedString(startDate)).append("\n");

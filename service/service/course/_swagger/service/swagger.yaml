@@ -233,6 +233,12 @@ components:
           type: string
         department:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        enrollmentsCount:
+          type: integer
+          format: int32
+        totalRevenue:
+          type: integer
+          format: int32
         duration:
           type: integer
           format: int32

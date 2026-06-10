@@ -23,16 +23,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { TraineeListComponent } from './pages/trainee-list/trainee-list.component';
-import { TraineeFormComponent } from './pages/trainee-form/trainee-form.component';
-import { TraineeProfileComponent } from './pages/trainee-profile/trainee-profile.component';
 import { TraineeAttendanceComponent } from './pages/trainee-attendance/trainee-attendance.component';
 
 const routes: Routes = [
   { path: '', component: TraineeListComponent },
-  { path: 'new', component: TraineeFormComponent },
   { path: 'attendance', component: TraineeAttendanceComponent },
-  { path: ':id', component: TraineeProfileComponent },
-  { path: ':id/edit', component: TraineeFormComponent }
 ];
 
 @NgModule({
@@ -61,8 +56,6 @@ const routes: Routes = [
     MatExpansionModule,
     MatTooltipModule,
     TraineeListComponent,
-    TraineeFormComponent,
-    TraineeProfileComponent,
     TraineeAttendanceComponent
   ]
 })

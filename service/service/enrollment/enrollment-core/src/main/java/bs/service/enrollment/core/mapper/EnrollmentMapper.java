@@ -52,8 +52,10 @@ public abstract class EnrollmentMapper {
     // ==================== Lookup Mappings ====================
     // MapStruct auto-detects these for entity to LookupVTO conversion
 
+    @Mapping(target = "title", source = "fullName")
     public abstract LookupVTO toLookupVTO(Trainee trainee);
     public abstract LookupVTO toLookupVTO(Course course);
+    @Mapping(target = "title", source = "fullName")
     public abstract LookupVTO toLookupVTO(Employee employee);
     public abstract LookupVTO toLookupVTO(EnrollmentType enrollmentType);
 

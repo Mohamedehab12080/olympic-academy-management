@@ -21,17 +21,14 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatStepperModule } from '@angular/material/stepper';
 
 import { EnrollmentListComponent } from './pages/enrollment-list/enrollment-list.component';
-import { EnrollmentWizardComponent } from './pages/enrollment-wizard/enrollment-wizard.component';
 import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 
 const routes: Routes = [
   { path: '', component: EnrollmentListComponent },
-  { path: 'new', component: EnrollmentWizardComponent },
-  { path: ':id/edit', component: EnrollmentWizardComponent }
 ];
 
 @NgModule({
-  declarations: [EnrollmentListComponent, EnrollmentWizardComponent],
+  declarations: [],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -53,6 +50,7 @@ const routes: Routes = [
     MatDatepickerModule,
     MatNativeDateModule,
     MatStepperModule,
+    EnrollmentListComponent,
     SearchableSelectComponent // Add this line
   ]
 })

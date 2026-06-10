@@ -15,6 +15,7 @@ import bs.service.employee.annotation.imports.ImportEmployeeCore;
 import bs.service.employee.annotation.imports.ImportEmployeeRepository;
 import bs.service.enrollment.annotation.imports.ImportEnrollmentCore;
 import bs.service.enrollment.annotation.imports.ImportEnrollmentRepository;
+import bs.service.enrollment.proxy.annotation.imports.ImportInternalEnrollmentMgtProxy;
 import bs.service.financial.annotation.imports.ImportFinancialCore;
 import bs.service.financial.annotation.imports.ImportFinancialRepository;
 import bs.service.place.annotation.imports.ImportPlaceCore;
@@ -47,6 +48,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ImportEnrollmentCore
 @ImportEnrollmentRepository
+@ImportInternalEnrollmentMgtProxy
 
 @ImportFinancialCore
 @ImportFinancialRepository

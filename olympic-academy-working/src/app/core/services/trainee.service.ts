@@ -7,7 +7,7 @@ import {
   HealthConditionDTO, HealthConditionVTO, HealthConditionResultSet,
   TraineeContactDTO, TraineeContactResultSet
 } from '../models/trainee.model';
-import { NewRecordVTO } from '../models/common.model';
+import { NewRecordVTO,LookupResultSet } from '../models/common.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +15,8 @@ import { NewRecordVTO } from '../models/common.model';
 export class TraineeService {
   constructor(private api: ApiService) {}
 
-  // Trainee CRUD
+  // ==================== Trainee CRUD ====================
+  
   createTrainee(data: TraineeDTO): Observable<NewRecordVTO> {
     return this.api.post('/trainees', data);
   }
@@ -40,7 +41,8 @@ export class TraineeService {
     return this.api.delete(`/trainees/${id}`);
   }
 
-  // Trainee Contacts
+  // ==================== Trainee Contacts ====================
+
   createTraineeContact(traineeId: number, data: TraineeContactDTO): Observable<NewRecordVTO> {
     return this.api.post(`/trainees/${traineeId}/contacts`, data);
   }
@@ -57,7 +59,8 @@ export class TraineeService {
     return this.api.delete(`/trainees/${traineeId}/contacts/${contactId}`);
   }
 
-  // Trainee Certificates
+  // ==================== Trainee Certificates ====================
+
   createTraineeCertificate(traineeId: number, data: TraineeCertificateDTO): Observable<NewRecordVTO> {
     return this.api.post(`/trainees/${traineeId}/certificates`, data);
   }
@@ -74,7 +77,8 @@ export class TraineeService {
     return this.api.delete(`/trainees/${traineeId}/certificates/${certificateId}`);
   }
 
-  // Health Conditions
+  // ==================== Health Conditions ====================
+
   createHealthCondition(traineeId: number, data: HealthConditionDTO): Observable<NewRecordVTO> {
     return this.api.post(`/trainees/${traineeId}/health-conditions`, data);
   }
@@ -90,4 +94,9 @@ export class TraineeService {
   deleteHealthCondition(traineeId: number, conditionId: number): Observable<void> {
     return this.api.delete(`/trainees/${traineeId}/health-conditions/${conditionId}`);
   }
+
+    getAllTraineesLookup(): Observable<LookupResultSet> {
+    return this.api.get(`/lookup/trainees`);
+    }
 }
+

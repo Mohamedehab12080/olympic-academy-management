@@ -141,8 +141,9 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
 
         TraineeAttendance traineeAttendance = traineeAttendanceRepository.selectById(attendanceId)
                 .orElseThrow(() -> new BusinessException(ATTENDANCE_NOT_FOUND, attendanceId));
-
-        return traineeMapper.toTraineeAttendanceVTO(traineeAttendance);
+        TraineeAttendanceVTO traineeAttendanceVTO=traineeMapper.toTraineeAttendanceVTO(traineeAttendance);
+        System.out.printf("Trainee attendance found with " + traineeAttendanceVTO);
+        return traineeAttendanceVTO;
     }
 
     // ==================== Query Operations (All using selectAllByFilters) ====================

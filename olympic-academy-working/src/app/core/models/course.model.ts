@@ -1,6 +1,7 @@
 import { LookupVTO, LightUserVTO } from './common.model';
 
-// نوع الدورة من Java Enum
+// ==================== Enums (specific to Course module) ====================
+
 export interface CourseType {
   id: number;
   title: string; // "تأهيل" أو "تدريب"
@@ -11,6 +12,8 @@ export const COURSE_TYPES: CourseType[] = [
   { id: 2, title: 'تدريب' }
 ];
 
+// ==================== DTOs (sent to backend - use enum objects with id and title) ====================
+
 export interface CourseDTO {
   title: string;
   description?: string;
@@ -20,9 +23,11 @@ export interface CourseDTO {
   startDate: string;
   endDate?: string;
   imageUrl?: string;
-  courseType: CourseType;
+  courseType: CourseType;  // { id: number; title: string }
   price: number;
 }
+
+// ==================== VTOs (received from backend - use LookupVTO for enums) ====================
 
 export interface CourseVTO {
   id: number;
@@ -33,8 +38,10 @@ export interface CourseVTO {
   maxCapacity?: number;
   startDate: string;
   endDate?: string;
+  enrollmentsCount?:number;
+  totalRevenue?:number;
   imageUrl?: string;
-  courseType: CourseType;
+  courseType: LookupVTO;  // { id: number; title: string; imageUrl: string | null }
   price: number;
   isActive: boolean;
   createdOn: string;
@@ -42,6 +49,8 @@ export interface CourseVTO {
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
 }
+
+// ==================== Result Sets ====================
 
 export interface CourseResultSet {
   total: number;

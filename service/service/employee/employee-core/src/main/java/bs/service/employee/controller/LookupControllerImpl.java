@@ -35,6 +35,6 @@ public class LookupControllerImpl implements LookupController {
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<LookupResultSet> _getAllTrainersLookup() {
-        return ResponseEntity.ok(employeeService.getAllEmployeesLookup());
+        return ResponseEntity.ok(employeeService.getAllTrainersLookup());
     }
 }

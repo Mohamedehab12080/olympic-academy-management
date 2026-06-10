@@ -25,6 +25,10 @@ public class EnrollmentRefundQueryBuilder extends AbstractQueryBuilderV2<Enrollm
             qbConditions.add(QBCondition.builder().placeHolder("enrollmentId").value(filters.getEnrollmentId())
                     .condition("item.enrollment.id = :PH").build());
 
+        if (filters.getCourseId() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("courseId").value(filters.getCourseId())
+                    .condition("item.enrollment.course.id = :PH").build());
+
         if (filters.getPaymentMethodId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("paymentMethodId").value(filters.getPaymentMethodId())
                     .condition("item.paymentMethod.id = :PH").build());

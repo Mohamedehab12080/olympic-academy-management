@@ -14,7 +14,7 @@ public interface EnrollmentPaymentService {
     NewRecordVTO updateEnrollmentPayment(Integer paymentId, EnrollmentPaymentDTO enrollmentPaymentDTO);
     void deleteEnrollmentPayment(Integer paymentId);
     EnrollmentPaymentVTO getEnrollmentPaymentById(Integer paymentId);
-    EnrollmentPaymentResultSet getAllEnrollmentPaymentsByFilter(Integer enrollmentId, Integer paymentMethodId,
+    EnrollmentPaymentResultSet getAllEnrollmentPaymentsByFilter(Integer enrollmentId,Integer courseId, Integer paymentMethodId,
                                                                 PaymentStatus status, LocalDate paymentDateFrom,
                                                                 LocalDate paymentDateTo, Integer pageNum,
                                                                 Integer pageSize, OrderDirections orderDir,
