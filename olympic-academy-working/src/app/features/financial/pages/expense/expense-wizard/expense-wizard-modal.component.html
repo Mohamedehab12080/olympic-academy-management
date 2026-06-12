@@ -1,0 +1,221 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">receipt</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل مصروف' : 'مصروف جديد' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="expenseForm">
+      
+      <!-- Step 0: Select Expense Type -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>category</mat-icon>
+          <h3>اختر نوع المصروف</h3>
+        </div>
+        
+        <div class="step-description">
+          يرجى اختيار نوع المصروف الذي تريد إضافته
+        </div>
+
+        <div class="form-section">
+          <app-searchable-select
+            formControlName="expenseTypeId"
+            label="نوع المصروف *"
+            [options]="expenseTypeOptions"
+            [required]="true"
+            class="full-width"
+            (ngModelChange)="onExpenseTypeSelect()">
+          </app-searchable-select>
+
+          <!-- Expense Type Info Card -->
+          <div class="expense-type-info" *ngIf="selectedExpenseType">
+            <div class="info-card">
+              <mat-icon>info</mat-icon>
+              <div class="info-content">
+                <strong>{{ selectedExpenseType.title }}</strong>
+                <p>{{ selectedExpenseType.description || 'لا يوجد وصف لهذا النوع' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Expense Details -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>payments</mat-icon>
+          <h3>تفاصيل المصروف</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل المبلغ وتاريخ المصروف
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المبلغ *</mat-label>
+              <input matInput type="number" formControlName="amountExpensed" placeholder="0">
+              <span matTextSuffix>جم</span>
+              <mat-error *ngIf="expenseForm.get('amountExpensed')?.hasError('required')">
+                المبلغ مطلوب
+              </mat-error>
+              <mat-error *ngIf="expenseForm.get('amountExpensed')?.hasError('min')">
+                يجب أن يكون المبلغ أكبر من 0
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>تاريخ المصروف *</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="expenseDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="expenseForm.get('expenseDate')?.hasError('required')">
+                تاريخ المصروف مطلوب
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="two-columns">
+            <app-searchable-select
+              formControlName="paymentMethodId"
+              label="طريقة الدفع"
+              [options]="paymentMethodOptions"
+              [required]="false"
+              class="full-width">
+            </app-searchable-select>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>ملاحظات</mat-label>
+            <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+            <mat-icon matSuffix>note</mat-icon>
+          </mat-form-field>
+
+          <!-- Expense Summary Card -->
+          <div class="expense-summary">
+            <div class="summary-header">
+              <mat-icon>receipt_long</mat-icon>
+              <span>ملخص المصروف</span>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row">
+                <span>نوع المصروف:</span>
+                <strong>{{ getExpenseTypeLabel() }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>المبلغ:</span>
+                <strong class="amount">{{ getAmountExpensed() | number }} جم</strong>
+              </div>
+              <div class="summary-row">
+                <span>تاريخ المصروف:</span>
+                <strong>{{ expenseForm.get('expenseDate')?.value | date }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد المصروف</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <!-- Expense Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>receipt</mat-icon>
+              <span>معلومات المصروف</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">نوع المصروف:</span>
+                <span class="info-value">{{ getExpenseTypeLabel() }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المبلغ:</span>
+                <span class="info-value highlight">{{ getAmountExpensed() | number }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ المصروف:</span>
+                <span class="info-value">{{ expenseForm.get('expenseDate')?.value | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">طريقة الدفع:</span>
+                <span class="info-value">{{ getPaymentMethodLabel() }}</span>
+              </div>
+              <div class="info-item full-width" *ngIf="expenseForm.get('note')?.value">
+                <span class="info-label">الملاحظات:</span>
+                <span class="info-value">{{ expenseForm.get('note')?.value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" [disabled]="isSubmitting">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" [disabled]="isSubmitting">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>

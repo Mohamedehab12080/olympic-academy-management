@@ -89,7 +89,7 @@ public class SalaryDeductionServiceImpl implements SalaryDeductionService {
                                                                    OrderDirections orderDir, String orderBy) {
         SalaryDeductionSearchFilter filter = SalaryDeductionSearchFilter.builder()
                 .employeeId(employeeId)
-                .salaryType(salaryType.id!=null?salaryType.id:null)
+                .salaryType(salaryType!=null? salaryType.id:null)
                 .deductionDateFrom(deductionDateFrom)
                 .deductionDateTo(deductionDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

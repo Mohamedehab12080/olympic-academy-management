@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>bs</groupId>
+        <artifactId>olympic-academy-management</artifactId>
+        <version>0.0.1</version>
+        <relativePath>../../../../pom.xml</relativePath>
+    </parent>
+
+    <groupId>bs.service.file</groupId>
+    <artifactId>file-core</artifactId>
+    <version>0.0.1</version>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>bs.lib.rest</groupId>
+            <artifactId>rest-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib</groupId>
+            <artifactId>swagger</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.sql-db</groupId>
+            <artifactId>sql-db-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.common</groupId>
+            <artifactId>common-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.service-context</groupId>
+            <artifactId>service-context-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.security</groupId>
+            <artifactId>security-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>bs.service</groupId>
+                <artifactId>service-bom</artifactId>
+                <version>${bs.service.service-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

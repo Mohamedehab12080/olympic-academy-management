@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <!-- Create sc_domain table -->
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="fl_domain_config">
+            <column name="domain_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="base_folder" type="varchar(20)"/>
+            <column name="max_size" type="bigint"/>
+            <column name="allowed_extensions" type="varchar(255)"/>
+            <column name="last_modified_on" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="fl_domain_config"
+                baseColumnNames="domain_id"
+                constraintName="fk_fl_file_sc_domain"
+                referencedTableName="sc_domain"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Create fl_file table -->
+    <changeSet id="2" author="mohamed.ehab">
+        <createTable tableName="fl_file">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)"/>
+            <column name="domain_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="extension" type="varchar(10)"/>
+            <column name="fid" type="varchar(25)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="last_version" type="int"/>
+            <column name="created_on" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_on" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="fl_file"
+                baseColumnNames="domain_id"
+                constraintName="fk_fl_file_domain_config"
+                referencedTableName="fl_domain_config"
+                referencedColumnNames="domain_id"/>
+    </changeSet>
+
+    <!-- Create fl_file_version table -->
+    <changeSet id="3" author="mohamed.ehab">
+        <createTable tableName="fl_file_version">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="file_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="int"/>
+            <column name="size" type="bigint"/>
+            <column name="original_filename" type="varchar(255)"/>
+            <column name="server_file_name" type="varchar(255)"/>
+            <column name="server_location" type="varchar(255)"/>
+            <column name="created_on" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_on" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="fl_file_version"
+                baseColumnNames="file_id"
+                constraintName="fk_file_version_fl_file"
+                referencedTableName="fl_file"
+                referencedColumnNames="id"/>
+
+        <addUniqueConstraint
+                tableName="fl_file_version"
+                columnNames="file_id,version"
+                constraintName="uk_file_version"/>
+    </changeSet>
+</databaseChangeLog>

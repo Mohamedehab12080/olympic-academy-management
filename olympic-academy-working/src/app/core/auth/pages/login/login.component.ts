@@ -71,7 +71,17 @@ export class LoginComponent {
       }
     });
   }
-
+    ngOnInit(): void {
+      // Check if there's an expired token and clear it
+      if (this.authService.getToken() && this.authService.isTokenExpired()) {
+        this.authService.clearSessionOnExpiration();
+      }
+      
+      // Redirect if already logged in
+      if (this.authService.isAuthenticated && !this.authService.isTokenExpired()) {
+        this.router.navigate(['/dashboard']);
+      }
+    }
   togglePasswordVisibility(): void {
     this.hidePassword = !this.hidePassword;
   }

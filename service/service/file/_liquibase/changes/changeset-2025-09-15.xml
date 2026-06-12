@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <changeSet id="14" author="mohamed.ehab">
+        <createTable tableName="fl_daily_counter">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="count" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Insert initial counter record -->
+        <insert tableName="fl_daily_counter">
+            <column name="id" value="1"/>
+            <column name="count" value="0"/>
+            <column name="last_updated" valueDate="CURRENT_DATE"/>
+        </insert>
+
+        <!-- Add comment for the table -->
+        <comment>Recreates daily_counter table for tracking file ID generation sequence</comment>
+    </changeSet>
+
+    <changeSet id="15" author="mohamed.ehab">
+        <!-- Drop the columns that are not needed -->
+        <dropColumn tableName="fl_domain_config" columnName="last_modified_on"/>
+        <dropColumn tableName="fl_domain_config" columnName="last_modified_by_id"/>
+
+        <comment>Remove last_modified_on and last_modified_by_id columns from sc_domain table</comment>
+    </changeSet>
+
+
+    <changeSet id="16" author="mohamed.ehab">
+        <!-- Add entity_id column to fl_file table -->
+        <addColumn tableName="fl_file">
+            <column name="entity_id" type="varchar(255)" />
+        </addColumn>
+
+        <comment>Add entity_id column to fl_file table to track entity relationships</comment>
+    </changeSet>
+
+</databaseChangeLog>

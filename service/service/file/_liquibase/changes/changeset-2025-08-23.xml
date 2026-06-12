@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <!-- Create fid_version column as string -->
+    <changeSet id="11" author="mohamed.ehab">
+        <addColumn tableName="fl_file_version">
+            <column name="fid_version" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+
+    <!-- Restore NOT NULL constraints for important columns (excluding audit fields) -->
+    <changeSet id="12" author="mohamed.ehab">
+        <!-- Restore constraints for fl_file table -->
+        <addNotNullConstraint tableName="fl_file" columnName="domain_id" columnDataType="INT"/>
+        <addNotNullConstraint tableName="fl_file" columnName="fid" columnDataType="VARCHAR(255)"/>
+
+        <!-- Restore constraints for fl_file_version table -->
+        <addNotNullConstraint tableName="fl_file_version" columnName="version" columnDataType="INT"/>
+        <addNotNullConstraint tableName="fl_file_version" columnName="size" columnDataType="BIGINT"/>
+        <addNotNullConstraint tableName="fl_file_version" columnName="file_id" columnDataType="BIGINT"/>
+    </changeSet>
+
+    <!-- Set default values for created_on and last_modified_on columns -->
+    <changeSet id="13" author="mohamed.ehab">
+        <!-- Set defaults for fl_file table -->
+        <addDefaultValue tableName="fl_file" columnName="created_on" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        <addDefaultValue tableName="fl_file" columnName="last_modified_on" defaultValueComputed="CURRENT_TIMESTAMP"/>
+
+        <!-- Set defaults for fl_domain_config table -->
+        <addDefaultValue tableName="fl_domain_config" columnName="last_modified_on"
+                         defaultValueComputed="CURRENT_TIMESTAMP"/>
+
+        <!-- Set defaults for fl_file_version table -->
+        <addDefaultValue tableName="fl_file_version" columnName="created_on" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </changeSet>
+    <changeSet id="14" author="mohamed.ehab">
+        <!-- Drop old columns -->
+        <dropColumn tableName="fl_file" columnName="title"/>
+    </changeSet>
+</databaseChangeLog>

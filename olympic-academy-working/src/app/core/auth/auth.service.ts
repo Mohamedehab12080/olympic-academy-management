@@ -65,12 +65,23 @@ export class AuthService {
     });
   }
 
-  private clearSession(): void {
+  clearSession(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.isAuthenticatedValue = false;
     this.currentUserValue = null;
+  }
+
+  clearSessionAndRedirect(): void {
+    this.clearSession();
     this.router.navigate(['/login']);
+  }
+
+  clearSessionOnExpiration(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.isAuthenticatedValue = false;
+    this.currentUserValue = null;
   }
 
   getToken(): string | null {
@@ -87,8 +98,40 @@ export class AuthService {
     const user = localStorage.getItem('user');
     
     if (token && user) {
-      this.isAuthenticatedValue = true;
-      this.currentUserValue = JSON.parse(user);
+      // Check if token is expired
+      if (this.isTokenExpired(token)) {
+        this.clearSession();
+      } else {
+        this.isAuthenticatedValue = true;
+        this.currentUserValue = JSON.parse(user);
+      }
+    }
+  }
+
+  // Check if token is expired
+  isTokenExpired(token?: string): boolean {
+    const checkToken = token || this.getToken();
+    if (!checkToken) return true;
+    
+    try {
+      const payload = JSON.parse(atob(checkToken.split('.')[1]));
+      const expirationDate = new Date(payload.exp * 1000);
+      return expirationDate < new Date();
+    } catch (error) {
+      return true;
+    }
+  }
+
+  // Get token expiration time
+  getTokenExpirationTime(): Date | null {
+    const token = this.getToken();
+    if (!token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return new Date(payload.exp * 1000);
+    } catch (error) {
+      return null;
     }
   }
 
@@ -161,6 +204,6 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return this.isAuthenticatedValue;
+    return this.isAuthenticatedValue && !this.isTokenExpired();
   }
 }

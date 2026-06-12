@@ -1,0 +1,62 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+
+    <changeSet id="1" author="shahd.abdelnaby">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*)
+                FROM sc_domain
+                WHERE id = 2801;
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="sc_domain">
+            <column name="id" valueComputed="2801"/>
+            <column name="title_en" value="Offer"/>
+            <column name="title_ar" value="Offer"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2" author="shahd.abdelnaby">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*)
+                FROM sc_domain
+                WHERE id = 2803;
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="sc_domain">
+            <column name="id" valueComputed="2803"/>
+            <column name="title_en" value="Bundle"/>
+            <column name="title_ar" value="حزمه"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="3" author="alaa.esam">
+        <insert tableName="fl_domain_config">
+            <column name="domain_id" valueComputed="2801"/>
+            <column name="base_folder" value="/offer"/>
+            <column name="label" value="offer"/>
+            <column name="max_size" value="10485760"/>
+            <column name="allowed_extensions" value="jpg,png"/>
+            <column name="last_modified_on" valueComputed="NULL"/>
+            <column name="last_modified_by_id" valueComputed="NULL"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="4" author="alaa.esam">
+        <insert tableName="fl_domain_config">
+            <column name="domain_id" valueComputed="2803"/>
+            <column name="base_folder" value="/bundle"/>
+            <column name="label" value="bundle"/>
+            <column name="max_size" value="10485760"/>
+            <column name="allowed_extensions" value="jpg,png"/>
+            <column name="last_modified_on" valueComputed="NULL"/>
+            <column name="last_modified_by_id" valueComputed="NULL"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

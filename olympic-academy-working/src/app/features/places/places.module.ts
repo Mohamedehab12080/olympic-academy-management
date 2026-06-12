@@ -19,12 +19,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { PlaceListComponent } from './pages/place-list/place-list.component';
-import { PlaceFormComponent } from './pages/place-form/place-form.component';
 
 const routes: Routes = [
   { path: '', component: PlaceListComponent },
-  { path: 'new', component: PlaceFormComponent },
-  { path: ':id/edit', component: PlaceFormComponent }
 ];
 
 @NgModule({
@@ -49,7 +46,6 @@ const routes: Routes = [
     MatChipsModule,
     MatTooltipModule,
     PlaceListComponent, // Import the standalone component
-    PlaceFormComponent   // Import the standalone component if it's also standalone
   ]
 })
 export class PlacesModule { }

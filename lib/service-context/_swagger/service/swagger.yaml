@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  version: "1.0"
+  title: "Service Context library "
+  contact:
+    email: "ahmed0elseginy@gmail.com"
+    name: "Ahmed El-Seginy"
+
+paths:
+  { }
+
+components:
+  parameters:
+    PPDomainId:
+      name: domainId
+      in: path
+      required: true
+      description: Domain ID
+      schema:
+        type: integer
+
+    PPEventId:
+      name: eventId
+      in: path
+      required: true
+      description: Event ID
+      schema:
+        type: integer
+
+    QPDomainId:
+      name: domainId
+      in: query
+      required: false
+      description: Domain ID
+      schema:
+        type: integer
+
+    QPEventId:
+      name: eventId
+      in: query
+      required: false
+      description: Event ID
+      schema:
+        type: integer
+
+  schemas:
+    { }

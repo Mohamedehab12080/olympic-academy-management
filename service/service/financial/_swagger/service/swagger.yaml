@@ -20,6 +20,7 @@ tags:
   - name: SalaryIncentive
   - name: SalaryDeduction
   - name: Lookup
+  - name: Report
 
 paths:
   # ==================== Payment Method Endpoints ====================
@@ -1046,6 +1047,25 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /totals/financials:
+    get:
+      tags:
+        - Report
+      summary: Retrieve totals of financials
+      operationId: getAllTotalsOfFinancials
+      parameters:
+        - $ref: '#/components/parameters/QPTotalDateFrom'
+        - $ref: '#/components/parameters/QPTotalDateTo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialTotalVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
 components:
   parameters:
     # Path Parameters
@@ -1243,6 +1263,20 @@ components:
       required: false
       schema:
         $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
+    QPTotalDateFrom:
+      name: totalDateFrom
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+    QPTotalDateTo:
+      name: totalDateTo
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
     QPDeductionDateFrom:
       name: deductionDateFrom
       in: query
@@ -1552,7 +1586,7 @@ components:
           type: integer
           format: int32
         place:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/place/_swagger/service/swagger.yaml#/components/schemas/PlaceVTO'
         rentAmount:
           type: integer
           format: int32
@@ -1727,7 +1761,7 @@ components:
           type: integer
           format: int32
         employee:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/EmployeeVTO'
         deductionDate:
           type: string
           format: date
@@ -1853,3 +1887,46 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SalaryDeductionVTO'
+
+    FinancialTotalVTO:
+      type: object
+      properties:
+        totalSalary:
+          type: integer
+          format: int32
+        totalIncentives:
+          type: integer
+          format: int32
+        totalPlacesRent:
+          type: integer
+          format: int32
+        totalEnrollmentPayments:
+          type: integer
+          format: int32
+        totalExpenses:
+          type: integer
+          format: int32
+        activeEnrollmentsCount:
+          type: integer
+          format: int32
+        activeCoursesCount:
+          type: integer
+          format: int32
+        activeTraineesCount:
+          type: integer
+          format: int32
+        activeEmployeesCount:
+          type: integer
+          format: int32
+        inactiveEnrollmentsCount:
+          type: integer
+          format: int32
+        inactiveCoursesCount:
+          type: integer
+          format: int32
+        inactiveTraineesCount:
+          type: integer
+          format: int32
+        inactiveEmployeesCount:
+          type: integer
+          format: int32

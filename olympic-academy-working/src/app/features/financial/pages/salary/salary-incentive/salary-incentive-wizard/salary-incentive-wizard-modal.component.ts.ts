@@ -133,27 +133,27 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     });
     
     // Subscribe to transaction type changes
-    this.transactionForm.get('transactionTypeObj')?.valueChanges.subscribe((type) => {
-      if (type) {
-        this.selectedTransactionType = type;
-        this.transactionTypeName = type.title;
-        this.isSalaryTransaction = type.id === 1; // Salary type id = 1
-        
-        // Reset employee selection when transaction type changes
-        if (!this.isEditMode) {
-          this.transactionForm.patchValue({
-            employeeId: null,
-            employeeFullName: null,
-            employeeSalary: null,
-            employeeRemainedSalary: null,
-            amountWithdrawn: null,
-            newRemainedSalary: null
-          });
-          this.selectedEmployee = null;
-          this.maxWithdrawAmount = 0;
-        }
-      }
-    });
+this.transactionForm.get('transactionTypeObj')?.valueChanges.subscribe((type) => {
+  if (type) {
+    this.selectedTransactionType = type;
+    this.transactionTypeName = type.title || ''; // Fixed: added fallback empty string
+    this.isSalaryTransaction = type.id === 1; // Salary type id = 1
+    
+    // Reset employee selection when transaction type changes
+    if (!this.isEditMode) {
+      this.transactionForm.patchValue({
+        employeeId: null,
+        employeeFullName: null,
+        employeeSalary: null,
+        employeeRemainedSalary: null,
+        amountWithdrawn: null,
+        newRemainedSalary: null
+      });
+      this.selectedEmployee = null;
+      this.maxWithdrawAmount = 0;
+    }
+  }
+});
   }
 
   loadSelectOptions(): void {
@@ -207,43 +207,80 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     });
   }
 
-  loadTransactionData() {
-    this.isLoading = true;
-    this.financialService.getSalaryIncentiveById(this.transactionId!).subscribe({
-      next: (res: any) => {
-        this.selectedTransactionType = res.salaryTransactionType;
-        this.transactionTypeName = res.salaryTransactionType?.title;
-        this.isSalaryTransaction = res.salaryTransactionType?.id === 1;
-        
-        this.transactionForm.patchValue({
-          transactionTypeObj: res.salaryTransactionType,
-          employeeId: res.employee?.id,
-          amountWithdrawn: res.amountWithdrawn,
-          withdrawDate: new Date(res.withdrawDate),
-          paymentMethodId: res.paymentMethod?.id,
-          salaryTypeObj: res.salaryType,
-          note: res.note
-        });
-        
-        if (res.salaryTransactionType) {
-          this.transactionTypeName = res.salaryTransactionType.title;
+loadTransactionData() {
+  this.isLoading = true;
+  this.financialService.getSalaryIncentiveById(this.transactionId!).subscribe({
+    next: (res: any) => {
+      // Convert enum strings back to objects for display
+      let transactionTypeObj = null;
+      if (res.salaryTransactionType) {
+        switch(res.salaryTransactionType) {
+          case 'SALARY':
+            transactionTypeObj = this.transactionTypes.find(t => t.id === 1);
+            break;
+          case 'INCENTIVE':
+            transactionTypeObj = this.transactionTypes.find(t => t.id === 2);
+            break;
+          case 'BONUS':
+            transactionTypeObj = this.transactionTypes.find(t => t.id === 3);
+            break;
+          case 'ADVANCE':
+            transactionTypeObj = this.transactionTypes.find(t => t.id === 4);
+            break;
+          default:
+            transactionTypeObj = null;
         }
-        
-        // Fetch fresh employee data
-        this.fetchFreshEmployeeData(res.employee?.id, res.amountWithdrawn);
-        
-        // Mark steps as completed for edit mode
-        this.steps.forEach(step => step.completed = true);
-        this.currentStep = 4;
-        
-        this.isLoading = false;
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات المعاملة');
-        this.isLoading = false;
       }
-    });
-  }
+      
+      let salaryTypeObj = null;
+      if (res.salaryType) {
+        switch(res.salaryType) {
+          case 'MONTHLY':
+            salaryTypeObj = this.salaryTypes.find(s => s.id === 1);
+            break;
+          case 'HOURLY':
+            salaryTypeObj = this.salaryTypes.find(s => s.id === 2);
+            break;
+          case 'DAILY':
+            salaryTypeObj = this.salaryTypes.find(s => s.id === 3);
+            break;
+          case 'PERCENTAGE':
+            salaryTypeObj = this.salaryTypes.find(s => s.id === 4);
+            break;
+          default:
+            salaryTypeObj = null;
+        }
+      }
+      
+      this.selectedTransactionType = transactionTypeObj;
+      this.transactionTypeName = transactionTypeObj?.title || ''; // Fixed: added fallback empty string
+      this.isSalaryTransaction = transactionTypeObj?.id === 1;
+      
+      this.transactionForm.patchValue({
+        transactionTypeObj: transactionTypeObj,
+        employeeId: res.employee?.id,
+        amountWithdrawn: res.amountWithdrawn,
+        withdrawDate: new Date(res.withdrawDate),
+        paymentMethodId: res.paymentMethod?.id,
+        salaryTypeObj: salaryTypeObj,
+        note: res.note
+      });
+      
+      // Fetch fresh employee data
+      this.fetchFreshEmployeeData(res.employee?.id, res.amountWithdrawn);
+      
+      // Mark steps as completed for edit mode
+      this.steps.forEach(step => step.completed = true);
+      this.currentStep = 4;
+      
+      this.isLoading = false;
+    },
+    error: () => {
+      this.notification.showError('حدث خطأ في تحميل بيانات المعاملة');
+      this.isLoading = false;
+    }
+  });
+}
 
   fetchFreshEmployeeData(employeeId: number, currentAmount?: number) {
     this.isLoading = true;
@@ -525,72 +562,116 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     return true;
   }
 
-  onSubmit(): void {
-    if (this.transactionForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
-      return;
-    }
+onSubmit(): void {
+  if (this.transactionForm.invalid) {
+    this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
+    return;
+  }
 
-    const amountWithdrawn = this.transactionForm.get('amountWithdrawn')?.value;
-    const currentRemained = this.transactionForm.get('employeeRemainedSalary')?.value;
-    
-    // Check if salary transaction with zero remained
-    if (this.isSalaryTransaction && currentRemained === 0) {
-      this.notification.showWarning('لا يمكن صرف راتب للموظف حيث أن الراتب المتبقي صفر');
-      return;
-    }
-    
-    // Validate amount doesn't exceed remained (only for salary)
-    if (this.isSalaryTransaction && amountWithdrawn > currentRemained && currentRemained > 0) {
-      this.notification.showWarning(`المبلغ المطلوب لا يمكن أن يتجاوز الراتب المتبقي (${currentRemained} جم)`);
-      return;
-    }
+  const amountWithdrawn = this.transactionForm.get('amountWithdrawn')?.value;
+  const currentRemained = this.transactionForm.get('employeeRemainedSalary')?.value;
+  
+  // Check if salary transaction with zero remained
+  if (this.isSalaryTransaction && currentRemained === 0) {
+    this.notification.showWarning('لا يمكن صرف راتب للموظف حيث أن الراتب المتبقي صفر');
+    return;
+  }
+  
+  // Validate amount doesn't exceed remained (only for salary)
+  if (this.isSalaryTransaction && amountWithdrawn > currentRemained && currentRemained > 0) {
+    this.notification.showWarning(`المبلغ المطلوب لا يمكن أن يتجاوز الراتب المتبقي (${currentRemained} جم)`);
+    return;
+  }
 
-    const transactionTypeObj = this.transactionForm.get('transactionTypeObj')?.value;
-    const salaryTypeObj = this.transactionForm.get('salaryTypeObj')?.value;
-    
-    const transactionData = {
-      employeeId: this.transactionForm.get('employeeId')?.value,
-      type: transactionTypeObj,
-      amountWithdrawn: amountWithdrawn,
-      withdrawDate: this.transactionForm.get('withdrawDate')?.value,
-      paymentMethodId: this.transactionForm.get('paymentMethodId')?.value,
-      salaryType: salaryTypeObj,
-      note: this.transactionForm.get('note')?.value
-    };
-
-    console.log('Submitting transaction data:', transactionData);
-
-    this.isSubmitting = true;
-
-    if (this.isEditMode && this.transactionId) {
-      this.financialService.updateSalaryIncentive(this.transactionId, transactionData as any).subscribe({
-        next: () => {
-          this.notification.showSuccess(`تم تحديث ${this.transactionTypeName} بنجاح`);
-          this.dialogRef.close(true);
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Update error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المعاملة');
-          this.isSubmitting = false;
-        }
-      });
-    } else {
-      this.financialService.createSalaryIncentive(transactionData as any).subscribe({
-        next: () => {
-          this.notification.showSuccess(`تم إضافة ${this.transactionTypeName} بنجاح`);
-          this.dialogRef.close(true);
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Create error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المعاملة');
-          this.isSubmitting = false;
-        }
-      });
+  const transactionTypeObj = this.transactionForm.get('transactionTypeObj')?.value;
+  const salaryTypeObj = this.transactionForm.get('salaryTypeObj')?.value;
+  
+  // Convert SalaryType object to enum string expected by backend
+  // SalaryType values from common.model: 1='شهري' (MONTHLY), 2='بالساعة' (HOURLY), 3='يومي' (DAILY), 4='نسبة' (PERCENTAGE)
+  let salaryTypeEnum = null;
+  if (salaryTypeObj) {
+    switch(salaryTypeObj.id) {
+      case 1: // شهري
+        salaryTypeEnum = 'MONTHLY';
+        break;
+      case 2: // بالساعة
+        salaryTypeEnum = 'HOURLY';
+        break;
+      case 3: // يومي
+        salaryTypeEnum = 'DAILY';
+        break;
+      case 4: // نسبة
+        salaryTypeEnum = 'PERCENTAGE';
+        break;
+      default:
+        salaryTypeEnum = null;
     }
   }
+  
+  // Convert SalaryTransactionType object to enum string expected by backend
+  // SalaryTransactionType values: 1='راتب' (SALARY), 2='حافز' (INCENTIVE), 3='مكافأة' (BONUS), 4='سلفة' (ADVANCE)
+  let transactionTypeEnum = null;
+  if (transactionTypeObj) {
+    switch(transactionTypeObj.id) {
+      case 1: // راتب
+        transactionTypeEnum = 'SALARY';
+        break;
+      case 2: // حافز
+        transactionTypeEnum = 'INCENTIVE';
+        break;
+      case 3: // مكافأة
+        transactionTypeEnum = 'BONUS';
+        break;
+      case 4: // سلفة
+        transactionTypeEnum = 'ADVANCE';
+        break;
+      default:
+        transactionTypeEnum = null;
+    }
+  }
+  
+  const transactionData = {
+    employeeId: this.transactionForm.get('employeeId')?.value,
+    amountWithdrawn: amountWithdrawn,
+    withdrawDate: this.transactionForm.get('withdrawDate')?.value,
+    paymentMethodId: this.transactionForm.get('paymentMethodId')?.value,
+    salaryType: salaryTypeEnum,  // Send enum string, not object
+    salaryTransactionType: transactionTypeEnum,  // Send enum string, not object
+    note: this.transactionForm.get('note')?.value
+  };
+
+  console.log('Submitting transaction data:', transactionData);
+
+  this.isSubmitting = true;
+
+  if (this.isEditMode && this.transactionId) {
+    this.financialService.updateSalaryIncentive(this.transactionId, transactionData as any).subscribe({
+      next: () => {
+        this.notification.showSuccess(`تم تحديث ${this.transactionTypeName} بنجاح`);
+        this.dialogRef.close(true);
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        console.error('Update error:', err);
+        this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المعاملة');
+        this.isSubmitting = false;
+      }
+    });
+  } else {
+    this.financialService.createSalaryIncentive(transactionData as any).subscribe({
+      next: () => {
+        this.notification.showSuccess(`تم إضافة ${this.transactionTypeName} بنجاح`);
+        this.dialogRef.close(true);
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        console.error('Create error:', err);
+        this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المعاملة');
+        this.isSubmitting = false;
+      }
+    });
+  }
+}
 
   onCancel(): void {
     this.dialogRef.close(false);

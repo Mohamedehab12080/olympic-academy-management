@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <changeSet id="11" author="mahmoud.zain">
+        <addColumn tableName="fl_domain_config">
+            <column name="label" type="VARCHAR(255)"/>
+        </addColumn>
+        <comment>Add label column to sc_domain table</comment>
+    </changeSet>
+    <changeSet id="12" author="mohamed.ehab">
+        <modifyDataType tableName="fl_domain_config" columnName="max_size" newDataType="BIGINT"/>
+        <comment>update max_size type in sc_domain table</comment>
+    </changeSet>
+</databaseChangeLog>

@@ -173,7 +173,9 @@
 								<importMapping>TraineeAttendanceStatus =
 									bs.service.trainee.model.enums.TraineeAttendanceStatus
 								</importMapping>
-
+								<importMapping>PlaceVTO =
+									bs.service.place.model.generated.PlaceVTO
+								</importMapping>
 								<importMapping>EmployeeVTO =
 									bs.service.employee.model.generated.EmployeeVTO
 								</importMapping>
@@ -308,6 +310,9 @@
 										bs.lib.common.model.enums.Gender
 									</importMapping>
 
+									<importMapping>PlaceVTO =
+										bs.service.place.model.generated.PlaceVTO
+									</importMapping>
 									<importMapping>EmployeeVTO =
 										bs.service.employee.model.generated.EmployeeVTO
 									</importMapping>
@@ -534,6 +539,11 @@
 		<module>lib/id-counter/id-counter-core</module>
 		<module>lib/id-counter/id-counter-repository</module>
 
+		<module>lib/service-context/service-context-model</module>
+		<module>lib/service-context/service-context-api</module>
+		<module>lib/service-context/service-context-core</module>
+		<module>lib/service-context/service-context-repository</module>
+
 
 		<module>service/service-bom</module>
 
@@ -572,6 +582,12 @@
 		<module>service/service/place/place-core</module>
 		<module>service/service/place/place-proxy</module>
 		<module>service/service/place/place-repository</module>
+
+		<module>service/service/file/file-model</module>
+		<module>service/service/file/file-api</module>
+		<module>service/service/file/file-core</module>
+		<module>service/service/file/file-proxy</module>
+		<module>service/service/file/file-repository</module>
 
 		<module>service/service/enrollment/enrollment-model</module>
 		<module>service/service/enrollment/enrollment-api</module>

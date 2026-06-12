@@ -83,7 +83,7 @@ export interface EnrollmentPaymentDTO {
   paymentMethodId?: number;
   imageUrl?: string;
   note?: string;
-  paymentStatus?: PaymentStatus;  // From common.model
+  paymentStatus?: PaymentStatus;
 }
 
 export interface EnrollmentRefundDTO {
@@ -93,7 +93,7 @@ export interface EnrollmentRefundDTO {
   paymentMethodId?: number;
   imageUrl?: string;
   note?: string;
-  status?: RefundStatus;  // { id: number; title: string }
+  status?: RefundStatus;
 }
 
 export interface SalaryIncentiveDTO {
@@ -102,8 +102,8 @@ export interface SalaryIncentiveDTO {
   amountWithdrawn: number;
   paymentMethodId?: number;
   imageUrl?: string;
-  salaryType?: SalaryType;  // From common.model
-  salaryTransactionType?: SalaryTransactionType;  // { id: number; title: string }
+  salaryType?: SalaryType;
+  salaryTransactionType?: SalaryTransactionType;
   note?: string;
 }
 
@@ -113,7 +113,7 @@ export interface SalaryDeductionDTO {
   amountDeducted: number;
   imageUrl?: string;
   reason?: string;
-  salaryType?: SalaryType;  // From common.model
+  salaryType?: SalaryType;
   note?: string;
 }
 
@@ -180,7 +180,7 @@ export interface EnrollmentPaymentVTO {
   paymentMethod: LookupVTO;
   imageUrl?: string;
   note?: string;
-  paymentStatus: LookupVTO;  // From common.model
+  paymentStatus: LookupVTO;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
@@ -195,7 +195,7 @@ export interface EnrollmentRefundVTO {
   paymentMethod: LookupVTO;
   imageUrl?: string;
   note?: string;
-  refundStatus: LookupVTO;  // Changed from 'status' to 'refundStatus' to match Swagger
+  refundStatus: LookupVTO;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
@@ -209,8 +209,8 @@ export interface SalaryIncentiveVTO {
   amountWithdrawn: number;
   paymentMethod: LookupVTO;
   imageUrl?: string;
-  salaryType: LookupVTO;  // From common.model
-  salaryTransactionType: LookupVTO;  // { id: number; title: string; imageUrl: string | null }
+  salaryType: LookupVTO;
+  salaryTransactionType: LookupVTO;
   note?: string;
   createdOn: string;
   createdBy: LightUserVTO;
@@ -220,17 +220,35 @@ export interface SalaryIncentiveVTO {
 
 export interface SalaryDeductionVTO {
   id: number;
-  employee: LookupVTO;
+  employee: EmployeeVTO;
   deductionDate: string;
   amountDeducted: number;
   imageUrl?: string;
   reason?: string;
-  salaryType: LookupVTO;  // From common.model
+  salaryType: LookupVTO;
   note?: string;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
+}
+
+// ==================== Financial Totals VTO ====================
+
+export interface FinancialTotalVTO {
+  totalSalary: number;
+  totalIncentives: number;
+  totalPlacesRent: number;
+  totalEnrollmentPayments: number;
+  totalExpenses: number;
+  activeEnrollmentsCount: number;
+  activeCoursesCount: number;
+  activeTraineesCount: number;
+  activeEmployeesCount: number;
+  inactiveEnrollmentsCount: number;
+  inactiveCoursesCount: number;
+  inactiveTraineesCount: number;
+  inactiveEmployeesCount: number;
 }
 
 // ==================== Result Sets ====================

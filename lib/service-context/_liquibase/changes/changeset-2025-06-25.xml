@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="ahmed.kasim">
+        <createTable tableName="sc_domain">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="title_en" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="title_ar" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="event_data_class_name" type="VARCHAR(500)">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="last_modified_on" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="last_modified_by_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="ahmed.kasim">
+        <createTable tableName="sc_event">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="domain_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_sc_event_sc_domain"
+                             references="sc_domain(id)"/>
+            </column>
+
+            <column name="title_ar" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="title_en" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_modified_on" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="last_modified_by_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

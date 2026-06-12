@@ -19,7 +19,7 @@ public class SalaryIncentiveSearchFilter extends SearchFilter<SalaryIncentiveSea
 
     private Integer employeeId;
     private Integer paymentMethodId;
-    private SalaryTransactionType type;
+    private Integer salaryTransactionType;
     private LocalDate withdrawDateFrom;
     private LocalDate withdrawDateTo;
 

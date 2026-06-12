@@ -63,6 +63,13 @@
         <bs.place-proxy.version>0.0.1</bs.place-proxy.version>
 
 
+        <bs.file-model.version>0.0.1</bs.file-model.version>
+        <bs.file-api.version>0.0.1</bs.file-api.version>
+        <bs.file-core.version>0.0.1</bs.file-core.version>
+        <bs.file-repository.version>0.0.1</bs.file-repository.version>
+        <bs.file-proxy.version>0.0.1</bs.file-proxy.version>
+
+
         <bs.user-model.version>0.0.1</bs.user-model.version>
         <bs.user-api.version>0.0.1</bs.user-api.version>
         <bs.user-core.version>0.0.1</bs.user-core.version>
@@ -328,6 +335,37 @@
                 <groupId>bs.service.financial</groupId>
                 <artifactId>financial-proxy</artifactId>
                 <version>${bs.financial-proxy.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>bs.service.file</groupId>
+                <artifactId>file-model</artifactId>
+                <version>${bs.file-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.service.file</groupId>
+                <artifactId>file-api</artifactId>
+                <version>${bs.file-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.service.file</groupId>
+                <artifactId>file-core</artifactId>
+                <version>${bs.file-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.service.file</groupId>
+                <artifactId>file-repository</artifactId>
+                <version>${bs.file-repository.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.service.file</groupId>
+                <artifactId>file-proxy</artifactId>
+                <version>${bs.file-proxy.version}</version>
             </dependency>
 
             <dependency>

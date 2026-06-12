@@ -1,101 +1,613 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+
+// Material Imports
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { PlaceService } from '../../../../../../core/services/place.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
 import { ReportService } from '../../../../../../core/services/report.service';
+import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
+import { PlaceRentPaymentWizardModalComponent } from '../place-rent-payment-wizard/place-rent-payment-wizard-modal.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-place-rent-payment-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    MatChipsModule,
+    MatDialogModule,
+    SearchableSelectComponent
+  ],
   templateUrl: './place-rent-payment-list.component.html',
   styleUrls: ['./place-rent-payment-list.component.css']
 })
-export class PlaceRentPaymentListComponent implements OnInit {
-  displayedColumns = ['id', 'place', 'rentAmount', 'payedAmount', 'remainedAmount', 'paymentDate', 'actions'];
+export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
+  displayedColumns: string[] = ['id', 'place', 'rentAmount', 'payedAmount', 'remainedAmount', 'paymentDate', 'paymentMethod', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isLoading = false;
+  
   places: any[] = [];
   rentTypes: any[] = [];
+  paymentMethods: any[] = [];
   
-  filters = { placeId: null as number | null, rentTypeId: null as number | null, paymentDateFrom: null as string | null, paymentDateTo: null as string | null };
+  // Options for searchable selects
+  placeOptions: SelectOption[] = [];
+  rentTypeOptions: SelectOption[] = [];
+  paymentMethodOptions: SelectOption[] = [];
+  
+  filters = {
+    placeId: null as number | null,
+    rentTypeId: null as number | null,
+    paymentMethodId: null as number | null,
+    paymentDateFrom: null as string | null,
+    paymentDateTo: null as string | null
+  };
+  
   quickSearch: string = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+
+  // Statistics
+  get totalRentAmount(): number {
+    return this.dataSource.data.reduce((sum, item) => sum + (item.rentAmount || 0), 0);
+  }
+
+  get totalPayedAmount(): number {
+    return this.dataSource.data.reduce((sum, item) => sum + (item.payedAmount || 0), 0);
+  }
+
+  get totalRemainedAmount(): number {
+    return this.dataSource.data.reduce((sum, item) => sum + (item.remainedAmount || 0), 0);
+  }
+
+  get totalPaymentsCount(): number {
+    return this.dataSource.data.length;
+  }
 
   constructor(
     private financialService: FinancialService,
     private placeService: PlaceService,
     private notification: NotificationService,
     private reportService: ReportService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
-  ngOnInit() { this.loadPlaces(); this.loadRentTypes(); this.loadData(); }
-  ngAfterViewInit() { this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; }
+  ngOnInit() {
+    this.loadLookupData();
+    this.loadData();
+  }
 
-  loadPlaces() { this.placeService.getAllPlacesLookup().subscribe((res: any) => this.places = res.list); }
-  loadRentTypes() { this.financialService.getAllRentTypesLookup().subscribe((res: any) => this.rentTypes = res.list); }
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
+  loadLookupData() {
+    // Load places
+    this.placeService.getAllPlacesLookup().subscribe({
+      next: (res: any) => {
+        this.places = res.list || [];
+        this.placeOptions = [
+          { value: null, label: 'الكل' },
+          ...this.places.map(p => ({ value: p.id, label: p.title }))
+        ];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل المواقع');
+      }
+    });
+
+    // Load rent types
+    this.financialService.getAllRentTypesLookup().subscribe({
+      next: (res: any) => {
+        this.rentTypes = res.list || [];
+        this.rentTypeOptions = [
+          { value: null, label: 'الكل' },
+          ...this.rentTypes.map(r => ({ value: r.id, label: r.title }))
+        ];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل أنواع الإيجار');
+      }
+    });
+
+    // Load payment methods
+    this.financialService.getAllPaymentMethodsLookup().subscribe({
+      next: (res: any) => {
+        this.paymentMethods = res.list || [];
+        this.paymentMethodOptions = [
+          { value: null, label: 'الكل' },
+          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+        ];
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل طرق الدفع');
+      }
+    });
+  }
 
   loadData() {
     this.isLoading = true;
     const params: any = {};
+    
     if (this.filters.placeId) params.placeId = this.filters.placeId;
     if (this.filters.rentTypeId) params.rentTypeId = this.filters.rentTypeId;
+    if (this.filters.paymentMethodId) params.paymentMethodId = this.filters.paymentMethodId;
     if (this.filters.paymentDateFrom) params.paymentDateFrom = this.filters.paymentDateFrom;
     if (this.filters.paymentDateTo) params.paymentDateTo = this.filters.paymentDateTo;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+
     this.financialService.getAllPlaceRentPaymentsByFilter(params).subscribe({
-      next: (res: any) => { this.dataSource.data = res.items; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.isLoading = false; },
-      error: () => { this.notification.showError('حدث خطأ'); this.isLoading = false; }
+      next: (res: any) => {
+        this.dataSource.data = res.items || [];
+        if (this.dataSource.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
+        if (this.dataSource.sort) {
+          this.dataSource.sort = this.sort;
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading data:', err);
+        this.notification.showError('حدث خطأ في تحميل البيانات');
+        this.isLoading = false;
+      }
     });
   }
 
-  applyQuickSearch(event: Event) { this.quickSearch = (event.target as HTMLInputElement).value; this.loadData(); }
-  resetFilters() { this.filters = { placeId: null, rentTypeId: null, paymentDateFrom: null, paymentDateTo: null }; this.quickSearch = ''; this.loadData(); this.notification.showSuccess('تم مسح الفلاتر'); }
+  applyQuickSearch(event: Event) {
+    this.quickSearch = (event.target as HTMLInputElement).value;
+    this.loadData();
+  }
+
+  resetFilters() {
+    this.filters = {
+      placeId: null,
+      rentTypeId: null,
+      paymentMethodId: null,
+      paymentDateFrom: null,
+      paymentDateTo: null
+    };
+    this.quickSearch = '';
+    this.loadData();
+    this.notification.showSuccess('تم مسح جميع الفلاتر');
+  }
+
+  openNewPaymentModal() {
+    const dialogRef = this.dialog.open(PlaceRentPaymentWizardModalComponent, {
+      data: {},
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
+      }
+    });
+  }
+
+  viewPayment(id: number) {
+    this.financialService.getPlaceRentPaymentById(id).subscribe({
+      next: (payment) => {
+        this.openDetailsModal(payment);
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات الدفعة');
+      }
+    });
+  }
+
+  openDetailsModal(payment: any): void {
+    const modalContainer = document.createElement('div');
+    modalContainer.style.position = 'fixed';
+    modalContainer.style.top = '0';
+    modalContainer.style.left = '0';
+    modalContainer.style.width = '100%';
+    modalContainer.style.height = '100%';
+    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modalContainer.style.display = 'flex';
+    modalContainer.style.justifyContent = 'center';
+    modalContainer.style.alignItems = 'center';
+    modalContainer.style.zIndex = '10000';
+    modalContainer.style.direction = 'rtl';
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.borderRadius = '16px';
+    modalContent.style.maxWidth = '600px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxHeight = '85vh';
+    modalContent.style.overflow = 'auto';
+    modalContent.style.position = 'relative';
+    modalContent.style.padding = '0';
+    
+    const today = new Date().toLocaleDateString('ar-EG');
+    const paymentNumber = `RENT-${payment.id}`;
+    
+    modalContent.innerHTML = `
+      <div style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+          <h2 style="margin: 0; color: #8b5cf6; font-size: 20px;">تفاصيل دفعة الإيجار</h2>
+          <button id="closeModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div style="max-width: 100%;">
+          <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border-radius: 10px;">
+            <h1 style="margin: 0; font-size: 18px;">إيصال دفع إيجار</h1>
+            <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة الأكاديمية الأولمبية</p>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
+            <div><strong>رقم الإيصال:</strong> ${paymentNumber}</div>
+            <div><strong>تاريخ الإصدار:</strong> ${today}</div>
+          </div>
+          
+          <h3 style="color: #8b5cf6; border-bottom: 2px solid #8b5cf6; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">🏢 معلومات الموقع</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">الموقع</div><div style="color: #1f2937; font-size: 12px;">${payment.place?.title || '-'}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع الإيجار</div><div style="color: #1f2937; font-size: 12px;">${payment.rentType?.title || '-'}</div></div>
+          </div>
+          
+          <h3 style="color: #8b5cf6; border-bottom: 2px solid #8b5cf6; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">💰 معلومات الدفعة</h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">قيمة الإيجار</div><div style="color: #1f2937; font-size: 12px;">${payment.rentAmount.toLocaleString('ar-EG')} جم</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المبلغ المدفوع</div><div style="color: #10b981; font-size: 16px; font-weight: 700;">${payment.payedAmount.toLocaleString('ar-EG')} جم</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المبلغ المتبقي</div><div style="color: ${payment.remainedAmount > 0 ? '#d97706' : '#059669'}; font-size: 14px; font-weight: 600;">${payment.remainedAmount.toLocaleString('ar-EG')} جم</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">تاريخ الدفع</div><div style="color: #1f2937; font-size: 12px;">${new Date(payment.paymentDate).toLocaleDateString('ar-EG')}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">طريقة الدفع</div><div style="color: #1f2937; font-size: 12px;">${payment.paymentMethod?.title || '-'}</div></div>
+          </div>
+          
+          <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+            <div style="text-align: center; flex: 1;"><div style="width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px;"></div><div style="font-size: 11px;">توقيع المستلم</div><div style="font-size: 9px; color: #6b7280; margin-top: 5px;">التاريخ: ___ / ___ / _____</div></div>
+            <div style="text-align: center; flex: 1;"><div style="width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px;"></div><div style="font-size: 11px;">توقيع المحاسب</div><div style="font-size: 9px; color: #6b7280; margin-top: 5px;">التاريخ: ___ / ___ / _____</div></div>
+            <div style="text-align: center; flex: 1;"><div style="width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px;"></div><div style="font-size: 11px;">ختم الأكاديمية</div><div style="font-size: 9px; color: #6b7280; margin-top: 5px;">التاريخ: ___ / ___ / _____</div></div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px; padding: 10px; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb;">
+            تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>
+            هذا المستند معتمد ويحتوي على جميع بيانات الدفعة
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+          <button id="printPaymentBtn" style="padding: 10px 24px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
+            🖨️ طباعة الإيصال
+          </button>
+          <button id="closeModalBtn2" style="padding: 10px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;">
+            إغلاق
+          </button>
+        </div>
+      </div>
+    `;
+    
+    modalContainer.appendChild(modalContent);
+    document.body.appendChild(modalContainer);
+    
+    const closeModal = () => {
+      document.body.removeChild(modalContainer);
+    };
+    
+    const printPayment = () => {
+      this.printPaymentDetails(payment);
+      closeModal();
+    };
+    
+    modalContent.querySelector('#closeModalBtn')?.addEventListener('click', closeModal);
+    modalContent.querySelector('#closeModalBtn2')?.addEventListener('click', closeModal);
+    modalContent.querySelector('#printPaymentBtn')?.addEventListener('click', printPayment);
+    
+    modalContainer.addEventListener('click', (e) => {
+      if (e.target === modalContainer) {
+        closeModal();
+      }
+    });
+  }
+
+  printPaymentDetails(payment: any): void {
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.maxWidth = '100%';
+    printContainer.style.margin = '0';
+    
+    const today = new Date().toLocaleDateString('ar-EG');
+    const paymentNumber = `RENT-${payment.id}`;
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>إيصال دفع إيجار - ${paymentNumber}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @page { size: A4 portrait; margin: 10mm; }
+          @media print { body { margin: 0; padding: 0; } .no-print { display: none; } }
+          body { background: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+          .container { max-width: 600px; width: 100%; margin: 0 auto; background: white; border-radius: 12px; padding: 20px; }
+          .header { text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border-radius: 10px; }
+          .header h1 { margin: 0; font-size: 20px; }
+          .header p { margin: 5px 0 0 0; font-size: 11px; opacity: 0.9; }
+          .payment-details { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px; }
+          h2 { color: #8b5cf6; border-bottom: 2px solid #8b5cf6; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px; }
+          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+          .info-item { border-bottom: 1px solid #e5e7eb; padding: 5px 0; }
+          .info-label { font-weight: 600; color: #374151; font-size: 11px; margin-bottom: 2px; }
+          .info-value { color: #1f2937; font-size: 12px; font-weight: 500; }
+          .info-value.amount { font-weight: 700; color: #10b981; font-size: 16px; }
+          .info-value.remained { color: #d97706; font-weight: 600; }
+          .full-width { grid-column: span 2; }
+          .signature-section { margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
+          .signature-box { text-align: center; flex: 1; }
+          .signature-line { width: 100%; border-top: 1px solid #000; margin-top: 30px; padding-top: 5px; }
+          .signature-date { font-size: 9px; color: #6b7280; margin-top: 5px; }
+          .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
+          @media (max-width: 600px) { .container { padding: 15px; } .info-grid { grid-template-columns: 1fr; gap: 8px; } .signature-section { flex-direction: column; align-items: center; gap: 20px; } .signature-box { width: 100%; } }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header"><h1>إيصال دفع إيجار</h1><p>نظام إدارة الأكاديمية الأولمبية</p></div>
+          <div class="payment-details"><div><strong>رقم الإيصال:</strong> ${paymentNumber}</div><div><strong>تاريخ الإصدار:</strong> ${today}</div></div>
+          <h2>🏢 معلومات الموقع</h2>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">الموقع</div><div class="info-value">${payment.place?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">نوع الإيجار</div><div class="info-value">${payment.rentType?.title || '-'}</div></div>
+          </div>
+          <h2>💰 معلومات الدفعة</h2>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">قيمة الإيجار</div><div class="info-value">${payment.rentAmount.toLocaleString('ar-EG')} جم</div></div>
+            <div class="info-item"><div class="info-label">المبلغ المدفوع</div><div class="info-value amount">${payment.payedAmount.toLocaleString('ar-EG')} جم</div></div>
+            <div class="info-item"><div class="info-label">المبلغ المتبقي</div><div class="info-value remained">${payment.remainedAmount.toLocaleString('ar-EG')} جم</div></div>
+            <div class="info-item"><div class="info-label">تاريخ الدفع</div><div class="info-value">${new Date(payment.paymentDate).toLocaleDateString('ar-EG')}</div></div>
+            <div class="info-item"><div class="info-label">طريقة الدفع</div><div class="info-value">${payment.paymentMethod?.title || '-'}</div></div>
+          </div>
+          <div class="signature-section">
+            <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">توقيع المستلم</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
+            <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">توقيع المحاسب</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
+            <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">ختم الأكاديمية</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
+          </div>
+          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>هذا المستند معتمد ويحتوي على جميع بيانات الدفعة</div>
+        </div>
+        <div class="no-print" style="text-align: center; margin-top: 15px; padding: 10px;">
+          <button onclick="window.print();" style="padding: 8px 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🖨️ طباعة / حفظ كـ PDF</button>
+        </div>
+        <script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };</script>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.notification.showSuccess('تم فتح إيصال الدفعة - جاري تحضير الطباعة...');
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => { 
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer);
+        }
+      }, 500);
+    }
+  }
+
+  editPayment(id: number) {
+    const dialogRef = this.dialog.open(PlaceRentPaymentWizardModalComponent, {
+      data: { paymentId: id },
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
+      }
+    });
+  }
+
+  deletePayment(item: any) {
+    if (confirm(`هل أنت متأكد من حذف دفعة الإيجار للموقع "${item.place?.title}" بقيمة ${item.payedAmount} جم؟`)) {
+      this.financialService.deletePlaceRentPayment(item.id).subscribe({
+        next: () => {
+          this.notification.showSuccess('تم الحذف بنجاح');
+          this.loadData();
+        },
+        error: () => this.notification.showError('حدث خطأ في الحذف')
+      });
+    }
+  }
 
   exportToExcel() {
-    if (this.dataSource.data.length === 0) { this.notification.showWarning('لا توجد بيانات'); return; }
+    if (this.dataSource.data.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+
     const exportData = this.dataSource.data.map((item, index) => ({
-      '#': index + 1, 'الموقع': item.place?.title, 'قيمة الإيجار': item.rentAmount,
-      'المدفوع': item.payedAmount, 'المتبقي': item.remainedAmount, 'تاريخ الدفع': item.paymentDate
+      '#': index + 1,
+      'الموقع': item.place?.title || '-',
+      'قيمة الإيجار': item.rentAmount,
+      'المبلغ المدفوع': item.payedAmount,
+      'المبلغ المتبقي': item.remainedAmount,
+      'تاريخ الدفع': item.paymentDate,
+      'طريقة الدفع': item.paymentMethod?.title || '-'
     }));
-    this.reportService.exportToExcel(exportData, 'place-rent-payments-list', 'مدفوعات الإيجار');
-    this.notification.showSuccess('تم تصدير البيانات');
+
+    this.reportService.exportToExcel(exportData, 'place-rent-payments-list', 'مدفوعات إيجار المواقع');
+    this.notification.showSuccess('تم تصدير البيانات بنجاح');
   }
 
   exportToPDF() {
-    if (this.dataSource.data.length === 0) { this.notification.showWarning('لا توجد بيانات'); return; }
-    const doc = new jsPDF('l', 'mm', 'a4');
-    doc.setFontSize(18); doc.text('تقرير مدفوعات إيجار المواقع', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
-    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, doc.internal.pageSize.getWidth() - 40, 25);
-    doc.text(`عدد السجلات: ${this.dataSource.data.length}`, doc.internal.pageSize.getWidth() - 40, 32);
-    autoTable(doc, {
-      head: [['#', 'الموقع', 'قيمة الإيجار', 'المدفوع', 'المتبقي', 'تاريخ الدفع']],
-      body: this.dataSource.data.map((item, index) => [
-        (index + 1).toString(), item.place?.title || '-', `${item.rentAmount} جم`,
-        `${item.payedAmount} جم`, `${item.remainedAmount} جم`, item.paymentDate
-      ]),
-      startY: 35,
-      styles: { halign: 'right', fontSize: 9 },
-      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] }
+    if (this.dataSource.data.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+
+    this.isLoading = true;
+
+    const filterTexts: string[] = [];
+    if (this.filters.placeId) {
+      const place = this.places.find(p => p.id === this.filters.placeId);
+      if (place) filterTexts.push(`الموقع: ${place.title}`);
+    }
+    if (this.filters.rentTypeId) {
+      const rentType = this.rentTypes.find(r => r.id === this.filters.rentTypeId);
+      if (rentType) filterTexts.push(`نوع الإيجار: ${rentType.title}`);
+    }
+    if (this.filters.paymentMethodId) {
+      const paymentMethod = this.paymentMethods.find(p => p.id === this.filters.paymentMethodId);
+      if (paymentMethod) filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
+    }
+    if (this.filters.paymentDateFrom) filterTexts.push(`من تاريخ: ${this.filters.paymentDateFrom}`);
+    if (this.filters.paymentDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.paymentDateTo}`);
+    if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
+
+    let tableRows = '';
+    this.dataSource.data.forEach((item: any, index: number) => {
+      const remainedClass = item.remainedAmount === 0 ? 'color: #059669;' : 'color: #d97706; font-weight: bold;';
+      tableRows += `
+        <tr>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${item.place?.title || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.rentAmount.toLocaleString('ar-EG')} جم}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; font-weight: bold; color: #10b981;">
+            ${item.payedAmount.toLocaleString('ar-EG')} جم
+          </td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${remainedClass}">
+            ${item.remainedAmount.toLocaleString('ar-EG')} جم
+          </td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.paymentDate || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.paymentMethod?.title || '-'}</td>
+        </tr>
+      `;
     });
-    doc.save('place-rent-payments-report.pdf');
-    this.notification.showSuccess('تم تصدير التقرير');
+
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>تقرير مدفوعات إيجار المواقع</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+          @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
+          .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border-radius: 8px; }
+          .header h1 { margin: 0; font-size: 24px; }
+          .header p { margin: 10px 0 0 0; font-size: 12px; }
+          .filters { margin-bottom: 20px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; }
+          .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
+          .stat-item { flex: 1; text-align: center; }
+          .stat-label { font-size: 12px; color: #6b7280; }
+          .stat-value { font-size: 20px; font-weight: bold; color: #8b5cf6; }
+          table { width: 100%; border-collapse: collapse; direction: rtl; }
+          th { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
+          td { padding: 8px; border: 1px solid #ddd; }
+          .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>تقرير مدفوعات إيجار المواقع</h1>
+          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+          <p>عدد السجلات: ${this.dataSource.data.length} دفعة</p>
+        </div>
+        ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+        <div class="stats">
+          <div class="stat-item"><div class="stat-value">${this.totalPaymentsCount}</div><div class="stat-label">عدد الدفعات</div></div>
+          <div class="stat-item"><div class="stat-value">${this.totalPayedAmount.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المدفوع</div></div>
+          <div class="stat-item"><div class="stat-value">${this.totalRemainedAmount.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المتبقي</div></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الموقع</th>
+              <th>قيمة الإيجار</th>
+              <th>المدفوع</th>
+              <th>المتبقي</th>
+              <th>تاريخ الدفع</th>
+              <th>طريقة الدفع</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        document.body.removeChild(printContainer);
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
+    }
   }
 
-  editPayment(id: number) { this.router.navigate(['/financial/place-rent-payments', id, 'edit']); }
-  deletePayment(item: any) {
-    if (confirm('حذف الدفعة؟')) {
-      this.financialService.deletePlaceRentPayment(item.id).subscribe({
-        next: () => { this.notification.showSuccess('تم الحذف'); this.loadData(); },
-        error: () => this.notification.showError('حدث خطأ')
-      });
-    }
+  printList(): void {
+    this.exportToPDF();
   }
 }

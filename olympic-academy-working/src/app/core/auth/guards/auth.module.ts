@@ -1,25 +1,27 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { AuthRoutingModule } from '../../services/auth/auth-routing.module';
-import { LoginComponent } from '../../services/auth/components/login/login.component';
-import { RegisterComponent } from '../../services/auth/components/register/register.component';
-import { ForgotPasswordComponent } from '../../services/auth/components/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from '../../services/auth/components/reset-password/reset-password.component';
-import { ActivateAccountComponent } from '../../services/auth/components/activate-account/activate-account.component';
-import { SharedModule } from './../../shared/shared.module'; // ← Import SharedModule
+import { LoginComponent } from '../../auth/pages/login/login.component';
+import { RegisterComponent } from '../../../core/auth/pages/register/register.component';
+import { ForgotPasswordComponent } from '../../auth/pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from '../../auth/pages/reset-password/reset-password.component';
+import { ActivateAccountComponent } from '../../auth/pages/activate-account/activate-account.component';
 
 @NgModule({
-  declarations: [
+  imports: [
+    // Import standalone components here
+    LoginComponent,
+    RegisterComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
+    ActivateAccountComponent,
+    RouterModule
+  ],
+  exports: [
     LoginComponent,
     RegisterComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
     ActivateAccountComponent
-  ],
-  imports: [
-    SharedModule, // This provides CommonModule, FormsModule, ReactiveFormsModule
-    RouterModule,
-    AuthRoutingModule
   ]
 })
 export class AuthModule { }

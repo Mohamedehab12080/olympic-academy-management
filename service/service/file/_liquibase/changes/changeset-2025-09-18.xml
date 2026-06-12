@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <!-- New changeset for renaming a column -->
+    <changeSet id="17" author="mahmoud.zain">
+        <renameColumn tableName="fl_daily_counter"
+                      oldColumnName="last_updated"
+                      newColumnName="last_modified_on"
+                      columnDataType="DATE"/>
+        <comment>Rename last_updated to last_modified_on in daily_counter table</comment>
+    </changeSet>
+
+</databaseChangeLog>

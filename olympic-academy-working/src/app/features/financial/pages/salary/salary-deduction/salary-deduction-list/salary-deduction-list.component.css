@@ -1,7 +1,7 @@
 /* Main Container */
 .deductions-container {
   padding: 24px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   background: #f5f7fa;
   min-height: calc(100vh - 64px);
@@ -83,15 +83,26 @@
 }
 
 .reset-btn,
-.export-btn {
+.export-btn,
+.print-btn {
   padding: 0 20px;
   height: 44px;
   transition: all 0.2s;
 }
 
 .reset-btn:hover,
-.export-btn:hover {
+.export-btn:hover,
+.print-btn:hover {
   transform: translateY(-1px);
+}
+
+.print-btn {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.print-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 /* Statistics Cards */
@@ -181,6 +192,21 @@
   height: 18px;
 }
 
+.total-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dc2626;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.total-amount mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .table-wrapper {
   overflow-x: auto;
   border-radius: 12px;
@@ -190,7 +216,7 @@
 
 .data-table {
   width: 100%;
-  min-width: 800px;
+  min-width: 1000px;
 }
 
 .data-table .mat-header-cell {
@@ -215,17 +241,40 @@
 }
 
 .data-row:hover {
-  background-color: #f8fafc;
+  background-color: #fef2f2;
 }
 
-.clickable-cell {
-  cursor: pointer;
+/* Employee Info */
+.employee-info strong {
+  color: #1f2937;
   font-weight: 600;
-  color: #ef4444;
 }
 
-.clickable-cell:hover {
-  text-decoration: underline;
+/* Salary Badge */
+.salary-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Remained Badge */
+.remained-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #f3e8ff;
+  color: #6b21a5;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.remained-badge.warning {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* Amount Badge */
@@ -317,7 +366,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .stats-grid {
     gap: 16px;
   }
@@ -368,7 +417,8 @@
   }
 
   .reset-btn,
-  .export-btn {
+  .export-btn,
+  .print-btn {
     width: 100%;
   }
 
@@ -404,4 +454,87 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Print Styles */
+@media print {
+  .deductions-container {
+    padding: 0;
+    background: white;
+  }
+  
+  .page-header button,
+  .filters-card,
+  .stats-grid,
+  .table-header,
+  .action-buttons,
+  .custom-paginator,
+  .filter-actions,
+  .add-button,
+  .print-btn,
+  .export-btn,
+  .reset-btn {
+    display: none !important;
+  }
+  
+  .main-card {
+    box-shadow: none;
+    border: none;
+  }
+  
+  .data-table {
+    min-width: 100%;
+  }
+  
+  .data-table .mat-header-cell {
+    background: #e5e7eb;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .salary-badge,
+  .remained-badge,
+  .amount-badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Tooltip Styles */
+.mat-tooltip {
+  font-size: 12px;
+  background-color: #1f2937;
+}
+
+/* Loading Spinner Color */
+::ng-deep .mat-progress-spinner circle,
+::ng-deep .mat-spinner circle {
+  stroke: #ef4444 !important;
+}
+
+/* Selection Color */
+::selection {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #1f2937;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

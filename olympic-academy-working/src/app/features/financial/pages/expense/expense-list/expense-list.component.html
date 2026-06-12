@@ -1,30 +1,175 @@
 <div class="expenses-container">
-  <div class="page-header"><h1>المصروفات</h1><button mat-raised-button color="primary" routerLink="/financial/expenses/new"><mat-icon>add</mat-icon> مصروف جديد</button></div>
+  <div class="page-header">
+    <h1>المصروفات</h1>
+    <button mat-raised-button color="primary" (click)="openNewExpenseModal()" class="add-button">
+      <mat-icon>add</mat-icon> مصروف جديد
+    </button>
+  </div>
+
   <mat-card>
+    <!-- Filter Section - Row 1 -->
     <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field"><mat-label>بحث عام</mat-label><input matInput (keyup)="applyQuickSearch($event)" placeholder="بحث..."><mat-icon matSuffix>search</mat-icon></mat-form-field>
-      <mat-form-field appearance="outline" class="filter-field"><mat-label>نوع المصروف</mat-label><mat-select [(ngModel)]="filters.expenseTypeId" (selectionChange)="loadData()"><mat-option [value]="null">الكل</mat-option><mat-option *ngFor="let t of expenseTypes" [value]="t.id">{{ t.title }}</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline" class="filter-field"><mat-label>طريقة الدفع</mat-label><mat-select [(ngModel)]="filters.paymentMethodId" (selectionChange)="loadData()"><mat-option [value]="null">الكل</mat-option><mat-option *ngFor="let p of paymentMethods" [value]="p.id">{{ p.title }}</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline" class="filter-field"><mat-label>من تاريخ</mat-label><input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.expenseDateFrom" (dateChange)="loadData()"><mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle><mat-datepicker #fromPicker></mat-datepicker></mat-form-field>
-      <mat-form-field appearance="outline" class="filter-field"><mat-label>إلى تاريخ</mat-label><input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.expenseDateTo" (dateChange)="loadData()"><mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle><mat-datepicker #toPicker></mat-datepicker></mat-form-field>
-      <button mat-stroked-button (click)="resetFilters()"><mat-icon>clear</mat-icon> مسح</button>
-      <button mat-stroked-button color="accent" (click)="exportToExcel()"><mat-icon>table_chart</mat-icon> Excel</button>
-      <button mat-stroked-button color="warn" (click)="exportToPDF()"><mat-icon>picture_as_pdf</mat-icon> PDF</button>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>بحث عام</mat-label>
+        <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <app-searchable-select
+        [ngModel]="filters.expenseTypeId"
+        (ngModelChange)="filters.expenseTypeId = $event; loadData()"
+        label="نوع المصروف"
+        [options]="expenseTypeOptions"
+        [required]="false"
+        class="filter-select"
+        [ngModelOptions]="{standalone: true}">
+      </app-searchable-select>
+
+      <app-searchable-select
+        [ngModel]="filters.paymentMethodId"
+        (ngModelChange)="filters.paymentMethodId = $event; loadData()"
+        label="طريقة الدفع"
+        [options]="paymentMethodOptions"
+        [required]="false"
+        class="filter-select"
+        [ngModelOptions]="{standalone: true}">
+      </app-searchable-select>
     </div>
-    <div class="loading" *ngIf="isLoading"><mat-spinner diameter="40"></mat-spinner></div>
+
+    <!-- Filter Section - Row 2 -->
+    <div class="filters">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>من تاريخ</mat-label>
+        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.expenseDateFrom" (dateChange)="loadData()">
+        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+        <mat-datepicker #fromPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>إلى تاريخ</mat-label>
+        <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.expenseDateTo" (dateChange)="loadData()">
+        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+        <mat-datepicker #toPicker></mat-datepicker>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="resetFilters()">
+        <mat-icon>clear</mat-icon> مسح الفلاتر
+      </button>
+      <button mat-stroked-button color="accent" (click)="exportToExcel()">
+        <mat-icon>table_chart</mat-icon> Excel
+      </button>
+      <button mat-stroked-button color="warn" (click)="exportToPDF()">
+        <mat-icon>picture_as_pdf</mat-icon> PDF
+      </button>
+      <button mat-stroked-button color="primary" (click)="printList()">
+        <mat-icon>print</mat-icon> طباعة
+      </button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <!-- Totals Section -->
+    <div class="totals-section" *ngIf="!isLoading && dataSource.data.length > 0">
+      <div class="totals-header">
+        <mat-icon>assessment</mat-icon>
+        <span>ملخص المصروفات</span>
+      </div>
+      <div class="totals-grid">
+        <div class="total-card total-count">
+          <div class="total-icon">
+            <mat-icon>receipt</mat-icon>
+          </div>
+          <div class="total-info">
+            <div class="total-label">عدد المصروفات</div>
+            <div class="total-value">{{ getTotalExpensesCount() }}</div>
+          </div>
+        </div>
+        
+        <div class="total-card total-amount">
+          <div class="total-icon">
+            <mat-icon>payments</mat-icon>
+          </div>
+          <div class="total-info">
+            <div class="total-label">إجمالي المصروفات</div>
+            <div class="total-value">{{ totalExpenses | number }} جم</div>
+          </div>
+        </div>
+        
+        <div class="total-card total-average">
+          <div class="total-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="total-info">
+            <div class="total-label">متوسط المصروف</div>
+            <div class="total-value">{{ averageExpense | number }} جم</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
     <div class="table-container" *ngIf="!isLoading">
-      <table mat-table [dataSource]="dataSource" matSort>
-        <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let e">{{ e.id }}</td></ng-container>
-        <ng-container matColumnDef="expenseType"><th mat-header-cell *matHeaderCellDef>النوع</th><td mat-cell *matCellDef="let e">{{ e.expenseType?.title }}</td></ng-container>
-        <ng-container matColumnDef="amountExpensed"><th mat-header-cell *matHeaderCellDef>المبلغ</th><td mat-cell *matCellDef="let e">{{ e.amountExpensed }} جم</td></ng-container>
-        <ng-container matColumnDef="expenseDate"><th mat-header-cell *matHeaderCellDef>التاريخ</th><td mat-cell *matCellDef="let e">{{ e.expenseDate | date }}</td></ng-container>
-        <ng-container matColumnDef="paymentMethod"><th mat-header-cell *matHeaderCellDef>طريقة الدفع</th><td mat-cell *matCellDef="let e">{{ e.paymentMethod?.title || '-' }}</td></ng-container>
-        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef>الإجراءات</th><td mat-cell *matCellDef="let e"><button mat-icon-button color="primary" (click)="editExpense(e.id)"><mat-icon>edit</mat-icon></button><button mat-icon-button color="warn" (click)="deleteExpense(e)"><mat-icon>delete</mat-icon></button></td></ng-container>
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <table mat-table [dataSource]="dataSource" matSort class="full-width">
+        
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> # </th>
+          <td mat-cell *matCellDef="let e"> {{ e.id }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expenseType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> نوع المصروف </th>
+          <td mat-cell *matCellDef="let e"> {{ e.expenseType?.title }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="amountExpensed">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> المبلغ </th>
+          <td mat-cell *matCellDef="let e"> {{ e.amountExpensed }} جم </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expenseDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> تاريخ المصروف </th>
+          <td mat-cell *matCellDef="let e"> {{ e.expenseDate | date }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="paymentMethod">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> طريقة الدفع </th>
+          <td mat-cell *matCellDef="let e"> {{ e.paymentMethod?.title || '-' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="note">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> ملاحظات </th>
+          <td mat-cell *matCellDef="let e" class="note-cell"> {{ e.note || '-' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> الإجراءات </th>
+          <td mat-cell *matCellDef="let e">
+            <button mat-icon-button color="primary" (click)="viewExpense(e.id); $event.stopPropagation()" matTooltip="عرض التفاصيل">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="editExpense(e.id); $event.stopPropagation()" matTooltip="تعديل">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteExpense(e); $event.stopPropagation()" matTooltip="حذف">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"><tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
+
       </table>
-      <div class="no-data" *ngIf="dataSource.data.length===0"><mat-icon>receipt</mat-icon><p>لا توجد مصروفات</p></div>
-      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]"></mat-paginator>
+
+      <div class="no-data" *ngIf="dataSource.data.length === 0">
+        <mat-icon>receipt</mat-icon>
+        <p>لا توجد مصروفات</p>
+      </div>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
     </div>
   </mat-card>
 </div>

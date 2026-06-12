@@ -13,6 +13,7 @@ import {
   SalaryDeductionDTO, SalaryDeductionVTO, SalaryDeductionResultSet
 } from '../models/financial.model';
 import { NewRecordVTO, LookupResultSet } from '../models/common.model';
+import { FinancialTotalVTO } from '../models/financial.model';
 
 @Injectable({
   providedIn: 'root'
@@ -237,4 +238,14 @@ export class FinancialService {
   getAllSalaryTypesLookup(): Observable<LookupResultSet> {
     return this.api.get('/lookup/salary-types');
   }
+
+// Financial Totals
+getAllTotalsOfFinancials(totalDateFrom?: string, totalDateTo?: string): Observable<FinancialTotalVTO> {
+  const params: any = {};
+  if (totalDateFrom) params.totalDateFrom = totalDateFrom;
+  if (totalDateTo) params.totalDateTo = totalDateTo;
+  return this.api.get('/totals/financials', params);
+}
+
+
 }

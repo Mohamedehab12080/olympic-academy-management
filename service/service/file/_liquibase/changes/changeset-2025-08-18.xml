@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <!-- Fix fl_file table structure -->
+    <changeSet id="4" author="mohamed.ehab">
+        <!-- Make audit fields nullable to match entities -->
+        <dropNotNullConstraint tableName="fl_file" columnName="created_on" columnDataType="DATETIME"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="created_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="last_modified_on" columnDataType="DATETIME"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="last_modified_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="domain_id" columnDataType="INT"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="fid" columnDataType="VARCHAR(255)"/>
+    </changeSet>
+
+    <!-- Update domain table constraints -->
+    <changeSet id="5" author="mohamed.ehab">
+        <!-- Make audit fields nullable to match entities -->
+        <dropNotNullConstraint tableName="fl_domain_config" columnName="last_modified_on" columnDataType="DATETIME"/>
+        <dropNotNullConstraint tableName="fl_domain_config" columnName="last_modified_by_id" columnDataType="BIGINT"/>
+
+
+    </changeSet>
+
+    <changeSet id="6" author="mohamed.ehab">
+        <addColumn tableName="fl_file_version">
+            <column name="original_file_name" type="VARCHAR(255)" defaultValue="">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Update fl_file_version table constraints -->
+    <changeSet id="7" author="mohamed.ehab">
+        <!-- Make audit fields nullable to match entities -->
+        <dropNotNullConstraint tableName="fl_file_version" columnName="created_on" columnDataType="DATETIME"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="created_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="last_modified_on" columnDataType="DATETIME"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="last_modified_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="version" columnDataType="INT"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="size" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="file_id" columnDataType="BIGINT"/>
+
+    </changeSet>
+
+</databaseChangeLog>

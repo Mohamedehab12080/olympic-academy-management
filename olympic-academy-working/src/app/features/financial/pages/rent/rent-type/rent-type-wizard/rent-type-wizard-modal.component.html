@@ -1,0 +1,148 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">category</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل نوع إيجار' : 'إضافة نوع إيجار جديد' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="typeForm">
+      
+      <!-- Step 0: Type Information -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>info</mat-icon>
+          <h3>معلومات نوع الإيجار</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل معلومات نوع الإيجار
+        </div>
+
+        <div class="form-section">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>اسم نوع الإيجار *</mat-label>
+            <input matInput formControlName="title" placeholder="مثال: شهري, سنوي, ربع سنوي">
+            <mat-icon matSuffix>title</mat-icon>
+            <mat-error *ngIf="typeForm.get('title')?.hasError('required')">
+              اسم نوع الإيجار مطلوب
+            </mat-error>
+            <mat-error *ngIf="typeForm.get('title')?.hasError('minlength')">
+              الاسم يجب أن يكون حرفين على الأقل
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>الوصف</mat-label>
+            <textarea matInput formControlName="description" rows="4" placeholder="وصف نوع الإيجار..."></textarea>
+            <mat-icon matSuffix>description</mat-icon>
+          </mat-form-field>
+
+          <!-- Type Preview Card -->
+          <div class="type-preview" *ngIf="getTitle()">
+            <div class="preview-header">
+              <mat-icon>preview</mat-icon>
+              <span>معاينة النوع</span>
+            </div>
+            <div class="preview-content">
+              <div class="preview-row">
+                <span class="label">الاسم:</span>
+                <span class="value">{{ getTitle() }}</span>
+              </div>
+              <div class="preview-row" *ngIf="getDescription()">
+                <span class="label">الوصف:</span>
+                <span class="value">{{ getDescription() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد إضافة النوع</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>category</mat-icon>
+              <span>معلومات نوع الإيجار</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">الاسم:</span>
+                <span class="info-value">{{ getTitle() }}</span>
+              </div>
+              <div class="info-item full-width" *ngIf="getDescription()">
+                <span class="info-label">الوصف:</span>
+                <span class="info-value">{{ getDescription() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" [disabled]="isSubmitting">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" [disabled]="isSubmitting">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>

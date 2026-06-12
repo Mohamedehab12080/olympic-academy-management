@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="sara.mohamed">
+        <insert tableName="usr_scope">
+            <column name="id" value="210001"/>
+            <column name="title_en" value="Upload File"/>
+            <column name="title_ar" value="تحميل الملف"/>
+        </insert>
+
+        <insert tableName="usr_scope">
+            <column name="id" value="210002"/>
+            <column name="title_en" value="Read File"/>
+            <column name="title_ar" value="قراءة الملف"/>
+        </insert>
+
+        <insert tableName="usr_scope">
+            <column name="id" value="210003"/>
+            <column name="title_en" value="Download File"/>
+            <column name="title_ar" value="تحميل الملف"/>
+        </insert>
+
+        <insert tableName="usr_scope">
+            <column name="id" value="210004"/>
+            <column name="title_en" value="Delete File"/>
+            <column name="title_ar" value=" حذف الملف"/>
+        </insert>
+
+        <insert tableName="usr_scope">
+            <column name="id" value="210005"/>
+            <column name="title_en" value="Read All Files Versions"/>
+            <column name="title_ar" value="اظهار جميع نسخ الملفات"/>
+        </insert>
+
+        <insert tableName="usr_scope">
+            <column name="id" value="210006"/>
+            <column name="title_en" value="Upload File Version"/>
+            <column name="title_ar" value="تحميل نسخة الملف"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

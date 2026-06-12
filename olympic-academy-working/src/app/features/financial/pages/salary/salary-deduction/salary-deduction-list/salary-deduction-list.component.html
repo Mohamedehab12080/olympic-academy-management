@@ -6,7 +6,7 @@
         <h1>خصومات الموظفين</h1>
         <p>إدارة ومتابعة خصومات رواتب الموظفين</p>
       </div>
-      <button mat-raised-button color="primary" routerLink="/financial/salary-deductions/new" class="add-button">
+      <button mat-raised-button color="primary" (click)="openNewDeductionModal()" class="add-button">
         <mat-icon>add</mat-icon>
         خصم جديد
       </button>
@@ -18,7 +18,7 @@
         <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput (keyup)="applyQuickSearch($event)" placeholder="بحث...">
+            <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث عن موظف...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
@@ -29,7 +29,8 @@
             label="الموظف"
             [options]="employeeOptions"
             [required]="false"
-            class="filter-select">
+            class="filter-select"
+            [ngModelOptions]="{standalone: true}">
           </app-searchable-select>
 
           <!-- Salary Type - Searchable Select -->
@@ -39,7 +40,8 @@
             label="نوع الراتب"
             [options]="salaryTypeOptions"
             [required]="false"
-            class="filter-select">
+            class="filter-select"
+            [ngModelOptions]="{standalone: true}">
           </app-searchable-select>
         </div>
 
@@ -70,6 +72,10 @@
             <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
               <mat-icon>picture_as_pdf</mat-icon>
               تصدير PDF
+            </button>
+            <button mat-stroked-button color="primary" (click)="printList()" [disabled]="dataSource.data.length === 0" class="print-btn">
+              <mat-icon>print</mat-icon>
+              طباعة
             </button>
           </div>
         </div>
@@ -114,6 +120,10 @@
           <mat-icon>info</mat-icon>
           <span>عدد الخصومات: {{ dataSource.data.length }} خصم</span>
         </div>
+        <div class="total-amount">
+          <mat-icon>payments</mat-icon>
+          <span>إجمالي الخصومات: {{ totalDeductions | number }} جم</span>
+        </div>
       </div>
 
       <div class="table-wrapper">
@@ -129,8 +139,28 @@
           <!-- Employee Column -->
           <ng-container matColumnDef="employee">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
-            <td mat-cell *matCellDef="let d" class="clickable-cell" (click)="viewDeduction(d.id)">
-              <strong>{{ d.employee?.title }}</strong>
+            <td mat-cell *matCellDef="let d">
+              <div class="employee-info">
+                <strong>{{ d.employee?.fullName || d.employee?.title }}</strong>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Basic Salary Column -->
+          <ng-container matColumnDef="basicSalary">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الراتب الأساسي</th>
+            <td mat-cell *matCellDef="let d">
+              <span class="salary-badge">{{ d.employee?.salary | number }} جم</span>
+            </td>
+          </ng-container>
+
+          <!-- Remained Salary Column -->
+          <ng-container matColumnDef="remainedSalary">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الراتب المتبقي</th>
+            <td mat-cell *matCellDef="let d">
+              <span class="remained-badge" [class.warning]="d.employee?.remainedSalary < (d.employee?.salary || 0)">
+                {{ d.employee?.remainedSalary | number }} جم
+              </span>
             </td>
           </ng-container>
 
@@ -139,7 +169,6 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>المبلغ</th>
             <td mat-cell *matCellDef="let d">
               <span class="amount-badge">{{ d.amountDeducted | number }} جم</span>
-            </td>
           </ng-container>
 
           <!-- Deduction Date Column -->
@@ -165,9 +194,7 @@
           <ng-container matColumnDef="salaryType">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>نوع الراتب</th>
             <td mat-cell *matCellDef="let d">
-              <mat-chip [color]="d.salaryType?.id === 1 ? 'primary' : 'accent'" selected>
-                {{ d.salaryType?.title || '-' }}
-              </mat-chip>
+              {{ d.salaryType?.title || '-' }}
             </td>
           </ng-container>
 
@@ -190,7 +217,7 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewDeduction(row.id)"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
           <!-- No Data Row -->
           <tr class="mat-row no-data-row" *matNoDataRow>
@@ -198,7 +225,7 @@
               <div class="no-data-message">
                 <mat-icon>remove_circle</mat-icon>
                 <p>لا توجد خصومات</p>
-                <button mat-raised-button color="primary" routerLink="/financial/salary-deductions/new">
+                <button mat-raised-button color="primary" (click)="openNewDeductionModal()">
                   <mat-icon>add</mat-icon>
                   إضافة خصم جديد
                 </button>

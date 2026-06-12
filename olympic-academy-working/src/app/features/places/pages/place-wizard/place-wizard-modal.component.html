@@ -1,0 +1,255 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">location_on</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل موقع' : 'إضافة موقع جديد' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="placeForm">
+      
+      <!-- Step 0: Basic Information -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>info</mat-icon>
+          <h3>المعلومات الأساسية</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل المعلومات الأساسية للموقع
+        </div>
+
+        <div class="form-section">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>اسم الموقع *</mat-label>
+            <input matInput formControlName="title" placeholder="مثال: القاعة الرئيسية">
+            <mat-icon matSuffix>location_on</mat-icon>
+            <mat-error *ngIf="placeForm.get('title')?.hasError('required')">
+              اسم الموقع مطلوب
+            </mat-error>
+            <mat-error *ngIf="placeForm.get('title')?.hasError('minlength')">
+              الاسم يجب أن يكون حرفين على الأقل
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>العنوان</mat-label>
+            <input matInput formControlName="address" placeholder="مثال: شارع النيل، الدور الأول">
+            <mat-icon matSuffix>home</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>رقم الهاتف</mat-label>
+            <input matInput formControlName="phoneNumber" placeholder="مثال: 01234567890">
+            <mat-icon matSuffix>phone</mat-icon>
+            <mat-error *ngIf="placeForm.get('phoneNumber')?.hasError('pattern')">
+              رقم الهاتف غير صحيح
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Preview Card -->
+          <div class="info-preview" *ngIf="getTitle()">
+            <div class="preview-header">
+              <mat-icon>preview</mat-icon>
+              <span>معاينة الموقع</span>
+            </div>
+            <div class="preview-content">
+              <div class="preview-row">
+                <span class="label">الاسم:</span>
+                <span class="value">{{ getTitle() }}</span>
+              </div>
+              <div class="preview-row" *ngIf="getAddress()">
+                <span class="label">العنوان:</span>
+                <span class="value">{{ getAddress() }}</span>
+              </div>
+              <div class="preview-row" *ngIf="getPhoneNumber()">
+                <span class="label">الهاتف:</span>
+                <span class="value">{{ getPhoneNumber() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Financial Information -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>payments</mat-icon>
+          <h3>المعلومات المالية</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل المعلومات المالية للموقع (اختياري)
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>قيمة الإيجار الشهرية</mat-label>
+              <input matInput type="number" formControlName="rentValue" placeholder="0">
+              <span matTextSuffix>جم</span>
+              <mat-icon matSuffix>attach_money</mat-icon>
+              <mat-error *ngIf="placeForm.get('rentValue')?.hasError('min')">
+                القيمة يجب أن تكون أكبر من أو تساوي 0
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>القيمة المتبقية</mat-label>
+              <input matInput type="number" formControlName="remainedValue" placeholder="0">
+              <span matTextSuffix>جم</span>
+              <mat-icon matSuffix>account_balance_wallet</mat-icon>
+              <mat-error *ngIf="placeForm.get('remainedValue')?.hasError('min')">
+                القيمة يجب أن تكون أكبر من أو تساوي 0
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Financial Summary Card -->
+          <div class="financial-summary" *ngIf="getRentValue() > 0 || getRemainedValue() > 0">
+            <div class="summary-header">
+              <mat-icon>receipt_long</mat-icon>
+              <span>ملخص المعلومات المالية</span>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row" *ngIf="getRentValue() > 0">
+                <span>قيمة الإيجار الشهرية:</span>
+                <strong>{{ getRentValue() | number }} جم</strong>
+              </div>
+              <div class="summary-row" *ngIf="getRemainedValue() > 0">
+                <span>القيمة المتبقية:</span>
+                <strong class="remained">{{ getRemainedValue() | number }} جم</strong>
+              </div>
+              <div class="summary-row" *ngIf="getRentValue() > 0 && getRemainedValue() === 0">
+                <span>الحالة:</span>
+                <strong class="paid">مدفوع بالكامل</strong>
+              </div>
+              <div class="summary-row" *ngIf="getRemainedValue() > 0">
+                <span>نسبة الدفع:</span>
+                <strong>{{ ((getRentValue() - getRemainedValue()) / getRentValue() * 100) | number: '1.0-0' }}%</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-hint" *ngIf="getRentValue() === 0 && getRemainedValue() === 0">
+            <mat-icon>info</mat-icon>
+            <span>يمكنك ترك الحقول المالية فارغة إذا لم تكن متاحة حالياً</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد إضافة الموقع</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>info</mat-icon>
+              <span>المعلومات الأساسية</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">اسم الموقع:</span>
+                <span class="info-value">{{ getTitle() }}</span>
+              </div>
+              <div class="info-item" *ngIf="getAddress()">
+                <span class="info-label">العنوان:</span>
+                <span class="info-value">{{ getAddress() }}</span>
+              </div>
+              <div class="info-item" *ngIf="getPhoneNumber()">
+                <span class="info-label">رقم الهاتف:</span>
+                <span class="info-value">{{ getPhoneNumber() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider *ngIf="getRentValue() > 0 || getRemainedValue() > 0"></mat-divider>
+
+          <div class="confirmation-section" *ngIf="getRentValue() > 0 || getRemainedValue() > 0">
+            <div class="section-title">
+              <mat-icon>payments</mat-icon>
+              <span>المعلومات المالية</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item" *ngIf="getRentValue() > 0">
+                <span class="info-label">قيمة الإيجار الشهرية:</span>
+                <span class="info-value price">{{ getRentValue() | number }} جم</span>
+              </div>
+              <div class="info-item" *ngIf="getRemainedValue() > 0">
+                <span class="info-label">القيمة المتبقية:</span>
+                <span class="info-value remained">{{ getRemainedValue() | number }} جم</span>
+              </div>
+              <div class="info-item" *ngIf="getRentValue() > 0 && getRemainedValue() === 0">
+                <span class="info-label">حالة الدفع:</span>
+                <span class="info-value success">مدفوع بالكامل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" [disabled]="isSubmitting">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" [disabled]="isSubmitting">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>

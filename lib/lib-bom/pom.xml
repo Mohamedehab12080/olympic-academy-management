@@ -40,6 +40,12 @@
         <bs.id-counter-core.version>0.0.1</bs.id-counter-core.version>
         <bs.id-counter-repository.version>0.0.1</bs.id-counter-repository.version>
 
+        <bs.service-context-model.version>0.0.1</bs.service-context-model.version>
+        <bs.service-context-api.version>0.0.1</bs.service-context-api.version>
+        <bs.service-context-core.version>0.0.1</bs.service-context-core.version>
+        <bs.service-context-repository.version>0.0.1</bs.service-context-repository.version>
+
+
         <bs.json.adapter-api.version>0.0.1</bs.json.adapter-api.version>
         <bs.json.adapter-core.version>0.0.1</bs.json.adapter-core.version>
 
@@ -87,6 +93,30 @@
                 <groupId>bs.lib.security</groupId>
                 <artifactId>security-adapter-core</artifactId>
                 <version>${bs.security-adapter-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.service-context</groupId>
+                <artifactId>service-context-model</artifactId>
+                <version>${bs.service-context-model.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.service-context</groupId>
+                <artifactId>service-context-api</artifactId>
+                <version>${bs.service-context-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.service-context</groupId>
+                <artifactId>service-context-core</artifactId>
+                <version>${bs.service-context-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>bs.lib.service-context</groupId>
+                <artifactId>service-context-repository</artifactId>
+                <version>${bs.service-context-repository.version}</version>
             </dependency>
 
 
@@ -150,6 +180,7 @@
                 <artifactId>id-counter-repository</artifactId>
                 <version>${bs.id-counter-repository.version}</version>
             </dependency>
+
 
             <dependency>
                 <groupId>bs.lib.json</groupId>

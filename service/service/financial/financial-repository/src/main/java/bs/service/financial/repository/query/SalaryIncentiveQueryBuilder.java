@@ -29,9 +29,9 @@ public class SalaryIncentiveQueryBuilder extends AbstractQueryBuilderV2<SalaryIn
             qbConditions.add(QBCondition.builder().placeHolder("paymentMethodId").value(filters.getPaymentMethodId())
                     .condition("item.paymentMethod.id = :PH").build());
 
-        if (filters.getType() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("type").value(filters.getType())
-                    .condition("item.type = :PH").build());
+        if (filters.getSalaryTransactionType() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("salaryTransactionType").value(filters.getSalaryTransactionType())
+                    .condition("item.salaryTransactionType = :PH").build());
 
         if (filters.getWithdrawDateFrom() != null)
             qbConditions.add(QBCondition.builder().placeHolder("withdrawDateFrom").value(filters.getWithdrawDateFrom())

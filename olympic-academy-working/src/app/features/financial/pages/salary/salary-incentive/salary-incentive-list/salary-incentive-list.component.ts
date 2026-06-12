@@ -66,11 +66,12 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
   employees: any[] = [];
   paymentMethods: any[] = [];
   
+  // Filter criteria - using correct parameter names from backend API
   filters = {
     employeeId: null as number | null,
-    transactionTypeId: null as number | null,
+    type: null as string | null,           // 'SALARY', 'INCENTIVE', 'BONUS', 'ADVANCE'
     paymentMethodId: null as number | null,
-    salaryTypeId: null as number | null,
+    salaryType: null as string | null,      // 'MONTHLY', 'HOURLY', 'DAILY', 'PERCENTAGE'
     withdrawDateFrom: null as string | null,
     withdrawDateTo: null as string | null
   };
@@ -128,14 +129,22 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
   }
 
   loadSelectOptions(): void {
+    // Transaction type options - parameter name 'type'
     this.transactionTypeOptions = [
       { value: null, label: 'الكل' },
-      ...this.transactionTypes.map(t => ({ value: t.id, label: t.title }))
+      { value: 'SALARY', label: 'راتب' },
+      { value: 'INCENTIVE', label: 'حافز' },
+      { value: 'BONUS', label: 'مكافأة' },
+      { value: 'ADVANCE', label: 'سلفة' }
     ];
     
+    // Salary type options - parameter name 'salaryType'
     this.salaryTypeOptions = [
       { value: null, label: 'الكل' },
-      ...this.salaryTypes.map(s => ({ value: s.id, label: s.title }))
+      { value: 'MONTHLY', label: 'شهري' },
+      { value: 'HOURLY', label: 'بالساعة' },
+      { value: 'DAILY', label: 'يومي' },
+      { value: 'PERCENTAGE', label: 'نسبة' }
     ];
   }
 
@@ -172,12 +181,14 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     const params: any = {};
     
     if (this.filters.employeeId) params.employeeId = this.filters.employeeId;
-    if (this.filters.transactionTypeId) params.type = this.filters.transactionTypeId;
+    if (this.filters.type) params.type = this.filters.type;
     if (this.filters.paymentMethodId) params.paymentMethodId = this.filters.paymentMethodId;
-    if (this.filters.salaryTypeId) params.salaryType = this.filters.salaryTypeId;
+    if (this.filters.salaryType) params.salaryType = this.filters.salaryType;
     if (this.filters.withdrawDateFrom) params.withdrawDateFrom = this.filters.withdrawDateFrom;
     if (this.filters.withdrawDateTo) params.withdrawDateTo = this.filters.withdrawDateTo;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+
+    console.log('Filter params:', params);
 
     this.financialService.getAllSalaryIncentivesByFilter(params).subscribe({
       next: (res: any) => {
@@ -206,9 +217,9 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
   resetFilters() {
     this.filters = {
       employeeId: null,
-      transactionTypeId: null,
+      type: null,
       paymentMethodId: null,
-      salaryTypeId: null,
+      salaryType: null,
       withdrawDateFrom: null,
       withdrawDateTo: null
     };
@@ -549,127 +560,276 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit {
     this.notification.showSuccess('تم تصدير البيانات بنجاح');
   }
 
-  printList(): void {
-    if (this.dataSource.data.length === 0) {
-      this.notification.showWarning('لا توجد بيانات للطباعة');
-      return;
-    }
+printList(): void {
+  if (this.dataSource.data.length === 0) {
+    this.notification.showWarning('لا توجد بيانات للطباعة');
+    return;
+  }
 
-    const filterTexts: string[] = [];
-    if (this.filters.employeeId) {
-      const employee = this.employees.find(e => e.id === this.filters.employeeId);
-      if (employee) filterTexts.push(`الموظف: ${employee.title}`);
-    }
-    if (this.filters.transactionTypeId) {
-      const type = this.transactionTypes.find(t => t.id === this.filters.transactionTypeId);
-      if (type) filterTexts.push(`نوع المعاملة: ${type.title}`);
-    }
-    if (this.filters.paymentMethodId) {
-      const paymentMethod = this.paymentMethods.find(p => p.id === this.filters.paymentMethodId);
-      if (paymentMethod) filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
-    }
-    if (this.filters.salaryTypeId) {
-      const salaryType = this.salaryTypes.find(s => s.id === this.filters.salaryTypeId);
-      if (salaryType) filterTexts.push(`نوع الراتب: ${salaryType.title}`);
-    }
-    if (this.filters.withdrawDateFrom) filterTexts.push(`من تاريخ: ${this.filters.withdrawDateFrom}`);
-    if (this.filters.withdrawDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.withdrawDateTo}`);
-    if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
+  this.isLoading = true;
 
-    let tableRows = '';
-    this.dataSource.data.forEach((item: any, index: number) => {
-      const typeClass = this.getTransactionTypeClass(item.salaryTransactionType?.id);
-      tableRows += `
-        <tr>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.employee?.fullName || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${(item.employee?.salary || 0).toLocaleString('ar-EG')} جم</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${(item.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">
-            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 12px; ${typeClass === 'salary' ? 'background: #dbeafe; color: #1e40af;' : typeClass === 'incentive' ? 'background: #d1fae5; color: #065f46;' : typeClass === 'bonus' ? 'background: #fef3c7; color: #92400e;' : 'background: #fee2e2; color: #991b1b;'}">
-              ${item.salaryTransactionType?.title || '-'}
-            </span>
-          </td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.amountWithdrawn.toLocaleString('ar-EG')} جم</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.withdrawDate || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.paymentMethod?.title || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.salaryType?.title || '-'}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.note || '-'}</td>
-        </tr>
-      `;
-    });
+  // Build filter text
+  const filterTexts: string[] = [];
+  if (this.filters.employeeId) {
+    const employee = this.employees.find(e => e.id === this.filters.employeeId);
+    if (employee) filterTexts.push(`الموظف: ${employee.title}`);
+  }
+  if (this.filters.type) {
+    const type = this.transactionTypes.find(t => this.getTransactionTypeEnumString(t.id) === this.filters.type);
+    if (type) filterTexts.push(`نوع المعاملة: ${type.title}`);
+  }
+  if (this.filters.paymentMethodId) {
+    const paymentMethod = this.paymentMethods.find(p => p.id === this.filters.paymentMethodId);
+    if (paymentMethod) filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
+  }
+  if (this.filters.salaryType) {
+    const salaryType = this.salaryTypes.find(s => this.getSalaryTypeEnumString(s.id) === this.filters.salaryType);
+    if (salaryType) filterTexts.push(`نوع الراتب: ${salaryType.title}`);
+  }
+  if (this.filters.withdrawDateFrom) filterTexts.push(`من تاريخ: ${this.filters.withdrawDateFrom}`);
+  if (this.filters.withdrawDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.withdrawDateTo}`);
+  if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
-    const printWindow = window.open('', '_blank', 'width=1400,height=800,scrollbars=yes,toolbar=yes,menubar=yes');
+  // Build table rows with proper styling
+  let tableRows = '';
+  this.dataSource.data.forEach((item: any, index: number) => {
+    const typeClass = this.getTransactionTypeClass(item.salaryTransactionType?.id);
+    let transactionTypeStyle = '';
+    if (typeClass === 'salary') transactionTypeStyle = 'background-color: #dbeafe; color: #1e40af;';
+    else if (typeClass === 'incentive') transactionTypeStyle = 'background-color: #d1fae5; color: #065f46;';
+    else if (typeClass === 'bonus') transactionTypeStyle = 'background-color: #fef3c7; color: #92400e;';
+    else if (typeClass === 'advance') transactionTypeStyle = 'background-color: #fee2e2; color: #991b1b;';
+    else transactionTypeStyle = 'background-color: #f3f4f6; color: #374151;';
     
-    if (printWindow) {
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>تقرير الرواتب والحوافز</title>
-          <style>
-            * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-            @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } button { display: none; } }
-            body { padding: 20px; margin: 0; }
-            .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 8px; }
-            .header h1 { margin: 0; font-size: 24px; }
-            .header p { margin: 10px 0 0 0; font-size: 12px; }
-            .filters { margin-bottom: 20px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; }
-            .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
-            .stat-item { flex: 1; text-align: center; }
-            .stat-label { font-size: 12px; color: #6b7280; }
-            .stat-value { font-size: 20px; font-weight: bold; color: #10b981; }
-            table { width: 100%; border-collapse: collapse; direction: rtl; }
-            th { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
-            td { padding: 8px; border: 1px solid #ddd; }
-            .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>تقرير الرواتب والحوافز</h1>
-            <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-            <p>عدد السجلات: ${this.dataSource.data.length} معاملة</p>
-          </div>
-          ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
-          <div class="stats">
-            <div class="stat-item"><div class="stat-value">${this.dataSource.data.length}</div><div class="stat-label">عدد المعاملات</div></div>
-            <div class="stat-item"><div class="stat-value">${this.totalAmount.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المبالغ</div></div>
-            <div class="stat-item"><div class="stat-value">${this.salaryTotal.toLocaleString('ar-EG')} جم</div><div class="stat-label">رواتب</div></div>
-            <div class="stat-item"><div class="stat-value">${this.incentiveTotal.toLocaleString('ar-EG')} جم</div><div class="stat-label">حوافز</div></div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>الموظف</th>
-                <th>الراتب الأساسي</th>
-                <th>الراتب المتبقي</th>
-                <th>نوع المعاملة</th>
-                <th>المبلغ</th>
-                <th>تاريخ الصرف</th>
-                <th>طريقة الدفع</th>
-                <th>نوع الراتب</th>
-                <th>ملاحظات</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
-          <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
-            <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة التقرير</button>
-          </div>
-          <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); };</script>
-        </body>
-        </html>
-      `);
-      printWindow.document.close();
-      this.notification.showSuccess('تم فتح التقرير - جاري تحضير الطباعة...');
-    } else {
-      this.notification.showError('الرجاء السماح للنوافذ المنبثقة في المتصفح');
+    const remainedSalary = item.employee?.remainedSalary || 0;
+    const basicSalary = item.employee?.salary || 0;
+    const remainedWarning = remainedSalary < basicSalary ? 'color: #d97706; font-weight: bold;' : '';
+    
+    tableRows += `
+      <tr>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${item.employee?.fullName || '-'}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${(basicSalary).toLocaleString('ar-EG')} جم</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${remainedWarning}">${(remainedSalary).toLocaleString('ar-EG')} جم</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${transactionTypeStyle}">
+          ${item.salaryTransactionType?.title || '-'}
+        </td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd; font-weight: bold; color: #10b981;">
+          ${(item.amountWithdrawn || 0).toLocaleString('ar-EG')} جم
+        </td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.withdrawDate || '-'}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.paymentMethod?.title || '-'}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.salaryType?.title || '-'}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.note || '-'}</td>
+      </tr>
+    `;
+  });
+
+  // Create print container
+  const printContainer = document.createElement('div');
+  printContainer.style.direction = 'rtl';
+  printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+  printContainer.style.padding = '20px';
+  printContainer.style.backgroundColor = 'white';
+  
+  printContainer.innerHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>تقرير الرواتب والحوافز</title>
+      <style>
+        * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+        @media print {
+          body { margin: 0; padding: 20px; }
+          .no-print { display: none; }
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 20px;
+          padding: 20px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          border-radius: 8px;
+        }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 10px 0 0 0; font-size: 12px; }
+        .filters {
+          margin-bottom: 20px;
+          padding: 10px;
+          background-color: #f3f4f6;
+          border-radius: 8px;
+          font-size: 12px;
+        }
+        .stats {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 20px;
+          padding: 16px;
+          background: #f9fafb;
+          border-radius: 8px;
+          flex-wrap: wrap;
+        }
+        .stat-item {
+          flex: 1;
+          text-align: center;
+          min-width: 120px;
+        }
+        .stat-label { font-size: 12px; color: #6b7280; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #10b981; }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          direction: rtl;
+          margin-top: 10px;
+        }
+        th {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          padding: 10px;
+          border: 1px solid #2e7d32;
+          text-align: center;
+          font-weight: bold;
+          font-size: 13px;
+        }
+        td { 
+          padding: 8px; 
+          border: 1px solid #ddd;
+          font-size: 12px;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 20px;
+          padding: 10px;
+          font-size: 10px;
+          color: #666;
+        }
+        .no-print {
+          text-align: center;
+          margin-top: 20px;
+          padding: 10px;
+        }
+        .print-btn {
+          padding: 10px 20px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .print-btn:hover {
+          opacity: 0.9;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>تقرير الرواتب والحوافز</h1>
+        <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+        <p>عدد السجلات: ${this.dataSource.data.length} معاملة</p>
+      </div>
+      ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value">${this.dataSource.data.length}</div>
+          <div class="stat-label">عدد المعاملات</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${this.salaryTotal.toLocaleString('ar-EG')} جم</div>
+          <div class="stat-label">رواتب</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${this.incentiveTotal.toLocaleString('ar-EG')} جم</div>
+          <div class="stat-label">حوافز</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${this.bonusTotal.toLocaleString('ar-EG')} جم</div>
+          <div class="stat-label">مكافآت</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${this.advanceTotal.toLocaleString('ar-EG')} جم</div>
+          <div class="stat-label">سلف</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${this.totalAmount.toLocaleString('ar-EG')} جم</div>
+          <div class="stat-label">إجمالي المبالغ</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>الموظف</th>
+            <th>الراتب الأساسي</th>
+            <th>الراتب المتبقي</th>
+            <th>نوع المعاملة</th>
+            <th>المبلغ</th>
+            <th>تاريخ الصرف</th>
+            <th>طريقة الدفع</th>
+            <th>نوع الراتب</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+      <div class="footer">
+        تم التصدير من نظام إدارة الأكاديمية الأولمبية
+      </div>
+      <div class="no-print">
+        <button class="print-btn" onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
+      </div>
+      <script>
+        window.onload = function() {
+          setTimeout(function() {
+            window.print();
+          }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `;
+
+  // Open in new window for printing
+  const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
+  if (printWindow) {
+    printWindow.document.write(printContainer.innerHTML);
+    printWindow.document.close();
+    this.isLoading = false;
+    this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
+  } else {
+    document.body.appendChild(printContainer);
+    window.print();
+    setTimeout(() => {
+      if (document.body.contains(printContainer)) {
+        document.body.removeChild(printContainer);
+      }
+    }, 500);
+    this.isLoading = false;
+    this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
+  }
+}
+
+  // Helper methods for enum conversion
+  private getTransactionTypeEnumString(id: number): string {
+    switch(id) {
+      case 1: return 'SALARY';
+      case 2: return 'INCENTIVE';
+      case 3: return 'BONUS';
+      case 4: return 'ADVANCE';
+      default: return '';
+    }
+  }
+
+  private getSalaryTypeEnumString(id: number): string {
+    switch(id) {
+      case 1: return 'MONTHLY';
+      case 2: return 'HOURLY';
+      case 3: return 'DAILY';
+      case 4: return 'PERCENTAGE';
+      default: return '';
     }
   }
 }

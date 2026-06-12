@@ -1,6 +1,7 @@
 package bs.service.financial.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.place.model.generated.PlaceVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +30,7 @@ public class PlaceRentPaymentVTO implements Serializable {
 
     private Integer id;
 
-    private LookupVTO place;
+    private PlaceVTO place;
 
     private Integer rentAmount;
 
@@ -75,7 +76,7 @@ public class PlaceRentPaymentVTO implements Serializable {
         this.id = id;
     }
 
-    public PlaceRentPaymentVTO place(LookupVTO place) {
+    public PlaceRentPaymentVTO place(PlaceVTO place) {
         this.place = place;
         return this;
     }
@@ -88,11 +89,11 @@ public class PlaceRentPaymentVTO implements Serializable {
     @Valid
     @Schema(name = "place", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("place")
-    public LookupVTO getPlace() {
+    public PlaceVTO getPlace() {
         return place;
     }
 
-    public void setPlace(LookupVTO place) {
+    public void setPlace(PlaceVTO place) {
         this.place = place;
     }
 

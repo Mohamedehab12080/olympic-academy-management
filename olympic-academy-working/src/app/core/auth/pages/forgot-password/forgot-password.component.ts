@@ -1,3 +1,4 @@
+// forgot-password.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -53,13 +54,16 @@ export class ForgotPasswordComponent {
     }
 
     this.isLoading = true;
-    this.authService.forgotPassword(this.forgotForm.get('email')?.value).subscribe({
+    const email = this.forgotForm.get('email')?.value;
+
+    this.authService.forgotPassword(email).subscribe({
       next: (response) => {
         this.isSubmitted = true;
         this.notification.showSuccess(response.message || 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
         this.isLoading = false;
       },
       error: (error) => {
+        console.error('Forgot password error:', error);
         this.notification.showError(error.error?.messageEn || 'فشل إرسال رابط إعادة التعيين');
         this.isLoading = false;
       }

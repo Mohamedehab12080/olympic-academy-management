@@ -602,3 +602,44 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Focus Styles */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Disabled Button Styles */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Table Cell Alignment */
+.mat-mdc-header-cell:first-child,
+.mat-mdc-cell:first-child {
+  padding-right: 16px;
+}
+
+.mat-mdc-header-cell:last-child,
+.mat-mdc-cell:last-child {
+  padding-left: 16px;
+}
+
+/* Card Inner Elements */
+mat-card-content {
+  padding: 0 !important;
+}
+
+/* Form Field Styles */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Date Picker Icon */
+.mat-datepicker-toggle {
+  color: #10b981;
+}

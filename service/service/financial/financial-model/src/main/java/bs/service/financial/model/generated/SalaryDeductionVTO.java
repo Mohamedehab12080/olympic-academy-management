@@ -1,6 +1,7 @@
 package bs.service.financial.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.employee.model.generated.EmployeeVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +30,7 @@ public class SalaryDeductionVTO implements Serializable {
 
     private Integer id;
 
-    private LookupVTO employee;
+    private EmployeeVTO employee;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate deductionDate;
@@ -75,7 +76,7 @@ public class SalaryDeductionVTO implements Serializable {
         this.id = id;
     }
 
-    public SalaryDeductionVTO employee(LookupVTO employee) {
+    public SalaryDeductionVTO employee(EmployeeVTO employee) {
         this.employee = employee;
         return this;
     }
@@ -88,11 +89,11 @@ public class SalaryDeductionVTO implements Serializable {
     @Valid
     @Schema(name = "employee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("employee")
-    public LookupVTO getEmployee() {
+    public EmployeeVTO getEmployee() {
         return employee;
     }
 
-    public void setEmployee(LookupVTO employee) {
+    public void setEmployee(EmployeeVTO employee) {
         this.employee = employee;
     }
 

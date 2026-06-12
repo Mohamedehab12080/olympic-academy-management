@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  title: File Management API
+  version: "1.0"
+  description: |
+    API for managing files, file versions, and domains with metadata and server storage integration.
+    Provides capabilities for uploading, downloading, and managing files with version history.
+  contact:
+    name: API Support
+    email: mohamedehab12080@gmail.com
+
+servers:
+  - url: http://localhost:9107/
+  - url: http://195.35.3.92:9107/
+
+tags:
+  - name: File
+  - name: FileVersion
+
+paths:
+  /domains/{domainId}/upload:
+    post:
+      tags:
+        - File
+      summary: Upload a file to a specific domain
+      description: Uploads a new file to the specified domain. Returns metadata for the created file.
+      operationId: uploadFile
+      parameters:
+        - $ref: '../../../../../lib/service-context/_swagger/service/swagger.yaml#/components/parameters/PPDomainId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The binary file data to upload
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /files/{fid}/download:
+    get:
+      tags:
+        - File
+      summary: Download a file
+      description: Downloads the latest version of the specified file for {15} digit fid or specific version for {18} digit fid
+      operationId: downloadFile
+      parameters:
+        - $ref: '#/components/parameters/PPFid'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /files/{fid}:
+    get:
+      tags:
+        - File
+      summary: Get file metadata
+      description: Retrieves metadata for a specific file last version for {15} digit and specific version for {18} digit
+      operationId: getFileMetadata
+      parameters:
+        - $ref: '#/components/parameters/PPFid'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+    delete:
+      tags:
+        - File
+      summary: Delete a file
+      description: Deletes a file. The operation will succeed even if the file is currently associated with an entity.
+      operationId: deleteFile
+      parameters:
+        - $ref: '#/components/parameters/PPFid'
+      responses:
+        '204':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/NoContent'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+
+  /files/{fid}/versions/upload:
+    post:
+      tags:
+        - FileVersion
+      summary: Upload a new version of a file
+      description: Uploads a new version for an existing file identified by fid
+      operationId: uploadNewVersion
+      parameters:
+        - $ref: '#/components/parameters/PP15Fid'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The new version file to upload
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /files/{fid}/versions:
+    get:
+      tags:
+        - FileVersion
+      summary: Get all versions of a file
+      description: Retrieves all versions for a specific file identified by 15-digit fid
+      operationId: getAllVersions
+      parameters:
+        - $ref: '#/components/parameters/PP15Fid'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+components:
+  parameters:
+    PPFid:
+      name: fid
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^\d{15}(\d{3})?$'
+      description: 15 or 18 digit unique file identifier
+      example: "10012508230001 or 10012508230001001"
+
+    PP15Fid:
+      name: fid
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^\d{15}$'
+      description: 15 or 18 digit unique file identifier
+      example: "10012508230001"
+
+    PP18Fid:
+      name: fid
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^\d{18}$'
+      description: 15 or 18 digit unique file identifier
+      example: "10012508230001001"
+
+  schemas:
+    UploadFileVTO:
+      type: object
+      properties:
+        fid:
+          type: string
+          description: The unique identifier 15 or 18 digit of the uploaded file
+          example: "100125082300001 or 100125082300001001"
+
+    FileVTO:
+      type: object
+      description: Represents a file with its metadata and version history
+      properties:
+        id:
+          type: integer
+          format: int64
+        fid:
+          type: string
+          description: 15 or 18-digit unique file identifier (system-generated)
+          example: "10012508230001 or 10012508230001001"
+        domain:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        extension:
+          type: string
+        lastVersion:
+          type: integer
+        createdOn:
+          type: string
+          format: date-time
+        createdById:
+          type: integer
+          format: int64

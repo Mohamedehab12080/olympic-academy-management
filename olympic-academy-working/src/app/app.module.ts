@@ -94,7 +94,7 @@ import { authInterceptor } from './core/auth/auth.interceptor';
     MatExpansionModule
   ],
   providers: [
-    provideHttpClient(withInterceptors([authInterceptor])), // ✅ إضافة الـ interceptor
+    provideHttpClient(withInterceptors([authInterceptor])),
     ApiService,
     NotificationService,
     ReportService

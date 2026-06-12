@@ -40,19 +40,16 @@ import { ExpenseTypeFormComponent } from './pages/expense/expense-type/expense-t
 // Rent Type Components
 // ============================================
 import { RentTypeListComponent } from './pages/rent/rent-type/rent-type-list/rent-type-list.component';
-import { RentTypeFormComponent } from './pages/rent/rent-type/rent-type-form/rent-type-form.component';
 
 // ============================================
 // Place Rent Payment Components
 // ============================================
 import { PlaceRentPaymentListComponent } from './pages/rent/place-rent-payment/place-rent-payment-list/place-rent-payment-list.component';
-import { PlaceRentPaymentFormComponent } from './pages/rent/place-rent-payment/place-rent-payment-form/place-rent-payment-form.component';
 
 // ============================================
 // Expense Components
 // ============================================
 import { ExpenseListComponent } from './pages/expense/expense-list/expense-list.component';
-import { ExpenseFormComponent } from './pages/expense/expense-form/expense-form.component';
 
 // ============================================
 // Enrollment Payment Components
@@ -99,18 +96,12 @@ const routes: Routes = [
 
   // Rent Types
   { path: 'rent-types', component: RentTypeListComponent },
-  { path: 'rent-types/new', component: RentTypeFormComponent },
-  { path: 'rent-types/:id/edit', component: RentTypeFormComponent },
 
   // Place Rent Payments
   { path: 'place-rent-payments', component: PlaceRentPaymentListComponent },
-  { path: 'place-rent-payments/new', component: PlaceRentPaymentFormComponent },
-  { path: 'place-rent-payments/:id/edit', component: PlaceRentPaymentFormComponent },
 
   // Expenses
   { path: 'expenses', component: ExpenseListComponent },
-  { path: 'expenses/new', component: ExpenseFormComponent },
-  { path: 'expenses/:id/edit', component: ExpenseFormComponent },
 
   // Enrollment Payments
   { path: 'enrollment-payments', component: EnrollmentPaymentListComponent },
@@ -126,16 +117,6 @@ const routes: Routes = [
     path: 'salary-deductions', 
     loadComponent: () => import('./pages/salary/salary-deduction/salary-deduction-list/salary-deduction-list.component')
       .then(m => m.SalaryDeductionListComponent) 
-  },
-  { 
-    path: 'salary-deductions/new', 
-    loadComponent: () => import('./pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component')
-      .then(m => m.SalaryDeductionFormComponent) 
-  },
-  { 
-    path: 'salary-deductions/:id/edit', 
-    loadComponent: () => import('./pages/salary/salary-deduction/salary-deduction-form/salary-deduction-form.component')
-      .then(m => m.SalaryDeductionFormComponent) 
   },
 
   // Financial Report
@@ -154,18 +135,6 @@ const routes: Routes = [
     ExpenseTypeListComponent,
     ExpenseTypeFormComponent,
 
-    // Rent Type
-    RentTypeListComponent,
-    RentTypeFormComponent,
-
-    // Place Rent Payment
-    PlaceRentPaymentListComponent,
-    PlaceRentPaymentFormComponent,
-
-    // Expense
-    ExpenseListComponent,
-    ExpenseFormComponent,
-    // Financial Report - REMOVED (standalone)
   ],
   imports: [
     CommonModule,
@@ -191,6 +160,9 @@ const routes: Routes = [
     MatTooltipModule,
     
     // ✅ ADD standalone components here
+    RentTypeListComponent,
+    PlaceRentPaymentListComponent,
+    ExpenseListComponent,
     EnrollmentRefundListComponent,
     EnrollmentPaymentListComponent,  
     SalaryIncentiveListComponent,

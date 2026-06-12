@@ -93,7 +93,7 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
         SalaryIncentiveSearchFilter filter = SalaryIncentiveSearchFilter.builder()
                 .employeeId(employeeId)
                 .paymentMethodId(paymentMethodId)
-                .type(type)
+                .salaryTransactionType(type!=null ?type.getId():null)
                 .withdrawDateFrom(withdrawDateFrom)
                 .withdrawDateTo(withdrawDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

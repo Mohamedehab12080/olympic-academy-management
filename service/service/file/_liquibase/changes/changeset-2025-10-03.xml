@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="1" author="haneen.mohamed">
+
+        <!--        &lt;!&ndash;insert pharmacy sc_domain &ndash;&gt;-->
+        <!--        <insert tableName="fl_domain_config">-->
+        <!--            <column name="id" valueComputed="5101"/>-->
+        <!--            <column name ="title_en" value="pharmacy"/>-->
+        <!--            <column name ="title_ar" value="صيدلية"/>-->
+        <!--            <column name ="label" value="pharmacy"/>-->
+        <!--            <column name ="max_size" value="10485760"/>-->
+        <!--            <column name ="base_folder" value="/pharmacy"/>-->
+        <!--            <column name ="allowed_extensions" value="pdf,docx,jpg,png"/>-->
+
+        <!--        </insert>-->
+    </changeSet>
+
+    <!--    <changeSet id="2" author="ahmed.kasim">-->
+    <!--        <insert tableName="fl_domain_config">-->
+    <!--            <column name="id" valueComputed="5001"/>-->
+    <!--            <column name="title_en" value="Product"/>-->
+    <!--            <column name="title_ar" value="منتج"/>-->
+    <!--            <column name="base_folder" value="/product"/>-->
+    <!--            <column name="label" value="product"/>-->
+    <!--            <column name="max_size" value="10485760"/>-->
+    <!--            <column name="allowed_extensions" value="jpg,png"/>-->
+    <!--            <column name="last_modified_on" valueComputed="NULL"/>-->
+    <!--            <column name="last_modified_by_id" valueComputed="NULL"/>-->
+    <!--        </insert>-->
+    <!--        <insert tableName="fl_domain_config">-->
+    <!--            <column name="id" valueComputed="5002"/>-->
+    <!--            <column name="title_en" value="Category"/>-->
+    <!--            <column name="title_ar" value="فئة"/>-->
+    <!--            <column name="base_folder" value="/category"/>-->
+    <!--            <column name="label" value="category"/>-->
+    <!--            <column name="max_size" value="10485760"/>-->
+    <!--            <column name="allowed_extensions" value="jpg,png"/>-->
+    <!--            <column name="last_modified_on" valueComputed="NULL"/>-->
+    <!--            <column name="last_modified_by_id" valueComputed="NULL"/>-->
+    <!--        </insert>-->
+    <!--        <insert tableName="fl_domain_config">-->
+    <!--            <column name="id" valueComputed="5004"/>-->
+    <!--            <column name="title_en" value="MFG Company"/>-->
+    <!--            <column name="title_ar" value="شركة التصنيع"/>-->
+    <!--            <column name="base_folder" value="/company"/>-->
+    <!--            <column name="label" value="company"/>-->
+    <!--            <column name="max_size" value="10485760"/>-->
+    <!--            <column name="allowed_extensions" value="jpg,png"/>-->
+    <!--            <column name="last_modified_on" valueComputed="NULL"/>-->
+    <!--            <column name="last_modified_by_id" valueComputed="NULL"/>-->
+    <!--        </insert>-->
+    <!--    </changeSet>-->
+</databaseChangeLog>

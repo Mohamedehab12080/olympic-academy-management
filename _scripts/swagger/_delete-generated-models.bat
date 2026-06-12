@@ -96,6 +96,10 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "EmployeeContactVTO.java"
     )
 
+    if not "!MODULE!"=="place" (
+        call :delete_file "PlaceVTO.java"
+    )
+
     if not "!MODULE!"=="enrollment" (
         call :delete_file "EnrollmentVTO.java"
     )

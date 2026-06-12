@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.19.xsd">
+
+    <!-- Create daily_counter table -->
+    <changeSet id="10" author="mohamed.ehab">
+        <createTable tableName="fl_daily_counter">
+            <column name="id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="count" type="INT">
+            </column>
+            <column name="last_updated" type="DATE">
+            </column>
+        </createTable>
+
+        <!-- Add default value for count column -->
+        <addDefaultValue tableName="fl_daily_counter" columnName="count" defaultValue="0"/>
+
+        <!-- Insert initial counter record -->
+        <insert tableName="fl_daily_counter">
+            <column name="id" value="1"/>
+            <column name="count" value="1"/>
+            <column name="last_updated" valueDate="CURRENT_DATE"/>
+        </insert>
+
+        <!-- Add comment for the table -->
+        <comment>Creates daily_counter table for tracking file ID generation sequence</comment>
+    </changeSet>
+
+</databaseChangeLog>

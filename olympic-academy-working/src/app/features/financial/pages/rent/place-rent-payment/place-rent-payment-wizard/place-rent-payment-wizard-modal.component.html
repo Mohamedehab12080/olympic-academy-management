@@ -1,0 +1,302 @@
+<div class="wizard-container">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">real_estate_agent</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل دفعة إيجار' : 'دفعة إيجار جديدة' }}</h2>
+    </div>
+    <button mat-icon-button class="close-btn" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps" *ngIf="!isLoading">
+    <div class="steps-container">
+      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+        <div class="step-circle" (click)="goToStep(i)">
+          <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
+          <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
+        </div>
+        <div class="step-label">
+          <mat-icon class="step-icon">{{ step.icon }}</mat-icon>
+          <span>{{ step.label }}</span>
+        </div>
+        <div class="step-line" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div class="wizard-content" *ngIf="!isLoading">
+    <form [formGroup]="paymentForm">
+      
+      <!-- Step 0: Select Place -->
+      <div class="step-content" *ngIf="currentStep === 0">
+        <div class="step-title">
+          <mat-icon>location_on</mat-icon>
+          <h3>اختر الموقع</h3>
+        </div>
+        
+        <div class="step-description">
+          يرجى اختيار الموقع الذي تريد إضافة دفعة إيجار له
+        </div>
+
+        <div class="form-section">
+          <app-searchable-select
+            formControlName="placeId"
+            label="الموقع *"
+            [options]="placeOptions"
+            [required]="true"
+            class="full-width"
+            (ngModelChange)="onPlaceSelect()">
+          </app-searchable-select>
+
+          <!-- Place Details Preview -->
+          <div class="place-preview" *ngIf="selectedPlace">
+            <div class="preview-header">
+              <mat-icon>info</mat-icon>
+              <span>معلومات الموقع</span>
+            </div>
+            <div class="preview-content">
+              <div class="preview-row">
+                <span class="label">الموقع:</span>
+                <span class="value">{{ selectedPlace.title }}</span>
+              </div>
+              <div class="preview-row highlight" *ngIf="selectedPlace.rentValue">
+                <span class="label">قيمة الإيجار الشهرية:</span>
+                <span class="value">{{ selectedPlace.rentValue | number }} جم</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Payment Details -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="step-title">
+          <mat-icon>payments</mat-icon>
+          <h3>تفاصيل الدفعة</h3>
+        </div>
+        
+        <div class="step-description">
+          أدخل قيمة الإيجار والمبلغ المدفوع وتاريخ الدفع
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>قيمة الإيجار *</mat-label>
+              <input matInput type="number" formControlName="rentAmount" placeholder="0">
+              <span matTextSuffix>جم</span>
+              <mat-error *ngIf="paymentForm.get('rentAmount')?.hasError('required')">
+                قيمة الإيجار مطلوبة
+              </mat-error>
+              <mat-error *ngIf="paymentForm.get('rentAmount')?.hasError('min')">
+                يجب أن تكون القيمة أكبر من 0
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المبلغ المدفوع *</mat-label>
+              <input matInput type="number" formControlName="payedAmount" placeholder="0" [max]="getRentAmount()">
+              <span matTextSuffix>جم</span>
+              <mat-error *ngIf="paymentForm.get('payedAmount')?.hasError('required')">
+                المبلغ المدفوع مطلوب
+              </mat-error>
+              <mat-error *ngIf="paymentForm.get('payedAmount')?.hasError('min')">
+                يجب أن يكون المبلغ أكبر من 0
+              </mat-error>
+              <mat-error *ngIf="paymentForm.get('payedAmount')?.hasError('exceedsRent')">
+                المبلغ المدفوع لا يمكن أن يتجاوز قيمة الإيجار
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="two-columns">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>المبلغ المتبقي</mat-label>
+              <input matInput type="number" formControlName="remainedAmount" readonly>
+              <span matTextSuffix>جم</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>تاريخ الدفع *</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="paymentDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="paymentForm.get('paymentDate')?.hasError('required')">
+                تاريخ الدفع مطلوب
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Payment Summary Card -->
+          <div class="payment-summary">
+            <div class="summary-header">
+              <mat-icon>receipt_long</mat-icon>
+              <span>ملخص الدفعة</span>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row">
+                <span>الموقع:</span>
+                <strong>{{ paymentForm.get('placeTitle')?.value || selectedPlace?.title }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>قيمة الإيجار:</span>
+                <strong>{{ getRentAmount() | number }} جم</strong>
+              </div>
+              <div class="summary-row">
+                <span>المبلغ المدفوع:</span>
+                <strong class="paid-amount">{{ getPayedAmount() | number }} جم</strong>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-row total">
+                <span>المبلغ المتبقي:</span>
+                <strong [class.zero]="getRemainedAmount() === 0">{{ getRemainedAmount() | number }} جم</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment Information -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="step-title">
+          <mat-icon>credit_card</mat-icon>
+          <h3>معلومات الدفع</h3>
+        </div>
+        
+        <div class="step-description">
+          اختر نوع الإيجار وطريقة الدفع (اختياري)
+        </div>
+
+        <div class="form-section">
+          <div class="two-columns">
+            <app-searchable-select
+              formControlName="rentTypeId"
+              label="نوع الإيجار"
+              [options]="rentTypeOptions"
+              [required]="false"
+              class="full-width">
+            </app-searchable-select>
+
+            <app-searchable-select
+              formControlName="paymentMethodId"
+              label="طريقة الدفع"
+              [options]="paymentMethodOptions"
+              [required]="false"
+              class="full-width">
+            </app-searchable-select>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>ملاحظات</mat-label>
+            <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+            <mat-icon matSuffix>note</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirmation -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <div class="step-title">
+          <mat-icon>check_circle</mat-icon>
+          <h3>تأكيد الدفعة</h3>
+        </div>
+        
+        <div class="step-description">
+          راجع المعلومات أدناه قبل التأكيد
+        </div>
+
+        <div class="confirmation-card">
+          <!-- Place Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>location_on</mat-icon>
+              <span>معلومات الموقع</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">الموقع:</span>
+                <span class="info-value">{{ paymentForm.get('placeTitle')?.value || selectedPlace?.title }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">نوع الإيجار:</span>
+                <span class="info-value">{{ getRentTypeLabel() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <!-- Payment Info -->
+          <div class="confirmation-section">
+            <div class="section-title">
+              <mat-icon>payments</mat-icon>
+              <span>معلومات الدفعة</span>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">قيمة الإيجار:</span>
+                <span class="info-value">{{ getRentAmount() | number }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المبلغ المدفوع:</span>
+                <span class="info-value highlight">{{ getPayedAmount() | number }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">المبلغ المتبقي:</span>
+                <span class="info-value" [class.success]="getRemainedAmount() === 0">{{ getRemainedAmount() | number }} جم</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">تاريخ الدفع:</span>
+                <span class="info-value">{{ paymentForm.get('paymentDate')?.value | date }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">طريقة الدفع:</span>
+                <span class="info-value">{{ getPaymentMethodLabel() }}</span>
+              </div>
+              <div class="info-item full-width" *ngIf="paymentForm.get('note')?.value">
+                <span class="info-label">الملاحظات:</span>
+                <span class="info-value">{{ paymentForm.get('note')?.value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="wizard-actions">
+    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+      <mat-icon>close</mat-icon> إلغاء
+    </button>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+        <mat-icon>chevron_right</mat-icon> السابق
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" [disabled]="isSubmitting">
+        التالي <mat-icon>chevron_left</mat-icon>
+      </button>
+      
+      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" [disabled]="isSubmitting">
+        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+</div>
