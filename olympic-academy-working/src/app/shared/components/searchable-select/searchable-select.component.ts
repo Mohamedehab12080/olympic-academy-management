@@ -1,3 +1,5 @@
+// searchable-select.component.ts - FIXED
+
 import { Component, Input, forwardRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +36,7 @@ export interface SelectOption {
     <mat-form-field appearance="outline" class="full-width" dir="rtl">
       <mat-label>{{ label }}</mat-label>
       <mat-select
-        [(ngModel)]="value"
+        [(ngModel)]="selectedValue"
         [multiple]="multiple"
         [required]="required"
         [disabled]="disabled"
@@ -54,7 +56,7 @@ export interface SelectOption {
           </div>
         </div>
         
-        <!-- Options - بدون checkbox -->
+        <!-- Options -->
         <mat-option 
           *ngFor="let option of filteredOptions" 
           [value]="option.value" 
@@ -127,7 +129,8 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnInit, 
   @Input() required: boolean = false;
   @Input() disabled: boolean = false;
   
-  value: any = null;
+  // Use a separate internal value
+  selectedValue: any = null;
   searchTerm: string = '';
   filteredOptions: SelectOption[] = [];
   
@@ -156,20 +159,34 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnInit, 
   }
 
   isSelected(value: any): boolean {
-    if (this.multiple && Array.isArray(this.value)) {
-      return this.value.includes(value);
+    if (this.multiple && Array.isArray(this.selectedValue)) {
+      return this.selectedValue.includes(value);
     }
-    return this.value === value;
+    return this.selectedValue === value;
   }
 
   onSelectionChange(event: any) {
-    this.value = event.value;
-    this.onChange(this.value);
+    // Get the actual value from the event
+    const value = event.value;
+    
+    // Handle null/undefined properly
+    let finalValue = value;
+    if (value === null || value === undefined || value === 'null' || value === '') {
+      finalValue = null;
+    }
+    
+    this.selectedValue = finalValue;
+    this.onChange(finalValue);
     this.onTouched();
   }
 
   writeValue(value: any): void {
-    this.value = value;
+    // Handle null/undefined properly
+    if (value === null || value === undefined || value === 'null' || value === '') {
+      this.selectedValue = null;
+    } else {
+      this.selectedValue = value;
+    }
   }
 
   registerOnChange(fn: any): void {

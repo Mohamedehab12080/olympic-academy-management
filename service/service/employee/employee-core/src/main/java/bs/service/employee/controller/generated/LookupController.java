@@ -7,13 +7,16 @@ package bs.service.employee.controller.generated;
 
 import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.vto.ErrorVTO;
+import bs.service.employee.model.generated.EmployeeLookupVTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
 import jakarta.validation.constraints.*;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -65,12 +68,12 @@ public interface LookupController {
      */
     @Operation(operationId = "getAllEmployeesLookup", summary = "Retrieve All Employees (public)", tags = {
             "Lookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
+                    @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EmployeeLookupVTO.class))) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/lookup/employees", produces = { "application/json" })
 
-    ResponseEntity<LookupResultSet> _getAllEmployeesLookup(
+    ResponseEntity<List<EmployeeLookupVTO>> _getAllEmployeesLookup(
 
     );
 

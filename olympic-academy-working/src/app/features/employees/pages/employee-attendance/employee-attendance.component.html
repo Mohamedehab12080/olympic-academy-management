@@ -1,3 +1,5 @@
+<!-- employee-attendance.component.html -->
+
 <div class="attendance-container">
   <mat-card class="main-card">
     <!-- Header Section -->
@@ -6,10 +8,15 @@
         <h1>حضور الموظفين</h1>
         <p>تسجيل ومتابعة حضور وانصراف الموظفين</p>
       </div>
-      <button mat-raised-button color="primary" (click)="openAttendanceDialog()" class="add-button">
-        <mat-icon>add</mat-icon>
-        تسجيل حضور
-      </button>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="openAttendanceDialog()" class="add-button">
+          <mat-icon>add</mat-icon>
+          تسجيل حضور
+        </button>
+        <button mat-icon-button (click)="refreshData()" matTooltip="تحديث البيانات" class="refresh-btn">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
     </div>
 
     <!-- Filters Section -->
@@ -21,6 +28,7 @@
             <input matInput [matDatepicker]="datePicker" [(ngModel)]="selectedDate" (dateChange)="loadAttendances()">
             <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
             <mat-datepicker #datePicker></mat-datepicker>
+            <mat-icon matPrefix>event</mat-icon>
           </mat-form-field>
 
           <app-searchable-select
@@ -40,6 +48,12 @@
             [required]="false"
             class="filter-select">
           </app-searchable-select>
+
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>بحث عام</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="ابحث باسم الموظف...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
         </div>
 
         <div class="filter-actions">
@@ -118,6 +132,26 @@
           <mat-icon>info</mat-icon>
           <span>عدد السجلات: {{ dataSource.data.length }} سجل</span>
         </div>
+        <div class="table-actions">
+          <mat-chip-listbox>
+            <mat-chip-option [selected]="true" color="primary">
+              <mat-icon>check_circle</mat-icon>
+              حاضر: {{ summaryStats.present }}
+            </mat-chip-option>
+            <mat-chip-option color="warn">
+              <mat-icon>cancel</mat-icon>
+              غائب: {{ summaryStats.absent }}
+            </mat-chip-option>
+            <mat-chip-option color="accent">
+              <mat-icon>schedule</mat-icon>
+              متأخر: {{ summaryStats.late }}
+            </mat-chip-option>
+            <mat-chip-option color="accent">
+              <mat-icon>info</mat-icon>
+              معتذر: {{ summaryStats.excused }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
       </div>
 
       <div class="table-wrapper">
@@ -134,7 +168,15 @@
           <ng-container matColumnDef="employee">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
             <td mat-cell *matCellDef="let a" class="clickable-cell">
-              <strong>{{ a.employee?.fullName || a.employee?.title || '-' }}</strong>
+              <div class="employee-info">
+                <div class="employee-avatar" *ngIf="a.employee?.imageUrl">
+                  <img [src]="a.employee?.imageUrl" alt="Avatar">
+                </div>
+                <div class="employee-avatar default-avatar" *ngIf="!a.employee?.imageUrl">
+                  <mat-icon>person</mat-icon>
+                </div>
+                <strong>{{ a.employee?.fullName || a.employee?.title || '-' }}</strong>
+              </div>
             </td>
           </ng-container>
 
@@ -148,24 +190,24 @@
             </td>
           </ng-container>
 
-          <!-- Check In Time Column -->
+          <!-- Check In Time Column - UPDATED with 12-hour format -->
           <ng-container matColumnDef="checkInTime">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الدخول</th>
             <td mat-cell *matCellDef="let a">
               <div class="time-info">
                 <mat-icon>login</mat-icon>
-                <span>{{ a.checkInTime || '-' }}</span>
+                <span>{{ convertTo12HourFormat(a.checkInTime) }}</span>
               </div>
             </td>
           </ng-container>
 
-          <!-- Check Out Time Column -->
+          <!-- Check Out Time Column - UPDATED with 12-hour format -->
           <ng-container matColumnDef="checkOutTime">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الخروج</th>
             <td mat-cell *matCellDef="let a">
               <div class="time-info">
                 <mat-icon>logout</mat-icon>
-                <span>{{ a.checkOutTime || '-' }}</span>
+                <span>{{ convertTo12HourFormat(a.checkOutTime) }}</span>
               </div>
             </td>
           </ng-container>
@@ -178,7 +220,7 @@
                 ⏰ {{ a.lateTime }} دقيقة
               </span>
               <ng-template #noLate>
-                <span>-</span>
+                <span class="no-late">-</span>
               </ng-template>
             </td>
           </ng-container>
@@ -186,7 +228,14 @@
           <!-- Note Column -->
           <ng-container matColumnDef="note">
             <th mat-header-cell *matHeaderCellDef>ملاحظات</th>
-            <td mat-cell *matCellDef="let a">{{ a.note || '-' }}</td>
+            <td mat-cell *matCellDef="let a">
+              <span class="note-text" *ngIf="a.note; else noNote">
+                {{ a.note }}
+              </span>
+              <ng-template #noNote>
+                <span class="no-note">-</span>
+              </ng-template>
+            </td>
           </ng-container>
 
           <!-- Actions Column -->
@@ -197,7 +246,7 @@
                 <button mat-icon-button color="primary" (click)="openAttendanceDialog(a.id)" matTooltip="تعديل">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteAttendance(a.id)" matTooltip="حذف">
+                <button mat-icon-button color="warn" (click)="deleteAttendance(a)" matTooltip="حذف">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>

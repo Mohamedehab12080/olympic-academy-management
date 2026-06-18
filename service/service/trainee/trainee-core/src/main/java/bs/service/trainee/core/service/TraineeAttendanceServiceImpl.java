@@ -77,7 +77,7 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
         }
 
         TraineeAttendance traineeAttendance = traineeMapper.toTraineeAttendance(traineeAttendanceDTO);
-
+        traineeAttendance.setStatus(traineeAttendanceDTO.getStatus()!=null?traineeAttendanceDTO.getStatus().getId():TraineeAttendanceStatus.PRESENT.getId());
         // تعيين attendanceDate من تاريخ الجلسة أو التاريخ الحالي
         if (traineeAttendanceDTO.getAttendanceDate() != null) {
             traineeAttendance.setAttendanceDate(traineeAttendanceDTO.getAttendanceDate());

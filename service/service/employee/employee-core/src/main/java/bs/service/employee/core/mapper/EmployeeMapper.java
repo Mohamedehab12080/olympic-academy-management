@@ -136,6 +136,10 @@ public abstract class EmployeeMapper {
     public abstract String fromContactType(ContactTypes contactType);
 
     // Lookup list mappings
+    @Mapping(target = "salaryType", expression= "java(toLookupVTOFromSalaryType(employee.getSalaryType()))")
+    @Mapping(target = "employeeType", expression= "java(toLookupVTOFromEmployeeType(employee.getEmployeeType()))")
+    public abstract EmployeeLookupVTO toEmployeeLookupVTO(Employee employee);
+    public abstract List<EmployeeLookupVTO> toEmployeeLookupVTOs(List<Employee> employees);
     public abstract List<LookupVTO> toLookupVTOs(List<Employee> employees);
     public abstract List<LookupVTO> toLookupEmployeeTypesVTOs(List<EmployeeTypes> employeeTypes);
     public abstract List<LookupVTO> toLookupEmployeeAttendanceStatusVTOs(List<EmployeeAttendanceStatus> employeeAttendanceStatuses);

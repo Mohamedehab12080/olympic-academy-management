@@ -82,6 +82,17 @@ export interface CourseSessionDTO {
 
 // ==================== VTOs (received from backend - use LookupVTO for enums) ====================
 
+export interface EmployeeLookupVTO {
+  id: number;
+  fullName: string;
+  nationalId: string;
+  salary?: number;
+  remainedSalary?: number;
+  salaryType?: LookupVTO;  // From common.model
+  employeeType: LookupVTO;
+  imageUrl?: string;
+}
+
 export interface EmployeeVTO {
   id: number;
   fullName: string;

@@ -172,12 +172,12 @@ this.transactionForm.get('transactionTypeObj')?.valueChanges.subscribe((type) =>
     this.isLoading = true;
     this.employeeService.getAllEmployeesLookup().subscribe({
       next: (res: any) => {
-        this.employees = res.list || [];
+        this.employees = res||[];
         this.employeeOptions = this.employees.map((e: any) => ({ 
           value: e.id, 
-          label: `${e.title} - (الراتب المتبقي: ${e.remainedSalary || 0} جم)`,
+          label: `${e.fullName} - (الراتب المتبقي: ${e.remainedSalary || 0} جم)`,
           employeeData: {
-            fullName: e.title,
+            fullName: e.fullName,
             salary: e.salary || 0,
             remainedSalary: e.remainedSalary || 0,
             salaryType: e.salaryType
@@ -367,7 +367,7 @@ loadTransactionData() {
       next: (employee: any) => {
         const currentRemainedSalary = employee.remainedSalary || 0;
         this.maxWithdrawAmount = currentRemainedSalary;
-        
+        console.log("Employee Remained Salary : ",currentRemainedSalary)
         this.selectedEmployee = {
           fullName: employee.title,
           salary: employee.salary || 0,

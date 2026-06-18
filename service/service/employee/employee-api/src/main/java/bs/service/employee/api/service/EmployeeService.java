@@ -8,10 +8,12 @@ import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.generated.EmployeeDTO;
+import bs.service.employee.model.generated.EmployeeLookupVTO;
 import bs.service.employee.model.generated.EmployeeResultSet;
 import bs.service.employee.model.generated.EmployeeVTO;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface EmployeeService {
     NewRecordVTO createEmployee(EmployeeDTO employeeDTO);
@@ -24,7 +26,7 @@ public interface EmployeeService {
                                       Gender gender, EmployeeTypes employeeType,
                                       SalaryTypes salaryType, Integer pageNum, Integer pageSize,
                                       OrderDirections orderDir, String orderBy);
-    LookupResultSet getAllEmployeesLookup();
+    List<EmployeeLookupVTO> getAllEmployeesLookup();
     LookupResultSet getAllEmployeeTypesLookup();
     LookupResultSet getAllEmployeeAttendanceStatusLookup();
     LookupResultSet getAllTrainersLookup();

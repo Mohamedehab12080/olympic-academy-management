@@ -39,6 +39,11 @@ components:
         id:
           type: integer
           format: int32
+        nationalId:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
         fullName:
           type: string
 

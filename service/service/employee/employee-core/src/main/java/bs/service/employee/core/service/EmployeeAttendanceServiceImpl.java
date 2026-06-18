@@ -8,7 +8,6 @@ import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.api.repository.EmployeeAttendanceRepository;
 import bs.service.employee.api.repository.EmployeeRepository;
 import bs.service.employee.api.service.EmployeeAttendanceService;
-import bs.service.employee.api.service.EmployeeService;
 import bs.service.employee.core.mapper.EmployeeMapper;
 import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.entity.EmployeeAttendance;
@@ -43,6 +42,30 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
 
         EmployeeAttendance employeeAttendance = employeeMapper.toEmployeeAttendance(employeeAttendanceDTO);
         employeeAttendance.setEmployee(employee);
+        employeeAttendance.setStatus(employeeAttendanceDTO.getStatus()!=null ?employeeAttendanceDTO.getStatus().id:EmployeeAttendanceStatus.PRESENT.id);
+
+        EmployeeAttendanceSearchFilter checkFilter = EmployeeAttendanceSearchFilter.builder()
+                .employeeId(employeeId)
+                .attendanceDateFrom(employeeAttendanceDTO.getAttendanceDate())
+                .attendanceDateTo(employeeAttendanceDTO.getAttendanceDate())
+                .pagination(PaginationInfo.noPagination())
+                .build();
+
+        List<EmployeeAttendance> existing = employeeAttendanceRepository.selectAllByFilters(checkFilter);
+
+        if (!existing.isEmpty()) {
+            throw new BusinessException(ATTENDANCE_ALREADY_EXISTS, employeeId);
+        }
+
+        LocalTime parsedCheckIn=employeeAttendanceDTO.getCheckInTime()!=null?LocalTime.parse(employeeAttendanceDTO.getCheckInTime()):null;
+        LocalTime parsedCheckOut=employeeAttendanceDTO.getCheckOutTime()!=null?LocalTime.parse(employeeAttendanceDTO.getCheckOutTime()):null;
+
+        if (parsedCheckIn!= null && parsedCheckOut != null) {
+            if (parsedCheckIn.isAfter(parsedCheckOut)) {
+                throw new BusinessException(CHECK_IN_TIME_AFTER_CHECK_OUT_TIME);
+            }
+        }
+
         employeeAttendance = employeeAttendanceRepository.insert(employeeAttendance);
 
         return NewRecordVTO.builder().id(employeeAttendance.getId()).build();
@@ -101,6 +124,7 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
         EmployeeAttendanceSearchFilter filter = EmployeeAttendanceSearchFilter.builder()
                 .employeeId(employeeId)
                 .status(status!=null ?status.title:null)
+                .isDeleted(false)
                 .attendanceDateFrom(attendanceDateFrom)
                 .attendanceDateTo(attendanceDateTo)
                 .checkInFrom(checkInFrom != null ? LocalTime.parse(checkInFrom) : null)

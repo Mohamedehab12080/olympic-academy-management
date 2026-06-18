@@ -22,6 +22,7 @@ public enum EmployeeErrors implements Errors {
     INVALID_ATTENDANCE_STATUS(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0003", "حالة الحضور غير صالحة {0}"),
     CHECK_OUT_BEFORE_CHECK_IN(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0004", "وقت الخروج يجب أن يكون بعد وقت الدخول"),
     FUTURE_ATTENDANCE_DATE(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0005", "لا يمكن تسجيل حضور لتاريخ مستقبلي {0}"),
+    CHECK_IN_TIME_AFTER_CHECK_OUT_TIME(EmployeeDomains.EMPLOYEE_ATTENDANCE, "0006", "وقت الدخول لا يمكن أن يكون بعد وقت الخروج"),
 
     // Trainer Course errors (Domain: 4004)
     COURSE_NOT_FOUND_FOR_TRAINER(EmployeeDomains.EMPLOYEE, "0008", "الدورة غير موجودة {0}"),

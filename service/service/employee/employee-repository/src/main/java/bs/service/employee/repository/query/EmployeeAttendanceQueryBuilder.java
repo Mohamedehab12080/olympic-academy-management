@@ -21,6 +21,11 @@ public class EmployeeAttendanceQueryBuilder extends AbstractQueryBuilderV2<Emplo
     public List<QBCondition> evaluateWhereConditions(EmployeeAttendanceSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
+
         if (filters.getEmployeeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("employeeId").value(filters.getEmployeeId())
                     .condition("item.employee.id = :PH").build());

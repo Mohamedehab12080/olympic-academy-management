@@ -19,6 +19,7 @@ public class EmployeeAttendanceSearchFilter extends SearchFilter<EmployeeAttenda
 
     private Integer employeeId;
     private String status;
+    private Boolean isDeleted;
     private LocalDate attendanceDateFrom;
     private LocalDate attendanceDateTo;
     private LocalTime checkInFrom;

@@ -5,7 +5,8 @@ import {
   EmployeeDTO, EmployeeVTO, EmployeeResultSet,
   EmployeeAttendanceDTO, EmployeeAttendanceVTO, EmployeeAttendanceResultSet,
   DailyAttendanceReport, TrainerCourseResultSet, TrainerCourseAssignmentResultSet,
-  AssignCourseDTO, CourseSessionResultSet
+  AssignCourseDTO, CourseSessionResultSet,
+  EmployeeLookupVTO
 } from '../models/employee.model';
 import { NewRecordVTO, LookupResultSet } from '../models/common.model';
 
@@ -24,7 +25,7 @@ export class EmployeeService {
     return this.api.get('/lookup/employee/types');
   }
 
-  getAllEmployeesLookup(): Observable<LookupResultSet> {
+  getAllEmployeesLookup(): Observable<EmployeeLookupVTO[]> {
     return this.api.get('/lookup/employees');
   }
   

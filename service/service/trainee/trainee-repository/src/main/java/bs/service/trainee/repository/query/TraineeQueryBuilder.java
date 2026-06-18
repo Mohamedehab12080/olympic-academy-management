@@ -46,7 +46,7 @@ public class TraineeQueryBuilder extends AbstractQueryBuilderV2<Trainee, Trainee
                     .condition("item.createdOn >= :PH").build());
 
         if (filters.getCreatedOnTo() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("createdOnTo").value(filters.getCreatedOnTo())
+            qbConditions.add(QBCondition.builder().placeHolder("createdOnTo").value(filters.getCreatedOnTo().atStartOfDay())
                     .condition("item.createdOn <= :PH").build());
 
         return qbConditions;

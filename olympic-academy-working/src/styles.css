@@ -271,7 +271,7 @@ html, body {
   background-color: #f9fafb;
 }
 
-.enrollment-details-modal-panel {
+/* .enrollment-details-modal-panel {
   .mat-mdc-dialog-container {
     padding: 0 !important;
     overflow: hidden !important;
@@ -306,7 +306,7 @@ html, body {
 .mat-mdc-dialog-actions {
   padding: 16px 24px !important;
   margin-bottom: 0 !important;
-}
+} */
 
 .enrollment-details-modal-panel {
   .mat-mdc-dialog-container {

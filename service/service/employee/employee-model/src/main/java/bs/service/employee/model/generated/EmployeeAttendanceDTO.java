@@ -92,8 +92,8 @@ public class EmployeeAttendanceDTO implements Serializable {
      *
      * @return checkInTime
      */
-    @NotNull
-    @Schema(name = "checkInTime", requiredMode = Schema.RequiredMode.REQUIRED)
+
+    @Schema(name = "checkInTime", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("checkInTime")
     public String getCheckInTime() {
         return checkInTime;

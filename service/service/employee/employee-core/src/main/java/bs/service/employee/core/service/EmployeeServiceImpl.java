@@ -133,15 +133,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public LookupResultSet getAllEmployeesLookup() {
+    public List<EmployeeLookupVTO> getAllEmployeesLookup() {
         EmployeeSearchFilter employeeSearchFilter=EmployeeSearchFilter.builder()
                 .isActive(true)
                 .isDeleted(false)
                 .pagination(PaginationInfo.noPagination())
                 .build();
         List<Employee> employees=employeeRepository.selectAllByFilters(employeeSearchFilter);
-        List<LookupVTO> lookupVTOS=employeeMapper.toLookupVTOs(employees);
-        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
+        List<EmployeeLookupVTO> lookupVTOS=employeeMapper.toEmployeeLookupVTOs(employees);
+        return lookupVTOS;
     }
 
     @Override

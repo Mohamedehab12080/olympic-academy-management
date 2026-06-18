@@ -62,7 +62,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+                type: array
+                items:
+                   $ref: '#/components/schemas/EmployeeLookupVTO'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
@@ -988,7 +990,6 @@ components:
       required:
         - attendanceDate
         - status
-        - checkInTime
       properties:
         attendanceDate:
           type: string
@@ -1052,6 +1053,29 @@ components:
         courseId:
           type: integer
           format: int32
+
+    EmployeeLookupVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        salary:
+          type: integer
+          format: int32
+        remainedSalary:
+          type: integer
+          format: int32
+        salaryType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        employeeType:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        imageUrl:
+          type: string
 
     EmployeeVTO:
       type: object

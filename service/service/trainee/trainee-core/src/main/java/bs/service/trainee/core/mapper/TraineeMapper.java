@@ -150,7 +150,6 @@ public abstract class TraineeMapper {
      * Convert TraineeAttendanceDTO to TraineeAttendance entity
      */
     @Mapping(target = "isDeleted", constant = "false")
-    @Mapping(target = "status", source = "status.id")
     @Mapping(target = "courseSession.id", source = "courseSessionId")
     @Mapping(target = "trainee.id", source = "traineeId")
     public abstract TraineeAttendance toTraineeAttendance(TraineeAttendanceDTO dto);

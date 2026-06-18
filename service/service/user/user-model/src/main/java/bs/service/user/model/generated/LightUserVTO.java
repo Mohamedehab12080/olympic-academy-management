@@ -23,6 +23,10 @@ public class LightUserVTO implements Serializable {
 
     private Integer id;
 
+    private Integer nationalId;
+
+    private String imageUrl;
+
     private String fullName;
 
     public LightUserVTO id(Integer id) {
@@ -44,6 +48,48 @@ public class LightUserVTO implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public LightUserVTO nationalId(Integer nationalId) {
+        this.nationalId = nationalId;
+        return this;
+    }
+
+    /**
+     * Get nationalId
+     *
+     * @return nationalId
+     */
+
+    @Schema(name = "nationalId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("nationalId")
+    public Integer getNationalId() {
+        return nationalId;
+    }
+
+    public void setNationalId(Integer nationalId) {
+        this.nationalId = nationalId;
+    }
+
+    public LightUserVTO imageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+        return this;
+    }
+
+    /**
+     * Get imageUrl
+     *
+     * @return imageUrl
+     */
+
+    @Schema(name = "imageUrl", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("imageUrl")
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public LightUserVTO fullName(String fullName) {
@@ -76,12 +122,14 @@ public class LightUserVTO implements Serializable {
             return false;
         }
         LightUserVTO lightUserVTO = (LightUserVTO) o;
-        return Objects.equals(this.id, lightUserVTO.id) && Objects.equals(this.fullName, lightUserVTO.fullName);
+        return Objects.equals(this.id, lightUserVTO.id) && Objects.equals(this.nationalId, lightUserVTO.nationalId)
+                && Objects.equals(this.imageUrl, lightUserVTO.imageUrl)
+                && Objects.equals(this.fullName, lightUserVTO.fullName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName);
+        return Objects.hash(id, nationalId, imageUrl, fullName);
     }
 
     @Override
@@ -89,6 +137,8 @@ public class LightUserVTO implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("class LightUserVTO {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
+        sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
         sb.append("}");
         return sb.toString();
