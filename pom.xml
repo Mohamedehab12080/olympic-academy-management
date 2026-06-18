@@ -170,6 +170,10 @@
 									bs.lib.common.model.enums.Gender
 								</importMapping>
 
+								<importMapping>CommonEnrollmentVTO =
+									bs.lib.common.model.generated.CommonEnrollmentVTO
+								</importMapping>
+
 								<importMapping>TraineeAttendanceStatus =
 									bs.service.trainee.model.enums.TraineeAttendanceStatus
 								</importMapping>
@@ -308,6 +312,10 @@
 									</importMapping>
 									<importMapping>Gender =
 										bs.lib.common.model.enums.Gender
+									</importMapping>
+
+									<importMapping>CommonEnrollmentVTO =
+										bs.lib.common.model.generated.CommonEnrollmentVTO
 									</importMapping>
 
 									<importMapping>PlaceVTO =
@@ -523,6 +531,7 @@
 		<module>lib/common/common-api</module>
 		<module>lib/common/common-core</module>
 
+
 		<module>lib/rest/rest-adapter-api</module>
 		<module>lib/rest/rest-adapter-core</module>
 
@@ -534,15 +543,15 @@
 		<module>lib/sql-db-adapter/sql-db-adapter-core</module>
 		<module>lib/sql-db-adapter/sql-db-adapter-test</module>
 
-		<module>lib/id-counter/id-counter-model</module>
-		<module>lib/id-counter/id-counter-api</module>
-		<module>lib/id-counter/id-counter-core</module>
-		<module>lib/id-counter/id-counter-repository</module>
-
 		<module>lib/service-context/service-context-model</module>
 		<module>lib/service-context/service-context-api</module>
 		<module>lib/service-context/service-context-core</module>
 		<module>lib/service-context/service-context-repository</module>
+
+		<module>lib/id-counter/id-counter-model</module>
+		<module>lib/id-counter/id-counter-api</module>
+		<module>lib/id-counter/id-counter-core</module>
+		<module>lib/id-counter/id-counter-repository</module>
 
 
 		<module>service/service-bom</module>

@@ -2,6 +2,7 @@ package bs.service.enrollment.core.mapper;
 
 import bs.lib.common.model.Utils.EnumMapperUtils;
 import bs.lib.common.model.enums.PaymentStatus;
+import bs.service.enrollment.model.generated.EnrollmentVTO;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.course.model.entity.Course;
 import bs.service.employee.model.entity.Employee;

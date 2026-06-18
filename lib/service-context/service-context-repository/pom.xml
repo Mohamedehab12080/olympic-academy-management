@@ -19,7 +19,6 @@
         <dependency>
             <groupId>bs.lib.service-context</groupId>
             <artifactId>service-context-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

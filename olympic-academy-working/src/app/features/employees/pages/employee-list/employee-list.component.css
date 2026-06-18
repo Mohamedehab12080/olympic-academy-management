@@ -372,6 +372,40 @@
   padding-top: 12px;
 }
 
+/* Image Column Styles */
+.image-cell {
+  width: 60px;
+  text-align: center !important;
+}
+
+.employee-avatar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.employee-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f59e0b;
+  background: #f3f4f6;
+}
+
+.avatar-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #9ca3af;
+}
+
+/* Make sure the table cell for image is properly aligned */
+.mat-column-image {
+  text-align: center;
+  width: 70px;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {

@@ -1,4 +1,6 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+// trainee-list.component.ts
+
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,30 +16,17 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import { TraineeService } from '../../../../core/services/trainee.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { FileService } from '../../../../core/services/file.service';
 import { SearchableSelectComponent } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { GENDERS } from '../../../../core/models/common.model';
 import { TraineeDetailsModalComponent } from './../trainee-details/trainee-details-modal.component';
 import { TraineeWizardModalComponent } from '../trainee-wizard/trainee-wizard-modal.component';
-
-interface Trainee {
-  id: number;
-  fullName: string;
-  nationalId: string;
-  academicYear?: string;
-  gender?: { id: number; title: string };
-  isActive: boolean;
-  certificates?: any[];
-  enrollmentsCount?: number;
-  address?: string;
-  birthDate?: Date;
-  contacts?: any[];
-  healthConditions?: any[];
-}
+import { TraineeListItem } from '../../../../core/models/trainee.model';
 
 @Component({
   selector: 'app-trainee-list',
@@ -64,10 +53,11 @@ interface Trainee {
   templateUrl: './trainee-list.component.html',
   styleUrls: ['./trainee-list.component.css']
 })
-export class TraineeListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['index', 'fullName', 'nationalId', 'academicYear', 'gender', 'status', 'actions'];
-  dataSource = new MatTableDataSource<Trainee>([]);
-  allTrainees: Trainee[] = [];
+export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
+  displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'academicYear', 'gender', 'status', 'actions'];
+  dataSource = new MatTableDataSource<TraineeListItem>([]);
+  allTrainees: TraineeListItem[] = [];
+  imageUrls: Map<number, string> = new Map(); // Store blob URLs for each trainee
   isLoading = false;
   
   searchText = '';
@@ -77,13 +67,6 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
   
   genderOptions: { value: number | null; label: string }[] = [];
   statusOptions: { value: boolean | null; label: string }[] = [];
-  academicYearOptions: { value: string | null; label: string }[] = [
-    { value: null, label: 'الكل' },
-    { value: 'الأولى', label: 'السنة الأولى' },
-    { value: 'الثانية', label: 'السنة الثانية' },
-    { value: 'الثالثة', label: 'السنة الثالثة' },
-    { value: 'الرابعة', label: 'السنة الرابعة' }
-  ];
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -100,8 +83,8 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
     private traineeService: TraineeService,
     private reportService: ReportService,
     private notification: NotificationService,
-    private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private fileService: FileService
   ) {}
 
   ngOnInit(): void {
@@ -113,6 +96,16 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  ngOnDestroy(): void {
+    // Clean up all blob URLs to prevent memory leaks
+    this.imageUrls.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    this.imageUrls.clear();
   }
 
   loadGenderOptions(): void {
@@ -135,6 +128,7 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
     this.traineeService.getAllTraineesByFilter().subscribe({
       next: (res: any) => {
         this.allTrainees = res.items || [];
+        this.loadAllImages();
         this.applyFilters();
         this.isLoading = false;
       },
@@ -143,6 +137,52 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
         this.isLoading = false;
       }
     });
+  }
+
+  loadAllImages(): void {
+    // Clear existing image URLs
+    this.imageUrls.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    this.imageUrls.clear();
+
+    // Load images for trainees that have imageUrl (FID)
+    this.allTrainees.forEach(trainee => {
+      this.loadImage(trainee);
+    });
+  }
+
+  loadImage(trainee: TraineeListItem): void {
+    const fid = trainee.imageUrl;
+    console.log("FID ", fid)
+    // Check if fid is a valid FID (15 or 18 digits)
+      this.fileService.downloadFile(fid).subscribe({
+        next: (blob) => {
+          // Clean up previous blob URL if exists
+          const existingUrl = this.imageUrls.get(trainee.id);
+          if (existingUrl && existingUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(existingUrl);
+          }
+          // Create new blob URL
+          const blobUrl = URL.createObjectURL(blob);
+          this.imageUrls.set(trainee.id, blobUrl);
+          // Refresh the table data to show the image
+          console.log("bolb url ",blobUrl);
+          this.dataSource.data = [...this.dataSource.data];
+        },
+        error: (error) => {
+          console.error(`Failed to load image for trainee ${trainee.id}:`, error);
+          this.imageUrls.set(trainee.id, '');
+          this.dataSource.data = [...this.dataSource.data];
+        }
+      });
+  }
+
+  getImageUrl(traineeId: number): string | null {
+    const url = this.imageUrls.get(traineeId);
+    return url && url.startsWith('blob:') ? url : null;
   }
 
   applyFilters(): void {
@@ -199,35 +239,35 @@ export class TraineeListComponent implements OnInit, AfterViewInit {
     });
   }
   
-editTrainee(id: number): void {
-  const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
-    data: { traineeId: id },
-    width: '900px',
-    maxWidth: '90vw'
-  });
-  
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadTrainees();
-    }
-  });
-}
+  editTrainee(id: number): void {
+    const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
+      data: { traineeId: id },
+      width: '900px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadTrainees();
+      }
+    });
+  }
 
-openNewTraineeModal(): void {
-  const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
-    data: {},
-    width: '900px',
-    maxWidth: '90vw'
-  });
-  
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadTrainees();
-    }
-  });
-}
+  openNewTraineeModal(): void {
+    const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
+      data: {},
+      width: '900px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadTrainees();
+      }
+    });
+  }
 
-  deleteTrainee(trainee: Trainee): void {
+  deleteTrainee(trainee: TraineeListItem): void {
     if (confirm(`هل أنت متأكد من حذف المتدرب "${trainee.fullName}"؟`)) {
       this.traineeService.deleteTrainee(trainee.id).subscribe({
         next: () => {
@@ -245,7 +285,7 @@ openNewTraineeModal(): void {
       return;
     }
     
-    const data = this.dataSource.filteredData.map((t: Trainee, i: number) => ({
+    const data = this.dataSource.filteredData.map((t: TraineeListItem, i: number) => ({
       '#': i + 1,
       'الاسم': t.fullName,
       'رقم الهوية': t.nationalId,
@@ -266,7 +306,6 @@ openNewTraineeModal(): void {
     
     this.isLoading = true;
 
-    // Build filter text
     const filterTexts: string[] = [];
     if (this.genderFilter !== null) {
       const gender = GENDERS.find(g => g.id === this.genderFilter);
@@ -280,10 +319,8 @@ openNewTraineeModal(): void {
     }
     if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
-    // Build table rows
     let tableRows = '';
-    this.dataSource.filteredData.forEach((t: Trainee, index: number) => {
-      const statusClass = t.isActive ? 'active' : 'inactive';
+    this.dataSource.filteredData.forEach((t: TraineeListItem, index: number) => {
       const statusStyle = t.isActive 
         ? 'background-color: #d1fae5; color: #065f46;' 
         : 'background-color: #fee2e2; color: #991b1b;';
@@ -300,7 +337,6 @@ openNewTraineeModal(): void {
       `;
     });
 
-    // Create print container
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -315,64 +351,21 @@ openNewTraineeModal(): void {
         <title>قائمة المتدربين</title>
         <style>
           * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-          @media print {
-            body { margin: 0; padding: 20px; }
-            .no-print { display: none; }
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-          }
+          @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
+          .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; }
           .header h1 { margin: 0; font-size: 24px; }
           .header p { margin: 10px 0 0 0; font-size: 12px; }
-          .filters {
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f3f4f6;
-            border-radius: 8px;
-            font-size: 12px;
-          }
-          .stats {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-            padding: 16px;
-            background: #f9fafb;
-            border-radius: 8px;
-          }
-          .stat-item {
-            flex: 1;
-            text-align: center;
-          }
+          .filters { margin-bottom: 20px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; }
+          .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
+          .stat-item { flex: 1; text-align: center; }
           .stat-label { font-size: 12px; color: #6b7280; }
           .stat-value { font-size: 20px; font-weight: bold; color: #667eea; }
           .stat-value.active { color: #10b981; }
           .stat-value.inactive { color: #f59e0b; }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            direction: rtl;
-          }
-          th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-            font-weight: bold;
-          }
+          table { width: 100%; border-collapse: collapse; direction: rtl; }
+          th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
           td { padding: 8px; border: 1px solid #ddd; }
-          .footer {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 10px;
-            color: #666;
-          }
+          .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
         </style>
       </head>
       <body>
@@ -383,41 +376,19 @@ openNewTraineeModal(): void {
         </div>
         ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
         <div class="stats">
-          <div class="stat-item">
-            <div class="stat-value">${this.allTrainees.length}</div>
-            <div class="stat-label">إجمالي المتدربين</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value active">${this.activeCount}</div>
-            <div class="stat-label">نشط</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value inactive">${this.inactiveCount}</div>
-            <div class="stat-label">غير نشط</div>
-          </div>
+          <div class="stat-item"><div class="stat-value">${this.allTrainees.length}</div><div class="stat-label">إجمالي المتدربين</div></div>
+          <div class="stat-item"><div class="stat-value active">${this.activeCount}</div><div class="stat-label">نشط</div></div>
+          <div class="stat-item"><div class="stat-value inactive">${this.inactiveCount}</div><div class="stat-label">غير نشط</div></div>
         </div>
         <table>
           <thead>
-            <tr>
-              <th>#</th>
-              <th>الاسم</th>
-              <th>رقم الهوية</th>
-              <th>السنة الدراسية</th>
-              <th>الجنس</th>
-              <th>الحالة</th>
-            </tr>
+            <tr><th>#</th><th>الاسم</th><th>رقم الهوية</th><th>السنة الدراسية</th><th>الجنس</th><th>الحالة</th></tr>
           </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
+          <tbody>${tableRows}</tbody>
         </table>
-        <div class="footer">
-          تم التصدير من نظام إدارة الأكاديمية الأولمبية
-        </div>
+        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
-          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">
-            🖨️ طباعة / حفظ كـ PDF
-          </button>
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
       </body>
       </html>
@@ -432,9 +403,7 @@ openNewTraineeModal(): void {
     } else {
       document.body.appendChild(printContainer);
       window.print();
-      setTimeout(() => {
-        document.body.removeChild(printContainer);
-      }, 500);
+      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
       this.isLoading = false;
       this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
     }

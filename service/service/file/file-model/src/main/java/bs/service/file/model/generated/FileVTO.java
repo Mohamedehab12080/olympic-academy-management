@@ -1,15 +1,18 @@
 package bs.service.file.model.generated;
 
+import bs.lib.common.model.generated.LookupVTO;
+import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
-import org.springframework.format.annotation.DateTimeFormat;
-import bs.lib.common.model.generated.LookupVTO;
-
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.Objects;
+import org.hibernate.validator.constraints.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * Represents a file with its metadata and version history
@@ -37,7 +40,7 @@ public class FileVTO implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
 
-    private Long createdById;
+    private LightUserVTO createdBy;
 
     public FileVTO id(Long id) {
         this.id = id;
@@ -165,25 +168,25 @@ public class FileVTO implements Serializable {
         this.createdOn = createdOn;
     }
 
-    public FileVTO createdById(Long createdById) {
-        this.createdById = createdById;
+    public FileVTO createdBy(LightUserVTO createdBy) {
+        this.createdBy = createdBy;
         return this;
     }
 
     /**
-     * Get createdById
+     * Get createdBy
      *
-     * @return createdById
+     * @return createdBy
      */
-
-    @Schema(name = "createdById", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("createdById")
-    public Long getCreatedById() {
-        return createdById;
+    @Valid
+    @Schema(name = "createdBy", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("createdBy")
+    public LightUserVTO getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreatedById(Long createdById) {
-        this.createdById = createdById;
+    public void setCreatedBy(LightUserVTO createdBy) {
+        this.createdBy = createdBy;
     }
 
     @Override
@@ -199,12 +202,12 @@ public class FileVTO implements Serializable {
                 && Objects.equals(this.domain, fileVTO.domain) && Objects.equals(this.extension, fileVTO.extension)
                 && Objects.equals(this.lastVersion, fileVTO.lastVersion)
                 && Objects.equals(this.createdOn, fileVTO.createdOn)
-                && Objects.equals(this.createdById, fileVTO.createdById);
+                && Objects.equals(this.createdBy, fileVTO.createdBy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fid, domain, extension, lastVersion, createdOn, createdById);
+        return Objects.hash(id, fid, domain, extension, lastVersion, createdOn, createdBy);
     }
 
     @Override
@@ -217,7 +220,7 @@ public class FileVTO implements Serializable {
         sb.append("    extension: ").append(toIndentedString(extension)).append("\n");
         sb.append("    lastVersion: ").append(toIndentedString(lastVersion)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
-        sb.append("    createdById: ").append(toIndentedString(createdById)).append("\n");
+        sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("}");
         return sb.toString();
     }

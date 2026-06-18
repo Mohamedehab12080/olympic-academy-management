@@ -169,6 +169,7 @@ export interface EmployeeListItem {
   id: number;
   fullName: string;
   nationalId: string;
+  imageUrl:string;
   gender: LookupVTO;
   employeeType: LookupVTO;
   hireDate: string;

@@ -4,15 +4,16 @@ import { LookupVTO, LightUserVTO } from './common.model';
 
 export interface CourseType {
   id: number;
-  title: string; // "تأهيل" أو "تدريب"
+  title: string;     // Arabic title "تأهيل" أو "تدريب"
+  value: string;     // Enum constant "QUALIFICATION" or "TRAINING"
 }
 
 export const COURSE_TYPES: CourseType[] = [
-  { id: 1, title: 'تأهيل' },
-  { id: 2, title: 'تدريب' }
+  { id: 1, title: 'تأهيل', value: 'QUALIFICATION' },
+  { id: 2, title: 'تدريب', value: 'TRAINING' }
 ];
 
-// ==================== DTOs (sent to backend - use enum objects with id and title) ====================
+// ==================== DTOs (sent to backend - use string for enum) ====================
 
 export interface CourseDTO {
   title: string;
@@ -23,7 +24,7 @@ export interface CourseDTO {
   startDate: string;
   endDate?: string;
   imageUrl?: string;
-  courseType: CourseType;  // { id: number; title: string }
+  courseType: string;  // Send enum constant: "QUALIFICATION" or "TRAINING"
   price: number;
 }
 

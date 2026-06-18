@@ -1,10 +1,10 @@
 package bs.service.file.repository;
 
+import bs.lib.security.api.service.SecurityUtilsService;
+import bs.service.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import bs.lib.session.api.service.RequestContext;
-import bs.lib.session.model.enums.CommonRequestContextKeys;
 import bs.service.file.api.repository.FileVersionRepository;
 import bs.service.file.model.entity.FlFileVersion;
 import bs.service.file.model.filter.FileVersionSearchFilter;
@@ -19,14 +19,14 @@ import java.util.List;
 public class FileVersionRepositoryImpl implements FileVersionRepository {
 
     private final FileJPAVersionRepository versionRepository;
-    private final RequestContext context;
+    private final SecurityUtilsService securityUtilsService;
     private final FileVersionQueryBuilder fileVersionQueryBuilder;
 
     @Override
     @Transactional
     public FlFileVersion insert(FlFileVersion flFileVersion) {
-        Long currentId=context.get(CommonRequestContextKeys.USER_ID, Long.class);
-        flFileVersion.setCreatedById(currentId);
+        User currentUser = User.builder().id(securityUtilsService.getCurrentUserId()).build();
+        flFileVersion.setCreatedBy(currentUser);
         flFileVersion.setCreatedOn(LocalDateTime.now());
         return versionRepository.save(flFileVersion);
     }

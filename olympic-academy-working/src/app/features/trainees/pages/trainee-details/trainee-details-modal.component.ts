@@ -1,4 +1,6 @@
-import { Component, Inject } from '@angular/core';
+// trainee-details-modal.component.ts
+
+import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,9 +9,13 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { TraineeVTO, TraineeCertificateVTO, TraineeContactVTO, HealthConditionVTO } from '../../../../core/models/trainee.model';
+import { CommonEnrollmentVTO } from '../../../../core/models/common.model';
 import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-modal.component';
+import { FileService } from '../../../../core/services/file.service';
+import * as JsBarcode from 'jsbarcode';
 
 @Component({
   selector: 'app-trainee-details-modal',
@@ -22,7 +28,8 @@ import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-
     MatDividerModule,
     MatChipsModule,
     MatTabsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatTableModule
   ],
   template: `
     <div class="modal-container" dir="rtl">
@@ -47,11 +54,11 @@ import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-
       <!-- Main Profile Info -->
       <div class="profile-main" *ngIf="trainee">
         <div class="profile-image">
-          <div class="avatar" *ngIf="!trainee.imageUrl; else profileImage">
+          <div class="avatar" *ngIf="!imageUrl; else profileImage">
             <mat-icon>person</mat-icon>
           </div>
           <ng-template #profileImage>
-            <img [src]="trainee.imageUrl" [alt]="trainee.fullName">
+            <img [src]="imageUrl" [alt]="trainee.fullName">
           </ng-template>
         </div>
 
@@ -233,6 +240,111 @@ import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-
                 <p>لا توجد حالات صحية مسجلة</p>
               </div>
             </ng-template>
+          </div>
+        </mat-tab>
+
+        <!-- Enrollments Tab -->
+        <mat-tab label="التسجيلات">
+          <div class="tab-content">
+            <div class="table-container" *ngIf="enrollments.length > 0; else noEnrollments">
+              <table mat-table [dataSource]="enrollmentsDataSource" class="full-width-table">
+                <!-- Course Column -->
+                <ng-container matColumnDef="course">
+                  <th mat-header-cell *matHeaderCellDef>الدورة</th>
+                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.course?.title }}</td>
+                </ng-container>
+
+                <!-- Trainer Column -->
+                <ng-container matColumnDef="trainer">
+                  <th mat-header-cell *matHeaderCellDef>المدرب</th>
+                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.trainer?.title }}</td>
+                </ng-container>
+
+                <!-- Start Date Column -->
+                <ng-container matColumnDef="startDate">
+                  <th mat-header-cell *matHeaderCellDef>تاريخ البداية</th>
+                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.startDate | date:'dd/MM/yyyy' }}</td>
+                </ng-container>
+
+                <!-- End Date Column -->
+                <ng-container matColumnDef="endDate">
+                  <th mat-header-cell *matHeaderCellDef>تاريخ الانتهاء</th>
+                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.endDate ? (enrollment.endDate | date:'dd/MM/yyyy') : '-' }}</td>
+                </ng-container>
+
+                <!-- Value Column -->
+                <ng-container matColumnDef="value">
+                  <th mat-header-cell *matHeaderCellDef>القيمة</th>
+                  <td mat-cell *matCellDef="let enrollment">
+                    {{ enrollment.finalSubscriptionValue | currency:'EGP' }}
+                  </td>
+                </ng-container>
+
+                <!-- Remaining Column -->
+                <ng-container matColumnDef="remaining">
+                  <th mat-header-cell *matHeaderCellDef>المتبقي</th>
+                  <td mat-cell *matCellDef="let enrollment">
+                    <span [class.zero]="enrollment.remainedSubscriptionValue === 0">
+                      {{ enrollment.remainedSubscriptionValue | currency:'EGP' }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="enrollmentStatus">
+                  <th mat-header-cell *matHeaderCellDef>حالة التسجيل</th>
+                  <td mat-cell *matCellDef="let enrollment">
+                    <span class="status-badge" 
+                          [class.completed]="enrollment.enrollmentStatus?.id === 2"
+                          [class.pending]="enrollment.enrollmentStatus?.id === 1"
+                          [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
+                      {{ enrollment.enrollmentStatus?.title }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <!-- Payment Status Column -->
+                <ng-container matColumnDef="paymentStatus">
+                  <th mat-header-cell *matHeaderCellDef>حالة الدفع</th>
+                  <td mat-cell *matCellDef="let enrollment">
+                    <span class="payment-badge" 
+                          [class.paid]="enrollment.paymentStatus?.id === 2"
+                          [class.pending]="enrollment.paymentStatus?.id === 1">
+                      {{ enrollment.paymentStatus?.title }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="enrollmentsDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: enrollmentsDisplayedColumns;" class="enrollment-row"></tr>
+              </table>
+            </div>
+            <ng-template #noEnrollments>
+              <div class="empty-state">
+                <mat-icon>school</mat-icon>
+                <p>لا توجد تسجيلات لهذا المتدرب</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+
+        <!-- Barcode Tab -->
+        <mat-tab label="بطاقة هوية">
+          <div class="tab-content barcode-tab">
+            <div class="barcode-card">
+              <div class="barcode-header">
+                <mat-icon>qr_code_scanner</mat-icon>
+                <span>بطاقة هوية المتدرب</span>
+              </div>
+              <div class="barcode-container">
+                <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
+                <div class="barcode-number">{{ trainee?.nationalId }}</div>
+              </div>
+              <div class="barcode-info">
+                <span>رقم الهوية: {{ trainee?.nationalId }}</span>
+                <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
           </div>
         </mat-tab>
       </mat-tab-group>
@@ -442,6 +554,73 @@ import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-
       color: #6b7280;
     }
 
+    /* Enrollments Table */
+    .table-container {
+      overflow-x: auto;
+    }
+    .full-width-table {
+      width: 100%;
+    }
+    .full-width-table th {
+      background: #f8fafc;
+      color: #1e293b;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 10px;
+    }
+    .full-width-table td {
+      padding: 8px;
+      font-size: 12px;
+    }
+    .enrollment-row {
+      cursor: default;
+    }
+    .enrollment-row:hover {
+      background: #f8fafc;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-badge.completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .status-badge.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .status-badge.cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .payment-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .payment-badge.paid {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .payment-badge.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .zero {
+      color: #10b981;
+      font-weight: 600;
+    }
+
     /* Empty State */
     .empty-state {
       text-align: center;
@@ -453,6 +632,73 @@ import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-
       width: 48px;
       height: 48px;
       margin-bottom: 12px;
+    }
+
+    /* Barcode Tab */
+    .barcode-tab {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+    }
+
+    .barcode-card {
+      text-align: center;
+      background: #f8fafc;
+      padding: 30px 40px;
+      border-radius: 20px;
+      border: 1px solid rgba(226, 232, 240, 0.5);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .barcode-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .barcode-header mat-icon {
+      color: #667eea;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .barcode-header span {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .barcode-container {
+      margin: 16px 0;
+    }
+
+    .barcode-canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .barcode-number {
+      font-size: 14px;
+      font-weight: 600;
+      color: #667eea;
+      font-family: monospace;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+
+    .barcode-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
     }
 
     /* Modal Actions */
@@ -491,25 +737,104 @@ import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-
       .modal-actions {
         flex-wrap: wrap;
       }
+      .barcode-card {
+        padding: 20px;
+      }
+      .barcode-info {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+      }
     }
   `]
 })
-export class TraineeDetailsModalComponent {
+export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDestroy {
   trainee: TraineeVTO;
   contacts: TraineeContactVTO[] = [];
   certificates: TraineeCertificateVTO[] = [];
   healthConditions: HealthConditionVTO[] = [];
+  enrollments: CommonEnrollmentVTO[] = [];
+  imageUrl: string | null = null;
+  private blobUrl: string | null = null;
+  today = new Date();
+  
+  enrollmentsDataSource = new MatTableDataSource<CommonEnrollmentVTO>([]);
+  enrollmentsDisplayedColumns: string[] = ['course', 'trainer', 'startDate', 'endDate', 'value', 'remaining', 'enrollmentStatus', 'paymentStatus'];
+
+  @ViewChild('barcodeCanvas') barcodeCanvas!: ElementRef<HTMLCanvasElement>;
 
   constructor(
     private dialogRef: MatDialogRef<TraineeDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) private data: TraineeVTO,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private fileService: FileService
   ) {
     this.trainee = data;
     this.contacts = data.contacts || [];
     this.certificates = data.certificates || [];
     this.healthConditions = data.healthConditions || [];
+    this.enrollments = data.enrollments || [];
+    this.enrollmentsDataSource.data = this.enrollments;
+  }
+
+  ngOnInit(): void {
+    this.loadImage();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.generateBarcode();
+    }, 300);
+  }
+
+  ngOnDestroy(): void {
+    if (this.blobUrl) {
+      URL.revokeObjectURL(this.blobUrl);
+    }
+  }
+
+  loadImage(): void {
+    const fid = this.trainee.imageUrl;
+    if (fid && /^\d{15}(\d{3})?$/.test(fid)) {
+      this.fileService.downloadFile(fid).subscribe({
+        next: (blob) => {
+          if (this.blobUrl) {
+            URL.revokeObjectURL(this.blobUrl);
+          }
+          this.blobUrl = URL.createObjectURL(blob);
+          this.imageUrl = this.blobUrl;
+        },
+        error: (error) => {
+          console.error('Failed to load image:', error);
+          this.imageUrl = null;
+        }
+      });
+    } else if (fid) {
+      this.imageUrl = fid;
+    } else {
+      this.imageUrl = null;
+    }
+  }
+
+  generateBarcode(): void {
+    if (this.barcodeCanvas?.nativeElement) {
+      try {
+        (JsBarcode as any)(this.barcodeCanvas.nativeElement, this.trainee?.nationalId?.toString() || '000000', {
+          format: 'CODE128',
+          lineColor: '#000000',
+          width: 1.5,
+          height: 40,
+          displayValue: true,
+          fontSize: 10,
+          font: 'monospace',
+          textAlign: 'center',
+          margin: 5
+        });
+      } catch (error) {
+        console.error('Barcode error:', error);
+      }
+    }
   }
 
   getContactIcon(contactType: string): string {
@@ -526,21 +851,16 @@ export class TraineeDetailsModalComponent {
   }
 
   editTrainee(): void {
-    // Close the current modal first
     this.dialogRef.close();
-    
-    // Open the wizard modal for editing
     const wizardDialogRef = this.dialog.open(TraineeWizardModalComponent, {
       data: { traineeId: this.trainee.id },
       width: '900px',
       maxWidth: '90vw'
     });
     
-    // Reload data when wizard closes
     wizardDialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Refresh the details modal content - this will require re-opening or notifying parent
-        // The parent list component will handle the refresh when the modal closes
+        // Parent will handle refresh
       }
     });
   }
@@ -550,169 +870,78 @@ export class TraineeDetailsModalComponent {
   }
 
   printTraineeDocument(): void {
-    this.generatePrintDocument(this.trainee);
+    this.generateBarcode();
+    setTimeout(() => {
+      const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open('', '_blank', 'width=400,height=600');
+      if (!printWindow) {
+        alert('تعذر فتح نافذة الطباعة');
+        return;
+      }
+
+      const t = this.trainee;
+      const imagePreviewUrl = this.imageUrl || '';
+      const today = new Date().toLocaleDateString('ar-EG');
+
+      printWindow.document.write(`
+        <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+        <title>بطاقة هوية متدرب</title>
+        <style>
+          @page { size: 57mm auto; margin: 0mm; }
+          body { font-family: 'Cairo', sans-serif; width: 57mm; margin: 0; padding: 2mm; background: white; }
+          .thermal-card { width: 55mm; margin: 0 auto; direction: rtl; }
+          .thermal-header { text-align: center; margin-bottom: 3mm; }
+          .thermal-title { font-size: 14px; font-weight: bold; }
+          .thermal-subtitle { font-size: 10px; color: #666; }
+          .thermal-divider { border-top: 1px dashed #ccc; margin: 2mm 0; }
+          .thermal-photo { text-align: center; margin-bottom: 2mm; }
+          .thermal-photo img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+          .thermal-name { font-size: 12px; font-weight: bold; text-align: center; margin-bottom: 1mm; }
+          .thermal-id { font-size: 9px; color: #666; text-align: center; margin-bottom: 2mm; }
+          .thermal-table { width: 100%; font-size: 9px; margin-bottom: 2mm; border-collapse: collapse; }
+          .thermal-table tr { line-height: 1.4; }
+          .thermal-label { text-align: right; padding: 1mm; color: #666; width: 40%; }
+          .thermal-value { text-align: left; padding: 1mm; font-weight: 500; width: 60%; }
+          .thermal-barcode { text-align: center; margin: 2mm 0; }
+          .thermal-barcode img { width: 100%; max-width: 180px; }
+          .thermal-barcode-number { font-size: 9px; font-family: monospace; text-align: center; margin-top: 1mm; }
+          .thermal-footer { display: flex; justify-content: space-between; gap: 3mm; margin-top: 3mm; }
+          .thermal-signature { flex: 1; text-align: center; font-size: 7px; }
+          .thermal-line { border-top: 0.5px solid #000; margin-bottom: 1mm; padding-top: 4mm; }
+        </style>
+        </head>
+        <body>
+        <div class="thermal-card">
+          <div class="thermal-header"><div class="thermal-title">الأكاديمية الأولمبية</div><div class="thermal-subtitle">بطاقة هوية متدرب</div></div>
+          <div class="thermal-photo"><img src="${imagePreviewUrl}" onerror="this.style.display='none'"></div>
+          <div class="thermal-name">${t.fullName || ''}</div>
+          <div class="thermal-id">رقم الهوية: ${t.nationalId || ''}</div>
+          <div class="thermal-divider"></div>
+          <table class="thermal-table">
+            <tr><td class="thermal-label">📅 تاريخ الميلاد</td><td class="thermal-value">${t.birthDate ? new Date(t.birthDate).toLocaleDateString('ar-EG') : '-'}</td></tr>
+            <tr><td class="thermal-label">🧑 الجنس</td><td class="thermal-value">${t.gender?.title || '-'}</td></tr>
+            <tr><td class="thermal-label">📚 السنة الدراسية</td><td class="thermal-value">${t.academicYear || '-'}</td></tr>
+            <tr><td class="thermal-label">📍 العنوان</td><td class="thermal-value">${(t.address || '').substring(0, 25)}</td></tr>
+            <tr><td class="thermal-label">✓ الحالة</td><td class="thermal-value">${t.isActive ? 'نشط' : 'غير نشط'}</td></tr>
+          </table>
+          <div class="thermal-divider"></div>
+          <div class="thermal-barcode"><img src="${barcodeImage}"><div class="thermal-barcode-number">${t.nationalId || ''}</div></div>
+          <div class="thermal-footer"><div class="thermal-signature"><div class="thermal-line"></div><div>توقيع المتدرب</div></div><div class="thermal-signature"><div class="thermal-line"></div><div>ختم الأكاديمية</div></div></div>
+        </div>
+        <script>window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };<\/script>
+        </body></html>
+      `);
+      printWindow.document.close();
+    }, 300);
   }
 
-  generatePrintDocument(trainee: TraineeVTO): void {
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '20px';
-    printContainer.style.backgroundColor = 'white';
-    printContainer.style.maxWidth = '800px';
-    printContainer.style.margin = '0 auto';
-    
-    const today = new Date().toLocaleDateString('ar-EG');
-    
-    printContainer.innerHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>ملف متدرب - ${trainee.fullName}</title>
-        <style>
-          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-          @media print { 
-            body { margin: 0; padding: 20px; } 
-            .no-print { display: none; }
-            .signature-line { border-top: 1px solid #000 !important; }
-          }
-          .profile-container { max-width: 800px; margin: 0 auto; background: white; }
-          .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; }
-          .header h1 { margin: 0; font-size: 24px; }
-          .header p { margin: 10px 0 0 0; font-size: 12px; opacity: 0.9; }
-          .profile-details { display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: #f9fafb; border-radius: 8px; }
-          .photo-section { text-align: center; margin-bottom: 20px; }
-          .trainee-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #667eea; }
-          .placeholder-photo { width: 120px; height: 120px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; margin: 0 auto; border: 3px solid #667eea; font-size: 48px; }
-          h2 { color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 8px; margin-top: 24px; margin-bottom: 16px; font-size: 18px; }
-          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-          .info-item { border-bottom: 1px solid #e5e7eb; padding: 8px 0; }
-          .info-label { font-weight: 600; color: #374151; font-size: 13px; margin-bottom: 4px; }
-          .info-value { color: #1f2937; font-size: 14px; }
-          .contacts-list, .certificates-list, .health-list { margin-top: 16px; }
-          .contact-item, .certificate-item, .health-item { padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
-          .contact-type { font-weight: 600; color: #667eea; min-width: 100px; display: inline-block; }
-          .signature-section { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
-          .signature-box { text-align: center; flex: 1; }
-          .signature-line { width: 100%; border-top: 1px solid #000; margin-top: 40px; padding-top: 8px; }
-          .signature-date { font-size: 10px; color: #6b7280; margin-top: 8px; }
-          .footer { text-align: center; margin-top: 30px; padding: 16px; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
-          @media (max-width: 600px) { 
-            .info-grid { grid-template-columns: 1fr; } 
-            .signature-section { flex-direction: column; align-items: center; gap: 30px; }
-            .signature-box { width: 100%; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="profile-container">
-          <div class="header">
-            <h1>ملف متدرب</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
-          </div>
-          
-          <div class="profile-details">
-            <div><strong>رقم الملف:</strong> #${trainee.id}</div>
-            <div><strong>تاريخ الطباعة:</strong> ${today}</div>
-          </div>
-          
-          <div class="photo-section">
-            ${trainee.imageUrl 
-              ? `<img src="${trainee.imageUrl}" class="trainee-photo" alt="صورة المتدرب">`
-              : `<div class="placeholder-photo">📷</div>`
-            }
-          </div>
-          
-          <h2>📋 المعلومات الشخصية</h2>
-          <div class="info-grid">
-            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${trainee.fullName || '-'}</div></div>
-            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${trainee.nationalId || '-'}</div></div>
-            <div class="info-item"><div class="info-label">تاريخ الميلاد</div><div class="info-value">${trainee.birthDate ? new Date(trainee.birthDate).toLocaleDateString('ar-EG') : '-'}</div></div>
-            <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${trainee.gender?.title || '-'}</div></div>
-            <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${trainee.academicYear || '-'}</div></div>
-            <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${trainee.address || '-'}</div></div>
-          </div>
-          
-          <h2>📞 جهات الاتصال</h2>
-          <div class="contacts-list">
-            ${trainee.contacts?.map((contact: any) => `
-              <div class="contact-item">
-                <span class="contact-type">${contact.contactType?.title}:</span>
-                <span>${contact.contactValue}</span>
-              </div>
-            `).join('') || '<div>- لا توجد جهات اتصال -</div>'}
-          </div>
-          
-          ${trainee.certificates?.length ? `
-          <h2>🎓 الشهادات</h2>
-          <div class="certificates-list">
-            ${trainee.certificates.map((cert: any) => `
-              <div class="certificate-item">
-                <div><strong>${cert.certificateName}</strong></div>
-                <div>رقم الشهادة: ${cert.certificateNumber || '-'}</div>
-                <div>الدورة: ${cert.course?.title || '-'}</div>
-                <div>تاريخ الإصدار: ${cert.issueDate || '-'}</div>
-                <div>الدرجة: ${cert.grade || '-'}</div>
-              </div>
-            `).join('')}
-          </div>
-          ` : ''}
-          
-          ${trainee.healthConditions?.length ? `
-          <h2>🏥 الحالات الصحية</h2>
-          <div class="health-list">
-            ${trainee.healthConditions.map((condition: any) => `
-              <div class="health-item">
-                <div><strong>${condition.title}</strong></div>
-                ${condition.description ? `<div>الوصف: ${condition.description}</div>` : ''}
-                ${condition.medication ? `<div>العلاج: ${condition.medication}</div>` : ''}
-                ${condition.note ? `<div>ملاحظات: ${condition.note}</div>` : ''}
-              </div>
-            `).join('')}
-          </div>
-          ` : ''}
-          
-          <div class="signature-section">
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <div>توقيع المتدرب</div>
-              <div class="signature-date">التاريخ: ___ / ___ / _____</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <div>توقيع ولي الأمر</div>
-              <div class="signature-date">التاريخ: ___ / ___ / _____</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <div>ختم الأكاديمية</div>
-              <div class="signature-date">التاريخ: ___ / ___ / _____</div>
-            </div>
-          </div>
-          
-          <div class="footer">
-            تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>
-            هذا المستند معتمد ويحتوي على جميع بيانات المتدرب
-          </div>
-        </div>
-        <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
-          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">
-            🖨️ طباعة / حفظ كـ PDF
-          </button>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
-    if (printWindow) {
-      printWindow.document.write(printContainer.innerHTML);
-      printWindow.document.close();
-    } else {
-      document.body.appendChild(printContainer);
-      window.print();
-      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
-    }
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

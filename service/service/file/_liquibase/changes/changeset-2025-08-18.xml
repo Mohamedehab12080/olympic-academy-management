@@ -9,9 +9,9 @@
     <changeSet id="4" author="mohamed.ehab">
         <!-- Make audit fields nullable to match entities -->
         <dropNotNullConstraint tableName="fl_file" columnName="created_on" columnDataType="DATETIME"/>
-        <dropNotNullConstraint tableName="fl_file" columnName="created_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="created_by_id" columnDataType="INT"/>
         <dropNotNullConstraint tableName="fl_file" columnName="last_modified_on" columnDataType="DATETIME"/>
-        <dropNotNullConstraint tableName="fl_file" columnName="last_modified_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file" columnName="last_modified_by_id" columnDataType="INT"/>
         <dropNotNullConstraint tableName="fl_file" columnName="domain_id" columnDataType="INT"/>
         <dropNotNullConstraint tableName="fl_file" columnName="fid" columnDataType="VARCHAR(255)"/>
     </changeSet>
@@ -20,7 +20,7 @@
     <changeSet id="5" author="mohamed.ehab">
         <!-- Make audit fields nullable to match entities -->
         <dropNotNullConstraint tableName="fl_domain_config" columnName="last_modified_on" columnDataType="DATETIME"/>
-        <dropNotNullConstraint tableName="fl_domain_config" columnName="last_modified_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_domain_config" columnName="last_modified_by_id" columnDataType="INT"/>
 
 
     </changeSet>
@@ -37,9 +37,7 @@
     <changeSet id="7" author="mohamed.ehab">
         <!-- Make audit fields nullable to match entities -->
         <dropNotNullConstraint tableName="fl_file_version" columnName="created_on" columnDataType="DATETIME"/>
-        <dropNotNullConstraint tableName="fl_file_version" columnName="created_by_id" columnDataType="BIGINT"/>
-        <dropNotNullConstraint tableName="fl_file_version" columnName="last_modified_on" columnDataType="DATETIME"/>
-        <dropNotNullConstraint tableName="fl_file_version" columnName="last_modified_by_id" columnDataType="BIGINT"/>
+        <dropNotNullConstraint tableName="fl_file_version" columnName="created_by_id" columnDataType="INT"/>
         <dropNotNullConstraint tableName="fl_file_version" columnName="version" columnDataType="INT"/>
         <dropNotNullConstraint tableName="fl_file_version" columnName="size" columnDataType="BIGINT"/>
         <dropNotNullConstraint tableName="fl_file_version" columnName="file_id" columnDataType="BIGINT"/>

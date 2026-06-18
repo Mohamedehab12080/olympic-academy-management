@@ -17,10 +17,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CourseService } from '../../../../core/services/course.service';
 import { DepartmentService } from '../../../../core/services/department.service';
-import { EnrollmentService } from '../../../../core/services/enrollment.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { COURSE_TYPES } from '../../../../core/models/course.model';
+import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
 
 @Component({
   selector: 'app-course-wizard-modal',
@@ -202,7 +201,7 @@ import { COURSE_TYPES } from '../../../../core/models/course.model';
                   <mat-card-title>التواريخ والوصف</mat-card-title>
                   <div class="summary-grid">
                     <div><strong>تاريخ البدء:</strong> {{ datesForm.get('startDate')?.value | date:'dd/MM/yyyy' }}</div>
-                    <div><strong>تاريخ الانتهاء:</strong> {{ datesForm.get('endDate')?.value | date:'dd/MM/yyyy' }}</div>
+                    <div><strong>تاريخ الانتهاء:</strong> {{ datesForm.get('endDate')?.value | date:'dd/MM/yyyy'  }}</div>
                     <div class="full-width"><strong>الوصف:</strong> {{ datesForm.get('description')?.value || '-' }}</div>
                   </div>
                 </mat-card>
@@ -428,7 +427,6 @@ export class CourseWizardModalComponent implements OnInit {
     private fb: FormBuilder,
     private courseService: CourseService,
     private departmentService: DepartmentService,
-    private enrollmentService: EnrollmentService,
     private notification: NotificationService
   ) {
     this.isEditMode = !!data?.courseId;
@@ -460,7 +458,11 @@ export class CourseWizardModalComponent implements OnInit {
   }
 
   loadSelectOptions(): void {
-    this.courseTypeOptions = COURSE_TYPES.map(t => ({ value: t, label: t.title }));
+    // Store full course type object for display
+    this.courseTypeOptions = COURSE_TYPES.map(t => ({ 
+      value: t,  // Full object with id, title, and value
+      label: t.title 
+    }));
   }
 
   loadDepartments(): void {
@@ -479,10 +481,29 @@ export class CourseWizardModalComponent implements OnInit {
     this.isLoading = true;
     this.courseService.getCourseById(this.courseId!).subscribe({
       next: (course: any) => {
+        // Find matching course type from the enum constant string or object
+        let courseTypeObj = null;
+        
+        if (course.courseType) {
+          // If backend returns LookupVTO (has id and title)
+          if (typeof course.courseType === 'object' && course.courseType.title) {
+            courseTypeObj = COURSE_TYPES.find(ct => ct.title === course.courseType.title);
+          }
+          // If backend returns string (enum constant like "QUALIFICATION")
+          else if (typeof course.courseType === 'string') {
+            // Try matching by enum value first
+            courseTypeObj = COURSE_TYPES.find(ct => ct.value === course.courseType);
+            // If not found, try matching by title
+            if (!courseTypeObj) {
+              courseTypeObj = COURSE_TYPES.find(ct => ct.title === course.courseType);
+            }
+          }
+        }
+        
         this.basicInfoForm.patchValue({
           title: course.title,
           departmentId: course.department?.id,
-          courseType: course.courseType,
+          courseType: courseTypeObj || null,
           duration: course.duration,
           price: course.price,
           maxCapacity: course.maxCapacity
@@ -511,7 +532,15 @@ export class CourseWizardModalComponent implements OnInit {
 
   getCourseTypeName(): string {
     const courseType = this.basicInfoForm.get('courseType')?.value;
-    return courseType?.title || '-';
+    if (courseType) {
+      if (typeof courseType === 'object') {
+        return courseType.title;
+      }
+      // If it's a string, try to find matching CourseType
+      const found = COURSE_TYPES.find(ct => ct.title === courseType || ct.value === courseType);
+      return found?.title || courseType;
+    }
+    return '-';
   }
 
   printPreview(): void {
@@ -626,18 +655,24 @@ export class CourseWizardModalComponent implements OnInit {
     
     this.isSubmitting = true;
     
-    const courseTypeValue = this.basicInfoForm.get('courseType')?.value;
-    const courseData = {
+    const courseTypeObj = this.basicInfoForm.get('courseType')?.value;
+    
+    // CRITICAL: Send the enum constant (QUALIFICATION or TRAINING)
+    // This matches what your backend expects for CourseTypes enum
+    const courseData: any = {
       title: this.basicInfoForm.get('title')?.value,
+      description: this.datesForm.get('description')?.value || null,
       departmentId: this.basicInfoForm.get('departmentId')?.value,
-      courseType: courseTypeValue,
       duration: this.basicInfoForm.get('duration')?.value,
-      price: this.basicInfoForm.get('price')?.value,
-      maxCapacity: this.basicInfoForm.get('maxCapacity')?.value,
+      maxCapacity: this.basicInfoForm.get('maxCapacity')?.value || null,
       startDate: this.datesForm.get('startDate')?.value,
-      endDate: this.datesForm.get('endDate')?.value,
-      description: this.datesForm.get('description')?.value
+      endDate: this.datesForm.get('endDate')?.value || null,
+      imageUrl: null,
+      courseType: courseTypeObj?.value, // This sends "QUALIFICATION" or "TRAINING"
+      price: this.basicInfoForm.get('price')?.value
     };
+    
+    console.log('Sending course data:', courseData); // Debug: Should show courseType as "QUALIFICATION" or "TRAINING"
     
     if (this.isEditMode && this.courseId) {
       this.courseService.updateCourse(this.courseId, courseData).subscribe({
@@ -661,6 +696,7 @@ export class CourseWizardModalComponent implements OnInit {
         },
         error: (err) => {
           console.error('Create error:', err);
+          console.error('Error details:', err.error);
           this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الدورة');
           this.isSubmitting = false;
         }

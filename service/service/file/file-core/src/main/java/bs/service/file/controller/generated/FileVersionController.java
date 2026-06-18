@@ -5,6 +5,9 @@
  */
 package bs.service.file.controller.generated;
 
+import bs.lib.common.model.vto.ErrorVTO;
+import bs.service.file.model.generated.FileVTO;
+import bs.service.file.model.generated.UploadFileVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -14,20 +17,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import bs.lib.common.model.vto.ErrorVTO;
-import bs.service.file.model.generated.FileVTO;
-import bs.service.file.model.generated.UploadFileVTO;
-
-import java.util.List;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
 @Validated
@@ -47,7 +43,7 @@ public interface FileVersionController {
     @Operation(operationId = "getAllVersions", summary = "Get all versions of a file", description = "Retrieves all versions for a specific file identified by 15-digit fid", tags = {
             "FileVersion" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FileVTO.class))) }),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/files/{fid}/versions", produces = { "application/json" })
 
@@ -68,7 +64,7 @@ public interface FileVersionController {
     @Operation(operationId = "uploadNewVersion", summary = "Upload a new version of a file", description = "Uploads a new version for an existing file identified by fid", tags = {
             "FileVersion" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = UploadFileVTO.class)) }),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.POST, value = "/files/{fid}/versions/upload", produces = {
             "application/json" }, consumes = { "multipart/form-data" })

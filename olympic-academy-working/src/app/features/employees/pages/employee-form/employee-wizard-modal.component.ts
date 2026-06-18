@@ -1,3 +1,5 @@
+// employee-wizard-modal.component.ts
+
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
@@ -21,6 +23,9 @@ import { EmployeeService } from '../../../../core/services/employee.service';
 import { DepartmentService } from '../../../../core/services/department.service';
 import { CourseService } from '../../../../core/services/course.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { FileService } from '../../../../core/services/file.service';
+import {FileDomain} from '../../../../core/models/file.model';
+import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { EMPLOYEE_TYPES, EmployeeDTO } from '../../../../core/models/employee.model';
 import { GENDERS, SALARY_TYPES, CONTACT_TYPES, Gender, ContactType, SalaryType } from '../../../../core/models/common.model';
@@ -47,6 +52,7 @@ import { GENDERS, SALARY_TYPES, CONTACT_TYPES, Gender, ContactType, SalaryType }
     MatChipsModule,
     MatTooltipModule,
     MatTableModule,
+    FileUploadComponent,
     SearchableSelectComponent
   ],
   template: `
@@ -80,22 +86,17 @@ import { GENDERS, SALARY_TYPES, CONTACT_TYPES, Gender, ContactType, SalaryType }
             </ng-template>
             <div class="step-content">
               <form [formGroup]="basicInfoForm">
+                <!-- Image Upload using FileUploadComponent -->
                 <div class="image-upload-section">
-                  <div class="image-preview" *ngIf="imagePreview || employeeImageUrl">
-                    <img [src]="imagePreview || employeeImageUrl" alt="صورة الموظف">
-                    <button mat-icon-button class="remove-image" (click)="removeImage()" type="button">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </div>
-                  <div class="upload-placeholder" *ngIf="!imagePreview && !employeeImageUrl" (click)="fileInput.click()">
-                    <mat-icon>cloud_upload</mat-icon>
-                    <p>اضغط لرفع صورة الموظف</p>
-                  </div>
-                  <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none">
-                  <button mat-stroked-button type="button" (click)="fileInput.click()">
-                    <mat-icon>{{ imagePreview || employeeImageUrl ? 'edit' : 'upload' }}</mat-icon>
-                    {{ imagePreview || employeeImageUrl ? 'تغيير الصورة' : 'رفع صورة' }}
-                  </button>
+                  <label class="upload-label">صورة الموظف</label>
+                  <app-file-upload
+                    [domainId]="FileDomain.EMPLOYEE"
+                    [acceptedTypes]="'image/jpeg,image/png,image/jpg'"
+                    [maxSizeMB]="2"
+                    [label]="'اضغط لرفع صورة الموظف'"
+                    (fileUploaded)="onImageUploaded($event)"
+                    (fileRemoved)="onImageRemoved()">
+                  </app-file-upload>
                 </div>
 
                 <div class="form-grid">
@@ -469,63 +470,17 @@ import { GENDERS, SALARY_TYPES, CONTACT_TYPES, Gender, ContactType, SalaryType }
       width: 100%;
     }
     .image-upload-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
       margin-bottom: 24px;
-      padding: 20px;
+      padding: 16px;
       background: white;
       border-radius: 16px;
       border: 1px solid #e5e7eb;
     }
-    .image-preview {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid #f59e0b;
-    }
-    .image-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .remove-image {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-    }
-    .upload-placeholder {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #f3f4f6;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: 2px dashed #d1d5db;
-      transition: all 0.3s;
-    }
-    .upload-placeholder:hover {
-      background: #e5e7eb;
-      border-color: #f59e0b;
-    }
-    .upload-placeholder mat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      color: #9ca3af;
-    }
-    .upload-placeholder p {
-      margin: 8px 0 0;
-      font-size: 11px;
-      color: #6b7280;
+    .upload-label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 500;
+      color: #374151;
     }
     .financial-cards {
       display: grid;
@@ -655,14 +610,14 @@ export class EmployeeWizardModalComponent implements OnInit {
   salaryTypeOptions: SelectOption[] = [];
   contactTypeOptions: SelectOption[] = [];
   
-  selectedImage: File | null = null;
-  imagePreview: string | null = null;
-  employeeImageUrl: string | null = null;
+  employeeImageFid: string | null = null;  // Store the FID (15 or 18 digits)
   
   isLoading = false;
   isSubmitting = false;
   isEditMode = false;
   employeeId: number | null = null;
+  
+  FileDomain = FileDomain;
   
   get contactsArray() { return this.contactsForm.get('contacts') as FormArray; }
   get selectedDepartments(): any[] {
@@ -677,7 +632,8 @@ export class EmployeeWizardModalComponent implements OnInit {
     private employeeService: EmployeeService,
     private departmentService: DepartmentService,
     private courseService: CourseService,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private fileService: FileService
   ) {
     this.isEditMode = !!data?.employeeId;
     this.employeeId = data?.employeeId || null;
@@ -778,8 +734,9 @@ export class EmployeeWizardModalComponent implements OnInit {
           departmentIds: emp.departments?.map((d: any) => d.id) || []
         });
         
+        // Store the FID (imageUrl from backend is the FID)
         if (emp.imageUrl) {
-          this.employeeImageUrl = emp.imageUrl;
+          this.employeeImageFid = emp.imageUrl;
         }
         
         if (emp.contacts?.length) {
@@ -809,6 +766,17 @@ export class EmployeeWizardModalComponent implements OnInit {
     });
   }
 
+  // File upload handlers - receives FID from FileUploadComponent
+  onImageUploaded(fid: string): void {
+    this.employeeImageFid = fid;  // Store the FID (15 or 18 digit number)
+    this.notification.showSuccess('تم رفع الصورة بنجاح');
+  }
+
+  onImageRemoved(): void {
+    this.employeeImageFid = null;
+    this.notification.showSuccess('تم حذف الصورة');
+  }
+
   addContact(): void {
     this.contactsArray.push(this.fb.group({
       contactType: [null],
@@ -831,60 +799,48 @@ export class EmployeeWizardModalComponent implements OnInit {
     });
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length) {
-      this.selectedImage = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedImage);
-    }
-  }
-
-  removeImage(): void {
-    this.selectedImage = null;
-    this.imagePreview = null;
-    this.employeeImageUrl = null;
-  }
-
-  async uploadImage(): Promise<string | null> {
-    if (!this.selectedImage) return this.employeeImageUrl;
-    
-    const formData = new FormData();
-    formData.append('file', this.selectedImage);
-    
+async printPreview(): Promise<void> {
+  let imagePreviewUrl: string | null = null;
+  
+  // Load image if FID exists
+  if (this.employeeImageFid && /^\d{15}(\d{3})?$/.test(this.employeeImageFid)) {
     try {
-      const response = await this.employeeService.uploadEmployeeImage(formData).toPromise();
-      return response?.imageUrl || null;
+      const blob = await this.fileService.downloadFile(this.employeeImageFid).toPromise();
+      if (blob) {
+        imagePreviewUrl = URL.createObjectURL(blob);
+      }
     } catch (error) {
-      this.notification.showError('حدث خطأ في رفع الصورة');
-      return null;
+      console.error('Failed to load image for print:', error);
     }
   }
-
-  // Print preview method - works for both create and edit modes
-  printPreview(): void {
-    // Collect current form data for preview
-    const previewData = {
-      fullName: this.basicInfoForm.get('fullName')?.value || '-',
-      nationalId: this.basicInfoForm.get('nationalId')?.value || '-',
-      birthDate: this.basicInfoForm.get('birthDate')?.value,
-      gender: this.basicInfoForm.get('gender')?.value,
-      employeeType: this.basicInfoForm.get('employeeType')?.value,
-      hireDate: this.basicInfoForm.get('hireDate')?.value,
-      salary: this.financialForm.get('salary')?.value,
-      remainedSalary: this.financialForm.get('remainedSalary')?.value,
-      salaryType: this.financialForm.get('salaryType')?.value,
-      departments: this.selectedDepartments,
-      contacts: this.getContactsList(),
-      imageUrl: this.imagePreview || this.employeeImageUrl,
-      isNewEmployee: !this.isEditMode
-    };
-    
-    this.generatePrintDocument(previewData);
+  
+  const previewData = {
+    fullName: this.basicInfoForm.get('fullName')?.value || '-',
+    nationalId: this.basicInfoForm.get('nationalId')?.value || '-',
+    birthDate: this.basicInfoForm.get('birthDate')?.value,
+    gender: this.basicInfoForm.get('gender')?.value,
+    employeeType: this.basicInfoForm.get('employeeType')?.value,
+    hireDate: this.basicInfoForm.get('hireDate')?.value,
+    salary: this.financialForm.get('salary')?.value,
+    remainedSalary: this.financialForm.get('remainedSalary')?.value,
+    salaryType: this.financialForm.get('salaryType')?.value,
+    departments: this.selectedDepartments,
+    contacts: this.getContactsList(),
+    imageUrl: imagePreviewUrl,
+    isNewEmployee: !this.isEditMode
+  };
+  
+  this.generatePrintDocument(previewData);
+  
+  // Clean up blob URL - only if imagePreviewUrl is not null
+  if (imagePreviewUrl) {
+    setTimeout(() => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    }, 1000);
   }
+}
 
   generatePrintDocument(data: any): void {
     const printContainer = document.createElement('div');
@@ -969,8 +925,8 @@ export class EmployeeWizardModalComponent implements OnInit {
           
           <h2>📋 المعلومات الشخصية</h2>
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${data.fullName || '-'}</div></div>
-            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${data.nationalId || '-'}</div></div>
+            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${this.escapeHtml(data.fullName) || '-'}</div></div>
+            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${this.escapeHtml(data.nationalId) || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ الميلاد</div><div class="info-value">${data.birthDate ? new Date(data.birthDate).toLocaleDateString('ar-EG') : '-'}</div></div>
             <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${data.gender?.title || '-'}</div></div>
             <div class="info-item"><div class="info-label">نوع الموظف</div><div class="info-value">${data.employeeType?.title || '-'}</div></div>
@@ -986,7 +942,7 @@ export class EmployeeWizardModalComponent implements OnInit {
           
           <h2>🏢 الأقسام</h2>
           <div class="department-chips">
-            ${data.departments?.map((dept: any) => `<span class="dept-chip">${dept.title}</span>`).join('') || '<span>- لا يوجد أقسام مسندة -</span>'}
+            ${data.departments?.map((dept: any) => `<span class="dept-chip">${this.escapeHtml(dept.title)}</span>`).join('') || '<span>- لا يوجد أقسام مسندة -</span>'}
           </div>
           
           <h2>📞 جهات الاتصال</h2>
@@ -994,14 +950,14 @@ export class EmployeeWizardModalComponent implements OnInit {
             ${data.contacts?.map((contact: any) => `
               <div class="contact-item">
                 <span class="contact-type">${contact.contactType?.title}:</span>
-                <span>${contact.contactValue}</span>
+                <span>${this.escapeHtml(contact.contactValue)}</span>
               </div>
             `).join('') || '<span>- لا توجد جهات اتصال -</span>'}
           </div>
           
           <div class="declaration">
             <strong>إقرار:</strong><br>
-            أقر أنا ${data.fullName} بأن جميع البيانات المذكورة أعلاه صحيحة ودقيقة، 
+            أقر أنا ${this.escapeHtml(data.fullName)} بأن جميع البيانات المذكورة أعلاه صحيحة ودقيقة، 
             وأتعهد بالالتزام بجميع لوائح وأنظمة الأكاديمية الأولمبية. 
             كما أقر بحقي في الحصول على الراتب المتفق عليه وفقاً لنوع الراتب المحدد أعلاه.
           </div>
@@ -1050,6 +1006,16 @@ export class EmployeeWizardModalComponent implements OnInit {
     }
   }
 
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async submitEmployee(): Promise<void> {
     if (this.basicInfoForm.invalid) {
       this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
@@ -1057,11 +1023,6 @@ export class EmployeeWizardModalComponent implements OnInit {
     }
     
     this.isSubmitting = true;
-    
-    let imageUrl = this.employeeImageUrl;
-    if (this.selectedImage) {
-      imageUrl = await this.uploadImage();
-    }
     
     const genderObj = this.basicInfoForm.get('gender')?.value;
     const employeeTypeObj = this.basicInfoForm.get('employeeType')?.value;
@@ -1116,8 +1077,10 @@ export class EmployeeWizardModalComponent implements OnInit {
       hireDate: this.basicInfoForm.get('hireDate')?.value,
       departmentIds: this.departmentsForm.get('departmentIds')?.value || [],
       contacts: contactsList,
-      imageUrl: imageUrl || undefined
+      imageUrl: this.employeeImageFid  // Send the FID (not a URL)
     };
+    
+    console.log('Submitting employee data:', formData);
     
     if (this.isEditMode && this.employeeId) {
       this.employeeService.updateEmployee(this.employeeId, formData as any).subscribe({
@@ -1135,6 +1098,7 @@ export class EmployeeWizardModalComponent implements OnInit {
     } else {
       this.employeeService.createEmployee(formData as any).subscribe({
         next: (res: any) => {
+          console.log(formData)
           this.notification.showSuccess('تم إضافة الموظف بنجاح');
           this.dialogRef.close(true);
           this.isSubmitting = false;

@@ -1,3 +1,5 @@
+<!-- enrollment-list.component.html -->
+
 <div class="enrollments-container">
   <mat-card class="main-card">
     <!-- Header Section -->
@@ -18,7 +20,7 @@
         <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث...">
+            <input matInput [(ngModel)]="quickSearch" (ngModelChange)="loadEnrollments()" placeholder="ابحث...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
@@ -73,6 +75,17 @@
             [ngModelOptions]="{standalone: true}"
             class="filter-select">
           </app-searchable-select>
+
+          <!-- Active Status Toggle Filter -->
+          <div class="filter-toggle">
+            <mat-slide-toggle 
+              id="activeToggle"
+              (change)="toggleActiveFilter($event)"
+              color="primary">
+              {{ filters.isActive === true ? 'نشط' : filters.isActive === false ? 'غير نشط' : 'الكل' }}
+            </mat-slide-toggle>
+            <span class="toggle-label">الحالة</span>
+          </div>
 
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ البدء من</mat-label>
@@ -131,17 +144,10 @@
           <p>إجمالي التسجيلات</p>
         </div>
       </div>
-      <div class="stat-card success">
-        <div class="stat-icon">✅</div>
-        <div class="stat-info">
-          <h3>{{ activeEnrollments }}</h3>
-          <p>تسجيلات نشطة</p>
-        </div>
-      </div>
       <div class="stat-card info">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
-          <h3>{{ totalAmount | currency:'EGP' }}</h3>
+          <h3>{{ totalAmount | currency:'EGP':'symbol':'1.0-0' }}</h3>
           <p>إجمالي المبالغ</p>
         </div>
       </div>
@@ -150,6 +156,20 @@
         <div class="stat-info">
           <h3>{{ paidEnrollments }}</h3>
           <p>مدفوع</p>
+        </div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">🟢</div>
+        <div class="stat-info">
+          <h3>{{ isActiveCount }}</h3>
+          <p>نشط</p>
+        </div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-icon">🔴</div>
+        <div class="stat-info">
+          <h3>{{ isInactiveCount }}</h3>
+          <p>غير نشط</p>
         </div>
       </div>
     </div>
@@ -221,6 +241,16 @@
             </td>
           </ng-container>
 
+          <!-- IsActive Column -->
+          <ng-container matColumnDef="isActive">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
+            <td mat-cell *matCellDef="let e">
+              <span class="status-badge" [class.active-status]="e.isActive" [class.inactive-status]="!e.isActive">
+                {{ e.isActive ? 'نشط' : 'غير نشط' }}
+              </span>
+            </td>
+          </ng-container>
+
           <!-- Enrollment Status Column -->
           <ng-container matColumnDef="enrollmentStatus">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>حالة التسجيل</th>
@@ -245,7 +275,7 @@
           <ng-container matColumnDef="amount">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>المبلغ</th>
             <td mat-cell *matCellDef="let e">
-              <span class="amount-value">{{ e.finalSubscriptionValue | currency:'EGP' }}</span>
+              <span class="amount-value">{{ e.finalSubscriptionValue | currency:'EGP':'symbol':'1.0-0' }}</span>
             </td>
           </ng-container>
 

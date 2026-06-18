@@ -217,6 +217,5 @@ components:
         createdOn:
           type: string
           format: date-time
-        createdById:
-          type: integer
-          format: int64
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'

@@ -271,6 +271,95 @@ html, body {
   background-color: #f9fafb;
 }
 
+.enrollment-details-modal-panel {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 24px !important;
+    background: transparent !important;
+  }
+  
+  .mat-mdc-dialog-surface {
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+.cdk-overlay-pane {
+  overflow: visible !important;
+  max-width: 95vw !important;
+  max-height: 85vh !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.cdk-overlay-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 16px 24px !important;
+  margin-bottom: 0 !important;
+}
+
+.enrollment-details-modal-panel {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    overflow: visible !important;
+    border-radius: 24px !important;
+    background: transparent !important;
+  }
+  
+  .mat-mdc-dialog-surface {
+    border-radius: 24px !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+.enrollment-wizard-modal-panel {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    overflow: visible !important;
+    border-radius: 24px !important;
+  }
+  
+  .mat-mdc-dialog-surface {
+    border-radius: 24px !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+}
+
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 24px !important;
+  padding: 0 !important;
+}
+
+.cdk-overlay-pane {
+  overflow: visible !important;
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+.mat-mdc-dialog-content {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.cdk-overlay-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;

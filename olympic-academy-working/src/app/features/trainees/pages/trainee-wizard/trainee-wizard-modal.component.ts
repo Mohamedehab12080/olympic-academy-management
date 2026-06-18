@@ -1,3 +1,5 @@
+// trainee-wizard-modal.component.ts
+
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
@@ -20,8 +22,12 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { TraineeService } from '../../../../core/services/trainee.service';
 import { CourseService } from '../../../../core/services/course.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { FileService } from '../../../../core/services/file.service';
+import { FileDomain } from '../../../../core/models/file.model';
+import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
+import { GENDERS, CONTACT_TYPES, ContactType } from '../../../../core/models/common.model';
+import { TraineeContactDTO } from '../../../../core/models/trainee.model';
 
 @Component({
   selector: 'app-trainee-wizard-modal',
@@ -45,6 +51,7 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
     MatChipsModule,
     MatTooltipModule,
     MatSlideToggleModule,
+    FileUploadComponent,
     SearchableSelectComponent
   ],
   template: `
@@ -81,23 +88,17 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
             </ng-template>
             <div class="step-content">
               <form [formGroup]="basicInfoForm">
-                <!-- Image Upload -->
+                <!-- Image Upload using FileUploadComponent -->
                 <div class="image-upload-section">
-                  <div class="image-preview" *ngIf="imagePreview || traineeImageUrl">
-                    <img [src]="imagePreview || traineeImageUrl" alt="صورة المتدرب">
-                    <button mat-icon-button class="remove-image" (click)="removeImage()" type="button">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </div>
-                  <div class="upload-placeholder" *ngIf="!imagePreview && !traineeImageUrl" (click)="fileInput.click()">
-                    <mat-icon>cloud_upload</mat-icon>
-                    <p>اضغط لرفع صورة المتدرب</p>
-                  </div>
-                  <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none">
-                  <button mat-stroked-button type="button" (click)="fileInput.click()">
-                    <mat-icon>{{ imagePreview || traineeImageUrl ? 'edit' : 'upload' }}</mat-icon>
-                    {{ imagePreview || traineeImageUrl ? 'تغيير الصورة' : 'رفع صورة' }}
-                  </button>
+                  <label class="upload-label">صورة المتدرب</label>
+                  <app-file-upload
+                    [domainId]="FileDomain.TRAINEE"
+                    [acceptedTypes]="'image/jpeg,image/png,image/jpg'"
+                    [maxSizeMB]="2"
+                    [label]="'اضغط لرفع صورة المتدرب'"
+                    (fileUploaded)="onImageUploaded($event)"
+                    (fileRemoved)="onImageRemoved()">
+                  </app-file-upload>
                 </div>
 
                 <div class="form-grid">
@@ -180,15 +181,17 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
                       (ngModelChange)="contact.get('contactType')?.setValue($event)"
                       label="نوع جهة الاتصال"
                       [options]="contactTypeOptions"
+                      [required]="true"
                       [ngModelOptions]="{standalone: true}">
                     </app-searchable-select>
 
                     <mat-form-field appearance="outline" class="contact-value">
                       <mat-label>القيمة</mat-label>
                       <input matInput formControlName="contactValue" placeholder="مثال: 05xxxxxxxx">
+                      <mat-error *ngIf="contact.get('contactValue')?.hasError('required')">القيمة مطلوبة</mat-error>
                     </mat-form-field>
 
-                    <button mat-icon-button color="warn" (click)="removeContact(i)" type="button" matTooltip="حذف">
+                    <button mat-icon-button color="warn" (click)="removeContact(i)" type="button" matTooltip="حذف" *ngIf="contactsArray.length > 1">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
@@ -220,12 +223,12 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
               <form [formGroup]="certificatesForm">
                 <div formArrayName="certificates">
                   <div *ngFor="let cert of certificatesArray.controls; let i=index" [formGroupName]="i" class="certificate-row">
-                    <mat-form-field appearance="outline" class="cert-name">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>اسم الشهادة</mat-label>
                       <input matInput formControlName="certificateName">
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="cert-number">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>رقم الشهادة</mat-label>
                       <input matInput formControlName="certificateNumber">
                     </mat-form-field>
@@ -238,14 +241,14 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
                       [ngModelOptions]="{standalone: true}">
                     </app-searchable-select>
 
-                    <mat-form-field appearance="outline" class="cert-date">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>تاريخ الإصدار</mat-label>
                       <input matInput [matDatepicker]="issuePicker" formControlName="issueDate">
                       <mat-datepicker-toggle matSuffix [for]="issuePicker"></mat-datepicker-toggle>
                       <mat-datepicker #issuePicker></mat-datepicker>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="cert-grade">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>الدرجة</mat-label>
                       <input matInput formControlName="grade">
                     </mat-form-field>
@@ -282,22 +285,22 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
               <form [formGroup]="healthConditionsForm">
                 <div formArrayName="healthConditions">
                   <div *ngFor="let condition of healthConditionsArray.controls; let i=index" [formGroupName]="i" class="condition-row">
-                    <mat-form-field appearance="outline" class="condition-title">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>العنوان</mat-label>
                       <input matInput formControlName="title">
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="condition-desc">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>الوصف</mat-label>
                       <input matInput formControlName="description">
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="condition-med">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>العلاج</mat-label>
                       <input matInput formControlName="medication">
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="condition-note">
+                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>ملاحظات</mat-label>
                       <input matInput formControlName="note">
                     </mat-form-field>
@@ -414,7 +417,6 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       flex-direction: column;
     }
 
-    /* Header */
     .wizard-header {
       flex-shrink: 0;
       display: flex;
@@ -424,34 +426,39 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
+
     .header-title {
       display: flex;
       align-items: center;
       gap: 12px;
     }
+
     .header-title mat-icon {
       font-size: 28px;
       width: 28px;
       height: 28px;
     }
+
     .wizard-header h2 {
       margin: 0;
       font-size: 22px;
       font-weight: 600;
     }
+
     .header-actions {
       display: flex;
       gap: 8px;
     }
+
     .close-btn {
       color: white;
       transition: transform 0.2s;
     }
+
     .close-btn:hover {
       transform: scale(1.1);
     }
 
-    /* Stepper Container */
     .stepper-container {
       flex: 1;
       overflow-y: auto;
@@ -469,6 +476,7 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       align-items: center;
       gap: 8px;
     }
+
     .step-label mat-icon {
       font-size: 18px;
       width: 18px;
@@ -492,6 +500,7 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       bottom: 0;
       z-index: 10;
     }
+
     .step-actions button {
       display: flex;
       align-items: center;
@@ -499,7 +508,6 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       padding: 8px 24px;
     }
 
-    /* Form Layout */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -510,7 +518,21 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       width: 100%;
     }
 
-    /* Status Toggle */
+    .image-upload-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .upload-label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 500;
+      color: #374151;
+    }
+
     .status-toggle {
       margin-top: 16px;
       padding: 16px;
@@ -520,6 +542,7 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       justify-content: space-between;
       align-items: center;
     }
+
     .toggle-label {
       display: flex;
       align-items: center;
@@ -527,9 +550,11 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       font-weight: 500;
       color: #374151;
     }
+
     .toggle-label mat-icon {
       color: #667eea;
     }
+
     .toggle-status {
       padding: 4px 12px;
       border-radius: 20px;
@@ -538,73 +563,12 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       background: #fee2e2;
       color: #991b1b;
     }
+
     .toggle-status.active {
       background: #d1fae5;
       color: #065f46;
     }
 
-    /* Image Upload */
-    .image-upload-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 20px;
-      background: white;
-      border-radius: 16px;
-      border: 1px solid #e5e7eb;
-    }
-    .image-preview {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid #667eea;
-    }
-    .image-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .remove-image {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-    }
-    .upload-placeholder {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #f3f4f6;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border: 2px dashed #d1d5db;
-      transition: all 0.3s;
-    }
-    .upload-placeholder:hover {
-      background: #e5e7eb;
-      border-color: #667eea;
-    }
-    .upload-placeholder mat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      color: #9ca3af;
-    }
-    .upload-placeholder p {
-      margin: 8px 0 0;
-      font-size: 11px;
-      color: #6b7280;
-    }
-
-    /* Contacts */
     .contact-row {
       display: grid;
       grid-template-columns: 200px 1fr auto;
@@ -612,69 +576,51 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       align-items: center;
       margin-bottom: 16px;
     }
+
     .contact-value {
       width: 100%;
     }
-    .add-contact-btn {
+
+    .add-contact-btn, .add-cert-btn, .add-condition-btn {
       margin-top: 16px;
     }
 
-    /* Certificates */
-    .certificate-row {
+    .certificate-row, .condition-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1.5fr 1fr 1fr auto;
       gap: 12px;
       align-items: center;
       margin-bottom: 16px;
     }
-    .cert-name, .cert-number, .cert-course, .cert-date, .cert-grade {
-      width: 100%;
-    }
-    .add-cert-btn {
-      margin-top: 16px;
-    }
 
-    /* Health Conditions */
-    .condition-row {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr 1fr 1.5fr auto;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .condition-title, .condition-desc, .condition-med, .condition-note {
-      width: 100%;
-    }
-    .add-condition-btn {
-      margin-top: 16px;
-    }
-
-    /* Summary Section */
     .summary-section {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
+
     .summary-card {
       padding: 16px;
     }
+
     .summary-card mat-card-title {
       font-size: 16px;
       font-weight: 600;
       color: #667eea;
       margin-bottom: 12px;
     }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
+
     .summary-item {
       padding: 4px 0;
       border-bottom: 1px solid #f3f4f6;
     }
 
-    /* Loading Overlay */
     .loading-overlay {
       position: absolute;
       top: 0;
@@ -691,7 +637,6 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       z-index: 1000;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .wizard-container {
         min-width: 90vw;
@@ -700,16 +645,7 @@ import { GENDERS, CONTACT_TYPES } from '../../../../core/models/common.model';
       .form-grid {
         grid-template-columns: 1fr;
       }
-      .contact-row {
-        grid-template-columns: 1fr;
-      }
-      .certificate-row {
-        grid-template-columns: 1fr;
-      }
-      .condition-row {
-        grid-template-columns: 1fr;
-      }
-      .summary-grid {
+      .contact-row, .certificate-row, .condition-row {
         grid-template-columns: 1fr;
       }
       .step-actions {
@@ -730,20 +666,19 @@ export class TraineeWizardModalComponent implements OnInit {
   certificatesForm: FormGroup;
   healthConditionsForm: FormGroup;
   
-  courses: any[] = [];
-  
   genderOptions: SelectOption[] = [];
   contactTypeOptions: SelectOption[] = [];
   courseOptions: SelectOption[] = [];
   
-  selectedImage: File | null = null;
-  imagePreview: string | null = null;
-  traineeImageUrl: string | null = null;
+  traineeImageFid: string | null = null;
+  createdTraineeId: number | null = null;
   
   isLoading = false;
   isSubmitting = false;
   isEditMode = false;
   traineeId: number | null = null;
+  
+  FileDomain = FileDomain;
   
   get contactsArray() { return this.contactsForm.get('contacts') as FormArray; }
   get certificatesArray() { return this.certificatesForm.get('certificates') as FormArray; }
@@ -755,7 +690,8 @@ export class TraineeWizardModalComponent implements OnInit {
     private fb: FormBuilder,
     private traineeService: TraineeService,
     private courseService: CourseService,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private fileService: FileService
   ) {
     this.isEditMode = !!data?.traineeId;
     this.traineeId = data?.traineeId || null;
@@ -767,7 +703,7 @@ export class TraineeWizardModalComponent implements OnInit {
       birthDate: [''],
       gender: [null],
       address: [''],
-      isActive: [true]  // Default to active for new trainees
+      isActive: [true]
     });
     
     this.contactsForm = this.fb.group({
@@ -801,8 +737,7 @@ export class TraineeWizardModalComponent implements OnInit {
   loadCourses(): void {
     this.courseService.getAllCourses().subscribe({
       next: (res: any) => {
-        this.courses = res.items || [];
-        this.courseOptions = this.courses.map(c => ({ value: c.id, label: c.title }));
+        this.courseOptions = (res.items || []).map((c: any) => ({ value: c.id, label: c.title }));
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل الدورات');
@@ -810,94 +745,100 @@ export class TraineeWizardModalComponent implements OnInit {
     });
   }
 
- loadTraineeData(): void {
-  this.isLoading = true;
-  this.traineeService.getTraineeById(this.traineeId!).subscribe({
-    next: (t: any) => {
-      // Convert backend enum strings back to objects with id and title
-      let genderObj = null;
-      if (t.gender) {
-        genderObj = t.gender === 'MALE' ? GENDERS.find(g => g.id === 1) : GENDERS.find(g => g.id === 2);
-      }
-      
-      this.basicInfoForm.patchValue({
-        fullName: t.fullName,
-        nationalId: t.nationalId,
-        academicYear: t.academicYear,
-        birthDate: t.birthDate,
-        gender: genderObj,
-        address: t.address,
-        isActive: t.isActive !== undefined ? t.isActive : true
-      });
-      
-      if (t.imageUrl) {
-        this.traineeImageUrl = t.imageUrl;
-      }
-      
-      // Load contacts - convert contactType enum strings back to objects
-      if (t.contacts?.length) {
-        while (this.contactsArray.length) this.contactsArray.removeAt(0);
-        t.contacts.forEach((c: any) => {
-          let contactTypeObj = null;
-          if (c.contactType) {
-            switch(c.contactType) {
-              case 'EMAIL':
-                contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 1);
-                break;
-              case 'PHONE':
-                contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 2);
-                break;
-              default:
-                contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 2);
+  loadTraineeData(): void {
+    this.isLoading = true;
+    this.traineeService.getTraineeById(this.traineeId!).subscribe({
+      next: (t: any) => {
+        let genderObj = null;
+        if (t.gender) {
+          genderObj = t.gender === 'MALE' ? GENDERS.find(g => g.id === 1) : GENDERS.find(g => g.id === 2);
+        }
+        
+        this.basicInfoForm.patchValue({
+          fullName: t.fullName,
+          nationalId: t.nationalId,
+          academicYear: t.academicYear,
+          birthDate: t.birthDate,
+          gender: genderObj,
+          address: t.address,
+          isActive: t.isActive !== undefined ? t.isActive : true
+        });
+        
+        if (t.imageUrl) {
+          this.traineeImageFid = t.imageUrl;
+        }
+        
+        if (t.contacts?.length) {
+          while (this.contactsArray.length) this.contactsArray.removeAt(0);
+          t.contacts.forEach((c: any) => {
+            let contactTypeObj = null;
+            if (c.contactType) {
+              switch(c.contactType) {
+                case 'EMAIL':
+                  contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 1);
+                  break;
+                case 'PHONE':
+                  contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 2);
+                  break;
+                default:
+                  contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 2);
+              }
             }
-          }
-          this.contactsArray.push(this.fb.group({
-            contactType: [contactTypeObj],
-            contactValue: [c.contactValue]
-          }));
-        });
+            this.contactsArray.push(this.fb.group({
+              contactType: [contactTypeObj, Validators.required],
+              contactValue: [c.contactValue, Validators.required]
+            }));
+          });
+        }
+        
+        if (t.certificates?.length) {
+          while (this.certificatesArray.length) this.certificatesArray.removeAt(0);
+          t.certificates.forEach((c: any) => {
+            this.certificatesArray.push(this.fb.group({
+              certificateName: [c.certificateName],
+              certificateNumber: [c.certificateNumber],
+              courseId: [c.course?.id],
+              issueDate: [c.issueDate],
+              grade: [c.grade]
+            }));
+          });
+        }
+        
+        if (t.healthConditions?.length) {
+          while (this.healthConditionsArray.length) this.healthConditionsArray.removeAt(0);
+          t.healthConditions.forEach((h: any) => {
+            this.healthConditionsArray.push(this.fb.group({
+              title: [h.title],
+              description: [h.description],
+              medication: [h.medication],
+              note: [h.note]
+            }));
+          });
+        }
+        
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
+        this.isLoading = false;
       }
-      
-      // Load certificates
-      if (t.certificates?.length) {
-        while (this.certificatesArray.length) this.certificatesArray.removeAt(0);
-        t.certificates.forEach((c: any) => {
-          this.certificatesArray.push(this.fb.group({
-            certificateName: [c.certificateName],
-            certificateNumber: [c.certificateNumber],
-            courseId: [c.course?.id],
-            issueDate: [c.issueDate],
-            grade: [c.grade]
-          }));
-        });
-      }
-      
-      // Load health conditions
-      if (t.healthConditions?.length) {
-        while (this.healthConditionsArray.length) this.healthConditionsArray.removeAt(0);
-        t.healthConditions.forEach((h: any) => {
-          this.healthConditionsArray.push(this.fb.group({
-            title: [h.title],
-            description: [h.description],
-            medication: [h.medication],
-            note: [h.note]
-          }));
-        });
-      }
-      
-      this.isLoading = false;
-    },
-    error: () => {
-      this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
-      this.isLoading = false;
-    }
-  });
-}
+    });
+  }
+
+  onImageUploaded(fid: string): void {
+    this.traineeImageFid = fid;
+    this.notification.showSuccess('تم رفع الصورة بنجاح');
+  }
+
+  onImageRemoved(): void {
+    this.traineeImageFid = null;
+    this.notification.showSuccess('تم حذف الصورة');
+  }
 
   addContact(): void {
     this.contactsArray.push(this.fb.group({
-      contactType: [null],
-      contactValue: ['']
+      contactType: [null, Validators.required],
+      contactValue: ['', Validators.required]
     }));
   }
 
@@ -933,84 +874,79 @@ export class TraineeWizardModalComponent implements OnInit {
   }
 
   getContactsList(): any[] {
-    return this.contactsArray.value.filter((c: any) => c.contactType && c.contactValue);
+    const contacts = this.contactsArray.value;
+    return contacts.filter((c: any) => c.contactType && c.contactValue && c.contactValue.trim() !== '');
   }
 
   getCertificatesList(): any[] {
-    return this.certificatesArray.value.filter((c: any) => c.certificateName);
+    return this.certificatesArray.value.filter((c: any) => c.certificateName && c.certificateName.trim() !== '');
   }
 
   getHealthConditionsList(): any[] {
-    return this.healthConditionsArray.value.filter((h: any) => h.title);
+    return this.healthConditionsArray.value.filter((h: any) => h.title && h.title.trim() !== '');
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length) {
-      this.selectedImage = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(this.selectedImage);
-    }
-  }
-
-  removeImage(): void {
-    this.selectedImage = null;
-    this.imagePreview = null;
-    this.traineeImageUrl = null;
-  }
-
-  async uploadImage(): Promise<string | null> {
-    if (!this.selectedImage) return this.traineeImageUrl;
+  async printPreview(): Promise<void> {
+    let imagePreviewUrl: string | null = null;
     
-    const formData = new FormData();
-    formData.append('file', this.selectedImage);
-    
-    try {
-      const response = await this.traineeService.uploadTraineeImage(formData).toPromise();
-      return response?.imageUrl || null;
-    } catch (error) {
-      this.notification.showError('حدث خطأ في رفع الصورة');
-      return null;
+    if (this.traineeImageFid) {
+      try {
+        const blob = await this.fileService.downloadFile(this.traineeImageFid).toPromise();
+        if (blob) {
+          imagePreviewUrl = URL.createObjectURL(blob);
+        }
+      } catch (error) {
+        console.error('Failed to load image for preview:', error);
+        this.notification.showWarning('تعذر تحميل الصورة للطباعة');
+      }
     }
-  }
-
-  printPreview(): void {
+    
     const previewData = {
-      ...this.basicInfoForm.value,
+      fullName: this.basicInfoForm.get('fullName')?.value,
+      nationalId: this.basicInfoForm.get('nationalId')?.value,
+      academicYear: this.basicInfoForm.get('academicYear')?.value,
+      birthDate: this.basicInfoForm.get('birthDate')?.value,
+      gender: this.basicInfoForm.get('gender')?.value,
+      address: this.basicInfoForm.get('address')?.value,
+      isActive: this.basicInfoForm.get('isActive')?.value,
       contacts: this.getContactsList(),
       certificates: this.getCertificatesList(),
       healthConditions: this.getHealthConditionsList(),
-      imageUrl: this.imagePreview || this.traineeImageUrl,
+      imageUrl: imagePreviewUrl,
       isNewTrainee: !this.isEditMode,
       id: this.traineeId || 'جديد'
     };
+    
     this.generatePrintDocument(previewData);
+    
+    if (imagePreviewUrl) {
+      setTimeout(() => {
+        if (imagePreviewUrl) {
+          URL.revokeObjectURL(imagePreviewUrl);
+        }
+      }, 1000);
+    }
   }
 
   generatePrintDocument(data: any): void {
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '20px';
-    printContainer.style.backgroundColor = 'white';
-    printContainer.style.maxWidth = '800px';
-    printContainer.style.margin = '0 auto';
+    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
+    }
     
     const today = new Date().toLocaleDateString('ar-EG');
     
-    printContainer.innerHTML = `
+    printWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>ملف متدرب - ${data.fullName || 'جديد'}</title>
+        <title>ملف متدرب - ${this.escapeHtml(data.fullName) || 'جديد'}</title>
         <style>
           * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
           @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
-          .profile-container { max-width: 800px; margin: 0 auto; background: white; }
+          .profile-container { max-width: 800px; margin: 0 auto; background: white; direction: rtl; }
           .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; }
           .header h1 { margin: 0; font-size: 24px; }
           .header p { margin: 10px 0 0 0; font-size: 12px; opacity: 0.9; }
@@ -1047,12 +983,12 @@ export class TraineeWizardModalComponent implements OnInit {
           </div>
           <h2>📋 المعلومات الشخصية</h2>
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${data.fullName || '-'}</div></div>
-            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${data.nationalId || '-'}</div></div>
+            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${this.escapeHtml(data.fullName) || '-'}</div></div>
+            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${this.escapeHtml(data.nationalId) || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ الميلاد</div><div class="info-value">${data.birthDate ? new Date(data.birthDate).toLocaleDateString('ar-EG') : '-'}</div></div>
             <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${data.gender?.title || '-'}</div></div>
-            <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${data.academicYear || '-'}</div></div>
-            <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${data.address || '-'}</div></div>
+            <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${this.escapeHtml(data.academicYear) || '-'}</div></div>
+            <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${this.escapeHtml(data.address) || '-'}</div></div>
             ${!data.isNewTrainee ? `<div class="info-item"><div class="info-label">الحالة</div><div class="info-value">${data.isActive ? 'نشط' : 'غير نشط'}</div></div>` : ''}
           </div>
           <div class="signature-section">
@@ -1067,114 +1003,149 @@ export class TraineeWizardModalComponent implements OnInit {
         </div>
       </body>
       </html>
-    `;
+    `);
     
-    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
-    if (printWindow) {
-      printWindow.document.write(printContainer.innerHTML);
-      printWindow.document.close();
-      this.notification.showSuccess('تم فتح نموذج الطلب - يمكنك طباعته للحصول على التوقيعات');
-    } else {
-      document.body.appendChild(printContainer);
-      window.print();
-      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
-    }
+    printWindow.document.close();
+    this.notification.showSuccess('تم فتح نموذج الطلب - يمكنك طباعته للحصول على التوقيعات');
   }
 
- async submitTrainee(): Promise<void> {
-  if (this.basicInfoForm.invalid) {
-    this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
-    return;
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
-  
-  this.isSubmitting = true;
-  
-  let imageUrl = this.traineeImageUrl;
-  if (this.selectedImage) {
-    imageUrl = await this.uploadImage();
-  }
-  
-  // Get the selected gender object
-  const genderValue = this.basicInfoForm.get('gender')?.value;
-  
-  // Convert gender to enum string (backend expects MALE/FEMALE)
-  let genderEnum = null;
-  if (genderValue) {
-    genderEnum = genderValue.id === 1 ? 'MALE' : 'FEMALE';
-  }
-  
-  // Convert contact types to enum strings for backend
-  // ContactTypes expected: EMAIL, PHONE, MOBILE (based on your backend)
-  const contactsList = this.getContactsList().map(contact => {
-    const contactTypeObj = contact.contactType;
-    let contactTypeEnum = null;
-    if (contactTypeObj) {
-      switch(contactTypeObj.id) {
-        case 1: // ايميل
-          contactTypeEnum = 'EMAIL';
-          break;
-        case 2: // هاتف
-          contactTypeEnum = 'PHONE';
-          break;
-        default:
-          contactTypeEnum = 'PHONE';
-      }
+
+  submitTrainee(): void {
+    if (this.basicInfoForm.invalid) {
+      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
+      return;
     }
-    return {
-      contactType: contactTypeEnum,
-      contactValue: contact.contactValue
+    
+    this.isSubmitting = true;
+    
+    const genderValue = this.basicInfoForm.get('gender')?.value;
+    const genderEnum = genderValue ? (genderValue.id === 1 ? 'MALE' : 'FEMALE') : null;
+    
+    // Get valid contacts from the form
+    const contactsList = this.getContactsList().map(contact => {
+      const contactTypeObj = contact.contactType;
+      let contactTypeEnum = 'PHONE';
+      if (contactTypeObj) {
+        if (contactTypeObj.id === 1) contactTypeEnum = 'EMAIL';
+        else if (contactTypeObj.id === 2) contactTypeEnum = 'PHONE';
+      }
+      return {
+        contactType: contactTypeEnum,
+        contactValue: contact.contactValue
+      };
+    });
+    
+    // Log contacts to verify
+    console.log('Contacts being submitted:', contactsList);
+    
+    const formData = {
+      fullName: this.basicInfoForm.get('fullName')?.value,
+      nationalId: this.basicInfoForm.get('nationalId')?.value,
+      academicYear: this.basicInfoForm.get('academicYear')?.value,
+      birthDate: this.basicInfoForm.get('birthDate')?.value,
+      gender: genderEnum,
+      address: this.basicInfoForm.get('address')?.value,
+      isActive: this.basicInfoForm.get('isActive')?.value,
+      contacts: contactsList,
+      certificates: this.getCertificatesList().map(cert => ({
+        certificateName: cert.certificateName,
+        certificateNumber: cert.certificateNumber,
+        courseId: cert.courseId,
+        issueDate: cert.issueDate,
+        grade: cert.grade
+      })),
+      healthConditions: this.getHealthConditionsList(),
+      imageUrl: this.traineeImageFid
     };
-  });
-  
-  const formData = {
-    fullName: this.basicInfoForm.get('fullName')?.value,
-    nationalId: this.basicInfoForm.get('nationalId')?.value,
-    academicYear: this.basicInfoForm.get('academicYear')?.value,
-    birthDate: this.basicInfoForm.get('birthDate')?.value,
-    gender: genderEnum,
-    address: this.basicInfoForm.get('address')?.value,
-    isActive: this.basicInfoForm.get('isActive')?.value,
-    contacts: contactsList,
-    certificates: this.getCertificatesList().map(cert => ({
-      certificateName: cert.certificateName,
-      certificateNumber: cert.certificateNumber,
-      courseId: cert.courseId,
-      issueDate: cert.issueDate,
-      grade: cert.grade
-    })),
-    healthConditions: this.getHealthConditionsList(),
-    imageUrl: imageUrl
-  };
-  
-  console.log('Submitting trainee data:', formData);
-  
-  if (this.isEditMode && this.traineeId) {
-    this.traineeService.updateTrainee(this.traineeId, formData as any).subscribe({
-      next: () => {
-        this.notification.showSuccess('تم تحديث المتدرب بنجاح');
-        this.dialogRef.close(true);
-        this.isSubmitting = false;
-      },
-      error: (err) => {
-        console.error('Update error:', err);
-        this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المتدرب');
-        this.isSubmitting = false;
-      }
-    });
-  } else {
-    this.traineeService.createTrainee(formData as any).subscribe({
-      next: () => {
-        this.notification.showSuccess('تم إضافة المتدرب بنجاح');
-        this.dialogRef.close(true);
-        this.isSubmitting = false;
-      },
-      error: (err) => {
-        console.error('Create error:', err);
-        this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المتدرب');
-        this.isSubmitting = false;
-      }
+    
+    console.log('Full form data being submitted:', formData);
+    
+    if (this.isEditMode && this.traineeId) {
+      // Update existing trainee with all data
+      this.traineeService.updateTrainee(this.traineeId, formData as any).subscribe({
+        next: () => {
+          this.notification.showSuccess('تم تحديث المتدرب بنجاح');
+          this.dialogRef.close(true);
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          console.error('Update error:', err);
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المتدرب');
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      // Create new trainee first
+      this.traineeService.createTrainee(formData as any).subscribe({
+        next: (res: any) => {
+          // Get the created trainee ID
+          this.createdTraineeId = res.id;
+          console.log('Trainee created with ID:', this.createdTraineeId);
+          
+          // Now add contacts one by one if there are any
+          if (contactsList.length > 0 && this.createdTraineeId) {
+            this.addContactsSequentially(this.createdTraineeId, contactsList);
+          } else {
+            // No contacts to add, just close the wizard
+            this.notification.showSuccess('تم إضافة المتدرب بنجاح');
+            this.dialogRef.close(true);
+            this.isSubmitting = false;
+          }
+        },
+        error: (err) => {
+          console.error('Create error:', err);
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المتدرب');
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+
+  /**
+   * Add contacts sequentially after trainee is created
+   */
+  private addContactsSequentially(traineeId: number, contacts: any[]): void {
+    let completed = 0;
+    const total = contacts.length;
+    let hasError = false;
+
+    contacts.forEach((contact, index) => {
+      // Create contact DTO
+      const contactDTO: TraineeContactDTO = {
+        contactType: contact.contactType, // Already mapped to 'EMAIL' or 'PHONE'
+        contactValue: contact.contactValue
+      };
+
+      console.log(`Adding contact ${index + 1}/${total}:`, contactDTO);
+
+      this.traineeService.createTraineeContact(traineeId, contactDTO).subscribe({
+        next: () => {
+          completed++;
+          console.log(`Contact ${index + 1} added successfully`);
+          
+          // All contacts added successfully
+          if (completed === total && !hasError) {
+            this.notification.showSuccess(`تم إضافة المتدرب و ${total} جهة اتصال بنجاح`);
+            this.dialogRef.close(true);
+            this.isSubmitting = false;
+          }
+        },
+        error: (err) => {
+          console.error(`Error adding contact ${index + 1}:`, err);
+          hasError = true;
+          this.notification.showError(`حدث خطأ في إضافة جهة الاتصال ${index + 1}`);
+          this.isSubmitting = false;
+        }
+      });
     });
   }
-}
-
 }

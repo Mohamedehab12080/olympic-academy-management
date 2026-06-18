@@ -54,9 +54,11 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public UploadFileVTO uploadFile(FileInfo fileInfo, Integer domainId) {
+        System.out.println("Looking for domain with ID: " + domainId);
+        System.out.println("Domain ID type: " + domainId.getClass().getName());
         FlDomainConfig domain = domainRepository.selectById(domainId)
                 .orElseThrow(() -> new BusinessException(DOMAIN_NOT_FOUND, domainId));
-
+        System.out.println("File Info : "+fileInfo);
         domainService.validateFile(domain, fileInfo);
 
         String fidVersion = fileIdGeneratorService.generate(domainId);

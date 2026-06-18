@@ -50,7 +50,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
         Employee employee = employeeRepository.selectById(courseSessionDTO.getTrainerId())
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, courseSessionDTO.getTrainerId()));
 
-        if (employee.getEmployeeType().equals(EmployeeTypes.TRAINER.id)) {
+        if (!employee.getEmployeeType().equals(EmployeeTypes.TRAINER.id)) {
             throw new BusinessException(INVALID_EMPLOYEE_TYPE, "Only trainers can be assigned to course sessions");
         }
 

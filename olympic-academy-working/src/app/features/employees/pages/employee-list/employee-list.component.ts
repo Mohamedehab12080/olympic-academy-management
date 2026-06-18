@@ -1,4 +1,6 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+// employee-list.component.ts
+
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -21,11 +23,24 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
+import { FileService } from '../../../../core/services/file.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { EMPLOYEE_TYPES } from '../../../../core/models/employee.model';
 import { GENDERS } from '../../../../core/models/common.model';
 import { EmployeeDetailsModalComponent } from './../employee-details/employee-details-modal.component';
 import { EmployeeWizardModalComponent } from './../employee-form/employee-wizard-modal.component';
+
+interface EmployeeListItem {
+  id: number;
+  fullName: string;
+  nationalId: string;
+  employeeType?: { id: number; title: string };
+  gender?: { id: number; title: string };
+  hireDate?: string;
+  departments?: { id: number; title: string }[];
+  isActive: boolean;
+  imageUrl?: string;
+}
 
 @Component({
   selector: 'app-employee-list',
@@ -54,21 +69,20 @@ import { EmployeeWizardModalComponent } from './../employee-form/employee-wizard
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.css']
 })
-export class EmployeeListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['index', 'fullName', 'nationalId', 'employeeType', 'gender', 'hireDate', 'departments', 'status', 'actions'];
-  dataSource = new MatTableDataSource<any>([]);
-  allEmployees: any[] = [];
+export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
+  displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'employeeType', 'gender', 'hireDate', 'departments', 'status', 'actions'];
+  dataSource = new MatTableDataSource<EmployeeListItem>([]);
+  allEmployees: EmployeeListItem[] = [];
+  imageUrls: Map<number, string> = new Map(); // Store blob URLs for each employee
   isLoading = false;
 
   // Filters
-  filters = {
-    quickSearch: '',
-    employeeTypeId: null as number | null,
-    genderId: null as number | null,
-    isActive: null as boolean | null,
-    hireDateFrom: null as string | null,
-    hireDateTo: null as string | null
-  };
+  searchText = '';
+  employeeTypeFilter: number | null = null;
+  genderFilter: number | null = null;
+  statusFilter: boolean | null = null;
+  hireDateFrom: string | null = null;
+  hireDateTo: string | null = null;
 
   // Options for searchable selects
   employeeTypeOptions: SelectOption[] = [];
@@ -95,7 +109,8 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
     private notification: NotificationService,
     private reportService: ReportService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private fileService: FileService
   ) {}
 
   ngOnInit(): void {
@@ -106,6 +121,16 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  ngOnDestroy(): void {
+    // Clean up all blob URLs
+    this.imageUrls.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    this.imageUrls.clear();
   }
 
   loadSelectOptions(): void {
@@ -130,18 +155,20 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
     this.isLoading = true;
     
     const params: any = {};
-    if (this.filters.quickSearch) params.quickSearch = this.filters.quickSearch;
-    if (this.filters.employeeTypeId) params.employeeType = this.filters.employeeTypeId;
-    if (this.filters.genderId) params.genderId = this.filters.genderId;
-    if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
-    if (this.filters.hireDateFrom) params.hireDateFrom = this.filters.hireDateFrom;
-    if (this.filters.hireDateTo) params.hireDateTo = this.filters.hireDateTo;
+    if (this.searchText) params.quickSearch = this.searchText;
+    if (this.employeeTypeFilter) params.employeeType = this.employeeTypeFilter;
+    if (this.genderFilter) params.genderId = this.genderFilter;
+    if (this.statusFilter !== null) params.isActive = this.statusFilter;
+    if (this.hireDateFrom) params.hireDateFrom = this.hireDateFrom;
+    if (this.hireDateTo) params.hireDateTo = this.hireDateTo;
 
     this.employeeService.getAllEmployees(params).subscribe({
       next: (res: any) => {
         this.allEmployees = res.items || [];
+        this.loadAllImages();
         this.dataSource.data = this.allEmployees;
         this.isLoading = false;
+        console.log(res);
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل الموظفين');
@@ -150,64 +177,146 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
     });
   }
 
+  loadAllImages(): void {
+    // Clear existing image URLs
+    this.imageUrls.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    this.imageUrls.clear();
+
+    // Load images for employees that have imageUrl (FID)
+    this.allEmployees.forEach(employee => {
+      this.loadImage(employee);
+    });
+  }
+
+  loadImage(employee: EmployeeListItem): void {
+    const fid = employee.imageUrl;
+    // Check if fid is a valid FID (15 or 18 digits)
+    if (fid && /^\d{15}(\d{3})?$/.test(fid)) {
+      this.fileService.downloadFile(fid).subscribe({
+        next: (blob) => {
+          // Clean up previous blob URL if exists
+          const existingUrl = this.imageUrls.get(employee.id);
+          if (existingUrl && existingUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(existingUrl);
+          }
+          // Create new blob URL
+          const blobUrl = URL.createObjectURL(blob);
+          this.imageUrls.set(employee.id, blobUrl);
+          // Refresh the table data to show the image
+          this.dataSource.data = [...this.dataSource.data];
+        },
+        error: (error) => {
+          console.error(`Failed to load image for employee ${employee.id}:`, error);
+          this.imageUrls.set(employee.id, '');
+          this.dataSource.data = [...this.dataSource.data];
+        }
+      });
+    } else {
+      this.imageUrls.set(employee.id, '');
+    }
+  }
+
+  getImageUrl(employeeId: number): string | null {
+    const url = this.imageUrls.get(employeeId);
+    return url && url.startsWith('blob:') ? url : null;
+  }
+
+  applyFilters(): void {
+    let filtered = [...this.allEmployees];
+    
+    if (this.searchText) {
+      const search = this.searchText.toLowerCase();
+      filtered = filtered.filter(e => 
+        e.fullName?.toLowerCase().includes(search) || 
+        e.nationalId?.includes(search)
+      );
+    }
+    
+    if (this.employeeTypeFilter !== null) {
+      filtered = filtered.filter(e => e.employeeType?.id === this.employeeTypeFilter);
+    }
+    
+    if (this.genderFilter !== null) {
+      filtered = filtered.filter(e => e.gender?.id === this.genderFilter);
+    }
+    
+    if (this.statusFilter !== null) {
+      filtered = filtered.filter(e => e.isActive === this.statusFilter);
+    }
+    
+    if (this.hireDateFrom) {
+      filtered = filtered.filter(e => e.hireDate && e.hireDate >= this.hireDateFrom!);
+    }
+    
+    if (this.hireDateTo) {
+      filtered = filtered.filter(e => e.hireDate && e.hireDate <= this.hireDateTo!);
+    }
+    
+    this.dataSource.data = filtered;
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
+  }
+
   resetFilters(): void {
-    this.filters = {
-      quickSearch: '',
-      employeeTypeId: null,
-      genderId: null,
-      isActive: null,
-      hireDateFrom: null,
-      hireDateTo: null
-    };
+    this.searchText = '';
+    this.employeeTypeFilter = null;
+    this.genderFilter = null;
+    this.statusFilter = null;
+    this.hireDateFrom = null;
+    this.hireDateTo = null;
     this.loadEmployees();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
-viewEmployee(id: number): void {
-  this.employeeService.getEmployeeById(id).subscribe({
-    next: (employee) => {
-      this.dialog.open(EmployeeDetailsModalComponent, {
-        data: employee,
-        width: '850px',
-        maxWidth: '90vw'
-      });
-    },
-    error: () => {
-      this.notification.showError('حدث خطأ في تحميل بيانات الموظف');
-    }
-  });
-}
+  viewEmployee(id: number): void {
+    this.employeeService.getEmployeeById(id).subscribe({
+      next: (employee) => {
+        this.dialog.open(EmployeeDetailsModalComponent, {
+          data: employee,
+          width: '850px',
+          maxWidth: '90vw'
+        });
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل بيانات الموظف');
+      }
+    });
+  }
 
-editEmployee(id: number): void {
-  const dialogRef = this.dialog.open(EmployeeWizardModalComponent, {
-    data: { employeeId: id },
-    width: '900px',
-    maxWidth: '90vw'
-  });
-  
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadEmployees();
-    }
-  });
-}
+  editEmployee(id: number): void {
+    const dialogRef = this.dialog.open(EmployeeWizardModalComponent, {
+      data: { employeeId: id },
+      width: '900px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadEmployees();
+      }
+    });
+  }
 
-openNewEmployeeModal(): void {
-  const dialogRef = this.dialog.open(EmployeeWizardModalComponent, {
-    data: {},
-    width: '900px',
-    maxWidth: '90vw'
-  });
-  
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadEmployees();
-    }
-  });
-}
+  openNewEmployeeModal(): void {
+    const dialogRef = this.dialog.open(EmployeeWizardModalComponent, {
+      data: {},
+      width: '900px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadEmployees();
+      }
+    });
+  }
 
-
-  deleteEmployee(employee: any): void {
+  deleteEmployee(employee: EmployeeListItem): void {
     if (confirm(`هل أنت متأكد من حذف الموظف "${employee.fullName}"؟`)) {
       this.employeeService.deleteEmployee(employee.id).subscribe({
         next: () => {
@@ -225,7 +334,7 @@ openNewEmployeeModal(): void {
       return;
     }
 
-    const exportData = this.dataSource.data.map((employee: any, index: number) => ({
+    const exportData = this.dataSource.data.map((employee: EmployeeListItem, index: number) => ({
       '#': index + 1,
       'الاسم': employee.fullName,
       'رقم الهوية': employee.nationalId,
@@ -248,32 +357,28 @@ openNewEmployeeModal(): void {
 
     this.isLoading = true;
 
-    // Build filter text
     const filterTexts: string[] = [];
-    if (this.filters.employeeTypeId) {
-      const type = EMPLOYEE_TYPES.find(t => t.id === this.filters.employeeTypeId);
+    if (this.employeeTypeFilter !== null) {
+      const type = EMPLOYEE_TYPES.find(t => t.id === this.employeeTypeFilter);
       if (type) filterTexts.push(`نوع الموظف: ${type.title}`);
     }
-    if (this.filters.genderId) {
-      const gender = GENDERS.find(g => g.id === this.filters.genderId);
+    if (this.genderFilter !== null) {
+      const gender = GENDERS.find(g => g.id === this.genderFilter);
       if (gender) filterTexts.push(`الجنس: ${gender.title}`);
     }
-    if (this.filters.isActive !== null) {
-      filterTexts.push(`الحالة: ${this.filters.isActive ? 'نشط' : 'غير نشط'}`);
+    if (this.statusFilter !== null) {
+      filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
     }
-    if (this.filters.hireDateFrom) filterTexts.push(`من تاريخ التوظيف: ${this.filters.hireDateFrom}`);
-    if (this.filters.hireDateTo) filterTexts.push(`إلى تاريخ التوظيف: ${this.filters.hireDateTo}`);
-    if (this.filters.quickSearch) filterTexts.push(`بحث: ${this.filters.quickSearch}`);
+    if (this.hireDateFrom) filterTexts.push(`من تاريخ التوظيف: ${this.hireDateFrom}`);
+    if (this.hireDateTo) filterTexts.push(`إلى تاريخ التوظيف: ${this.hireDateTo}`);
+    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
-    // Build table rows
     let tableRows = '';
-    this.dataSource.data.forEach((employee: any, index: number) => {
-      const statusClass = employee.isActive ? 'active' : 'inactive';
+    this.dataSource.data.forEach((employee: EmployeeListItem, index: number) => {
       const statusStyle = employee.isActive 
         ? 'background-color: #d1fae5; color: #065f46;' 
         : 'background-color: #fee2e2; color: #991b1b;';
       
-      const typeClass = employee.employeeType?.id === 1 ? 'trainer' : 'manager';
       const typeStyle = employee.employeeType?.id === 1
         ? 'background-color: #dbeafe; color: #1e40af;'
         : 'background-color: #fef3c7; color: #92400e;';
@@ -283,18 +388,17 @@ openNewEmployeeModal(): void {
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${employee.fullName || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${this.escapeHtml(employee.fullName) || '-'}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${employee.nationalId || '-'}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${typeStyle}">${employee.employeeType?.title || '-'}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${employee.gender?.title || '-'}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${employee.hireDate || '-'}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${departmentsText}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(departmentsText)}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">${employee.isActive ? 'نشط' : 'غير نشط'}</td>
         </tr>
       `;
     });
 
-    // Create print container
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -309,62 +413,19 @@ openNewEmployeeModal(): void {
         <title>قائمة الموظفين</title>
         <style>
           * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-          @media print {
-            body { margin: 0; padding: 20px; }
-            .no-print { display: none; }
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            border-radius: 8px;
-          }
+          @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
+          .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 8px; }
           .header h1 { margin: 0; font-size: 24px; }
           .header p { margin: 10px 0 0 0; font-size: 12px; }
-          .filters {
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f3f4f6;
-            border-radius: 8px;
-            font-size: 12px;
-          }
-          .stats {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-            padding: 16px;
-            background: #f9fafb;
-            border-radius: 8px;
-          }
-          .stat-item {
-            flex: 1;
-            text-align: center;
-          }
+          .filters { margin-bottom: 20px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; }
+          .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
+          .stat-item { flex: 1; text-align: center; }
           .stat-label { font-size: 12px; color: #6b7280; }
           .stat-value { font-size: 20px; font-weight: bold; color: #f59e0b; }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            direction: rtl;
-          }
-          th {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-            font-weight: bold;
-          }
+          table { width: 100%; border-collapse: collapse; direction: rtl; }
+          th { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
           td { padding: 8px; border: 1px solid #ddd; }
-          .footer {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 10px;
-            color: #666;
-          }
+          .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
         </style>
       </head>
       <body>
@@ -375,53 +436,25 @@ openNewEmployeeModal(): void {
         </div>
         ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
         <div class="stats">
-          <div class="stat-item">
-            <div class="stat-value">${this.allEmployees.length}</div>
-            <div class="stat-label">إجمالي الموظفين</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">${this.trainerCount}</div>
-            <div class="stat-label">مدربين</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">${this.managerCount}</div>
-            <div class="stat-label">مديرين</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">${this.activeCount}</div>
-            <div class="stat-label">نشطاء</div>
-          </div>
+          <div class="stat-item"><div class="stat-value">${this.allEmployees.length}</div><div class="stat-label">إجمالي الموظفين</div></div>
+          <div class="stat-item"><div class="stat-value">${this.trainerCount}</div><div class="stat-label">مدربين</div></div>
+          <div class="stat-item"><div class="stat-value">${this.managerCount}</div><div class="stat-label">مديرين</div></div>
+          <div class="stat-item"><div class="stat-value">${this.activeCount}</div><div class="stat-label">نشطاء</div></div>
         </div>
-        </table>
+        <table>
           <thead>
-            <tr>
-              <th>#</th>
-              <th>الاسم</th>
-              <th>رقم الهوية</th>
-              <th>النوع</th>
-              <th>الجنس</th>
-              <th>تاريخ التوظيف</th>
-              <th>الأقسام</th>
-              <th>الحالة</th>
-            </tr>
+            <tr><th>#</th><th>الاسم</th><th>رقم الهوية</th><th>النوع</th><th>الجنس</th><th>تاريخ التوظيف</th><th>الأقسام</th><th>الحالة</th></tr>
           </thead>
-          <tbody>
-            ${tableRows}
-          </tbody>
+          <tbody>${tableRows}</tbody>
         </table>
-        <div class="footer">
-          تم التصدير من نظام إدارة الأكاديمية الأولمبية
-        </div>
+        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
-          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">
-            🖨️ طباعة / حفظ كـ PDF
-          </button>
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
       </body>
       </html>
     `;
 
-    // Open in new window for printing
     const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
@@ -431,11 +464,19 @@ openNewEmployeeModal(): void {
     } else {
       document.body.appendChild(printContainer);
       window.print();
-      setTimeout(() => {
-        document.body.removeChild(printContainer);
-      }, 500);
+      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
       this.isLoading = false;
       this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
     }
+  }
+
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

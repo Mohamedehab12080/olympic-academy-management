@@ -22,12 +22,16 @@ public class EnrollmentQueryBuilder extends AbstractQueryBuilderV2<Enrollment, E
         List<QBCondition> qbConditions = new ArrayList<>();
 
         if (filters.getQuickSearchQuery() != null && !filters.getQuickSearchQuery().trim().isEmpty())
-            qbConditions.add(QBCondition.builder().placeHolder("note").value("%" + filters.getQuickSearchQuery() + "%")
-                    .condition("LOWER(item.note) LIKE LOWER(:PH)").build());
+            qbConditions.add(QBCondition.builder().placeHolder("traineeFullName").value("%" + filters.getQuickSearchQuery() + "%")
+                    .condition("LOWER(item.trainee.fullName) LIKE LOWER(:PH) OR item.trainee.id").build());
 
         if (filters.getIsActive() != null)
             qbConditions.add(QBCondition.builder().placeHolder("isActive").value(filters.getIsActive())
                     .condition("item.isActive = :PH").build());
+
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
 
         if (filters.getTraineeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("traineeId").value(filters.getTraineeId())

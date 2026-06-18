@@ -23,8 +23,20 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.enrollment</groupId>
+            <artifactId>enrollment-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.course</groupId>
             <artifactId>course-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-api</artifactId>
             <scope>provided</scope>
         </dependency>
 

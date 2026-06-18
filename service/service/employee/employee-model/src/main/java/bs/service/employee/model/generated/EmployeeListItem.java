@@ -40,6 +40,8 @@ public class EmployeeListItem implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate hireDate;
 
+    private String imageUrl;
+
     private Boolean isActive;
 
     @Valid
@@ -171,6 +173,27 @@ public class EmployeeListItem implements Serializable {
         this.hireDate = hireDate;
     }
 
+    public EmployeeListItem imageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+        return this;
+    }
+
+    /**
+     * Get imageUrl
+     *
+     * @return imageUrl
+     */
+
+    @Schema(name = "imageUrl", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("imageUrl")
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public EmployeeListItem isActive(Boolean isActive) {
         this.isActive = isActive;
         return this;
@@ -235,13 +258,14 @@ public class EmployeeListItem implements Serializable {
                 && Objects.equals(this.gender, employeeListItem.gender)
                 && Objects.equals(this.employeeType, employeeListItem.employeeType)
                 && Objects.equals(this.hireDate, employeeListItem.hireDate)
+                && Objects.equals(this.imageUrl, employeeListItem.imageUrl)
                 && Objects.equals(this.isActive, employeeListItem.isActive)
                 && Objects.equals(this.departments, employeeListItem.departments);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, gender, employeeType, hireDate, isActive, departments);
+        return Objects.hash(id, fullName, nationalId, gender, employeeType, hireDate, imageUrl, isActive, departments);
     }
 
     @Override
@@ -254,6 +278,7 @@ public class EmployeeListItem implements Serializable {
         sb.append("    gender: ").append(toIndentedString(gender)).append("\n");
         sb.append("    employeeType: ").append(toIndentedString(employeeType)).append("\n");
         sb.append("    hireDate: ").append(toIndentedString(hireDate)).append("\n");
+        sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    departments: ").append(toIndentedString(departments)).append("\n");
         sb.append("}");

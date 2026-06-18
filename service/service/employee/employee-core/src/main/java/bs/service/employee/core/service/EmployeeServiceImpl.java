@@ -18,10 +18,12 @@ import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.entity.EmployeeContact;
 import bs.service.employee.model.entity.TrainerCourse;
 import bs.service.employee.model.enums.EmployeeAttendanceStatus;
+import bs.service.employee.model.enums.EmployeeDomains;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.filter.EmployeeSearchFilter;
 import bs.service.employee.model.filter.TrainerCourseSearchFilter;
 import bs.service.employee.model.generated.*;
+import bs.service.file.api.service.FileService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,12 +45,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
     private final TrainerCourseRepository trainerCourseRepository;
+    private final FileService fileService;
 
     @Override
     @Transactional
     public NewRecordVTO createEmployee(EmployeeDTO employeeDTO) {
         Employee employee = employeeMapper.toEmployee(employeeDTO);
+        employee.setIsActive(true);
+        employee.setIsDeleted(false);
         employee = employeeRepository.insert(employee);
+        fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employee.getId()), Collections.singletonList(employee.getImageUrl()));
         return NewRecordVTO.builder().id(employee.getId()).build();
     }
 
@@ -58,6 +65,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
         Employee employeeToUpdate = employeeMapper.toEmployee(employeeDTO);
         employeeToUpdate.setId(employeeId);
+        fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employeeToUpdate.getId()), Collections.singletonList(employeeToUpdate.getImageUrl()));
         employeeRepository.update(employeeToUpdate);
         return NewRecordVTO.builder().id(employeeId).build();
     }
@@ -68,6 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.selectById(employeeId)
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
         employee.setIsDeleted(true);
+        fileService.deleteByFid(employee.getImageUrl());
         employeeRepository.update(employee);
     }
 
@@ -111,7 +120,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
 
         List<Employee> employees = employeeRepository.selectAllByFilters(employeeSearchFilter);
-        List<EmployeeListItem> listItems = employeeMapper.toEmployeeListItems(employees);
+        List<EmployeeListItem> listItems = employees.stream().map(emp-> {
+            EmployeeListItem employeeListItem= employeeMapper.toEmployeeListItem(emp);
+            employeeListItem.setImageUrl(emp.getImageUrl());
+            return employeeListItem;
+        }).toList();
+        System.out.println("Employess : "+Arrays.toString(listItems.toArray()));
         return EmployeeResultSet.builder()
                 .items(listItems)
                 .total(listItems.size())

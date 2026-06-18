@@ -1,6 +1,8 @@
-import { Component, Inject } from '@angular/core';
+// employee-details-modal.component.ts
+
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
@@ -10,6 +12,7 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { EmployeeVTO, EmployeeContactVTO, CourseSessionVTO } from '../../../../core/models/employee.model';
+import { FileService } from '../../../../core/services/file.service';
 
 @Component({
   selector: 'app-employee-details-modal',
@@ -48,11 +51,11 @@ import { EmployeeVTO, EmployeeContactVTO, CourseSessionVTO } from '../../../../c
       <!-- Main Profile Info -->
       <div class="profile-main" *ngIf="employee">
         <div class="profile-image">
-          <div class="avatar" *ngIf="!employee.imageUrl; else profileImage">
+          <div class="avatar" *ngIf="!imageUrl; else profileImage">
             <mat-icon>person</mat-icon>
           </div>
           <ng-template #profileImage>
-            <img [src]="employee.imageUrl" [alt]="employee.fullName">
+            <img [src]="imageUrl" [alt]="employee.fullName">
           </ng-template>
         </div>
 
@@ -653,22 +656,64 @@ import { EmployeeVTO, EmployeeContactVTO, CourseSessionVTO } from '../../../../c
     }
   `]
 })
-export class EmployeeDetailsModalComponent {
+export class EmployeeDetailsModalComponent implements OnInit, OnDestroy {
   employee: EmployeeVTO;
   contacts: EmployeeContactVTO[] = [];
   sessions: CourseSessionVTO[] = [];
   sessionsDataSource = new MatTableDataSource<CourseSessionVTO>([]);
   sessionsDisplayedColumns: string[] = ['title', 'course', 'place', 'sessionDate', 'startTime', 'endTime', 'status'];
+  imageUrl: string | null = null;
+  private blobUrl: string | null = null;
 
   constructor(
     private dialogRef: MatDialogRef<EmployeeDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) private data: EmployeeVTO,
-    private router: Router
+    private router: Router,
+    private fileService: FileService
   ) {
     this.employee = data;
     this.contacts = data.contacts || [];
     this.sessions = data.sessions || [];
     this.sessionsDataSource.data = this.sessions;
+  }
+
+  ngOnInit(): void {
+    this.loadImage();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up blob URL when component is destroyed
+    if (this.blobUrl) {
+      URL.revokeObjectURL(this.blobUrl);
+    }
+  }
+
+  loadImage(): void {
+    // Check if imageUrl contains a FID (15 or 18 digits)
+    const fid = this.employee.imageUrl;
+    if (fid && /^\d{15}(\d{3})?$/.test(fid)) {
+      // It's a FID, download the image
+      this.fileService.downloadFile(fid).subscribe({
+        next: (blob) => {
+          // Clean up previous blob URL if exists
+          if (this.blobUrl) {
+            URL.revokeObjectURL(this.blobUrl);
+          }
+          // Create new blob URL
+          this.blobUrl = URL.createObjectURL(blob);
+          this.imageUrl = this.blobUrl;
+        },
+        error: (error) => {
+          console.error('Failed to load image:', error);
+          this.imageUrl = null;
+        }
+      });
+    } else if (fid) {
+      // If it's already a URL, use it directly
+      this.imageUrl = fid;
+    } else {
+      this.imageUrl = null;
+    }
   }
 
   getSessionStatusColor(statusId: number): string {
@@ -707,7 +752,23 @@ export class EmployeeDetailsModalComponent {
     this.generatePrintDocument(this.employee);
   }
 
-  generatePrintDocument(employee: EmployeeVTO): void {
+  async generatePrintDocument(employee: EmployeeVTO): Promise<void> {
+    let imagePreviewUrl: string | null = null;
+    
+    // Load image if FID exists
+    if (employee.imageUrl && /^\d{15}(\d{3})?$/.test(employee.imageUrl)) {
+      try {
+        const blob = await this.fileService.downloadFile(employee.imageUrl).toPromise();
+        if (blob) {
+          imagePreviewUrl = URL.createObjectURL(blob);
+        }
+      } catch (error) {
+        console.error('Failed to load image for print:', error);
+      }
+    } else if (employee.imageUrl) {
+      imagePreviewUrl = employee.imageUrl;
+    }
+    
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -724,7 +785,7 @@ export class EmployeeDetailsModalComponent {
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>طلب توظيف - ${employee.fullName}</title>
+        <title>طلب توظيف - ${this.escapeHtml(employee.fullName)}</title>
         <style>
           * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
           @media print { 
@@ -780,16 +841,16 @@ export class EmployeeDetailsModalComponent {
           </div>
           
           <div class="photo-section">
-            ${employee.imageUrl 
-              ? `<img src="${employee.imageUrl}" class="employee-photo" alt="صورة الموظف">`
-              : `<div class="placeholder-photo">📷</div>`
+            ${imagePreviewUrl 
+              ? `<img src="${imagePreviewUrl}" class="employee-photo" alt="صورة الموظف">`
+              : '<div class="placeholder-photo">📷</div>'
             }
           </div>
           
           <h2>📋 المعلومات الشخصية</h2>
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${employee.fullName || '-'}</div></div>
-            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${employee.nationalId || '-'}</div></div>
+            <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${this.escapeHtml(employee.fullName) || '-'}</div></div>
+            <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${this.escapeHtml(employee.nationalId) || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ الميلاد</div><div class="info-value">${employee.birthDate ? new Date(employee.birthDate).toLocaleDateString('ar-EG') : '-'}</div></div>
             <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${employee.gender?.title || '-'}</div></div>
             <div class="info-item"><div class="info-label">نوع الموظف</div><div class="info-value">${employee.employeeType?.title || '-'}</div></div>
@@ -805,13 +866,13 @@ export class EmployeeDetailsModalComponent {
           
           <h2>🏢 الأقسام</h2>
           <div class="department-chips">
-            ${employee.departments?.map((dept: any) => `<span class="dept-chip">${dept.title}</span>`).join('') || '<span>- لا يوجد أقسام مسندة -</span>'}
+            ${employee.departments?.map((dept: any) => `<span class="dept-chip">${this.escapeHtml(dept.title)}</span>`).join('') || '<span>- لا يوجد أقسام مسندة -</span>'}
           </div>
           
           ${employee.employeeType?.id === 1 ? `
           <h2>📚 الدورات المسندة</h2>
           <div class="courses-list">
-            ${employee.courses?.map((course: any) => `<span class="course-chip">${course.title}</span>`).join('') || '<span>- لا توجد دورات مسندة -</span>'}
+            ${employee.courses?.map((course: any) => `<span class="course-chip">${this.escapeHtml(course.title)}</span>`).join('') || '<span>- لا توجد دورات مسندة -</span>'}
           </div>
           ` : ''}
           
@@ -820,14 +881,14 @@ export class EmployeeDetailsModalComponent {
             ${employee.contacts?.map((contact: any) => `
               <div class="contact-item">
                 <span class="contact-type">${contact.contactType?.title}:</span>
-                <span>${contact.contactValue}</span>
+                <span>${this.escapeHtml(contact.contactValue)}</span>
               </div>
             `).join('') || '<span>- لا توجد جهات اتصال -</span>'}
           </div>
           
           <div class="declaration">
             <strong>إقرار:</strong><br>
-            أقر أنا ${employee.fullName} بأن جميع البيانات المذكورة أعلاه صحيحة ودقيقة، 
+            أقر أنا ${this.escapeHtml(employee.fullName)} بأن جميع البيانات المذكورة أعلاه صحيحة ودقيقة، 
             وأتعهد بالالتزام بجميع لوائح وأنظمة الأكاديمية الأولمبية. 
             كما أقر بحقي في الحصول على الراتب المتفق عليه وفقاً لنوع الراتب المحدد أعلاه.
           </div>
@@ -868,11 +929,29 @@ export class EmployeeDetailsModalComponent {
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
       printWindow.document.close();
-      // No notification needed since this is from a modal
     } else {
       document.body.appendChild(printContainer);
       window.print();
       setTimeout(() => { document.body.removeChild(printContainer); }, 500);
     }
+    
+    // Clean up blob URL
+    if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
+      setTimeout(() => {
+        if (imagePreviewUrl) {
+          URL.revokeObjectURL(imagePreviewUrl);
+        }
+      }, 1000);
+    }
+  }
+
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

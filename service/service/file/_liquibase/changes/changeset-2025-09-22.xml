@@ -15,7 +15,7 @@
         <dropNotNullConstraint
                 tableName="fl_domain_config"
                 columnName="last_modified_by_id"
-                columnDataType="bigint"/>
+                columnDataType="int"/>
 
     </changeSet>
 

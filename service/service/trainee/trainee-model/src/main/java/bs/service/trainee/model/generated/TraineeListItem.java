@@ -27,6 +27,8 @@ public class TraineeListItem implements Serializable {
 
     private String fullName;
 
+    private String imageUrl;
+
     private String nationalId;
 
     private Boolean isActive;
@@ -75,6 +77,27 @@ public class TraineeListItem implements Serializable {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public TraineeListItem imageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+        return this;
+    }
+
+    /**
+     * Get imageUrl
+     *
+     * @return imageUrl
+     */
+
+    @Schema(name = "imageUrl", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("imageUrl")
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public TraineeListItem nationalId(String nationalId) {
@@ -171,6 +194,7 @@ public class TraineeListItem implements Serializable {
         }
         TraineeListItem traineeListItem = (TraineeListItem) o;
         return Objects.equals(this.id, traineeListItem.id) && Objects.equals(this.fullName, traineeListItem.fullName)
+                && Objects.equals(this.imageUrl, traineeListItem.imageUrl)
                 && Objects.equals(this.nationalId, traineeListItem.nationalId)
                 && Objects.equals(this.isActive, traineeListItem.isActive)
                 && Objects.equals(this.academicYear, traineeListItem.academicYear)
@@ -179,7 +203,7 @@ public class TraineeListItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, isActive, academicYear, gender);
+        return Objects.hash(id, fullName, imageUrl, nationalId, isActive, academicYear, gender);
     }
 
     @Override
@@ -188,6 +212,7 @@ public class TraineeListItem implements Serializable {
         sb.append("class TraineeListItem {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
+        sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    academicYear: ").append(toIndentedString(academicYear)).append("\n");

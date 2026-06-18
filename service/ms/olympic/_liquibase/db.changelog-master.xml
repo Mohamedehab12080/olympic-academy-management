@@ -5,11 +5,43 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-
     <include file="../../../service/user/_liquibase/changes/changeset-2026-04-03.xml"
              relativeToChangelogFile="true"/>
 
     <include file="../../../service/user/_liquibase/changes/changeset-2026-04-04.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../../lib/service-context/_liquibase/changes/changeset-2025-06-25.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-14.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-18.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-21.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-22.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-23.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-27.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-08-31.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-09-15.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-09-18.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-09-19.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-09-22.xml"
+             relativeToChangelogFile="true"/>
+    <include file="../../../service/file/_liquibase/changes/changeset-2025-09-23.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../service/file/_liquibase/changes/employee/changeset-2026-06-12.xml"
              relativeToChangelogFile="true"/>
 
     <include file="../../../service/department/_liquibase/changes/changeset-2026-05-24.xml"

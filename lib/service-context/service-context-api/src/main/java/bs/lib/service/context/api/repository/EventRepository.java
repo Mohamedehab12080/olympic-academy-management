@@ -12,5 +12,5 @@ public interface EventRepository {
 
     List<SCEvent> selectAllByFilters(EventSearchFilter searchFilter);
 
-    Long countAllByFilters(EventSearchFilter searchFilter);
+    Integer countAllByFilters(EventSearchFilter searchFilter);
 }

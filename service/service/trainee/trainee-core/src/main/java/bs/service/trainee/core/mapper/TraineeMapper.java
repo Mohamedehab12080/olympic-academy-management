@@ -3,12 +3,17 @@ package bs.service.trainee.core.mapper;
 import bs.lib.common.model.Utils.EnumMapperUtils;
 import bs.lib.common.model.enums.ContactTypes;
 import bs.lib.common.model.enums.Gender;
+import bs.lib.common.model.enums.PaymentStatus;
+import bs.lib.common.model.generated.CommonEnrollmentVTO;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.course.model.entity.Course;
 import bs.service.employee.model.entity.CourseSession;
+import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.enums.SessionStatus;
-import bs.service.employee.model.generated.CourseSessionDTO;
 import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.enrollment.model.entity.Enrollment;
+import bs.service.enrollment.model.enums.EnrollmentStatus;
+import bs.service.enrollment.model.generated.EnrollmentVTO;
 import bs.service.trainee.model.entity.*;
 import bs.service.trainee.model.enums.TraineeAttendanceStatus;
 import bs.service.trainee.model.generated.*;
@@ -44,7 +49,35 @@ public abstract class TraineeMapper {
         return EnumMapperUtils.toLookupVTO(statusId, TraineeAttendanceStatus.class);
     }
 
+    protected EnrollmentStatus toEnrollmentStatus(Integer statusId) {
+        return EnumMapperUtils.toEnum(statusId, EnrollmentStatus.class);
+    }
+
+    // Convert database Integer ID to your custom PaymentStatus enum
+    protected PaymentStatus toPaymentStatus(Integer statusId) {
+        return EnumMapperUtils.toEnum(statusId, PaymentStatus.class);
+    }
+
+    protected LookupVTO toLookupVTO(EnrollmentStatus status) {
+        return EnumMapperUtils.toLookupVTO(status);
+    }
+
+    protected LookupVTO toLookupVTO(PaymentStatus status) {
+        return EnumMapperUtils.toLookupVTO(status);
+    }
+
+    @Mapping(target = "enrollmentStatus", expression = "java(toLookupVTO(toEnrollmentStatus(enrollment.getEnrollmentStatus())))")
+    @Mapping(target = "paymentStatus", expression = "java(toLookupVTO(toPaymentStatus(enrollment.getPaymentStatus())))")
+    public abstract CommonEnrollmentVTO toCommonEnrollmentVTO(Enrollment enrollment);
+
+    public abstract List<CommonEnrollmentVTO> toCommonEnrollmentVTOs(List<Enrollment> enrollments);
+
     // ==================== User Mapping ====================
+
+    @Mapping(target = "title", source ="fullName")
+    public abstract LookupVTO toLookupVTO(Employee employee);
+
+    public abstract LightUserVTO toLightUserVTO(Employee employee);
 
     public abstract LightUserVTO toLightUserVTO(User user);
 
@@ -106,6 +139,7 @@ public abstract class TraineeMapper {
 
     // List Item mapping - use qualifiedByName
     @Mapping(target = "gender", qualifiedByName = "genderToLookup")
+    @Mapping(target = "imageUrl", source = "imageUrl")
     public abstract TraineeListItem toTraineeListItem(Trainee trainee);
 
     public abstract List<TraineeListItem> toTraineeListItems(List<Trainee> trainees);
@@ -117,6 +151,8 @@ public abstract class TraineeMapper {
      */
     @Mapping(target = "isDeleted", constant = "false")
     @Mapping(target = "status", source = "status.id")
+    @Mapping(target = "courseSession.id", source = "courseSessionId")
+    @Mapping(target = "trainee.id", source = "traineeId")
     public abstract TraineeAttendance toTraineeAttendance(TraineeAttendanceDTO dto);
 
     LookupVTO toLookupVTOFromSessionStatus(Integer sessionStatusId) {
@@ -158,4 +194,5 @@ public abstract class TraineeMapper {
      * Convert list of TraineeAttendance entities to list of TraineeAttendanceVTO
      */
     public abstract List<TraineeAttendanceVTO> toTraineeAttendanceVTOs(List<TraineeAttendance> entities);
+
 }

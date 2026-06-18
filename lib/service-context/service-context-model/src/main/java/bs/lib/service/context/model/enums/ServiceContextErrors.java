@@ -9,11 +9,11 @@ import static bs.lib.service.context.model.enums.ServiceContextDomains.EVENT;
 
 @AllArgsConstructor
 public enum ServiceContextErrors implements Errors {
-    DOMAIN_NOT_FOUND(DOMAIN, "0001", "Domain {0} not found",""),
+    DOMAIN_NOT_FOUND(DOMAIN, "0001", "Domain {0} not found"),
 
-    EVENT_NOT_FOUND(EVENT, "0001", "this event not found {0}",""),
-    CANT_SERIALIZE_EVENT_DATA(EVENT, "0002", "failed to serialize event data object",""),
-    EVENT_NOT_ENABLED(EVENT, "0003", "event not enabled",""),
+    EVENT_NOT_FOUND(EVENT, "0001", "this event not found {0}"),
+    CANT_SERIALIZE_EVENT_DATA(EVENT, "0002", "failed to serialize event data object"),
+    EVENT_NOT_ENABLED(EVENT, "0003", "event not enabled"),
 //    CANT_PARSE_EVENT_DATA(EVENT, "0004", "failed to parse event data object","),
 //    INVALID_REQUEST(EVENT, "0005", "invalid request","),
 
@@ -21,9 +21,7 @@ public enum ServiceContextErrors implements Errors {
 
     private final Domains domain;
     private final String code;
-    private final String messageEn;
-    private final String messageAr;
-
+    private final String message;
 
     @Override
     public Domains domain() {
@@ -36,12 +34,8 @@ public enum ServiceContextErrors implements Errors {
     }
 
     @Override
-    public String messageEn() {
-        return messageEn;
-    }
-    @Override
-    public String messageAr() {
-        return messageAr;
+    public String message() {
+        return message;
     }
 
 }

@@ -1,3 +1,5 @@
+/* trainee-attendance.component.css */
+
 /* Main Container */
 .attendance-container {
   padding: 24px;
@@ -69,6 +71,14 @@
   align-items: center;
 }
 
+.barcode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .filter-select,
 .date-field,
 .search-field {
@@ -80,6 +90,7 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .reset-btn,
@@ -92,6 +103,120 @@
 .reset-btn:hover,
 .export-btn:hover {
   transform: translateY(-1px);
+}
+
+/* Barcode Search Section */
+.barcode-search-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 250px;
+}
+
+.barcode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.barcode-toggle:hover {
+  background: #f3e8ff;
+  border-color: #e5d5ff;
+}
+
+.barcode-toggle .barcode-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.barcode-toggle button {
+  color: #6b7280;
+  transition: all 0.3s;
+}
+
+.barcode-toggle button.mat-primary {
+  color: #8b5cf6 !important;
+}
+
+.barcode-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  animation: slideIn 0.3s ease-out;
+  background: #f9fafb;
+  padding: 4px 8px 4px 4px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.barcode-input-wrapper:focus-within {
+  border-color: #8b5cf6;
+  background: white;
+}
+
+.barcode-search-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+.barcode-search-field .mat-form-field-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+.barcode-search-field .mat-form-field-outline {
+  background: transparent !important;
+}
+
+.barcode-search-field .mat-form-field-flex {
+  padding: 0 12px !important;
+}
+
+.barcode-search-field .mat-form-field-infix {
+  padding: 8px 0 !important;
+  border-top: 0 !important;
+}
+
+.barcode-search-btn {
+  flex-shrink: 0;
+  height: 40px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+  color: white !important;
+}
+
+.barcode-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.barcode-close-btn {
+  flex-shrink: 0;
+  color: #6b7280 !important;
+}
+
+.barcode-close-btn:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
 /* Statistics Cards */
@@ -228,7 +353,6 @@
   color: #8b5cf6;
 }
 
-/* Date and Time Info */
 .date-info,
 .time-info {
   display: flex;
@@ -244,7 +368,6 @@
   color: #94a3b8;
 }
 
-/* Status Badges */
 .status-badge {
   display: inline-block;
   padding: 4px 14px;
@@ -273,13 +396,11 @@
   color: #1e40af;
 }
 
-/* Late Badge */
 .late-badge {
   color: #f59e0b;
   font-weight: 500;
 }
 
-/* Action Buttons */
 .action-buttons {
   display: flex;
   gap: 4px;
@@ -293,7 +414,6 @@
   transform: scale(1.1);
 }
 
-/* No Data Message */
 .no-data-message {
   text-align: center;
   padding: 60px;
@@ -313,14 +433,12 @@
   font-size: 16px;
 }
 
-/* Paginator */
 .custom-paginator {
   margin-top: 20px;
   border-top: 1px solid #e5e7eb;
   padding-top: 12px;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -336,6 +454,32 @@
 @media (max-width: 1200px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .barcode-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .barcode-search-section {
+    flex-wrap: wrap;
+    min-width: 100%;
+  }
+  
+  .barcode-input-wrapper {
+    flex-wrap: wrap;
+    padding: 8px;
+  }
+  
+  .barcode-search-field {
+    min-width: 100%;
+  }
+  
+  .barcode-search-btn,
+  .barcode-close-btn {
+    flex: 1;
   }
 }
 
@@ -380,6 +524,26 @@
     width: 100%;
   }
 
+  .barcode-search-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .barcode-toggle {
+    justify-content: center;
+    padding: 8px;
+  }
+  
+  .barcode-input-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+  
+  .barcode-search-btn {
+    width: 100%;
+  }
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -412,5 +576,13 @@
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .barcode-toggle .barcode-label {
+    font-size: 12px;
+  }
+  
+  .barcode-search-field {
+    min-width: 100%;
   }
 }

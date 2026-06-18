@@ -1217,6 +1217,8 @@ components:
         hireDate:
           type: string
           format: date
+        imageUrl:
+          type: string
         isActive:
           type: boolean
         departments:

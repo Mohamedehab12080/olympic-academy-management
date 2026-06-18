@@ -833,6 +833,10 @@ components:
           type: string
         imageUrl:
           type: string
+        enrollments:
+          type: array
+          items:
+            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/CommonEnrollmentVTO'
         contacts:
           type: array
           items:
@@ -958,6 +962,8 @@ components:
           type: integer
           format: int32
         fullName:
+          type: string
+        imageUrl:
           type: string
         nationalId:
           type: string

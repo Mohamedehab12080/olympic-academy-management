@@ -5,6 +5,9 @@
  */
 package bs.service.file.controller.generated;
 
+import bs.lib.common.model.vto.ErrorVTO;
+import bs.service.file.model.generated.FileVTO;
+import bs.service.file.model.generated.UploadFileVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -13,18 +16,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import bs.lib.common.model.vto.ErrorVTO;
-import bs.service.file.model.generated.FileVTO;
-import bs.service.file.model.generated.UploadFileVTO;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
 @Validated
@@ -43,7 +40,7 @@ public interface FileController {
      */
     @Operation(operationId = "deleteFile", summary = "Delete a file", description = "Deletes a file. The operation will succeed even if the file is currently associated with an entity.", tags = {
             "File" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.DELETE, value = "/files/{fid}", produces = { "application/json" })
 
@@ -63,7 +60,7 @@ public interface FileController {
             "File" }, responses = { @ApiResponse(responseCode = "200", description = "Ok", content = {
                     @Content(mediaType = "application/octet-stream", schema = @Schema(implementation = org.springframework.core.io.Resource.class)),
                     @Content(mediaType = "application/json", schema = @Schema(implementation = org.springframework.core.io.Resource.class)) }),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/octet-stream", schema = @Schema(implementation = ErrorVTO.class)),
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/files/{fid}/download", produces = {
@@ -84,7 +81,7 @@ public interface FileController {
     @Operation(operationId = "getFileMetadata", summary = "Get file metadata", description = "Retrieves metadata for a specific file last version for {15} digit and specific version for {18} digit", tags = {
             "File" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = FileVTO.class)) }),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/files/{fid}", produces = { "application/json" })
 
@@ -105,7 +102,7 @@ public interface FileController {
     @Operation(operationId = "uploadFile", summary = "Upload a file to a specific domain", description = "Uploads a new file to the specified domain. Returns metadata for the created file.", tags = {
             "File" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = UploadFileVTO.class)) }),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.POST, value = "/domains/{domainId}/upload", produces = {
             "application/json" }, consumes = { "multipart/form-data" })

@@ -18,6 +18,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>bs.service.user</groupId>
+            <artifactId>user-model</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.lib</groupId>
             <artifactId>swagger</artifactId>
             <scope>provided</scope>

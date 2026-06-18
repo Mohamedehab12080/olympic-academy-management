@@ -13,7 +13,7 @@
         </addColumn>
 
         <addColumn tableName="fl_domain_config">
-            <column name="last_modified_by_id" type="bigint">
+            <column name="last_modified_by_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </addColumn>

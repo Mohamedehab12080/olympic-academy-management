@@ -1,16 +1,13 @@
 package bs.service.financial.core.mapper;
 
 import bs.lib.common.model.Utils.EnumMapperUtils;
-import bs.lib.common.model.enums.ContactTypes;
 import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.enums.PaymentStatus;
 import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.course.model.entity.Course;
 import bs.service.employee.model.entity.Employee;
-import bs.service.employee.model.enums.EmployeeAttendanceStatus;
 import bs.service.employee.model.enums.EmployeeTypes;
-import bs.service.employee.model.enums.SessionStatus;
 import bs.service.employee.model.generated.EmployeeVTO;
 import bs.service.enrollment.model.entity.Enrollment;
 import bs.service.enrollment.model.enums.EnrollmentStatus;

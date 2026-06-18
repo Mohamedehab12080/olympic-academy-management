@@ -47,6 +47,27 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-api</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-proxy</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.trainee</groupId>
             <artifactId>trainee-core</artifactId>
         </dependency>
@@ -124,6 +145,11 @@
         <dependency>
             <groupId>bs.lib.id-counter</groupId>
             <artifactId>id-counter-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.service-context</groupId>
+            <artifactId>service-context-repository</artifactId>
         </dependency>
 
         <dependency>

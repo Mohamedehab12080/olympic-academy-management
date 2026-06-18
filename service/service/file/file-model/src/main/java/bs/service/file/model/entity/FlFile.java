@@ -1,5 +1,6 @@
 package bs.service.file.model.entity;
 
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,15 +47,15 @@ public class FlFile {
     @Basic
     private LocalDateTime createdOn;
 
-    @Column(name = "created_by_id")
-    @Basic
-    private Long createdById;
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
 
     @Column(name = "last_modified_on")
     @Basic
     private LocalDateTime lastModifiedOn;
 
-    @Column(name = "last_modified_by_id")
-    @Basic
-    private Long lastModifiedById;
+    @ManyToOne
+    @JoinColumn(name = "last_modified_by_id")
+    private User lastModifiedBy;
 }

@@ -9,6 +9,7 @@ import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.course.api.repository.CourseRepository;
 import bs.service.employee.api.repository.EmployeeRepository;
 import bs.service.enrollment.api.repository.EnrollmentRepository;
+import bs.service.enrollment.api.repository.EnrollmentTypeRepository;
 import bs.service.enrollment.api.service.EnrollmentService;
 import bs.service.enrollment.core.mapper.EnrollmentMapper;
 import bs.service.enrollment.model.entity.Enrollment;
@@ -37,6 +38,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseRepository courseRepository;
     private final EmployeeRepository employeeRepository;
     private final EnrollmentMapper enrollmentMapper;
+    private final EnrollmentTypeRepository enrollmentTypeRepository;
 
     @Override
     @Transactional
@@ -52,6 +54,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         // Validate trainer exists
         employeeRepository.selectById(enrollmentDTO.getTrainerId())
                 .orElseThrow(() -> new BusinessException(TRAINER_NOT_FOUND_FOR_ENROLLMENT, enrollmentDTO.getTrainerId()));
+
+        enrollmentTypeRepository.selectById(enrollmentDTO.getEnrollmentTypeId()).orElseThrow(()-> new BusinessException(ENROLLMENT_TYPE_NOT_FOUND));
 
         Enrollment enrollment = enrollmentMapper.toEnrollment(enrollmentDTO);
         enrollment = enrollmentRepository.insert(enrollment);
@@ -98,6 +102,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         EnrollmentSearchFilter filter = EnrollmentSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .isActive(isActive)
+                .isDeleted(false)
                 .traineeId(traineeId)
                 .courseId(courseId)
                 .trainerId(trainerId)

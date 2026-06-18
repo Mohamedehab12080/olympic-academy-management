@@ -17,7 +17,7 @@
             <column name="last_modified_on" type="datetime">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_modified_by_id" type="bigint">
+            <column name="last_modified_by_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -48,13 +48,13 @@
             <column name="created_on" type="datetime">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_by_id" type="bigint">
+            <column name="created_by_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="last_modified_on" type="datetime">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_modified_by_id" type="bigint">
+            <column name="last_modified_by_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -65,6 +65,20 @@
                 constraintName="fk_fl_file_domain_config"
                 referencedTableName="fl_domain_config"
                 referencedColumnNames="domain_id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="fl_file"
+                baseColumnNames="created_by_id"
+                constraintName="fk_fl_file_created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="fl_file"
+                baseColumnNames="last_modified_by_id"
+                constraintName="fk_fl_file_last_modified_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
     </changeSet>
 
     <!-- Create fl_file_version table -->
@@ -84,13 +98,7 @@
             <column name="created_on" type="datetime">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_by_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="last_modified_on" type="datetime">
-                <constraints nullable="false"/>
-            </column>
-            <column name="last_modified_by_id" type="bigint">
+            <column name="created_by_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -100,6 +108,13 @@
                 baseColumnNames="file_id"
                 constraintName="fk_file_version_fl_file"
                 referencedTableName="fl_file"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="fl_file_version"
+                baseColumnNames="created_by_id"
+                constraintName="fk_file_version_created_by_id"
+                referencedTableName="oa_user"
                 referencedColumnNames="id"/>
 
         <addUniqueConstraint

@@ -122,6 +122,8 @@ public abstract class EmployeeMapper {
     public abstract EmployeeVTO toEmployeeVTO(Employee employee);
     @Mapping(target = "employeeType", expression= "java(toLookupVTOFromEmployeeType(employee.getEmployeeType()))")
     @Mapping(target = "gender", expression= "java(toLookupVTOFromGender(employee.getGender()))")
+    @Mapping(target = "imageUrl",expression="java(employee.getImageUrl())")
+    @Mapping(target = "isActive",source="isActive")
     public abstract EmployeeListItem toEmployeeListItem(Employee employee);
     public abstract List<EmployeeListItem> toEmployeeListItems(List<Employee> employees);
     @Mapping(target = "contactType", expression = "java(toLookupVTOFromContactType(employeeContact.getContactType()))")

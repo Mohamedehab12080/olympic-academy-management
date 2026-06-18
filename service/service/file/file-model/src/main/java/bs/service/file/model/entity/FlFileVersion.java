@@ -1,5 +1,6 @@
 package bs.service.file.model.entity;
 
+import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,8 +52,8 @@ public class FlFileVersion {
     @Basic
     private LocalDateTime createdOn;
 
-    @Column(name = "created_by_id")
-    @Basic
-    private Long createdById;
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
 
 }

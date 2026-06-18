@@ -54,6 +54,9 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
         TraineeAttendanceSearchFilter checkFilter = TraineeAttendanceSearchFilter.builder()
                 .traineeId(traineeAttendanceDTO.getTraineeId())
                 .courseSessionId(traineeAttendanceDTO.getCourseSessionId())
+                .attendanceDateFrom(traineeAttendanceDTO.getAttendanceDate())
+                .attendanceDateTo(traineeAttendanceDTO.getAttendanceDate())
+                .pagination(PaginationInfo.noPagination())
                 .build();
 
         List<TraineeAttendance> existing = traineeAttendanceRepository.selectAllByFilters(checkFilter);
@@ -81,7 +84,7 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
         } else {
             traineeAttendance.setAttendanceDate(LocalDate.now());
         }
-
+//        traineeAttendance.setCourseSession(traineeAttendanceDTO.getCourseSessionId());
         traineeAttendance = traineeAttendanceRepository.insert(traineeAttendance);
 
         log.info("Trainee attendance created with id: {}", traineeAttendance.getId());

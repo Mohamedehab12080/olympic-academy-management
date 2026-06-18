@@ -63,6 +63,26 @@ export interface NewRecordVTO {
   id: number;
 }
 
+export interface CommonEnrollmentVTO {
+  id: number;
+  trainee: LookupVTO;
+  course: LookupVTO;
+  trainer: LookupVTO;
+  enrollmentType?: LookupVTO;
+  startDate: string;
+  endDate?: string;
+  enrollmentStatus: LookupVTO;   // { id: number; title: string; imageUrl: string | null }
+  paymentStatus: LookupVTO;      // { id: number; title: string; imageUrl: string | null }
+  subscriptionValue?: number;
+  discountAmount?: number;
+  discountPercentage?: number;
+  finalSubscriptionValue?: number;
+  remainedSubscriptionValue?: number;
+  note?: string;
+  isActive: boolean;
+  createdOn: string;
+}
+
 export interface ErrorVTO {
   code: string;
   messageEn: string;

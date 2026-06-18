@@ -28,6 +28,12 @@
         </dependency>
 
         <dependency>
+            <groupId>bs.service.file</groupId>
+            <artifactId>file-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>bs.service.department</groupId>
             <artifactId>department-proxy</artifactId>
             <scope>provided</scope>

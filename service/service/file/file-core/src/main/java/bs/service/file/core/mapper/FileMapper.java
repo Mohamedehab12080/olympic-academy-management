@@ -1,5 +1,7 @@
 package bs.service.file.core.mapper;
 
+import bs.service.user.model.entity.User;
+import bs.service.user.model.generated.LightUserVTO;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,9 +14,6 @@ import bs.service.file.model.entity.FlDomainConfig;
 import bs.service.file.model.entity.FlFile;
 import bs.service.file.model.entity.FlFileVersion;
 import bs.service.file.model.enums.FileErrors;
-import bs.service.file.model.event.data.DomainEventData;
-import bs.service.file.model.event.data.FileEventData;
-import bs.service.file.model.event.data.FileVersionEventData;
 import bs.service.file.model.generated.FileVTO;
 import bs.service.file.model.helpers.FileInfo;
 
@@ -26,6 +25,9 @@ public abstract class FileMapper {
 
     @Autowired
     private AbstractFileConfig fileConfig;
+
+
+    public abstract LightUserVTO toLightUserVTO(User domain);
 
     @Mapping(target = "domain", source = "file.domain")
     @Mapping(target = "lastVersion", source = "version")
@@ -62,15 +64,6 @@ public abstract class FileMapper {
     public String generateServerFileName(FlFile file, String fidVersion) {
         return file.getDomain().getLabel() + "-" + fidVersion + "." + file.getExtension();
     }
-
-    @Mapping(target = "domain", source = "file.domain")
-    public abstract FileEventData toFileEventData(FlFile file);
-
-    @Mapping(target = "file", source = "fileVersion.file")
-    public abstract FileVersionEventData toFileVersionEventData(FlFileVersion fileVersion);
-
-    public abstract DomainEventData toDomainEventData(FlDomainConfig domain);
-
     public FileInfo toFileInfo(MultipartFile multipartFile) {
         // Validate input first
         if (multipartFile == null) {

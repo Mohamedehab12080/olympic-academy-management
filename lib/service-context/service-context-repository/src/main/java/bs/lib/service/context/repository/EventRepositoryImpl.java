@@ -30,7 +30,7 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public Long countAllByFilters(EventSearchFilter searchFilter) {
+    public Integer countAllByFilters(EventSearchFilter searchFilter) {
         return queryBuilder.countAllByFilters(searchFilter);
     }
 }

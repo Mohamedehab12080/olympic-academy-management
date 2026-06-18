@@ -1,4 +1,6 @@
-import { Component, OnInit, Inject, AfterViewInit, ViewChild } from '@angular/core';
+// enrollment-wizard-modal.component.ts
+
+import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -225,6 +227,12 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
                       <mat-select formControlName="enrollmentTypeId">
                         <mat-option [value]="null">-- اختر --</mat-option>
                         <mat-option *ngFor="let type of enrollmentTypes" [value]="type.id">{{ type.title }}</mat-option>
+                        <mat-option [value]="'new'">
+                          <div style="display: flex; align-items: center; gap: 8px; color: #2563eb;">
+                            <mat-icon>add_circle</mat-icon>
+                            <span>إضافة نوع تسجيل جديد</span>
+                          </div>
+                        </mat-option>
                       </mat-select>
                     </mat-form-field>
                   </div>
@@ -355,21 +363,21 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       max-width: 850px;
       max-height: 90vh;
       direction: rtl;
-      background: #f5f7fa;
+      background: #f0f4f8;
       border-radius: 24px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      border: 1px solid rgba(226, 232, 240, 0.4);
     }
 
-    /* Header */
     .wizard-header {
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 20px 24px;
-      background: linear-gradient(135deg, #ec489a 0%, #be185d 100%);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       color: white;
     }
     .header-title {
@@ -399,7 +407,6 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       transform: scale(1.1);
     }
 
-    /* Scrollable Stepper Container */
     .stepper-container {
       flex: 1;
       overflow-y: auto;
@@ -407,7 +414,6 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       padding: 0 24px;
     }
 
-    /* Custom Stepper */
     .custom-stepper {
       background: transparent;
       padding: 24px 0;
@@ -423,24 +429,23 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       height: 18px;
     }
 
-    /* Step Content */
     .step-content {
       padding: 24px 0;
       min-height: 280px;
     }
 
-    /* Step Actions - Sticky at bottom */
     .step-actions {
       display: flex;
       gap: 16px;
       justify-content: flex-end;
       padding: 16px 0;
-      border-top: 1px solid #e5e7eb;
+      border-top: 1px solid #e2e8f0;
       margin-top: 16px;
-      background: #f5f7fa;
+      background: #f8fafc;
       position: sticky;
       bottom: 0;
       z-index: 10;
+      border-radius: 0 0 16px 16px;
     }
     .step-actions button {
       display: flex;
@@ -449,25 +454,25 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       padding: 8px 24px;
     }
 
-    /* Course Date Info */
     .course-date-info {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
       border-radius: 12px;
       margin-bottom: 20px;
+      border: 1px solid rgba(37, 99, 235, 0.1);
     }
     .course-date-info mat-icon {
-      color: #0369a1;
+      color: #2563eb;
     }
     .date-range {
       flex: 1;
     }
     .range-label {
       font-weight: 600;
-      color: #0369a1;
+      color: #1e40af;
       margin-left: 8px;
     }
     .range-value {
@@ -475,7 +480,6 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       font-weight: 500;
     }
 
-    /* Form Layout */
     .form-row {
       display: flex;
       gap: 20px;
@@ -488,11 +492,11 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       width: 100%;
     }
 
-    /* Course Info Card */
     .course-info-card {
       margin-top: 24px;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
       border-radius: 16px;
+      border: 1px solid rgba(37, 99, 235, 0.1);
     }
     .course-info-card mat-card-header {
       padding: 16px 16px 0 16px;
@@ -500,7 +504,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
     .course-info-card mat-card-title {
       font-size: 16px;
       font-weight: 600;
-      color: #0369a1;
+      color: #1e40af;
     }
     .course-info-card mat-card-content {
       padding: 16px;
@@ -531,51 +535,51 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
     }
     .info-value.price {
       font-weight: 700;
-      color: #ec489a;
+      color: #0f3460;
       font-size: 16px;
     }
 
-    /* Discount Row */
     .discount-row {
-      background: #fefce8;
+      background: #fffbeb;
       padding: 16px;
       border-radius: 12px;
       margin: 16px 0;
+      border: 1px solid rgba(217, 119, 6, 0.15);
     }
 
-    /* Highlight Row */
     .highlight {
-      background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
       padding: 20px;
       border-radius: 16px;
       margin: 20px 0;
+      border: 1px solid rgba(79, 70, 229, 0.15);
     }
     .highlight .mat-form-field {
       background: white;
       border-radius: 8px;
     }
 
-    /* Payment Option */
     .payment-option {
-      background: #e0e7ff;
-      padding: 16px;
+      background: #f8fafc;
+      padding: 16px 20px;
       border-radius: 12px;
       margin: 20px 0;
       display: flex;
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
+      border: 1px solid #e2e8f0;
     }
     .payment-checkbox-label {
       font-weight: 500;
-      color: #3730a3;
+      color: #0f172a;
     }
     .payment-info-hint {
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 12px;
-      color: #4338ca;
+      color: #2563eb;
     }
     .payment-info-hint mat-icon {
       font-size: 16px;
@@ -583,7 +587,6 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       height: 16px;
     }
 
-    /* Loading Overlay */
     .loading-overlay {
       position: absolute;
       top: 0;
@@ -600,11 +603,36 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       z-index: 1000;
     }
     .loading-overlay p {
-      color: #ec489a;
+      color: #0f3460;
       font-weight: 500;
     }
 
-    /* Responsive */
+    /* Input Field Enhancements */
+    ::ng-deep .mat-form-field-outline {
+      background: white !important;
+      border-radius: 10px !important;
+    }
+
+    ::ng-deep .mat-form-field.mat-focused .mat-form-field-outline {
+      color: #0f3460 !important;
+    }
+
+    ::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
+      color: #0f3460 !important;
+    }
+
+    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+      color: #0f3460 !important;
+    }
+
+    ::ng-deep .mat-step-header .mat-step-icon-selected {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+    }
+
+    ::ng-deep .mat-step-header .mat-step-icon-state-done {
+      background: #0f3460 !important;
+    }
+
     @media (max-width: 768px) {
       .wizard-container {
         min-width: 90vw;
@@ -707,6 +735,13 @@ export class EnrollmentWizardModalComponent implements OnInit {
   ngOnInit(): void {
     this.loadLookupData();
     this.loadPaymentMethods();
+    
+    this.enrollmentForm.get('enrollmentTypeId')?.valueChanges.subscribe(value => {
+      if (value === 'new') {
+        this.openAddEnrollmentTypeDialog();
+      }
+    });
+    
     if (this.isEditMode && this.enrollmentId) {
       this.loadEnrollmentData();
     }
@@ -718,33 +753,23 @@ export class EnrollmentWizardModalComponent implements OnInit {
     this.traineeService.getAllTraineesLookup().subscribe({
       next: (res: any) => {
         this.trainees = res.list || [];
-        this.traineeOptions = [
-          ...this.trainees.map(t => ({ value: t.id, label: t.title }))
-        ];
+        this.traineeOptions = this.trainees.map(t => ({ value: t.id, label: t.title }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل المتدربين');
-      }
+      error: () => this.notification.showError('حدث خطأ في تحميل المتدربين')
     });
 
     this.courseService.getAllCourses().subscribe({
       next: (res: any) => {
         this.courses = res.items || [];
-        this.courseOptions = [
-          ...this.courses.map(c => ({ value: c.id, label: c.title }))
-        ];
+        this.courseOptions = this.courses.map(c => ({ value: c.id, label: c.title }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الدورات');
-      }
+      error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
     });
 
     this.employeeService.getAllTrainersLookup().subscribe({
       next: (res: any) => {
         this.trainers = res.list || [];
-        this.trainerOptions = [
-          ...this.trainers.map(t => ({ value: t.id, label: t.title }))
-        ];
+        this.trainerOptions = this.trainers.map(t => ({ value: t.id, label: t.title }));
         this.isLoading = false;
       },
       error: () => {
@@ -753,12 +778,36 @@ export class EnrollmentWizardModalComponent implements OnInit {
       }
     });
 
+    this.loadEnrollmentTypes();
+  }
+
+  loadEnrollmentTypes(): void {
     this.enrollmentService.getAllEnrollmentTypes().subscribe({
       next: (res: any) => {
         this.enrollmentTypes = res.items || [];
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل أنواع التسجيل');
+      error: () => this.notification.showError('حدث خطأ في تحميل أنواع التسجيل')
+    });
+  }
+
+  openAddEnrollmentTypeDialog(): void {
+    const dialogRef = this.dialog.open(AddEnrollmentTypeDialogComponent, {
+      width: '500px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.loadEnrollmentTypes();
+        setTimeout(() => {
+          const newType = this.enrollmentTypes.find(t => t.title === result.title);
+          if (newType) {
+            this.enrollmentForm.patchValue({ enrollmentTypeId: newType.id });
+            this.notification.showSuccess('تم إضافة نوع التسجيل بنجاح');
+          }
+        }, 500);
+      } else {
+        this.enrollmentForm.patchValue({ enrollmentTypeId: null });
       }
     });
   }
@@ -767,14 +816,9 @@ export class EnrollmentWizardModalComponent implements OnInit {
     this.financialService.getAllPaymentMethodsLookup().subscribe({
       next: (res: any) => {
         this.paymentMethods = res.list || [];
-        this.paymentMethodOptions = this.paymentMethods.map((p: any) => ({ 
-          value: p.id, 
-          label: p.title 
-        }));
+        this.paymentMethodOptions = this.paymentMethods.map((p: any) => ({ value: p.id, label: p.title }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل طرق الدفع');
-      }
+      error: () => this.notification.showError('حدث خطأ في تحميل طرق الدفع')
     });
   }
 
@@ -785,23 +829,15 @@ export class EnrollmentWizardModalComponent implements OnInit {
         this.step1Form.patchValue({ traineeId: enrollment.trainee?.id });
         this.step2Form.patchValue({ courseId: enrollment.course?.id });
         this.step3Form.patchValue({ trainerId: enrollment.trainer?.id });
-        
         this.onCourseSelect();
         
         let enrollmentStatusObj = null;
         if (enrollment.enrollmentStatus) {
           switch(enrollment.enrollmentStatus) {
-            case 'PENDING':
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 1);
-              break;
-            case 'COMPLETED':
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 2);
-              break;
-            case 'CANCELLED':
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 3);
-              break;
-            default:
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 1);
+            case 'PENDING': enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 1); break;
+            case 'COMPLETED': enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 2); break;
+            case 'CANCELLED': enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 3); break;
+            default: enrollmentStatusObj = ENROLLMENT_STATUSES.find(s => s.id === 1);
           }
         }
         
@@ -830,15 +866,11 @@ export class EnrollmentWizardModalComponent implements OnInit {
     const courseId = this.step2Form.get('courseId')?.value;
     this.selectedCourse = this.courses.find(c => c.id === courseId);
     if (this.selectedCourse) {
-      this.enrollmentForm.patchValue({ 
-        subscriptionValue: this.selectedCourse.price 
-      });
-      
+      this.enrollmentForm.patchValue({ subscriptionValue: this.selectedCourse.price });
       const currentStartDate = this.enrollmentForm.get('startDate')?.value;
       if (!currentStartDate && this.selectedCourse.startDate) {
         this.enrollmentForm.patchValue({ startDate: this.selectedCourse.startDate });
       }
-      
       this.setDateValidators();
       this.calculateFinalValue();
     }
@@ -853,13 +885,8 @@ export class EnrollmentWizardModalComponent implements OnInit {
     const startDateValidator = (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) return null;
       const selectedDate = new Date(control.value);
-      
-      if (selectedDate < courseStartDate) {
-        return { beforeCourseStart: true };
-      }
-      if (selectedDate > courseEndDate) {
-        return { afterCourseEnd: true };
-      }
+      if (selectedDate < courseStartDate) return { beforeCourseStart: true };
+      if (selectedDate > courseEndDate) return { afterCourseEnd: true };
       return null;
     };
     
@@ -867,13 +894,8 @@ export class EnrollmentWizardModalComponent implements OnInit {
       if (!control.value) return null;
       const selectedDate = new Date(control.value);
       const startDate = this.enrollmentForm.get('startDate')?.value;
-      
-      if (selectedDate > courseEndDate) {
-        return { afterCourseEnd: true };
-      }
-      if (startDate && selectedDate < new Date(startDate)) {
-        return { beforeStartDate: true };
-      }
+      if (selectedDate > courseEndDate) return { afterCourseEnd: true };
+      if (startDate && selectedDate < new Date(startDate)) return { beforeStartDate: true };
       return null;
     };
     
@@ -898,7 +920,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
     } else if (discountAmount === 0) {
       this.enrollmentForm.patchValue({ discountPercentage: null }, { emitEvent: false });
     }
-    
     this.calculateFinalValue();
   }
 
@@ -912,7 +933,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
     } else if (discountPercentage === 0) {
       this.enrollmentForm.patchValue({ discountAmount: null }, { emitEvent: false });
     }
-    
     this.calculateFinalValue();
   }
 
@@ -922,13 +942,11 @@ export class EnrollmentWizardModalComponent implements OnInit {
     const discountPercentage = this.enrollmentForm.get('discountPercentage')?.value || 0;
     
     let finalValue = subscriptionValue;
-    
     if (discountAmount > 0) {
       finalValue = subscriptionValue - discountAmount;
     } else if (discountPercentage > 0) {
       finalValue = subscriptionValue - (subscriptionValue * discountPercentage / 100);
     }
-    
     finalValue = Math.max(0, finalValue);
     this.enrollmentForm.patchValue({ finalSubscriptionValue: finalValue }, { emitEvent: false });
   }
@@ -941,18 +959,14 @@ export class EnrollmentWizardModalComponent implements OnInit {
   printPreview(): void {
     const traineeId = this.step1Form.get('traineeId')?.value;
     const trainee = this.trainees.find(t => t.id === traineeId);
-    
     const courseId = this.step2Form.get('courseId')?.value;
     const course = this.courses.find(c => c.id === courseId);
-    
     const trainerId = this.step3Form.get('trainerId')?.value;
     const trainer = this.trainers.find(t => t.id === trainerId);
     
     const previewData = {
       id: this.enrollmentId || 'جديد',
-      trainee: trainee,
-      course: course,
-      trainer: trainer,
+      trainee, course, trainer,
       enrollmentType: this.enrollmentTypes.find(t => t.id === this.enrollmentForm.get('enrollmentTypeId')?.value),
       startDate: this.enrollmentForm.get('startDate')?.value,
       endDate: this.enrollmentForm.get('endDate')?.value,
@@ -964,7 +978,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
       note: this.enrollmentForm.get('note')?.value,
       isNewEnrollment: !this.isEditMode
     };
-    
     this.generatePrintDocument(previewData);
   }
 
@@ -983,42 +996,54 @@ export class EnrollmentWizardModalComponent implements OnInit {
     printContainer.innerHTML = `
       <!DOCTYPE html>
       <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>طلب تسجيل - ${data.trainee?.title || 'جديد'}</title>
-        <style>
-          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-          @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
-          .container { max-width: 800px; margin: 0 auto; }
-          .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #ec489a 0%, #be185d 100%); color: white; border-radius: 12px; }
-          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-          .info-item { border-bottom: 1px solid #e5e7eb; padding: 8px 0; }
-          .info-label { font-weight: 600; color: #374151; }
-          .info-value { color: #1f2937; }
-          .amount { font-weight: 700; color: #ec489a; font-size: 18px; }
-          .footer { text-align: center; margin-top: 30px; padding: 16px; font-size: 10px; color: #9ca3af; }
-        </style>
+      <head><meta charset="UTF-8"><title>طلب تسجيل - ${data.trainee?.title || 'جديد'}</title>
+      <style>
+        * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+        @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border-radius: 12px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 8px 0 0; font-size: 13px; opacity: 0.85; }
+        .section-title { color: #0f3460; border-bottom: 2px solid #0f3460; padding-bottom: 8px; margin-top: 24px; margin-bottom: 16px; font-size: 18px; font-weight: 600; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+        .info-item { border-bottom: 1px solid #e5e7eb; padding: 8px 0; }
+        .info-label { font-weight: 600; color: #374151; }
+        .info-value { color: #1f2937; }
+        .amount { font-weight: 700; color: #0f3460; font-size: 18px; }
+        .footer { text-align: center; margin-top: 30px; padding: 16px; font-size: 10px; color: #9ca3af; }
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.05; font-size: 60px; white-space: nowrap; pointer-events: none; }
+        @media print { .watermark { display: none; } }
+      </style>
       </head>
       <body>
+        ${data.isNewEnrollment ? '<div class="watermark">مسودة - غير معتمد</div>' : ''}
         <div class="container">
-          <div class="header"><h1>طلب تسجيل في دورة تدريبية</h1><p>${applicationNumber} - ${today}</p></div>
-          <h3>معلومات المتدرب</h3>
-          <div class="info-grid"><div class="info-item"><div class="info-label">الاسم:</div><div class="info-value">${data.trainee?.title || '-'}</div></div></div>
-          <h3>معلومات الدورة</h3>
+          <div class="header">
+            <h1>طلب تسجيل في دورة تدريبية</h1>
+            <p>${applicationNumber} - ${today}</p>
+          </div>
+          <div class="section-title">معلومات المتدرب</div>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">الاسم:</div><div class="info-value">${data.trainee?.title || '-'}</div></div>
+          </div>
+          <div class="section-title">معلومات الدورة</div>
           <div class="info-grid">
             <div class="info-item"><div class="info-label">الدورة:</div><div class="info-value">${data.course?.title || '-'}</div></div>
             <div class="info-item"><div class="info-label">المدرب:</div><div class="info-value">${data.trainer?.title || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ البدء:</div><div class="info-value">${data.startDate ? new Date(data.startDate).toLocaleDateString('ar-EG') : '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ الانتهاء:</div><div class="info-value">${data.endDate ? new Date(data.endDate).toLocaleDateString('ar-EG') : '-'}</div></div>
           </div>
-          <h3>تفاصيل الدفع</h3>
+          <div class="section-title">تفاصيل الدفع</div>
           <div class="info-grid">
             <div class="info-item"><div class="info-label">قيمة الاشتراك:</div><div class="info-value amount">${(data.subscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
             ${data.discountAmount ? `<div class="info-item"><div class="info-label">الخصم:</div><div class="info-value">${data.discountAmount.toLocaleString('ar-EG')} جم</div></div>` : ''}
             <div class="info-item"><div class="info-label">المبلغ النهائي:</div><div class="info-value amount">${(data.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
           </div>
-          ${data.note ? `<h3>ملاحظات</h3><p>${data.note}</p>` : ''}
+          ${data.note ? `<div class="section-title">ملاحظات</div><p>${data.note}</p>` : ''}
           <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        </div>
+        <div class="no-print" style="text-align: center; margin-top: 20px;">
+          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
       </body>
       </html>
@@ -1033,10 +1058,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
   }
 
   openPaymentModal(enrollmentId: number, finalAmount: number): void {
-    // Close the current dialog first
     this.dialogRef.close(true);
-    
-    // Use a timeout to ensure the current dialog is fully closed
     setTimeout(() => {
       import('../../../financial/pages/enrollment/enrollment-payment/enrollment-payment-wizard/enrollment-payment-wizard-modal.component')
         .then(module => {
@@ -1045,11 +1067,8 @@ export class EnrollmentWizardModalComponent implements OnInit {
             maxWidth: '90vw',
             data: { enrollmentId: enrollmentId }
           });
-          
           paymentDialog.afterClosed().subscribe((result: any) => {
-            if (result) {
-              this.notification.showSuccess('تم إضافة الدفعة بنجاح');
-            }
+            if (result) this.notification.showSuccess('تم إضافة الدفعة بنجاح');
           });
         })
         .catch(error => {
@@ -1064,7 +1083,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
       this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
       return;
     }
-
     if (this.enrollmentForm.invalid) {
       this.notification.showWarning('يرجى التحقق من صحة التواريخ المدخلة');
       return;
@@ -1084,12 +1102,13 @@ export class EnrollmentWizardModalComponent implements OnInit {
     }
     
     const finalSubscriptionValue = this.enrollmentForm.get('finalSubscriptionValue')?.value || 0;
+    const enrollmentTypeId = this.enrollmentForm.get('enrollmentTypeId')?.value;
     
     const enrollmentData = {
       traineeId: this.step1Form.get('traineeId')?.value,
       courseId: this.step2Form.get('courseId')?.value,
       trainerId: this.step3Form.get('trainerId')?.value,
-      enrollmentTypeId: this.enrollmentForm.get('enrollmentTypeId')?.value,
+      enrollmentTypeId: enrollmentTypeId && enrollmentTypeId !== 'new' ? Number(enrollmentTypeId) : null,
       startDate: this.enrollmentForm.get('startDate')?.value,
       endDate: this.enrollmentForm.get('endDate')?.value,
       enrollmentStatus: enrollmentStatusEnum,
@@ -1102,13 +1121,9 @@ export class EnrollmentWizardModalComponent implements OnInit {
       note: this.enrollmentForm.get('note')?.value
     };
 
-    console.log('Submitting enrollment data:', enrollmentData);
-    console.log('Make payment directly:', this.makePaymentDirectly);
-    console.log('Final amount:', finalSubscriptionValue);
-
     if (this.isEditMode && this.enrollmentId) {
       this.enrollmentService.updateEnrollment(this.enrollmentId, enrollmentData as any).subscribe({
-        next: (res: any) => {
+        next: () => {
           this.notification.showSuccess('تم تحديث التسجيل بنجاح');
           if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
             this.openPaymentModal(this.enrollmentId!, finalSubscriptionValue);
@@ -1127,10 +1142,8 @@ export class EnrollmentWizardModalComponent implements OnInit {
       this.enrollmentService.createEnrollment(enrollmentData as any).subscribe({
         next: (res: any) => {
           this.notification.showSuccess('تم إضافة التسجيل بنجاح');
-          const newEnrollmentId = res.id;
-          console.log('New enrollment ID:', newEnrollmentId);
           if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
-            this.openPaymentModal(newEnrollmentId, finalSubscriptionValue);
+            this.openPaymentModal(res.id, finalSubscriptionValue);
           } else {
             this.dialogRef.close(true);
           }
@@ -1143,5 +1156,141 @@ export class EnrollmentWizardModalComponent implements OnInit {
         }
       });
     }
+  }
+}
+
+// Dialog component for adding new enrollment type
+@Component({
+  selector: 'app-add-enrollment-type-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatDividerModule
+  ],
+  template: `
+    <div class="dialog-container">
+      <div class="dialog-header">
+        <mat-icon>add_circle</mat-icon>
+        <h2>إضافة نوع تسجيل جديد</h2>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="dialog-content">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>نوع التسجيل</mat-label>
+          <input matInput [(ngModel)]="title" placeholder="مثال: تسجيل عادي, تسجيل مميز, ...">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>الوصف (اختياري)</mat-label>
+          <textarea matInput [(ngModel)]="description" rows="3" placeholder="وصف نوع التسجيل..."></textarea>
+        </mat-form-field>
+      </div>
+      <div class="dialog-actions">
+        <button mat-button (click)="cancel()">إلغاء</button>
+        <button mat-raised-button color="primary" [disabled]="!title || isSubmitting" (click)="save()">
+          <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+          <span *ngIf="!isSubmitting">حفظ</span>
+        </button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .dialog-container {
+      padding: 24px;
+      min-width: 400px;
+      background: white;
+      border-radius: 24px;
+    }
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .dialog-header mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: #0f3460;
+    }
+    .dialog-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .dialog-content {
+      padding: 16px 0;
+    }
+    .full-width {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .dialog-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .dialog-actions button {
+      min-width: 100px;
+    }
+    @media (max-width: 500px) {
+      .dialog-container {
+        min-width: 300px;
+        padding: 16px;
+      }
+      .dialog-actions {
+        flex-direction: column-reverse;
+      }
+      .dialog-actions button {
+        width: 100%;
+      }
+    }
+  `]
+})
+export class AddEnrollmentTypeDialogComponent {
+  title: string = '';
+  description: string = '';
+  isSubmitting: boolean = false;
+
+  constructor(
+    private dialogRef: MatDialogRef<AddEnrollmentTypeDialogComponent>,
+    private enrollmentService: EnrollmentService,
+    private notification: NotificationService
+  ) {}
+
+  cancel(): void {
+    this.dialogRef.close({ success: false });
+  }
+
+  save(): void {
+    if (!this.title) {
+      this.notification.showWarning('يرجى إدخال نوع التسجيل');
+      return;
+    }
+    this.isSubmitting = true;
+    this.enrollmentService.createEnrollmentType({
+      title: this.title,
+      description: this.description
+    }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.dialogRef.close({ success: true, title: this.title });
+      },
+      error: (err) => {
+        console.error('Error creating enrollment type:', err);
+        this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة نوع التسجيل');
+        this.isSubmitting = false;
+      }
+    });
   }
 }

@@ -7,6 +7,6 @@
 
     <changeSet id="12" author="mahmoud.zain">
         <modifyDataType tableName="fl_domain_config" columnName="last_modified_on" newDataType="datetime"/>
-        <modifyDataType tableName="fl_domain_config" columnName="last_modified_by_id" newDataType="bigint"/>
+        <modifyDataType tableName="fl_domain_config" columnName="last_modified_by_id" newDataType="int"/>
     </changeSet>
 </databaseChangeLog>

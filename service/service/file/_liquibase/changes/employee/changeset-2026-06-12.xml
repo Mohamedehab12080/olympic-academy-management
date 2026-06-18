@@ -1,0 +1,35 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+
+    <changeSet id="1" author="mohamed.ehab">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*)
+                FROM sc_domain
+                WHERE id = 4002;
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="sc_domain">
+            <column name="id" valueComputed="4002"/>
+            <column name="title_en" value="Employee"/>
+            <column name="title_ar" value="موظف"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2" author="alaa.esam">
+        <insert tableName="fl_domain_config">
+            <column name="domain_id" valueComputed="4002"/>
+            <column name="base_folder" value="/employee"/>
+            <column name="label" value="employee"/>
+            <column name="max_size" value="10485760"/>
+            <column name="allowed_extensions" value="jpg,png,pdf"/>
+            <column name="last_modified_on" valueComputed="NULL"/>
+            <column name="last_modified_by_id" valueComputed="NULL"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

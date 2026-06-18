@@ -1,5 +1,6 @@
 package bs.service.trainee.model.generated;
 
+import bs.lib.common.model.generated.CommonEnrollmentVTO;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,6 +48,9 @@ public class TraineeVTO implements Serializable {
     private String address;
 
     private String imageUrl;
+
+    @Valid
+    private List<@Valid CommonEnrollmentVTO> enrollments = new ArrayList<>();
 
     @Valid
     private List<@Valid TraineeContactVTO> contacts = new ArrayList<>();
@@ -256,6 +260,35 @@ public class TraineeVTO implements Serializable {
         this.imageUrl = imageUrl;
     }
 
+    public TraineeVTO enrollments(List<@Valid CommonEnrollmentVTO> enrollments) {
+        this.enrollments = enrollments;
+        return this;
+    }
+
+    public TraineeVTO addEnrollmentsItem(CommonEnrollmentVTO enrollmentsItem) {
+        if (this.enrollments == null) {
+            this.enrollments = new ArrayList<>();
+        }
+        this.enrollments.add(enrollmentsItem);
+        return this;
+    }
+
+    /**
+     * Get enrollments
+     *
+     * @return enrollments
+     */
+    @Valid
+    @Schema(name = "enrollments", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("enrollments")
+    public List<@Valid CommonEnrollmentVTO> getEnrollments() {
+        return enrollments;
+    }
+
+    public void setEnrollments(List<@Valid CommonEnrollmentVTO> enrollments) {
+        this.enrollments = enrollments;
+    }
+
     public TraineeVTO contacts(List<@Valid TraineeContactVTO> contacts) {
         this.contacts = contacts;
         return this;
@@ -443,6 +476,7 @@ public class TraineeVTO implements Serializable {
                 && Objects.equals(this.gender, traineeVTO.gender) && Objects.equals(this.isActive, traineeVTO.isActive)
                 && Objects.equals(this.address, traineeVTO.address)
                 && Objects.equals(this.imageUrl, traineeVTO.imageUrl)
+                && Objects.equals(this.enrollments, traineeVTO.enrollments)
                 && Objects.equals(this.contacts, traineeVTO.contacts)
                 && Objects.equals(this.certificates, traineeVTO.certificates)
                 && Objects.equals(this.healthConditions, traineeVTO.healthConditions)
@@ -455,7 +489,8 @@ public class TraineeVTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, fullName, nationalId, academicYear, birthDate, gender, isActive, address, imageUrl,
-                contacts, certificates, healthConditions, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+                enrollments, contacts, certificates, healthConditions, createdOn, createdBy, lastModifiedOn,
+                lastModifiedBy);
     }
 
     @Override
@@ -471,6 +506,7 @@ public class TraineeVTO implements Serializable {
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    address: ").append(toIndentedString(address)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
+        sb.append("    enrollments: ").append(toIndentedString(enrollments)).append("\n");
         sb.append("    contacts: ").append(toIndentedString(contacts)).append("\n");
         sb.append("    certificates: ").append(toIndentedString(certificates)).append("\n");
         sb.append("    healthConditions: ").append(toIndentedString(healthConditions)).append("\n");

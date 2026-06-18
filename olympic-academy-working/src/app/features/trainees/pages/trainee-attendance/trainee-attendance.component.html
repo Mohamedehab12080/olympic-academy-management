@@ -1,3 +1,5 @@
+<!-- trainee-attendance.component.html -->
+
 <div class="attendance-container">
   <mat-card class="main-card">
     <!-- Header Section -->
@@ -66,19 +68,52 @@
           </mat-form-field>
         </div>
 
-        <div class="filter-actions">
-          <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
-            <mat-icon>refresh</mat-icon>
-            مسح الكل
-          </button>
-          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
-            <mat-icon>grid_on</mat-icon>
-            تصدير Excel
-          </button>
-          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
-            <mat-icon>picture_as_pdf</mat-icon>
-            تصدير PDF
-          </button>
+        <!-- Barcode Search Row -->
+        <div class="filters-row barcode-row">
+          <div class="barcode-search-section">
+            <div class="barcode-toggle" (click)="toggleBarcodeMode()">
+              <button mat-icon-button 
+                      [color]="isBarcodeMode ? 'primary' : ''" 
+                      matTooltip="مسح الباركود">
+                <mat-icon>qr_code_scanner</mat-icon>
+              </button>
+              <span class="barcode-label">بحث بالباركود</span>
+            </div>
+            
+            <div class="barcode-input-wrapper" *ngIf="isBarcodeMode">
+              <mat-form-field appearance="outline" class="barcode-search-field">
+                <mat-label>أدخل رقم الباركود</mat-label>
+                <input #barcodeInput 
+                       matInput 
+                       [(ngModel)]="barcodeSearch" 
+                       (keydown)="onBarcodeKeydown($event)"
+                       placeholder="مسح الباركود أو إدخال رقم الهوية">
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="searchTraineeByBarcode()" class="barcode-search-btn">
+                <mat-icon>search</mat-icon>
+                بحث
+              </button>
+              <button mat-icon-button (click)="toggleBarcodeMode()" matTooltip="إغلاق" class="barcode-close-btn">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+              <mat-icon>refresh</mat-icon>
+              مسح الكل
+            </button>
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+              <mat-icon>grid_on</mat-icon>
+              تصدير Excel
+            </button>
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
+              <mat-icon>picture_as_pdf</mat-icon>
+              تصدير PDF
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -189,22 +224,24 @@
             </td>
           </ng-container>
 
+          <!-- UPDATED: Check In Time with 12-hour format -->
           <ng-container matColumnDef="checkInTime">
             <th mat-header-cell *matHeaderCellDef>وقت الدخول</th>
             <td mat-cell *matCellDef="let a">
               <div class="time-info">
                 <mat-icon>login</mat-icon>
-                <span>{{ a.checkInTime || '-' }}</span>
+                <span>{{ convertTo12HourFormat(a.checkInTime) }}</span>
               </div>
-            <tr>
+            </td>
           </ng-container>
 
+          <!-- UPDATED: Check Out Time with 12-hour format -->
           <ng-container matColumnDef="checkOutTime">
             <th mat-header-cell *matHeaderCellDef>وقت الخروج</th>
             <td mat-cell *matCellDef="let a">
               <div class="time-info">
                 <mat-icon>logout</mat-icon>
-                <span>{{ a.checkOutTime || '-' }}</span>
+                <span>{{ convertTo12HourFormat(a.checkOutTime) }}</span>
               </div>
             </td>
           </ng-container>
@@ -221,24 +258,24 @@
             </td>
           </ng-container>
 
-<ng-container matColumnDef="actions">
-  <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-  <td mat-cell *matCellDef="let a">
-    <div class="action-buttons">
-      <button mat-icon-button color="primary" (click)="viewAttendance(a.id); $event.stopPropagation()" matTooltip="عرض التفاصيل">
-        <mat-icon>visibility</mat-icon>
-      </button>
-      <button mat-icon-button color="accent" (click)="openAttendanceDialog(a.id); $event.stopPropagation()" matTooltip="تعديل">
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="deleteAttendance(a.id); $event.stopPropagation()" matTooltip="حذف">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </div>
-  </td>
-</ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
+            <td mat-cell *matCellDef="let a">
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="viewAttendance(a.id); $event.stopPropagation()" matTooltip="عرض التفاصيل">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="openAttendanceDialog(a.id); $event.stopPropagation()" matTooltip="تعديل">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteAttendance(a.id); $event.stopPropagation()" matTooltip="حذف">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"><tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
           <tr class="mat-row no-data-row" *matNoDataRow>
@@ -253,7 +290,7 @@
               </div>
             </td>
           </tr>
-            </table>
+        </table>
       </div>
 
       <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>

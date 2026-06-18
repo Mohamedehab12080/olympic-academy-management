@@ -1,9 +1,9 @@
 package bs.service.file.repository;
 
+import bs.lib.security.api.service.SecurityUtilsService;
+import bs.service.user.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import bs.lib.session.api.service.RequestContext;
-import bs.lib.session.model.enums.CommonRequestContextKeys;
 import bs.service.file.api.repository.FileRepository;
 import bs.service.file.model.entity.FlFile;
 import bs.service.file.model.filter.FileSearchFilter;
@@ -19,21 +19,21 @@ import java.util.Optional;
 public class FileRepositoryImpl implements FileRepository {
 
     private final FileJPARepository jpaRepository;
-    private final RequestContext context;
+    private final SecurityUtilsService securityUtilsService;
     private final FileQueryBuilder queryBuilder;
 
     @Override
     public FlFile insert(FlFile flFile) {
-        Long currentId=context.get(CommonRequestContextKeys.USER_ID, Long.class);
+        User currentUser = User.builder().id(securityUtilsService.getCurrentUserId()).build();
         flFile.setCreatedOn(LocalDateTime.now());
-        flFile.setCreatedById(currentId);
+        flFile.setCreatedBy(currentUser);
         return jpaRepository.save(flFile);
     }
 
     @Override
     public FlFile update(FlFile flFile) {
-        Long currentId=context.get(CommonRequestContextKeys.USER_ID, Long.class);
-        flFile.setLastModifiedById(currentId);
+        User currentUser = User.builder().id(securityUtilsService.getCurrentUserId()).build();
+        flFile.setLastModifiedBy(currentUser);
         flFile.setLastModifiedOn(LocalDateTime.now());
         return jpaRepository.save(flFile);
     }

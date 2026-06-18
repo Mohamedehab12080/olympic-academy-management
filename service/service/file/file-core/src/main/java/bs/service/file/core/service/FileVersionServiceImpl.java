@@ -17,7 +17,6 @@ import bs.service.file.core.mapper.FileMapper;
 import bs.service.file.model.config.AbstractFileConfig;
 import bs.service.file.model.entity.FlFile;
 import bs.service.file.model.entity.FlFileVersion;
-import bs.service.file.model.event.data.FileVersionEventData;
 import bs.service.file.model.filter.FileVersionSearchFilter;
 import bs.service.file.model.generated.FileVTO;
 import bs.service.file.model.generated.UploadFileVTO;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static bs.service.file.model.enums.FileErrors.FILE_NOT_FOUND;
-import static bs.service.file.model.enums.FileEvents.UPLOAD_FILE;
 
 @Service
 
@@ -43,7 +41,6 @@ public class FileVersionServiceImpl implements FileVersionService {
     private final FileMapper fileMapper;
     private final StorageService storageService;
     private final AbstractFileConfig abstractFileConfig;
-    private final MQClientService mqClientService;
 
     @Override
     @Transactional
@@ -63,9 +60,6 @@ public class FileVersionServiceImpl implements FileVersionService {
 
         Path storagePath = Paths.get(abstractFileConfig.getRootBaseUrl(), originalFile.getDomain().getBaseFolder());
         storageService.write(storagePath.toString(), newVersion.getServerFileName(), fileInfo.getContent());
-
-        FileVersionEventData eventData = fileMapper.toFileVersionEventData(savedVersion);
-        mqClientService.sendMessage(UPLOAD_FILE, eventData);
 
         return new UploadFileVTO(versionFid);
     }

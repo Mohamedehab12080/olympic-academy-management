@@ -1,3 +1,5 @@
+// course-session-form-modal.component.ts
+
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -22,7 +24,20 @@ import { EmployeeService } from '../../../../core/services/employee.service';
 import { PlaceService } from '../../../../core/services/place.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { SESSION_STATUSES } from '../../../../core/models/employee.model';
+
+// Status mapping for display
+interface StatusOption {
+  id: number;
+  value: string;  // Enum value for backend
+  label: string;  // Display text in Arabic
+}
+
+const STATUS_OPTIONS: StatusOption[] = [
+  { id: 1, value: 'SCHEDULED', label: 'مجدول' },
+  { id: 2, value: 'IN_PROGRESS', label: 'في تقدم' },
+  { id: 3, value: 'COMPLETED', label: 'مكتمل' },
+  { id: 4, value: 'CANCELLED', label: 'ملغي' }
+];
 
 @Component({
   selector: 'app-course-session-form-modal',
@@ -65,7 +80,7 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
   ],
   template: `
     <div class="modal-container" [@fadeInOut]>
-      <!-- Modal Header with Enhanced Design -->
+      <!-- Modal Header -->
       <div class="modal-header" [class.edit-mode]="data.mode === 'edit'">
         <div class="header-icon">
           <mat-icon>{{ data.mode === 'edit' ? 'edit' : 'add_circle' }}</mat-icon>
@@ -81,7 +96,7 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
 
       <mat-divider></mat-divider>
 
-      <!-- Modal Body with Enhanced Form -->
+      <!-- Modal Body -->
       <div class="modal-body">
         <form [formGroup]="sessionForm" (ngSubmit)="onSubmit()" class="session-form">
           <!-- Basic Information Section -->
@@ -92,7 +107,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
             </div>
             
             <div class="form-grid">
-              <!-- Session Title -->
               <div class="form-field full-width">
                 <mat-form-field appearance="outline" class="custom-form-field">
                   <mat-label>عنوان الجلسة</mat-label>
@@ -228,13 +242,17 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
                   <mat-icon>flag</mat-icon>
                   حالة الجلسة
                 </label>
-                <app-searchable-select
-                  [ngModel]="sessionForm.get('status')?.value"
-                  (ngModelChange)="sessionForm.get('status')?.setValue($event)"
-                  placeholder="اختر الحالة"
-                  [options]="statusOptions"
-                  [ngModelOptions]="{standalone: true}">
-                </app-searchable-select>
+                <mat-form-field appearance="outline" class="custom-form-field">
+                  <mat-label>اختر الحالة</mat-label>
+                  <mat-select formControlName="status">
+                    <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+                      <div class="status-option">
+                        <span class="status-dot" [class]="getStatusClass(status.id)"></span>
+                        {{ status.label }}
+                      </div>
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
               </div>
             </div>
           </div>
@@ -249,7 +267,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
             </div>
 
             <div class="form-grid">
-              <!-- Notes -->
               <div class="form-field full-width">
                 <mat-form-field appearance="outline" class="custom-form-field">
                   <mat-label>ملاحظات إضافية</mat-label>
@@ -262,7 +279,7 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
             </div>
           </div>
 
-          <!-- Form Actions with Enhanced Buttons -->
+          <!-- Form Actions -->
           <div class="form-actions">
             <button mat-raised-button color="primary" type="submit" 
                     [disabled]="sessionForm.invalid || isLoading" 
@@ -279,7 +296,7 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
         </form>
       </div>
 
-      <!-- Enhanced Loading Overlay -->
+      <!-- Loading Overlay -->
       <div class="loading-overlay" *ngIf="isLoading" [@fadeInOut]>
         <div class="loading-content">
           <mat-spinner diameter="60" color="accent"></mat-spinner>
@@ -303,7 +320,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
-    /* Modal Header */
     .modal-header {
       display: flex;
       align-items: center;
@@ -390,7 +406,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       transform: rotate(90deg) scale(1.1);
     }
 
-    /* Modal Body */
     .modal-body {
       flex: 1;
       overflow-y: auto;
@@ -415,7 +430,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       background: #667eea;
     }
 
-    /* Form Sections */
     .form-section {
       margin-bottom: 32px;
     }
@@ -455,7 +469,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       grid-column: span 2;
     }
 
-    /* Field Labels */
     .field-label {
       display: flex;
       align-items: center;
@@ -493,7 +506,35 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       height: 14px;
     }
 
-    /* Custom Form Field Styles */
+    .status-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.scheduled {
+      background-color: #3b82f6;
+    }
+
+    .status-dot.in-progress {
+      background-color: #f59e0b;
+    }
+
+    .status-dot.completed {
+      background-color: #10b981;
+    }
+
+    .status-dot.cancelled {
+      background-color: #ef4444;
+    }
+
     ::ng-deep .custom-form-field .mat-form-field-outline {
       background: white;
       border-radius: 12px;
@@ -517,7 +558,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       background: #f3f4f6;
     }
 
-    /* Form Actions */
     .form-actions {
       display: flex;
       gap: 16px;
@@ -584,7 +624,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       transform: translateY(-1px);
     }
 
-    /* Loading Overlay */
     .loading-overlay {
       position: absolute;
       top: 0;
@@ -627,7 +666,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       display: inline-block;
     }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
       .modal-header {
         padding: 20px;
@@ -675,7 +713,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       }
     }
 
-    /* Animation for form fields */
     @keyframes slideInUp {
       from {
         opacity: 0;
@@ -696,7 +733,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
     .form-section:nth-child(3) { animation-delay: 0.2s; }
     .form-section:nth-child(4) { animation-delay: 0.3s; }
 
-    /* Error styles */
     ::ng-deep .mat-form-field.mat-form-field-invalid .mat-form-field-outline {
       color: #ef4444;
     }
@@ -707,12 +743,10 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       color: #ef4444;
     }
 
-    /* Success state */
     ::ng-deep .mat-form-field.mat-form-field-valid .mat-form-field-outline {
       color: #10b981;
     }
 
-    /* Focus state */
     ::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
       color: #667eea !important;
     }
@@ -721,7 +755,6 @@ import { SESSION_STATUSES } from '../../../../core/models/employee.model';
       color: #667eea !important;
     }
 
-    /* Divider style */
     mat-divider {
       margin: 0;
       opacity: 0.5;
@@ -735,12 +768,11 @@ export class CourseSessionFormModalComponent implements OnInit {
   courses: any[] = [];
   trainers: any[] = [];
   places: any[] = [];
-  sessionStatuses = SESSION_STATUSES;
+  statusOptions = STATUS_OPTIONS;
 
   courseOptions: SelectOption[] = [];
   trainerOptions: SelectOption[] = [];
   placeOptions: SelectOption[] = [];
-  statusOptions: SelectOption[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -766,16 +798,15 @@ export class CourseSessionFormModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadSelectOptions();
     this.loadLookupData();
     
     if (this.data.mode === 'edit' && this.data.session) {
       this.populateForm();
+    } else if (this.data.mode === 'add' && this.data.courseId) {
+      this.sessionForm.patchValue({
+        courseId: this.data.courseId
+      });
     }
-  }
-
-  loadSelectOptions(): void {
-    this.statusOptions = this.sessionStatuses.map(s => ({ value: s.id, label: s.title }));
   }
 
   loadLookupData(): void {
@@ -806,63 +837,110 @@ export class CourseSessionFormModalComponent implements OnInit {
       error: () => this.notification.showError('حدث خطأ في تحميل الأماكن')
     });
   }
+populateForm(): void {
+  const session = this.data.session;
+  
+  // Map status from backend enum to display value
+  let statusValue = null;
+  if (session.status) {
+    if (typeof session.status === 'object' && session.status.title) {
+      const foundStatus = this.statusOptions.find(s => s.label === session.status.title);
+      if (foundStatus) {
+        statusValue = foundStatus.value;
+      }
+    } else if (typeof session.status === 'string') {
+      const foundStatus = this.statusOptions.find(s => s.value === session.status);
+      if (foundStatus) {
+        statusValue = foundStatus.value;
+      }
+    }
+  }
+  
+  this.sessionForm.patchValue({
+    title: session.title,
+    courseId: session.course?.id,  // This will be disabled but still has value
+    trainerId: session.trainer?.id,
+    placeId: session.place?.id,
+    sessionDate: session.sessionDate,
+    startTime: session.startTime,
+    endTime: session.endTime,
+    status: statusValue,
+    note: session.note
+  });
+}
 
-  populateForm(): void {
-    const session = this.data.session;
-    this.sessionForm.patchValue({
-      title: session.title,
-      courseId: session.course?.id,
-      trainerId: session.trainer?.id,
-      placeId: session.place?.id,
-      sessionDate: session.sessionDate,
-      startTime: session.startTime,
-      endTime: session.endTime,
-      status: session.status?.id,
-      note: session.note
+  getStatusClass(statusId: number): string {
+    switch(statusId) {
+      case 1: return 'scheduled';
+      case 2: return 'in-progress';
+      case 3: return 'completed';
+      case 4: return 'cancelled';
+      default: return '';
+    }
+  }
+
+onSubmit(): void {
+  if (this.sessionForm.invalid) {
+    this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
+    Object.keys(this.sessionForm.controls).forEach(key => {
+      this.sessionForm.get(key)?.markAsTouched();
+    });
+    return;
+  }
+
+  this.isLoading = true;
+  const formData = this.sessionForm.value;
+  
+  // IMPORTANT: Get courseId from form data or from the data object
+  const courseId = this.data.mode === 'edit' ? this.data.courseId : formData.courseId;
+  
+  // Prepare payload - include courseId for both create and update
+  const payload: any = {
+    courseId: courseId,  // ← This is required by backend
+    title: formData.title,
+    trainerId: formData.trainerId,
+    placeId: formData.placeId,
+    sessionDate: formData.sessionDate,
+    startTime: formData.startTime,
+    endTime: formData.endTime,
+    note: formData.note
+  };
+  
+  // Add status as enum string if selected
+  if (formData.status) {
+    payload.status = formData.status;
+  }
+  
+  console.log('Submitting payload:', payload);
+
+  if (this.data.mode === 'edit' && this.data.courseId && this.data.sessionId) {
+    // For update, you might not need to send courseId in body if it's in URL
+    // But to be safe, we send it
+    this.sessionService.updateCourseSession(this.data.courseId, this.data.sessionId, payload).subscribe({
+      next: () => {
+        this.notification.showSuccess('تم تحديث الجلسة بنجاح');
+        this.dialogRef.close('updated');
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث الجلسة');
+        this.isLoading = false;
+      }
+    });
+  } else {
+    this.sessionService.createCourseSession(courseId, payload).subscribe({
+      next: () => {
+        this.notification.showSuccess('تم إضافة الجلسة بنجاح');
+        this.dialogRef.close('saved');
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الجلسة');
+        this.isLoading = false;
+      }
     });
   }
-
-  onSubmit(): void {
-    if (this.sessionForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
-      // Mark all fields as touched to show errors
-      Object.keys(this.sessionForm.controls).forEach(key => {
-        this.sessionForm.get(key)?.markAsTouched();
-      });
-      return;
-    }
-
-    this.isLoading = true;
-    const formData = this.sessionForm.value;
-    const courseId = formData.courseId;
-
-    if (this.data.mode === 'edit' && this.data.courseId && this.data.sessionId) {
-      this.sessionService.updateCourseSession(this.data.courseId, this.data.sessionId, formData).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم تحديث الجلسة بنجاح');
-          this.dialogRef.close('updated');
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث الجلسة');
-          this.isLoading = false;
-        }
-      });
-    } else {
-      this.sessionService.createCourseSession(courseId, formData).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم إضافة الجلسة بنجاح');
-          this.dialogRef.close('saved');
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الجلسة');
-          this.isLoading = false;
-        }
-      });
-    }
-  }
-
+}
   onClose(): void {
     if (!this.isLoading) {
       this.dialogRef.close();

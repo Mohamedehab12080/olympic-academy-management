@@ -1,6 +1,5 @@
 package bs.service.course.core.service;
 
-import bs.lib.common.model.enums.PaymentStatus;
 import bs.lib.common.model.exception.BusinessException;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;

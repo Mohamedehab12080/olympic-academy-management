@@ -1,4 +1,4 @@
-import { LightUserVTO, LookupVTO, Gender, ContactType } from './common.model';
+import { LightUserVTO, LookupVTO, Gender, ContactType, CommonEnrollmentVTO } from './common.model';
 
 // ==================== Enums (specific to Trainee module) ====================
 
@@ -57,6 +57,7 @@ export interface TraineeVTO {
   academicYear?: string;
   birthDate?: string;
   gender?: LookupVTO;  // From common.model
+  enrollments?:CommonEnrollmentVTO[];
   isActive: boolean;
   address?: string;
   imageUrl?: string;
@@ -105,6 +106,7 @@ export interface TraineeListItem {
   nationalId: string;
   isActive: boolean;
   academicYear: string;
+  imageUrl:string;
   gender: LookupVTO;  // From common.model
 }
 

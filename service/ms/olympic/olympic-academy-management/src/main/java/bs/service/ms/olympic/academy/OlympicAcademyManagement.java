@@ -5,6 +5,7 @@ import bs.lib.id.counter.annotation.ImportIdCounterCore;
 import bs.lib.id.counter.annotation.ImportIdCounterRepository;
 import bs.lib.rest.annotation.imports.ImportRESTAdapter;
 import bs.lib.security.annotation.imports.ImportSecurityAdapter;
+import bs.lib.service.context.annotation.imports.ImportServiceContextRepository;
 import bs.lib.sql.db.adapter.annotation.imports.ImportSQLDBAdapter;
 import bs.service.course.annotation.imports.ImportCourseCore;
 import bs.service.course.annotation.imports.ImportCourseRepository;
@@ -16,6 +17,9 @@ import bs.service.employee.annotation.imports.ImportEmployeeRepository;
 import bs.service.enrollment.annotation.imports.ImportEnrollmentCore;
 import bs.service.enrollment.annotation.imports.ImportEnrollmentRepository;
 import bs.service.enrollment.proxy.annotation.imports.ImportInternalEnrollmentMgtProxy;
+import bs.service.file.annotation.imports.ImportFileCore;
+import bs.service.file.annotation.imports.ImportFileRepository;
+import bs.service.file.proxy.annotation.imports.ImportInternalFileProxy;
 import bs.service.financial.annotation.imports.ImportFinancialCore;
 import bs.service.financial.annotation.imports.ImportFinancialRepository;
 import bs.service.place.annotation.imports.ImportPlaceCore;
@@ -34,6 +38,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ImportRESTAdapter
 @ImportSecurityAdapter
 
+@ImportServiceContextRepository
+
 @ImportUserCore
 @ImportUserRepository
 
@@ -49,6 +55,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ImportEnrollmentCore
 @ImportEnrollmentRepository
 @ImportInternalEnrollmentMgtProxy
+
+@ImportFileCore
+@ImportFileRepository
+@ImportInternalFileProxy
 
 @ImportFinancialCore
 @ImportFinancialRepository
