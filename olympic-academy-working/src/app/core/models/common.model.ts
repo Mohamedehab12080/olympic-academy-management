@@ -91,6 +91,8 @@ export interface ErrorVTO {
 
 export interface LightUserVTO {
   id: number;
+  nationalId:string;
+  imageUrl:string;
   fullName: string;
 }
 

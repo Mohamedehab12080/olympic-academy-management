@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable ,map} from 'rxjs';
 import { ApiService } from './api.service';
 import {
   TraineeDTO, TraineeVTO, TraineeResultSet,
   TraineeCertificateDTO, TraineeCertificateVTO, TraineeCertificateResultSet,
   HealthConditionDTO, HealthConditionVTO, HealthConditionResultSet,
-  TraineeContactDTO, TraineeContactResultSet
+  TraineeContactDTO, TraineeContactResultSet,
+  TraineeLookupResultSet
 } from '../models/trainee.model';
 import { NewRecordVTO,LookupResultSet } from '../models/common.model';
 
@@ -91,8 +92,18 @@ export class TraineeService {
     return this.api.delete(`/trainees/${traineeId}/health-conditions/${conditionId}`);
   }
 
-    getAllTraineesLookup(): Observable<LookupResultSet> {
-    return this.api.get(`/lookup/trainees`);
-    }
+getAllTraineesLookup(): Observable<TraineeLookupResultSet> {
+  return this.api.get(`/lookup/trainees`).pipe(
+    map((response: any) => {
+      console.log('Raw API response:', response);
+      const mapped = {
+        list: response._list || [],
+        total: response.total || 0
+      };
+      console.log('Mapped response:', mapped);
+      return mapped;
+    })
+  );
+}
 }
 

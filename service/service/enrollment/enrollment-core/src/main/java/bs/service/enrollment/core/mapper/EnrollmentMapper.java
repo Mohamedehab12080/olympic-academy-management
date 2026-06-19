@@ -47,6 +47,7 @@ public abstract class EnrollmentMapper {
     }
 
     // ==================== User Mapping ====================
+    public abstract LightUserVTO toLightUserVTO(Trainee trainee);
 
     public abstract LightUserVTO toLightUserVTO(User user);
 

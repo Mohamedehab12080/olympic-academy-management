@@ -51,7 +51,7 @@ import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wiz
           <div class="detail-label">التسجيل:</div>
           <div class="detail-value">
             <mat-icon>assignment</mat-icon>
-            <span>{{ payment.enrollment?.trainee?.title }} - {{ payment.enrollment?.course?.title }}</span>
+            <span>{{ payment.enrollment?.trainee?.fullName }} - {{ payment.enrollment?.course?.title }}</span>
           </div>
         </div>
         
@@ -59,7 +59,7 @@ import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wiz
           <div class="detail-label">المتدرب:</div>
           <div class="detail-value">
             <mat-icon>person</mat-icon>
-            <span>{{ payment.enrollment?.trainee?.title }}</span>
+            <span>{{ payment.enrollment?.trainee?.fullName }}</span>
           </div>
         </div>
         
@@ -442,7 +442,7 @@ export class EnrollmentPaymentDetailsModalComponent {
           </div>
           <h2>📋 معلومات التسجيل</h2>
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">المتدرب</div><div class="info-value">${this.payment.enrollment?.trainee?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">المتدرب</div><div class="info-value">${this.payment.enrollment?.trainee?.fullName || '-'}</div></div>
             <div class="info-item"><div class="info-label">الدورة</div><div class="info-value">${this.payment.enrollment?.course?.title || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ التسجيل</div><div class="info-value">${this.payment.enrollment?.startDate || '-'}</div></div>
           </div>

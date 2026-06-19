@@ -417,7 +417,7 @@ components:
           type: integer
           format: int32
         trainee:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         trainer:

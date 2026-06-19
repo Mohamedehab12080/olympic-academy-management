@@ -89,6 +89,11 @@ public abstract class TraineeMapper {
     public abstract LookupVTO toLookupVTOFromTrainee(Trainee trainee);
     public abstract List<LookupVTO> toLookupVTOsFromTrainees(List<Trainee> trainees);
 
+    @Mapping(target = "title", source = "fullName")
+    public abstract TraineeLookupVTO toTraineeLookupVTOFromTrainee(Trainee trainee);
+    public abstract List<TraineeLookupVTO> toTraineeLookupVTOsFromTrainees(List<Trainee> trainees);
+
+
     @Mapping(target = "title", source = "title")
     public abstract LookupVTO toLookupVTOSession(CourseSession courseSession);
 

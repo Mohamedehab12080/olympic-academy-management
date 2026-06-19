@@ -18,5 +18,5 @@ public interface TraineeService {
                                             Integer pageNum, Integer pageSize,
                                             OrderDirections orderDir, String orderBy);
 
-    LookupResultSet getAllTraineesLookup();
+    TraineeLookupResultSet getAllTraineesLookup();
 }

@@ -1,6 +1,6 @@
 // enrollment-wizard-modal.component.ts
 
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -17,6 +17,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { EnrollmentService } from '../../../../core/services/enrollment.service';
 import { TraineeService } from '../../../../core/services/trainee.service';
@@ -24,9 +25,19 @@ import { CourseService } from '../../../../core/services/course.service';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { FinancialService } from '../../../../core/services/financial.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { FileService } from '../../../../core/services/file.service';
 import { PAYMENT_STATUSES } from '../../../../core/models/common.model';
 import { ENROLLMENT_STATUSES } from '../../../../core/models/enrollment.model';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+
+interface TraineeLookup {
+  id: number;
+  title: string;
+  nationalId: string;
+  imageUrl: string;
+  imagePreviewUrl?: string;
+  academicYear?: string;
+}
 
 @Component({
   selector: 'app-enrollment-wizard-modal',
@@ -49,6 +60,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
     MatCardModule,
     MatTooltipModule,
     MatCheckboxModule,
+    MatChipsModule,
     SearchableSelectComponent
   ],
   template: `
@@ -57,7 +69,10 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       <div class="wizard-header">
         <div class="header-title">
           <mat-icon>{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
-          <h2>{{ isEditMode ? 'تعديل التسجيل' : 'تسجيل جديد' }}</h2>
+          <div>
+            <h2>{{ isEditMode ? 'تعديل التسجيل' : 'تسجيل جديد' }}</h2>
+            <p>{{ isEditMode ? 'قم بتحديث بيانات التسجيل' : 'أضف تسجيل جديد لمتدرب' }}</p>
+          </div>
         </div>
         <div class="header-actions">
           <button mat-icon-button (click)="printPreview()" matTooltip="معاينة الطباعة">
@@ -84,18 +99,74 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
               </div>
             </ng-template>
             <div class="step-content">
-              <form [formGroup]="step1Form">
+              <div class="step-header">
+                <div class="step-header-icon">👤</div>
+                <div class="step-header-text">
+                  <h3>اختر المتدرب</h3>
+                  <p>يمكنك البحث عن المتدرب باستخدام الاسم أو رقم الهوية</p>
+                </div>
+              </div>
+
+              <div class="trainee-search-section">
+                <!-- Barcode Scanner Input -->
+                <div class="barcode-section">
+                  <div class="barcode-icon-wrapper">
+                    <mat-icon class="barcode-icon">qr_code_scanner</mat-icon>
+                  </div>
+                  <div class="barcode-input-wrapper">
+                    <mat-form-field appearance="outline" class="barcode-input">
+                      <mat-label>مسح الباركود (رقم الهوية)</mat-label>
+                      <input matInput 
+                             #barcodeInput
+                             (keyup.enter)="searchByNationalId(barcodeInput.value)"
+                             placeholder="أدخل رقم الهوية أو امسح الباركود...">
+                      <button mat-icon-button matSuffix (click)="searchByNationalId(barcodeInput.value)" matTooltip="بحث">
+                        <mat-icon>search</mat-icon>
+                      </button>
+                    </mat-form-field>
+                    <div class="barcode-hint">
+                      <mat-icon>info</mat-icon>
+                      <span>يمكنك مسح الباركود من بطاقة المتدرب أو إدخال رقم الهوية يدوياً</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="divider-text">أو اختر من القائمة</div>
+
                 <div class="form-field full-width">
                   <app-searchable-select
                     [ngModel]="step1Form.get('traineeId')?.value"
-                    (ngModelChange)="step1Form.get('traineeId')?.setValue($event)"
+                    (ngModelChange)="step1Form.get('traineeId')?.setValue($event); onTraineeSelect()"
                     label="المتدرب *"
                     [options]="traineeOptions"
                     [required]="true"
                     [ngModelOptions]="{standalone: true}">
                   </app-searchable-select>
                 </div>
-              </form>
+
+                <!-- Selected Trainee Info Card -->
+                <div class="trainee-preview-card" *ngIf="selectedTrainee">
+                  <div class="trainee-preview-header">
+                    <div class="trainee-preview-avatar">
+                      <img *ngIf="selectedTrainee.imagePreviewUrl" [src]="selectedTrainee.imagePreviewUrl" [alt]="selectedTrainee.title">
+                      <mat-icon *ngIf="!selectedTrainee.imagePreviewUrl">person</mat-icon>
+                    </div>
+                    <div class="trainee-preview-info">
+                      <h4>{{ selectedTrainee.title }}</h4>
+                      <div class="trainee-preview-meta">
+                        <mat-chip size="small">
+                          <mat-icon>badge</mat-icon>
+                          {{ selectedTrainee.nationalId || 'رقم الهوية غير متوفر' }}
+                        </mat-chip>
+                        <mat-chip size="small" *ngIf="selectedTrainee.academicYear">
+                          <mat-icon>school</mat-icon>
+                          السنة {{ selectedTrainee.academicYear }}
+                        </mat-chip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="step-actions">
               <button mat-raised-button color="primary" matStepperNext [disabled]="step1Form.invalid">
@@ -113,6 +184,14 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
               </div>
             </ng-template>
             <div class="step-content">
+              <div class="step-header">
+                <div class="step-header-icon">📚</div>
+                <div class="step-header-text">
+                  <h3>اختر الدورة</h3>
+                  <p>اختر الدورة التي سيسجل فيها المتدرب</p>
+                </div>
+              </div>
+
               <form [formGroup]="step2Form">
                 <div class="form-field full-width">
                   <app-searchable-select
@@ -177,6 +256,14 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
               </div>
             </ng-template>
             <div class="step-content">
+              <div class="step-header">
+                <div class="step-header-icon">👨‍🏫</div>
+                <div class="step-header-text">
+                  <h3>اختر المدرب</h3>
+                  <p>اختر المدرب المسؤول عن هذه الدورة</p>
+                </div>
+              </div>
+
               <form [formGroup]="step3Form">
                 <div class="form-field full-width">
                   <app-searchable-select
@@ -209,6 +296,14 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
               </div>
             </ng-template>
             <div class="step-content">
+              <div class="step-header">
+                <div class="step-header-icon">📝</div>
+                <div class="step-header-text">
+                  <h3>تفاصيل التسجيل</h3>
+                  <p>أدخل تفاصيل التسجيل والتكاليف</p>
+                </div>
+              </div>
+
               <!-- Course Date Range Info -->
               <div class="course-date-info" *ngIf="selectedCourse">
                 <mat-icon>event_range</mat-icon>
@@ -359,8 +454,8 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
   `,
   styles: [`
     .wizard-container {
-      min-width: 650px;
-      max-width: 850px;
+      min-width: 700px;
+      max-width: 900px;
       max-height: 90vh;
       direction: rtl;
       background: #f0f4f8;
@@ -371,6 +466,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       border: 1px solid rgba(226, 232, 240, 0.4);
     }
 
+    /* Header */
     .wizard-header {
       flex-shrink: 0;
       display: flex;
@@ -390,10 +486,15 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       width: 28px;
       height: 28px;
     }
-    .wizard-header h2 {
+    .header-title h2 {
       margin: 0;
       font-size: 22px;
       font-weight: 600;
+    }
+    .header-title p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: 0.8;
     }
     .header-actions {
       display: flex;
@@ -405,6 +506,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
     }
     .close-btn:hover {
       transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.12);
     }
 
     .stepper-container {
@@ -431,7 +533,34 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
 
     .step-content {
       padding: 24px 0;
-      min-height: 280px;
+      min-height: 320px;
+    }
+
+    /* Step Header */
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .step-header-icon {
+      font-size: 36px;
+      line-height: 1;
+    }
+    .step-header-text h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .step-header-text p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #64748b;
     }
 
     .step-actions {
@@ -454,6 +583,142 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       padding: 8px 24px;
     }
 
+    /* Trainee Search Section */
+    .trainee-search-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .barcode-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 16px;
+      border: 2px dashed #bae6fd;
+    }
+    .barcode-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .barcode-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+    .barcode-input-wrapper {
+      flex: 1;
+    }
+    .barcode-input {
+      width: 100%;
+    }
+    .barcode-input ::ng-deep .mat-form-field-outline {
+      background: white !important;
+    }
+    .barcode-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #0284c7;
+      margin-top: 4px;
+    }
+    .barcode-hint mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .divider-text {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+      position: relative;
+      padding: 0 20px;
+    }
+    .divider-text::before,
+    .divider-text::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 30%;
+      height: 1px;
+      background: #e2e8f0;
+    }
+    .divider-text::before {
+      right: 0;
+    }
+    .divider-text::after {
+      left: 0;
+    }
+
+    .form-field {
+      flex: 1;
+    }
+    .full-width {
+      width: 100%;
+    }
+
+    /* Trainee Preview Card */
+    .trainee-preview-card {
+      margin-top: 16px;
+      padding: 16px;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .trainee-preview-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .trainee-preview-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .trainee-preview-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .trainee-preview-avatar mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+    .trainee-preview-info {
+      flex: 1;
+    }
+    .trainee-preview-info h4 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .trainee-preview-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Course Info Card */
     .course-date-info {
       display: flex;
       align-items: center;
@@ -478,18 +743,6 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
     .range-value {
       color: #1e293b;
       font-weight: 500;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    .form-field {
-      flex: 1;
-    }
-    .full-width {
-      width: 100%;
     }
 
     .course-info-card {
@@ -537,6 +790,12 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       font-weight: 700;
       color: #0f3460;
       font-size: 16px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
     }
 
     .discount-row {
@@ -612,15 +871,12 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
       background: white !important;
       border-radius: 10px !important;
     }
-
     ::ng-deep .mat-form-field.mat-focused .mat-form-field-outline {
       color: #0f3460 !important;
     }
-
     ::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
       color: #0f3460 !important;
     }
-
     ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
       color: #0f3460 !important;
     }
@@ -628,7 +884,6 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
     ::ng-deep .mat-step-header .mat-step-icon-selected {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
     }
-
     ::ng-deep .mat-step-header .mat-step-icon-state-done {
       background: #0f3460 !important;
     }
@@ -669,18 +924,37 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
         flex-direction: column;
         align-items: flex-start;
       }
+      .barcode-section {
+        flex-direction: column;
+        text-align: center;
+      }
+      .barcode-input-wrapper {
+        width: 100%;
+      }
+      .trainee-preview-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      .trainee-preview-meta {
+        justify-content: center;
+      }
+      .step-header {
+        flex-direction: column;
+        text-align: center;
+      }
     }
   `]
 })
 export class EnrollmentWizardModalComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
+  @ViewChild('barcodeInput') barcodeInput!: ElementRef<HTMLInputElement>;
   
   step1Form: FormGroup;
   step2Form: FormGroup;
   step3Form: FormGroup;
   enrollmentForm: FormGroup;
   
-  trainees: any[] = [];
+  trainees: TraineeLookup[] = [];
   courses: any[] = [];
   trainers: any[] = [];
   enrollmentTypes: any[] = [];
@@ -694,6 +968,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
   paymentMethodOptions: SelectOption[] = [];
   
   selectedCourse: any = null;
+  selectedTrainee: TraineeLookup | null = null;
   isLoading = false;
   isSubmitting = false;
   isEditMode = false;
@@ -711,7 +986,8 @@ export class EnrollmentWizardModalComponent implements OnInit {
     private courseService: CourseService,
     private employeeService: EmployeeService,
     private financialService: FinancialService,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private fileService: FileService
   ) {
     this.isEditMode = !!data?.enrollmentId;
     this.enrollmentId = data?.enrollmentId || null;
@@ -750,12 +1026,22 @@ export class EnrollmentWizardModalComponent implements OnInit {
   loadLookupData(): void {
     this.isLoading = true;
     
+    // Load trainees with proper typing
     this.traineeService.getAllTraineesLookup().subscribe({
       next: (res: any) => {
         this.trainees = res.list || [];
-        this.traineeOptions = this.trainees.map(t => ({ value: t.id, label: t.title }));
+        console.log('Trainees loaded:', this.trainees);
+        this.traineeOptions = this.trainees.map(t => ({ 
+          value: t.id, 
+          label: t.title 
+        }));
+        this.isLoading = false;
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل المتدربين')
+      error: (err) => {
+        console.error('Error loading trainees:', err);
+        this.notification.showError('حدث خطأ في تحميل المتدربين');
+        this.isLoading = false;
+      }
     });
 
     this.courseService.getAllCourses().subscribe({
@@ -770,11 +1056,9 @@ export class EnrollmentWizardModalComponent implements OnInit {
       next: (res: any) => {
         this.trainers = res.list || [];
         this.trainerOptions = this.trainers.map(t => ({ value: t.id, label: t.title }));
-        this.isLoading = false;
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل المدربين');
-        this.isLoading = false;
       }
     });
 
@@ -789,6 +1073,67 @@ export class EnrollmentWizardModalComponent implements OnInit {
       error: () => this.notification.showError('حدث خطأ في تحميل أنواع التسجيل')
     });
   }
+
+  onTraineeSelect(): void {
+    const traineeId = this.step1Form.get('traineeId')?.value;
+    this.selectedTrainee = this.trainees.find(t => t.id === traineeId) || null;
+    if (this.selectedTrainee && this.selectedTrainee.imageUrl) {
+      this.loadTraineeImage(this.selectedTrainee);
+    }
+  }
+
+  searchByNationalId(nationalId: string): void {
+    if (!nationalId || nationalId.trim().length === 0) {
+      this.notification.showWarning('يرجى إدخال رقم الهوية');
+      return;
+    }
+
+    this.isLoading = true;
+    // Find trainee by national ID
+    const trainee = this.trainees.find(t => t.nationalId === nationalId.trim());
+    
+    if (trainee) {
+      this.selectedTrainee = trainee;
+      this.step1Form.patchValue({ traineeId: trainee.id });
+      this.notification.showSuccess(`تم العثور على المتدرب: ${trainee.title}`);
+      if (this.barcodeInput) {
+        this.barcodeInput.nativeElement.value = '';
+      }
+      // Load trainee image if available
+      if (trainee.imageUrl) {
+        this.loadTraineeImage(trainee);
+      }
+    } else {
+      this.notification.showWarning('لم يتم العثور على متدرب بهذا الرقم');
+    }
+    this.isLoading = false;
+  }
+
+  // enrollment-wizard-modal.component.ts - Fix the loadTraineeImage method
+
+loadTraineeImage(trainee: TraineeLookup): void {
+  if (trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
+    this.fileService.downloadFile(trainee.imageUrl).subscribe({
+      next: (blob) => {
+        const blobUrl = URL.createObjectURL(blob);
+        // Update the trainee in the array and the selected trainee
+        const index = this.trainees.findIndex(t => t.id === trainee.id);
+        if (index !== -1) {
+          this.trainees[index] = { ...this.trainees[index], imagePreviewUrl: blobUrl };
+        }
+        // Update selected trainee by reassigning from the array
+        if (this.selectedTrainee && this.selectedTrainee.id === trainee.id) {
+          this.selectedTrainee = this.trainees[index] || null;
+        }
+        // Force change detection
+        this.selectedTrainee = { ...this.selectedTrainee } as TraineeLookup;
+      },
+      error: () => {
+        trainee.imagePreviewUrl = '';
+      }
+    });
+  }
+}
 
   openAddEnrollmentTypeDialog(): void {
     const dialogRef = this.dialog.open(AddEnrollmentTypeDialogComponent, {
@@ -827,6 +1172,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
     this.enrollmentService.getEnrollmentById(this.enrollmentId!).subscribe({
       next: (enrollment: any) => {
         this.step1Form.patchValue({ traineeId: enrollment.trainee?.id });
+        this.onTraineeSelect();
         this.step2Form.patchValue({ courseId: enrollment.course?.id });
         this.step3Form.patchValue({ trainerId: enrollment.trainer?.id });
         this.onCourseSelect();

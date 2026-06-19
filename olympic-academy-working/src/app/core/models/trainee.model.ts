@@ -21,6 +21,18 @@ export interface TraineeContactDTO {
   contactValue: string;
 }
 
+export interface TraineeLookupVTO {
+  id: number;
+  title: string;
+  nationalId: string;
+  imageUrl: string;
+}
+
+export interface TraineeLookupResultSet {
+  list: TraineeLookupVTO[];
+  total: number;
+}
+
 export interface TraineeDTO {
   fullName: string;
   nationalId: string;

@@ -1,6 +1,6 @@
 // enrollment-list.component.ts
 
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -27,11 +27,31 @@ import { CourseService } from '../../../../core/services/course.service';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
+import { FileService } from '../../../../core/services/file.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { PAYMENT_STATUSES } from '../../../../core/models/common.model';
 import { ENROLLMENT_STATUSES } from '../../../../core/models/enrollment.model';
 import { EnrollmentDetailsModalComponent } from './../enrollment-details/enrollment-details-modal.component';
 import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollment-wizard-modal.component';
+
+interface EnrollmentListItem {
+  id: number;
+  trainee?: {
+    id: number;
+    title: string;
+    fullName?: string;
+    imageUrl?: string;
+  };
+  course?: { id: number; title: string };
+  trainer?: { id: number; title: string };
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+  enrollmentStatus?: { id: number; title: string };
+  paymentStatus?: { id: number; title: string };
+  finalSubscriptionValue?: number;
+  remainedSubscriptionValue?: number;
+}
 
 @Component({
   selector: 'app-enrollment-list',
@@ -61,9 +81,9 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
   templateUrl: './enrollment-list.component.html',
   styleUrls: ['./enrollment-list.component.css']
 })
-export class EnrollmentListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['index', 'trainee', 'course', 'trainer', 'startDate', 'endDate', 'isActive', 'enrollmentStatus', 'paymentStatus', 'amount', 'actions'];
-  dataSource = new MatTableDataSource<any>([]);
+export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy {
+  displayedColumns: string[] = ['index', 'image', 'trainee', 'course', 'trainer', 'startDate', 'endDate', 'isActive', 'enrollmentStatus', 'paymentStatus', 'amount', 'actions'];
+  dataSource = new MatTableDataSource<EnrollmentListItem>([]);
   isLoading = false;
   
   trainees: any[] = [];
@@ -71,6 +91,9 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
   trainers: any[] = [];
   paymentStatuses = PAYMENT_STATUSES;
   enrollmentStatuses = ENROLLMENT_STATUSES;
+  
+  // Image URLs map for trainees
+  traineeImageUrls: Map<number, string> = new Map();
   
   traineeOptions: SelectOption[] = [];
   courseOptions: SelectOption[] = [];
@@ -128,7 +151,8 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
     private employeeService: EmployeeService,
     private notification: NotificationService,
     private reportService: ReportService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private fileService: FileService
   ) {}
 
   ngOnInit() {
@@ -140,6 +164,16 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  ngOnDestroy(): void {
+    // Clean up blob URLs
+    this.traineeImageUrls.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    this.traineeImageUrls.clear();
   }
 
   loadSelectOptions() {
@@ -213,7 +247,9 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
 
     this.enrollmentService.getAllEnrollmentsByFilter(params).subscribe({
       next: (res: any) => {
-        this.dataSource.data = res.items || [];
+        const items = res.items || [];
+        this.dataSource.data = items;
+        this.loadTraineeImages(items);
         if (this.dataSource.paginator) {
           this.dataSource.paginator = this.paginator;
         }
@@ -227,6 +263,43 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
         this.isLoading = false;
       }
     });
+  }
+
+  loadTraineeImages(items: EnrollmentListItem[]): void {
+    // Clear existing image URLs
+    this.traineeImageUrls.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
+    this.traineeImageUrls.clear();
+
+    items.forEach(item => {
+      const trainee = item.trainee;
+      if (trainee && trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
+        this.fileService.downloadFile(trainee.imageUrl).subscribe({
+          next: (blob) => {
+            const blobUrl = URL.createObjectURL(blob);
+            this.traineeImageUrls.set(trainee.id, blobUrl);
+            // Refresh the table data to show the image
+            this.dataSource.data = [...this.dataSource.data];
+          },
+          error: (error) => {
+            console.error(`Failed to load image for trainee ${trainee.id}:`, error);
+          }
+        });
+      }
+    });
+  }
+
+  getTraineeImageUrl(traineeId: number): string | null {
+    const url = this.traineeImageUrls.get(traineeId);
+    return url && url.startsWith('blob:') ? url : null;
+  }
+
+  getTraineeName(trainee: any): string {
+    if (!trainee) return '-';
+    return trainee.fullName || trainee.title || '-';
   }
 
   toggleActiveFilter(event: any): void {
@@ -317,8 +390,9 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  deleteEnrollment(enrollment: any): void {
-    if (confirm(`هل أنت متأكد من حذف تسجيل "${enrollment.trainee?.title}" في دورة "${enrollment.course?.title}"؟`)) {
+  deleteEnrollment(enrollment: EnrollmentListItem): void {
+    const traineeName = this.getTraineeName(enrollment.trainee);
+    if (confirm(`هل أنت متأكد من حذف تسجيل "${traineeName}" في دورة "${enrollment.course?.title}"؟`)) {
       this.enrollmentService.deleteEnrollment(enrollment.id).subscribe({
         next: () => {
           this.notification.showSuccess('تم حذف التسجيل بنجاح');
@@ -363,7 +437,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
 
     const exportData = this.dataSource.data.map((item, index) => ({
       '#': index + 1,
-      'المتدرب': item.trainee?.title,
+      'المتدرب': this.getTraineeName(item.trainee),
       'الدورة': item.course?.title,
       'المدرب': item.trainer?.title,
       'تاريخ البدء': item.startDate,
@@ -447,11 +521,12 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
       }
       
       const rowBgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+      const traineeName = this.getTraineeName(item.trainee);
       
       tableRows += `
         <tr style="background-color: ${rowBgColor};">
           <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #64748b;">${index + 1}</td>
-          <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f3460;">${item.trainee?.title || '-'}</td>
+          <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f3460;">${traineeName}</td>
           <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.course?.title || '-'}</td>
           <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.trainer?.title || '-'}</td>
           <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.startDate || '-'}</td>
@@ -737,5 +812,15 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit {
       this.isLoading = false;
       this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
     }
+  }
+
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

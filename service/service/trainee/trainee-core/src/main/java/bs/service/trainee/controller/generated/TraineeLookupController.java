@@ -7,6 +7,7 @@ package bs.service.trainee.controller.generated;
 
 import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.vto.ErrorVTO;
+import bs.service.trainee.model.generated.TraineeLookupResultSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,12 +33,12 @@ public interface TraineeLookupController {
      */
     @Operation(operationId = "getAllTraineesLookup", summary = "Get all trainees lookup", tags = {
             "TraineeLookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = TraineeLookupResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/lookup/trainees", produces = { "application/json" })
 
-    ResponseEntity<LookupResultSet> _getAllTraineesLookup(
+    ResponseEntity<TraineeLookupResultSet> _getAllTraineesLookup(
 
     );
 

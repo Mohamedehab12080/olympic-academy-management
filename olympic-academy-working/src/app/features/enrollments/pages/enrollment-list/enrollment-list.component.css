@@ -192,9 +192,7 @@
   box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
 }
 
-/* ============================================ */
-/* STATISTICS CARDS - FIXED RESPONSIVE */
-/* ============================================ */
+/* Statistics Cards */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -404,6 +402,34 @@
 
 .table-wrapper::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #1a1a2e, #0f3460);
+}
+
+/* Image Column */
+.image-cell {
+  width: 60px;
+  text-align: center !important;
+}
+
+.trainee-avatar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.trainee-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #0f3460;
+  background: #f3f4f6;
+}
+
+.avatar-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #9ca3af;
 }
 
 /* Data Table */
@@ -701,69 +727,7 @@
   color: #dc2626;
 }
 
-/* ============================================ */
-/* RESPONSIVE DESIGN - FIXED FOR CARDS */
-/* ============================================ */
-
-/* Large screens */
-@media (min-width: 1400px) {
-  .stats-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    padding: 28px 32px;
-  }
-  
-  .stat-card {
-    padding: 22px 24px;
-    min-height: 90px;
-  }
-  
-  .stat-icon {
-    width: 54px;
-    height: 54px;
-    min-width: 54px;
-    font-size: 26px;
-  }
-  
-  .stat-info h3 {
-    font-size: 28px;
-  }
-  
-  .stat-info p {
-    font-size: 14px;
-  }
-}
-
-/* 1200px - 1400px */
-@media (max-width: 1400px) and (min-width: 1201px) {
-  .stats-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-    padding: 24px 28px;
-  }
-  
-  .stat-card {
-    padding: 18px 20px;
-    min-height: 80px;
-  }
-  
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    font-size: 22px;
-  }
-  
-  .stat-info h3 {
-    font-size: 22px;
-  }
-  
-  .stat-info p {
-    font-size: 12px;
-  }
-}
-
-/* 1024px - 1200px */
+/* Responsive Design */
 @media (max-width: 1200px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -787,13 +751,8 @@
   .stat-info h3 {
     font-size: 20px;
   }
-  
-  .stat-info p {
-    font-size: 12px;
-  }
 }
 
-/* 768px - 1024px */
 @media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -830,10 +789,6 @@
     text-align: center;
     gap: 16px;
     padding: 20px 24px;
-  }
-  
-  .header-title h1 {
-    font-size: 24px;
   }
   
   .add-button {
@@ -879,13 +834,6 @@
     padding: 0 16px 16px 16px;
   }
   
-  .table-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 16px;
-  }
-  
   .data-table .mat-header-cell,
   .data-table .mat-cell {
     padding: 10px 8px;
@@ -893,7 +841,6 @@
   }
 }
 
-/* 600px - 768px */
 @media (max-width: 768px) {
   .enrollments-container {
     padding: 12px;
@@ -931,42 +878,18 @@
   
   .page-header {
     padding: 16px 20px;
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
   }
   
   .header-title h1 {
     font-size: 20px;
   }
   
-  .header-title p {
-    font-size: 12px;
-  }
-  
   .add-button {
-    width: 100%;
     max-width: 180px;
-    padding: 0 16px;
-    font-size: 13px;
   }
   
   .filters-card {
     padding: 12px 16px;
-  }
-  
-  .filters-grid {
-    gap: 12px;
-  }
-  
-  .filters-row {
-    gap: 10px;
-  }
-  
-  .search-field,
-  .filter-select,
-  .date-field {
-    min-width: 100%;
   }
   
   .reset-btn,
@@ -978,10 +901,6 @@
   
   .table-section {
     padding: 0 12px 12px 12px;
-  }
-  
-  .table-wrapper {
-    border-radius: 12px;
   }
   
   .data-table {
@@ -1024,15 +943,8 @@
   .records-count {
     font-size: 12px;
   }
-  
-  .records-count mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-  }
 }
 
-/* 480px and below */
 @media (max-width: 480px) {
   .enrollments-container {
     padding: 8px;
@@ -1083,10 +995,6 @@
     font-size: 18px;
   }
   
-  .header-title p {
-    font-size: 11px;
-  }
-  
   .add-button {
     max-width: 160px;
     font-size: 12px;
@@ -1094,54 +1002,12 @@
     height: 38px;
   }
   
-  .add-button mat-icon {
-    font-size: 18px;
-    margin-left: 4px;
-  }
-  
   .filters-card {
     padding: 10px 12px;
   }
   
-  .filters-grid {
-    gap: 8px;
-  }
-  
   .filters-row {
     gap: 8px;
-  }
-  
-  .search-field ::ng-deep .mat-form-field-wrapper {
-    padding-bottom: 0 !important;
-  }
-  
-  .search-field ::ng-deep .mat-form-field-infix {
-    padding: 8px 0 !important;
-  }
-  
-  .filter-select ::ng-deep .mat-form-field-wrapper {
-    padding-bottom: 0 !important;
-  }
-  
-  .filter-select ::ng-deep .mat-form-field-infix {
-    padding: 8px 0 !important;
-  }
-  
-  .date-field ::ng-deep .mat-form-field-wrapper {
-    padding-bottom: 0 !important;
-  }
-  
-  .date-field ::ng-deep .mat-form-field-infix {
-    padding: 8px 0 !important;
-  }
-  
-  .filter-toggle {
-    justify-content: flex-start;
-    padding: 4px 0;
-  }
-  
-  .filter-toggle .toggle-label {
-    font-size: 12px;
   }
   
   .reset-btn,
@@ -1151,22 +1017,8 @@
     padding: 0 12px;
   }
   
-  .reset-btn mat-icon,
-  .export-btn mat-icon {
-    font-size: 16px;
-  }
-  
   .table-section {
     padding: 0 8px 12px 8px;
-  }
-  
-  .table-header {
-    padding: 10px 12px;
-    border-radius: 10px;
-  }
-  
-  .table-wrapper {
-    border-radius: 10px;
   }
   
   .data-table {
@@ -1202,10 +1054,6 @@
     transform: scale(0.85);
   }
   
-  .action-buttons button mat-icon {
-    font-size: 16px;
-  }
-  
   .no-data-message {
     padding: 40px 16px;
   }
@@ -1235,75 +1083,7 @@
     font-size: 11px;
   }
   
-  .records-count mat-icon {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-  }
-  
   .loading-container {
     padding: 40px 20px;
-  }
-  
-  .loading-container mat-spinner {
-    diameter: 30px !important;
-  }
-  
-  .loading-container p {
-    font-size: 13px;
-  }
-}
-
-/* 380px and below */
-@media (max-width: 380px) {
-  .stats-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 8px;
-  }
-  
-  .stat-card {
-    padding: 8px 10px;
-    min-height: 50px;
-    gap: 6px;
-  }
-  
-  .stat-icon {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    font-size: 12px;
-  }
-  
-  .stat-info h3 {
-    font-size: 12px;
-  }
-  
-  .stat-info p {
-    font-size: 8px;
-  }
-  
-  .data-table {
-    min-width: 650px;
-  }
-  
-  .data-table .mat-header-cell {
-    font-size: 8px;
-    padding: 6px 3px;
-  }
-  
-  .data-table .mat-cell {
-    font-size: 9px;
-    padding: 4px 3px;
-  }
-  
-  .status-badge,
-  .payment-badge {
-    padding: 1px 6px;
-    font-size: 8px;
-  }
-  
-  .amount-value {
-    font-size: 10px;
   }
 }

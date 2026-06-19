@@ -49,7 +49,7 @@ export interface EnrollmentTypeVTO {
 
 export interface EnrollmentVTO {
   id: number;
-  trainee: LookupVTO;
+  trainee: LightUserVTO;
   course: LookupVTO;
   trainer: LookupVTO;
   enrollmentType?: LookupVTO;

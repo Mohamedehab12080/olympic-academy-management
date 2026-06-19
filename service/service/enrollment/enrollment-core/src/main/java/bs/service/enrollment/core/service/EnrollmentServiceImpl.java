@@ -57,6 +57,17 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         enrollmentTypeRepository.selectById(enrollmentDTO.getEnrollmentTypeId()).orElseThrow(()-> new BusinessException(ENROLLMENT_TYPE_NOT_FOUND));
 
+        EnrollmentSearchFilter enrollmentSearchFilter=EnrollmentSearchFilter.builder()
+                .traineeId(enrollmentDTO.getTraineeId())
+                .courseId(enrollmentDTO.getCourseId())
+                .startDateFrom(enrollmentDTO.getStartDate())
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Enrollment> enrollments=enrollmentRepository.selectAllByFilters(enrollmentSearchFilter);
+        if(enrollments!=null && !enrollments.isEmpty()){
+           throw  new BusinessException(ENROLLMENT_ALREADY_EXISTS,enrollments.get(0).getId());
+        }
+
         Enrollment enrollment = enrollmentMapper.toEnrollment(enrollmentDTO);
         enrollment = enrollmentRepository.insert(enrollment);
         return NewRecordVTO.builder().id(enrollment.getId()).build();

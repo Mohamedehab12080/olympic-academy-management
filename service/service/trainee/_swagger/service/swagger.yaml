@@ -579,7 +579,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+                $ref: '#/components/schemas/TraineeLookupResultSet'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
@@ -810,6 +810,30 @@ components:
           description: "Additional notes"
 
     # ==================== VTOs ====================
+    TraineeLookupResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        _list:
+          type: array
+          items:
+            $ref: '#/components/schemas/TraineeLookupVTO'
+
+    TraineeLookupVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        nationalId:
+          type: string
+        imageUrl:
+          type: string
+
     TraineeVTO:
       type: object
       properties:

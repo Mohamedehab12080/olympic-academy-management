@@ -112,14 +112,16 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public LookupResultSet getAllTraineesLookup() {
+    public TraineeLookupResultSet getAllTraineesLookup() {
         TraineeSearchFilter filter = TraineeSearchFilter.builder()
                 .isActive(true)
                 .isDeleted(false)
                 .pagination(PaginationInfo.noPagination())
                 .build();
-
         List<Trainee> trainees = traineeRepository.selectAllByFilters(filter);
-        return LookupResultSet.builder()._list(traineeMapper.toLookupVTOsFromTrainees(trainees)).total(trainees.size()).build();
+        List<TraineeLookupVTO> traineeLookupVTOS=traineeMapper.toTraineeLookupVTOsFromTrainees(trainees);
+        TraineeLookupResultSet traineeLookupResultSet=TraineeLookupResultSet.builder()._list(traineeLookupVTOS).total(trainees.size()).build();
+        System.out.println("Trainee Lookup result set  : "+traineeLookupResultSet);
+        return traineeLookupResultSet;
     }
 }

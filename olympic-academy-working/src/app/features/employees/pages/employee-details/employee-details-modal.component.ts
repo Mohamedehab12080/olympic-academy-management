@@ -325,7 +325,7 @@ import { FileService } from '../../../../core/services/file.service';
                 <mat-icon>edit</mat-icon>
                 <div>
                   <label>تم التعديل بواسطة</label>
-                  <p>{{ employee.lastModifiedBy?.fullName }}</p>
+                  <p>{{ employee.lastModifiedBy?.fullName}}</p>
                 </div>
               </div>
               <div class="info-item" *ngIf="employee.lastModifiedOn">

@@ -23,7 +23,7 @@ public class EnrollmentQueryBuilder extends AbstractQueryBuilderV2<Enrollment, E
 
         if (filters.getQuickSearchQuery() != null && !filters.getQuickSearchQuery().trim().isEmpty())
             qbConditions.add(QBCondition.builder().placeHolder("traineeFullName").value("%" + filters.getQuickSearchQuery() + "%")
-                    .condition("LOWER(item.trainee.fullName) LIKE LOWER(:PH) OR item.trainee.id").build());
+                    .condition("LOWER(item.trainee.fullName) LIKE LOWER(:PH) OR item.trainee.nationalId LIKE (:PH)").build());
 
         if (filters.getIsActive() != null)
             qbConditions.add(QBCondition.builder().placeHolder("isActive").value(filters.getIsActive())

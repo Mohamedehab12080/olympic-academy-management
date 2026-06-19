@@ -6,12 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
-
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.*;
 import java.util.Objects;
-
+import org.hibernate.validator.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -28,7 +29,7 @@ public class EnrollmentVTO implements Serializable {
 
     private Integer id;
 
-    private LookupVTO trainee;
+    private LightUserVTO trainee;
 
     private LookupVTO course;
 
@@ -91,7 +92,7 @@ public class EnrollmentVTO implements Serializable {
         this.id = id;
     }
 
-    public EnrollmentVTO trainee(LookupVTO trainee) {
+    public EnrollmentVTO trainee(LightUserVTO trainee) {
         this.trainee = trainee;
         return this;
     }
@@ -104,11 +105,11 @@ public class EnrollmentVTO implements Serializable {
     @Valid
     @Schema(name = "trainee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("trainee")
-    public LookupVTO getTrainee() {
+    public LightUserVTO getTrainee() {
         return trainee;
     }
 
-    public void setTrainee(LookupVTO trainee) {
+    public void setTrainee(LightUserVTO trainee) {
         this.trainee = trainee;
     }
 

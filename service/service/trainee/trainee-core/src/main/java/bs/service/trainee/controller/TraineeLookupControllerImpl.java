@@ -5,6 +5,7 @@ import bs.lib.common.model.generated.LookupVTO;
 import bs.service.trainee.api.service.TraineeService;
 import bs.service.trainee.controller.generated.TraineeLookupController;
 import bs.service.trainee.model.enums.TraineeAttendanceStatus;
+import bs.service.trainee.model.generated.TraineeLookupResultSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class TraineeLookupControllerImpl implements TraineeLookupController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<LookupResultSet> _getAllTraineesLookup() {
+    public ResponseEntity<TraineeLookupResultSet> _getAllTraineesLookup() {
         return ResponseEntity.ok(traineeService.getAllTraineesLookup());
     }
 

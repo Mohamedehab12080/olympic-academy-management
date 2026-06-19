@@ -1,4 +1,4 @@
-package bs.service.user.model.generated;
+package bs.service.trainee.model.generated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,26 +10,26 @@ import java.util.Objects;
 import org.hibernate.validator.constraints.*;
 
 /**
- * LightUserVTO
+ * TraineeLookupVTO
  */
 @lombok.Builder
 @lombok.AllArgsConstructor
 @lombok.NoArgsConstructor
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
-public class LightUserVTO implements Serializable {
+public class TraineeLookupVTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Integer id;
 
+    private String title;
+
     private String nationalId;
 
     private String imageUrl;
 
-    private String fullName;
-
-    public LightUserVTO id(Integer id) {
+    public TraineeLookupVTO id(Integer id) {
         this.id = id;
         return this;
     }
@@ -50,7 +50,28 @@ public class LightUserVTO implements Serializable {
         this.id = id;
     }
 
-    public LightUserVTO nationalId(String nationalId) {
+    public TraineeLookupVTO title(String title) {
+        this.title = title;
+        return this;
+    }
+
+    /**
+     * Get title
+     *
+     * @return title
+     */
+
+    @Schema(name = "title", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("title")
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public TraineeLookupVTO nationalId(String nationalId) {
         this.nationalId = nationalId;
         return this;
     }
@@ -71,7 +92,7 @@ public class LightUserVTO implements Serializable {
         this.nationalId = nationalId;
     }
 
-    public LightUserVTO imageUrl(String imageUrl) {
+    public TraineeLookupVTO imageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
         return this;
     }
@@ -92,27 +113,6 @@ public class LightUserVTO implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public LightUserVTO fullName(String fullName) {
-        this.fullName = fullName;
-        return this;
-    }
-
-    /**
-     * Get fullName
-     *
-     * @return fullName
-     */
-
-    @Schema(name = "fullName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("fullName")
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -121,25 +121,25 @@ public class LightUserVTO implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        LightUserVTO lightUserVTO = (LightUserVTO) o;
-        return Objects.equals(this.id, lightUserVTO.id) && Objects.equals(this.nationalId, lightUserVTO.nationalId)
-                && Objects.equals(this.imageUrl, lightUserVTO.imageUrl)
-                && Objects.equals(this.fullName, lightUserVTO.fullName);
+        TraineeLookupVTO traineeLookupVTO = (TraineeLookupVTO) o;
+        return Objects.equals(this.id, traineeLookupVTO.id) && Objects.equals(this.title, traineeLookupVTO.title)
+                && Objects.equals(this.nationalId, traineeLookupVTO.nationalId)
+                && Objects.equals(this.imageUrl, traineeLookupVTO.imageUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nationalId, imageUrl, fullName);
+        return Objects.hash(id, title, nationalId, imageUrl);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class LightUserVTO {\n");
+        sb.append("class TraineeLookupVTO {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
-        sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
         sb.append("}");
         return sb.toString();
     }

@@ -40,8 +40,7 @@ components:
           type: integer
           format: int32
         nationalId:
-          type: integer
-          format: int32
+          type: string
         imageUrl:
           type: string
         fullName:

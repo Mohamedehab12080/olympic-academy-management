@@ -37,10 +37,7 @@ import * as JsBarcode from 'jsbarcode';
       <div class="modal-header">
         <div class="header-title">
           <mat-icon>assignment_ind</mat-icon>
-          <div>
-            <h2>تفاصيل التسجيل</h2>
-            <p>رقم التسجيل: #{{ enrollment?.id }}</p>
-          </div>
+          <h2>تفاصيل التسجيل</h2>
         </div>
         <div class="header-actions">
           <button mat-icon-button (click)="printCard()" matTooltip="طباعة البطاقة">
@@ -60,222 +57,220 @@ import * as JsBarcode from 'jsbarcode';
         <p>جاري التحميل...</p>
       </div>
 
-      <!-- Content -->
-      <div class="modal-body" *ngIf="!isLoading && enrollment">
-        <!-- Profile -->
-        <div class="profile-main">
-          <div class="profile-image">
-            <div class="avatar" *ngIf="!traineeImageUrl; else profileImage">
-              <mat-icon>person</mat-icon>
-            </div>
-            <ng-template #profileImage>
-              <img [src]="traineeImageUrl" [alt]="enrollment.trainee?.title">
-            </ng-template>
+      <!-- Main Profile Info -->
+      <div class="profile-main" *ngIf="!isLoading && enrollment">
+        <div class="profile-image">
+          <div class="avatar" *ngIf="!traineeImageUrl; else profileImage">
+            <mat-icon>person</mat-icon>
           </div>
+          <ng-template #profileImage>
+            <img [src]="traineeImageUrl" [alt]="enrollment.trainee?.fullName">
+          </ng-template>
+        </div>
 
-          <div class="profile-info">
-            <h1>{{ enrollment.trainee?.title }}</h1>
-            <div class="info-badges">
-              <mat-chip [color]="enrollment.isActive ? 'primary' : 'warn'" selected>
-                {{ enrollment.isActive ? 'نشط' : 'غير نشط' }}
-              </mat-chip>
-              <mat-chip>
-                <mat-icon>badge</mat-icon>
-                {{ enrollment.trainee?.id }}
-              </mat-chip>
-              <mat-chip>
-                <mat-icon>receipt</mat-icon>
-                رقم التسجيل: {{ enrollment.id }}
-              </mat-chip>
-              <mat-chip class="status-badge-chip" [class.completed]="enrollment.enrollmentStatus?.id === 2"
-                        [class.pending]="enrollment.enrollmentStatus?.id === 1"
-                        [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
-                <mat-icon>verified</mat-icon>
-                {{ enrollment.enrollmentStatus?.title }}
-              </mat-chip>
-              <mat-chip class="payment-badge-chip" [class.paid]="enrollment.paymentStatus?.id === 2"
-                        [class.pending]="enrollment.paymentStatus?.id === 1">
-                <mat-icon>payment</mat-icon>
-                {{ enrollment.paymentStatus?.title }}
-              </mat-chip>
-            </div>
+        <div class="profile-info">
+          <h1>{{ enrollment.trainee?.fullName }}</h1>
+          <div class="info-badges">
+            <mat-chip [color]="enrollment.isActive ? 'primary' : 'warn'" selected>
+              {{ enrollment.isActive ? 'نشط' : 'غير نشط' }}
+            </mat-chip>
+            <mat-chip>
+              <mat-icon>badge</mat-icon>
+              {{ enrollment.trainee?.nationalId || enrollment.trainee?.id }}
+            </mat-chip>
+            <mat-chip>
+              <mat-icon>receipt</mat-icon>
+              رقم التسجيل: {{ enrollment.id }}
+            </mat-chip>
+            <mat-chip class="status-badge-chip" [class.completed]="enrollment.enrollmentStatus?.id === 2"
+                      [class.pending]="enrollment.enrollmentStatus?.id === 1"
+                      [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
+              <mat-icon>verified</mat-icon>
+              {{ enrollment.enrollmentStatus?.title }}
+            </mat-chip>
+            <mat-chip class="payment-badge-chip" [class.paid]="enrollment.paymentStatus?.id === 2"
+                      [class.pending]="enrollment.paymentStatus?.id === 1">
+              <mat-icon>payment</mat-icon>
+              {{ enrollment.paymentStatus?.title }}
+            </mat-chip>
           </div>
         </div>
-        
-        <mat-divider></mat-divider>
-        
-        <!-- Tabs -->
-        <mat-tab-group>
-          <!-- Details Tab -->
-          <mat-tab label="تفاصيل التسجيل">
-            <div class="tab-content">
-              <div class="info-grid">
-                <div class="info-item">
-                  <mat-icon>person</mat-icon>
-                  <div>
-                    <label>المتدرب</label>
-                    <p>{{ enrollment.trainee?.title }}</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>school</mat-icon>
-                  <div>
-                    <label>الدورة</label>
-                    <p>{{ enrollment.course?.title }}</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>person</mat-icon>
-                  <div>
-                    <label>المدرب</label>
-                    <p>{{ enrollment.trainer?.title }}</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>event</mat-icon>
-                  <div>
-                    <label>تاريخ البدء</label>
-                    <p>{{ enrollment.startDate | date:'dd/MM/yyyy' }}</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>event_busy</mat-icon>
-                  <div>
-                    <label>تاريخ الانتهاء</label>
-                    <p>{{ enrollment.endDate ? (enrollment.endDate | date:'dd/MM/yyyy') : 'غير محدد' }}</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>attach_money</mat-icon>
-                  <div>
-                    <label>القيمة النهائية</label>
-                    <p class="amount">{{ enrollment.finalSubscriptionValue | currency:'EGP' }}</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>account_balance_wallet</mat-icon>
-                  <div>
-                    <label>المتبقي</label>
-                    <p class="remained" *ngIf="enrollment.remainedSubscriptionValue">{{ enrollment.remainedSubscriptionValue | currency:'EGP' }}</p>
-                    <p class="paid" *ngIf="!enrollment.remainedSubscriptionValue">مدفوع بالكامل</p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>verified</mat-icon>
-                  <div>
-                    <label>حالة التسجيل</label>
-                    <p>
-                      <span class="status-badge" [class.completed]="enrollment.enrollmentStatus?.id === 2"
-                            [class.pending]="enrollment.enrollmentStatus?.id === 1"
-                            [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
-                        {{ enrollment.enrollmentStatus?.title }}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div class="info-item">
-                  <mat-icon>payment</mat-icon>
-                  <div>
-                    <label>حالة الدفع</label>
-                    <p>
-                      <span class="payment-badge" [class.paid]="enrollment.paymentStatus?.id === 2"
-                            [class.pending]="enrollment.paymentStatus?.id === 1">
-                        {{ enrollment.paymentStatus?.title }}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div class="info-item" *ngIf="enrollment.enrollmentType?.title">
-                  <mat-icon>category</mat-icon>
-                  <div>
-                    <label>نوع التسجيل</label>
-                    <p>{{ enrollment.enrollmentType?.title }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="note-container" *ngIf="enrollment.note">
-                <mat-icon>note</mat-icon>
-                <div>
-                  <label>ملاحظات</label>
-                  <p>{{ enrollment.note }}</p>
-                </div>
-              </div>
-            </div>
-          </mat-tab>
-
-          <!-- Barcode Tab -->
-          <mat-tab label="بطاقة هوية">
-            <div class="tab-content barcode-tab">
-              <div class="barcode-card">
-                <div class="barcode-header">
-                  <mat-icon>qr_code_scanner</mat-icon>
-                  <span>بطاقة هوية المتدرب</span>
-                </div>
-                <div class="barcode-container">
-                  <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
-                  <div class="barcode-number">{{ enrollment.trainee?.id }}</div>
-                </div>
-                <div class="barcode-info">
-                  <span>رقم التسجيل: {{ enrollment.id }}</span>
-                  <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
-                </div>
-              </div>
-            </div>
-          </mat-tab>
-
-          <!-- System Info Tab -->
-          <mat-tab label="معلومات النظام">
-            <div class="tab-content">
-              <div class="info-grid">
-                <div class="info-item">
-                  <mat-icon>person_add</mat-icon>
-                  <div>
-                    <label>تم الإنشاء بواسطة</label>
-                    <p>{{ enrollment.createdBy?.fullName || '-' }}</p>
-                  </div>
-                </div>
-                <div class="info-item">
-                  <mat-icon>schedule</mat-icon>
-                  <div>
-                    <label>تاريخ الإنشاء</label>
-                    <p>{{ enrollment.createdOn | date:'dd/MM/yyyy HH:mm' }}</p>
-                  </div>
-                </div>
-                <div class="info-item" *ngIf="enrollment.lastModifiedBy">
-                  <mat-icon>edit</mat-icon>
-                  <div>
-                    <label>تم التعديل بواسطة</label>
-                    <p>{{ enrollment.lastModifiedBy?.fullName || '-' }}</p>
-                  </div>
-                </div>
-                <div class="info-item" *ngIf="enrollment.lastModifiedOn">
-                  <mat-icon>update</mat-icon>
-                  <div>
-                    <label>تاريخ التعديل</label>
-                    <p>{{ enrollment.lastModifiedOn | date:'dd/MM/yyyy HH:mm' }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
       </div>
       
       <mat-divider></mat-divider>
       
-      <!-- Actions -->
+      <!-- Tabs -->
+      <mat-tab-group class="custom-tabs" *ngIf="!isLoading && enrollment">
+        <!-- Details Tab -->
+        <mat-tab label="تفاصيل التسجيل">
+          <div class="tab-content">
+            <div class="info-grid">
+              <div class="info-item">
+                <mat-icon>person</mat-icon>
+                <div>
+                  <label>المتدرب</label>
+                  <p>{{ enrollment.trainee?.fullName }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>school</mat-icon>
+                <div>
+                  <label>الدورة</label>
+                  <p>{{ enrollment.course?.title }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>person</mat-icon>
+                <div>
+                  <label>المدرب</label>
+                  <p>{{ enrollment.trainer?.title }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>event</mat-icon>
+                <div>
+                  <label>تاريخ البدء</label>
+                  <p>{{ enrollment.startDate | date:'dd/MM/yyyy' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>event_busy</mat-icon>
+                <div>
+                  <label>تاريخ الانتهاء</label>
+                  <p>{{ enrollment.endDate ? (enrollment.endDate | date:'dd/MM/yyyy') : 'غير محدد' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>attach_money</mat-icon>
+                <div>
+                  <label>القيمة النهائية</label>
+                  <p class="amount">{{ enrollment.finalSubscriptionValue | currency:'EGP' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>account_balance_wallet</mat-icon>
+                <div>
+                  <label>المتبقي</label>
+                  <p class="remained" *ngIf="enrollment.remainedSubscriptionValue">{{ enrollment.remainedSubscriptionValue | currency:'EGP' }}</p>
+                  <p class="paid" *ngIf="!enrollment.remainedSubscriptionValue">مدفوع بالكامل</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>verified</mat-icon>
+                <div>
+                  <label>حالة التسجيل</label>
+                  <p>
+                    <span class="status-badge" [class.completed]="enrollment.enrollmentStatus?.id === 2"
+                          [class.pending]="enrollment.enrollmentStatus?.id === 1"
+                          [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
+                      {{ enrollment.enrollmentStatus?.title }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>payment</mat-icon>
+                <div>
+                  <label>حالة الدفع</label>
+                  <p>
+                    <span class="payment-badge" [class.paid]="enrollment.paymentStatus?.id === 2"
+                          [class.pending]="enrollment.paymentStatus?.id === 1">
+                      {{ enrollment.paymentStatus?.title }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="info-item" *ngIf="enrollment.enrollmentType?.title">
+                <mat-icon>category</mat-icon>
+                <div>
+                  <label>نوع التسجيل</label>
+                  <p>{{ enrollment.enrollmentType?.title }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Note if exists -->
+            <div class="note-container" *ngIf="enrollment.note">
+              <mat-icon>note</mat-icon>
+              <div>
+                <label>ملاحظات</label>
+                <p>{{ enrollment.note }}</p>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Barcode Tab -->
+        <mat-tab label="بطاقة هوية">
+          <div class="tab-content barcode-tab">
+            <div class="barcode-card">
+              <div class="barcode-header">
+                <mat-icon>qr_code_scanner</mat-icon>
+                <span>بطاقة هوية المتدرب</span>
+              </div>
+              <div class="barcode-container">
+                <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
+                <!-- <div class="barcode-number">{{ enrollment.trainee?.nationalId || enrollment.trainee?.id }}</div> -->
+              </div>
+              <div class="barcode-info">
+                <span>رقم التسجيل: {{ enrollment.id }}</span>
+                <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- System Info Tab -->
+        <mat-tab label="معلومات النظام">
+          <div class="tab-content">
+            <div class="info-grid">
+              <div class="info-item">
+                <mat-icon>person_add</mat-icon>
+                <div>
+                  <label>تم الإنشاء بواسطة</label>
+                  <p>{{ enrollment.createdBy?.fullName || '-' }}</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <mat-icon>schedule</mat-icon>
+                <div>
+                  <label>تاريخ الإنشاء</label>
+                  <p>{{ enrollment.createdOn | date:'dd/MM/yyyy HH:mm' }}</p>
+                </div>
+              </div>
+              <div class="info-item" *ngIf="enrollment.lastModifiedBy">
+                <mat-icon>edit</mat-icon>
+                <div>
+                  <label>تم التعديل بواسطة</label>
+                  <p>{{ enrollment.lastModifiedBy?.fullName || '-' }}</p>
+                </div>
+              </div>
+              <div class="info-item" *ngIf="enrollment.lastModifiedOn">
+                <mat-icon>update</mat-icon>
+                <div>
+                  <label>تاريخ التعديل</label>
+                  <p>{{ enrollment.lastModifiedOn | date:'dd/MM/yyyy HH:mm' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+      
+      <mat-divider></mat-divider>
+      
+      <!-- Modal Actions -->
       <div class="modal-actions">
-        <button mat-raised-button color="accent" (click)="printCard()">
+        <button mat-raised-button color="accent" (click)="printCard()" matTooltip="طباعة البطاقة">
           <mat-icon>print</mat-icon>
           طباعة البطاقة
         </button>
@@ -331,10 +326,9 @@ import * as JsBarcode from 'jsbarcode';
   `,
   styles: [`
     .modal-container {
-      min-width: 850px;
-      max-width: 95vw;
-      max-height: 85vh;
-      width: auto;
+      min-width: 700px;
+      max-width: 900px;
+      max-height: 90vh;
       direction: rtl;
       background: #f5f7fa;
       border-radius: 24px;
@@ -344,12 +338,13 @@ import * as JsBarcode from 'jsbarcode';
       border: 1px solid rgba(226, 232, 240, 0.4);
     }
 
+    /* Header - Navy Theme */
     .modal-header {
       flex-shrink: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 18px 24px;
+      padding: 20px 24px;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       color: white;
       position: relative;
@@ -383,7 +378,7 @@ import * as JsBarcode from 'jsbarcode';
     .header-title {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       z-index: 1;
     }
 
@@ -393,17 +388,10 @@ import * as JsBarcode from 'jsbarcode';
       height: 28px;
     }
 
-    .header-title h2 {
+    .modal-header h2 {
       margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .header-title p {
-      margin: 2px 0 0;
-      font-size: 12px;
-      opacity: 0.8;
-      font-weight: 300;
+      font-size: 22px;
+      font-weight: 600;
     }
 
     .header-actions {
@@ -432,6 +420,7 @@ import * as JsBarcode from 'jsbarcode';
       transform: scale(1.05);
     }
 
+    /* Loading */
     .loading-area {
       display: flex;
       flex-direction: column;
@@ -439,7 +428,6 @@ import * as JsBarcode from 'jsbarcode';
       justify-content: center;
       padding: 80px;
       gap: 16px;
-      flex: 1;
     }
 
     .loading-area mat-spinner {
@@ -452,36 +440,11 @@ import * as JsBarcode from 'jsbarcode';
       font-weight: 500;
     }
 
-    .modal-body {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 0;
-      max-height: calc(85vh - 180px);
-    }
-
-    .modal-body::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .modal-body::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 10px;
-    }
-
-    .modal-body::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #0f3460, #1a1a2e);
-      border-radius: 10px;
-    }
-
-    .modal-body::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #1a1a2e, #0f3460);
-    }
-
+    /* Profile Main */
     .profile-main {
       display: flex;
       gap: 24px;
-      padding: 20px 24px;
+      padding: 24px;
       background: white;
     }
 
@@ -519,8 +482,8 @@ import * as JsBarcode from 'jsbarcode';
 
     .profile-info h1 {
       margin: 0 0 12px 0;
-      font-size: 22px;
-      color: #0f172a;
+      font-size: 24px;
+      color: #1f2937;
       font-weight: 700;
     }
 
@@ -530,65 +493,84 @@ import * as JsBarcode from 'jsbarcode';
       gap: 8px;
     }
 
-    ::ng-deep .mat-mdc-chip {
+    /* Chips */
+    ::ng-deep .mat-chip {
       font-size: 12px !important;
       padding: 4px 14px !important;
-      height: auto !important;
-      min-height: 32px !important;
-    }
-
-    ::ng-deep .mat-mdc-chip .mat-icon {
-      font-size: 16px !important;
-      width: 16px !important;
-      height: 16px !important;
-      margin-left: 4px !important;
     }
 
     .status-badge-chip {
-      --mdc-chip-container-color: #fef3c7 !important;
+      background: #fef3c7 !important;
       color: #92400e !important;
     }
 
     .status-badge-chip.completed {
-      --mdc-chip-container-color: #d1fae5 !important;
+      background: #d1fae5 !important;
       color: #065f46 !important;
     }
 
     .status-badge-chip.cancelled {
-      --mdc-chip-container-color: #fee2e2 !important;
+      background: #fee2e2 !important;
       color: #991b1b !important;
     }
 
     .payment-badge-chip {
-      --mdc-chip-container-color: #e0e7ff !important;
+      background: #e0e7ff !important;
       color: #3730a3 !important;
     }
 
     .payment-badge-chip.paid {
-      --mdc-chip-container-color: #d1fae5 !important;
+      background: #d1fae5 !important;
       color: #065f46 !important;
     }
 
-    .tab-content {
-      padding: 20px 24px;
+    /* Tabs */
+    .custom-tabs {
+      flex: 1;
+      overflow-y: auto;
     }
 
+    .tab-content {
+      padding: 20px;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+
+    /* Custom Scrollbar */
+    .tab-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tab-content::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #0f3460, #1a1a2e);
+      border-radius: 10px;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    }
+
+    /* Info Grid */
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
     }
 
     .info-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 14px;
-      background: #f8fafc;
+      padding: 12px 16px;
+      background: #f9fafb;
       border-radius: 12px;
       border: 1px solid rgba(226, 232, 240, 0.3);
       transition: all 0.2s;
-      min-height: 60px;
     }
 
     .info-item:hover {
@@ -598,46 +580,46 @@ import * as JsBarcode from 'jsbarcode';
 
     .info-item mat-icon {
       color: #0f3460;
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
-      flex-shrink: 0;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
     }
 
     .info-item div {
       flex: 1;
-      min-width: 0;
     }
 
     .info-item label {
       display: block;
-      font-size: 10px;
-      color: #64748b;
+      font-size: 11px;
+      color: #6b7280;
       font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      margin-bottom: 2px;
     }
 
     .info-item p {
-      margin: 2px 0 0;
+      margin: 0;
       font-size: 14px;
-      color: #0f172a;
-      font-weight: 600;
-      word-break: break-word;
+      color: #1f2937;
+      font-weight: 500;
     }
 
     .info-item .amount {
-      color: #059669;
+      color: #10b981;
+      font-weight: 600;
     }
 
     .info-item .remained {
-      color: #d97706;
+      color: #f59e0b;
+      font-weight: 600;
     }
 
     .info-item .paid {
-      color: #059669;
+      color: #10b981;
+      font-weight: 600;
     }
 
+    /* Status Badges */
     .status-badge {
       padding: 4px 12px;
       border-radius: 20px;
@@ -679,6 +661,7 @@ import * as JsBarcode from 'jsbarcode';
       color: #92400e;
     }
 
+    /* Note Container */
     .note-container {
       display: flex;
       gap: 12px;
@@ -694,25 +677,23 @@ import * as JsBarcode from 'jsbarcode';
       font-size: 20px;
       width: 20px;
       height: 20px;
-      flex-shrink: 0;
     }
 
     .note-container label {
       display: block;
-      font-size: 10px;
+      font-size: 11px;
       color: #92400e;
       font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      margin-bottom: 2px;
     }
 
     .note-container p {
-      margin: 2px 0 0;
+      margin: 0;
       font-size: 13px;
       color: #78350f;
-      word-break: break-word;
     }
 
+    /* Barcode Tab */
     .barcode-tab {
       display: flex;
       justify-content: center;
@@ -748,7 +729,7 @@ import * as JsBarcode from 'jsbarcode';
     .barcode-header span {
       font-size: 16px;
       font-weight: 600;
-      color: #0f172a;
+      color: #1f2937;
     }
 
     .barcode-container {
@@ -773,22 +754,21 @@ import * as JsBarcode from 'jsbarcode';
       display: flex;
       justify-content: space-between;
       font-size: 12px;
-      color: #64748b;
+      color: #6b7280;
       margin-top: 12px;
       padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid #e5e7eb;
     }
 
+    /* Modal Actions */
     .modal-actions {
       flex-shrink: 0;
       display: flex;
       gap: 12px;
       justify-content: flex-end;
-      padding: 16px 24px;
+      padding: 16px 20px;
       background: white;
-      border-top: 2px solid #e2e8f0;
-      flex-wrap: wrap;
-      min-height: 76px;
+      border-top: 1px solid #e5e7eb;
     }
 
     .modal-actions button.mat-raised-button.mat-accent {
@@ -804,26 +784,19 @@ import * as JsBarcode from 'jsbarcode';
     }
 
     .modal-actions button.mat-button {
-      color: #64748b;
+      color: #6b7280;
       font-weight: 500;
     }
 
     .modal-actions button.mat-button:hover {
-      background: #f1f5f9;
+      background: #f9fafb;
     }
 
-    @media (max-width: 1024px) {
-      .info-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
+    /* Responsive */
     @media (max-width: 768px) {
       .modal-container {
         min-width: 90vw;
-        max-width: 95vw;
-        max-height: 85vh;
-        width: 90vw;
+        max-width: 90vw;
       }
 
       .profile-main {
@@ -858,16 +831,10 @@ import * as JsBarcode from 'jsbarcode';
       .modal-actions {
         flex-wrap: wrap;
         justify-content: center;
-        padding: 12px 16px;
       }
 
       .modal-actions button {
         min-width: 100px;
-        flex: 1;
-      }
-
-      .modal-body {
-        max-height: calc(85vh - 200px);
       }
     }
 
@@ -897,6 +864,7 @@ import * as JsBarcode from 'jsbarcode';
       }
     }
 
+    /* Thermal Print Styles */
     @media print {
       body * {
         visibility: hidden;
@@ -979,6 +947,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
 
   loadTraineeImage(): void {
     const trainee = this.enrollment.trainee;
+    // Check if trainee has imageUrl (FID - 15 or 18 digits)
     if (trainee && trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
       this.fileService.downloadFile(trainee.imageUrl).subscribe({
         next: (blob) => {
@@ -994,7 +963,12 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
   generateBarcode(): void {
     if (this.barcodeCanvas?.nativeElement) {
       try {
-        (JsBarcode as any)(this.barcodeCanvas.nativeElement, this.enrollment.trainee?.id?.toString() || '000000', {
+        // Use nationalId if available, otherwise fallback to id
+        const barcodeValue = this.enrollment.trainee?.nationalId?.toString() || 
+                            this.enrollment.trainee?.id?.toString() || 
+                            '000000';
+        
+        (JsBarcode as any)(this.barcodeCanvas.nativeElement, barcodeValue, {
           format: 'CODE128',
           lineColor: '#000000',
           width: 1.5,
@@ -1013,6 +987,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
 
   editEnrollment(): void {
     this.dialogRef.close();
+    // Navigate to edit or open wizard
   }
 
   deleteEnrollment(): void {
@@ -1030,6 +1005,8 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
       }
 
       const e = this.enrollment;
+      const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
+      
       printWindow.document.write(`
         <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
         <title>بطاقة تسجيل متدرب</title>
@@ -1061,7 +1038,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
         <div class="thermal-card">
           <div class="thermal-header"><div class="thermal-title">الأكاديمية الأولمبية</div><div class="thermal-subtitle">بطاقة تسجيل متدرب</div></div>
           <div class="thermal-photo"><img src="${this.traineeImageUrl || ''}" onerror="this.style.display='none'"></div>
-          <div class="thermal-name">${e.trainee?.title || ''}</div>
+          <div class="thermal-name">${e.trainee?.fullName || ''}</div>
           <div class="thermal-id">رقم التسجيل: ${e?.id || ''}</div>
           <div class="thermal-divider"></div>
           <table class="thermal-table">
@@ -1075,7 +1052,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
             <tr><td class="thermal-label">💵 الدفع</td><td class="thermal-value">${e.paymentStatus?.title || ''}</td></tr>
           </table>
           <div class="thermal-divider"></div>
-          <div class="thermal-barcode"><img src="${barcodeImage}"><div class="thermal-barcode-number">${e.trainee?.id || ''}</div></div>
+          <div class="thermal-barcode"><img src="${barcodeImage}"></div>
           <div class="thermal-footer"><div class="thermal-signature"><div class="thermal-line"></div><div>توقيع المتدرب</div></div><div class="thermal-signature"><div class="thermal-line"></div><div>ختم الأكاديمية</div></div></div>
         </div>
         <script>window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };<\/script>

@@ -199,11 +199,27 @@
             </td>
           </ng-container>
 
+          <!-- Image Column -->
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef>الصورة</th>
+            <td mat-cell *matCellDef="let e" class="image-cell">
+              <div class="trainee-avatar-container">
+                <img 
+                  *ngIf="getTraineeImageUrl(e.trainee?.id) as imgUrl" 
+                  [src]="imgUrl" 
+                  class="trainee-avatar" 
+                  [alt]="getTraineeName(e.trainee)"
+                  (error)="traineeImageUrls.delete(e.trainee?.id)">
+                <mat-icon *ngIf="!getTraineeImageUrl(e.trainee?.id)" class="avatar-icon">person</mat-icon>
+              </div>
+            </td>
+          </ng-container>
+
           <!-- Trainee Column -->
           <ng-container matColumnDef="trainee">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>المتدرب</th>
             <td mat-cell *matCellDef="let e" class="clickable-cell" (click)="viewEnrollment(e.id)">
-              <strong>{{ e.trainee?.title }}</strong>
+              <strong>{{ getTraineeName(e.trainee) }}</strong>
             </td>
           </ng-container>
 
