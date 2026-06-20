@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import {CourseSessionDTO, CourseSessionVTO, CourseSessionResultSet } from '../models/employee.model'
 import { CourseDTO, CourseVTO, CourseResultSet} from '../models/course.model';
-import { NewRecordVTO } from '../models/common.model';
+import { LookupResultSet, NewRecordVTO } from '../models/common.model';
 
 @Injectable({
   providedIn: 'root'
@@ -56,4 +56,13 @@ export class CourseService {
   deleteCourse(id: number): Observable<void> {
   return this.api.delete(`/courses/${id}`);
   }
+
+  // Lookup endpoints
+    getAllCoursesLookup(): Observable<LookupResultSet> {
+      return this.api.get('/lookup/courses');
+    }
+
+    getAllCoursesTypesLookup(): Observable<LookupResultSet> {
+      return this.api.get('/lookup/course-types');
+    }
 }

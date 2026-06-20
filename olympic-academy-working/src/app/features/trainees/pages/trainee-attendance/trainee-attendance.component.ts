@@ -1064,9 +1064,10 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit {
     return classes[statusId] || '';
   }
 }
+// trainee-attendance.component.ts - FIXED STATUS SELECTION
 
 // ============================================================================
-// ATTENDANCE DIALOG COMPONENT
+// ATTENDANCE DIALOG COMPONENT - FIXED STATUS SELECTION
 // ============================================================================
 
 @Component({
@@ -1171,7 +1172,8 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit {
               <mat-label>الجلسة *</mat-label>
               <mat-select
                 [formControl]="data.form.get('courseSessionId')"
-                [disabled]="isLoadingSessions || sessionOptions.length === 0">
+                [disabled]="isLoadingSessions || sessionOptions.length === 0"
+                (selectionChange)="onSessionChange($event.value)">
                 <mat-option *ngFor="let option of sessionOptions" [value]="option.value">
                   {{ option.label }}
                 </mat-option>
@@ -1190,17 +1192,19 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit {
             </div>
           </div>
 
-          <!-- Status -->
+          <!-- Status - FIXED: Use mat-select directly -->
           <div class="form-field-full">
-            <app-searchable-select
-              [ngModel]="data.form.get('status')?.value"
-              (ngModelChange)="data.form.get('status')?.setValue($event)"
-              label="حالة الحضور *"
-              [options]="statusOptions"
-              [required]="true"
-              [ngModelOptions]="{ standalone: true }"
-              class="full-width-select">
-            </app-searchable-select>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>حالة الحضور *</mat-label>
+              <mat-select
+                [formControl]="data.form.get('status')"
+                (selectionChange)="onStatusChange($event.value)">
+                <mat-option *ngFor="let status of attendanceStatuses" [value]="status.value">
+                  {{ status.label }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>check_circle</mat-icon>
+            </mat-form-field>
           </div>
 
           <!-- Date & Late Time -->
@@ -1224,13 +1228,13 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit {
           <div class="form-row">
             <mat-form-field appearance="outline" class="form-field-half">
               <mat-label>وقت الدخول</mat-label>
-              <input matInput type="time" formControlName="checkInTime">
+              <input matInput type="time" formControlName="checkInTime" #checkInInput>
               <mat-icon matPrefix>login</mat-icon>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-field-half">
               <mat-label>وقت الخروج</mat-label>
-              <input matInput type="time" formControlName="checkOutTime">
+              <input matInput type="time" formControlName="checkOutTime" #checkOutInput>
               <mat-icon matPrefix>logout</mat-icon>
             </mat-form-field>
           </div>
@@ -1255,7 +1259,9 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit {
         <mat-icon>close</mat-icon>
         إلغاء
       </button>
-      <button mat-raised-button color="primary" [disabled]="data.form.invalid || isLoadingSessions" (click)="save()" class="save-btn">
+      <button mat-raised-button color="primary" 
+              [disabled]="isLoadingSessions" 
+              (click)="save()" class="save-btn">
         <mat-icon>save</mat-icon>
         {{ data.editMode ? 'تحديث' : 'حفظ' }}
       </button>
@@ -1507,6 +1513,7 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit {
     }
     .save-btn:disabled {
       opacity: 0.6;
+      cursor: not-allowed;
     }
 
     @media (max-width: 600px) {
@@ -1558,8 +1565,11 @@ export class TraineeAttendanceDialogComponent implements OnInit {
 
   traineeOptions: SelectOption[] = [];
   sessionOptions: SelectOption[] = [];
-  statusOptions: SelectOption[] = [];
+  attendanceStatuses: SelectOption[] = [];
   isLoadingSessions: boolean = false;
+
+  // Store session data for time lookup
+  private sessionsData: any[] = [];
 
   barcodeSearch: string = '';
   barcodeSearchResult: { found: boolean; traineeName?: string; message?: string } | null = null;
@@ -1591,8 +1601,10 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     }));
 
     this.sessionOptions = data.sessionOptions || [];
+    this.sessionsData = data.sessions || [];
 
-    this.statusOptions = (data.attendanceStatuses || []).map((s: any) => ({
+    // Build attendance status options with proper values
+    this.attendanceStatuses = (data.attendanceStatuses || []).map((s: any) => ({
       value: this.STATUS_ENUM_MAP[s.id] || s.id,
       label: s.title
     }));
@@ -1607,6 +1619,7 @@ export class TraineeAttendanceDialogComponent implements OnInit {
       if (traineeId && this.data.loadSessionsFn) {
         this.isLoadingSessions = true;
         this.sessionOptions = [];
+        this.sessionsData = [];
         this.data.form.get('courseSessionId')?.setValue(null);
         this.cdr.detectChanges();
         this.data.loadSessionsFn(traineeId);
@@ -1620,6 +1633,7 @@ export class TraineeAttendanceDialogComponent implements OnInit {
 
   updateSessions(sessions: any[], sessionOptions: SelectOption[]): void {
     this.isLoadingSessions = false;
+    this.sessionsData = [...sessions];
     this.sessionOptions = [...sessionOptions];
     this.cdr.detectChanges();
 
@@ -1627,6 +1641,145 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     if (currentSessionId && !sessions.find(s => s.id === currentSessionId)) {
       this.data.form.get('courseSessionId')?.setValue(null);
     }
+  }
+
+  // ==========================================================================
+  // TIME FORMATTING HELPER
+  // ==========================================================================
+
+  /**
+   * Format time to HH:mm (24-hour format) for input[type="time"]
+   */
+  private formatTimeForInput(timeStr: string | undefined | null): string {
+    if (!timeStr) return '';
+
+    // If time is already in HH:mm format, return as is
+    if (/^\d{2}:\d{2}$/.test(timeStr)) {
+      return timeStr;
+    }
+
+    try {
+      // Handle HH:mm:ss format
+      const parts = timeStr.split(':');
+      if (parts.length >= 2) {
+        let hours = parseInt(parts[0], 10);
+        const minutes = parts[1].padStart(2, '0');
+        if (!isNaN(hours)) {
+          // Ensure 24-hour format (0-23)
+          if (hours > 23) hours = hours % 24;
+          return `${hours.toString().padStart(2, '0')}:${minutes}`;
+        }
+      }
+
+      // Try to parse as date
+      const date = new Date(timeStr);
+      if (!isNaN(date.getTime())) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      return timeStr;
+    } catch (error) {
+      return timeStr;
+    }
+  }
+
+  // ==========================================================================
+  // SESSION SELECTION HANDLER
+  // ==========================================================================
+
+  onSessionChange(sessionId: number): void {
+    if (!sessionId) {
+      this.data.form.get('checkInTime')?.setValue('');
+      this.data.form.get('checkOutTime')?.setValue('');
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Find the selected session data
+    const selectedSession = this.sessionsData.find(s => s.id === sessionId);
+    if (!selectedSession) return;
+
+    const form = this.data.form;
+    const currentStatus = form.get('status')?.value;
+
+    // Auto-fill check-in and check-out times when session is selected
+    if (currentStatus === 'PRESENT' || !currentStatus) {
+      const checkInTime = this.formatTimeForInput(selectedSession.startTime);
+      const checkOutTime = this.formatTimeForInput(selectedSession.endTime);
+
+      if (checkInTime) {
+        form.get('checkInTime')?.setValue(checkInTime);
+      } else {
+        form.get('checkInTime')?.setValue('');
+      }
+      
+      if (checkOutTime) {
+        form.get('checkOutTime')?.setValue(checkOutTime);
+      } else {
+        form.get('checkOutTime')?.setValue('');
+      }
+    }
+    
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================================================
+  // STATUS CHANGE HANDLER
+  // ==========================================================================
+
+  onStatusChange(statusValue: any): void {
+    console.log('Status changed to:', statusValue);
+    
+    const form = this.data.form;
+    const sessionId = form.get('courseSessionId')?.value;
+    const selectedSession = this.sessionsData.find(s => s.id === sessionId);
+
+    // If status is PRESENT and session is selected, auto-fill times
+    if (statusValue === 'PRESENT' && selectedSession) {
+      const checkInTime = this.formatTimeForInput(selectedSession.startTime);
+      const checkOutTime = this.formatTimeForInput(selectedSession.endTime);
+
+      if (checkInTime) {
+        form.get('checkInTime')?.setValue(checkInTime);
+      } else {
+        form.get('checkInTime')?.setValue('');
+      }
+      
+      if (checkOutTime) {
+        form.get('checkOutTime')?.setValue(checkOutTime);
+      } else {
+        form.get('checkOutTime')?.setValue('');
+      }
+    } else if (statusValue !== 'PRESENT') {
+      form.get('checkInTime')?.setValue('');
+      form.get('checkOutTime')?.setValue('');
+    }
+    
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================================================
+  // TRAINEE CHANGE HANDLER
+  // ==========================================================================
+
+  onTraineeChange(traineeId: number): void {
+    this.data.form.get('traineeId')?.setValue(traineeId);
+    this.data.form.get('courseSessionId')?.setValue(null);
+    this.data.form.get('status')?.setValue(null);
+    this.data.form.get('checkInTime')?.setValue('');
+    this.data.form.get('checkOutTime')?.setValue('');
+    
+    if (traineeId && this.data.loadSessionsFn) {
+      this.isLoadingSessions = true;
+      this.sessionOptions = [];
+      this.sessionsData = [];
+      this.cdr.detectChanges();
+      this.data.loadSessionsFn(traineeId);
+    }
+    
+    this.cdr.detectChanges();
   }
 
   // ==========================================================================
@@ -1654,7 +1807,6 @@ export class TraineeAttendanceDialogComponent implements OnInit {
           return;
         }
 
-        // Exact match by national ID
         const exactMatch = foundTrainees.find((t: any) => t.nationalId === searchValue);
 
         if (exactMatch) {
@@ -1663,13 +1815,11 @@ export class TraineeAttendanceDialogComponent implements OnInit {
           return;
         }
 
-        // Multiple matches
         if (foundTrainees.length > 1) {
           this.showTraineeSelectionDialog(foundTrainees);
           return;
         }
 
-        // Single match
         const trainee = foundTrainees[0];
         this.selectTraineeInDialog(trainee);
         this.notification.showSuccess(`تم العثور على المتدرب: ${trainee.title || trainee.fullName}`);
@@ -1688,6 +1838,7 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     };
     this.data.form.get('traineeId')?.setValue(trainee.id);
     this.barcodeSearch = '';
+    this.cdr.detectChanges();
   }
 
   private setBarcodeSearchResult(found: boolean, message: string): void {
@@ -1721,44 +1872,38 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     this.barcodeSearchResult = null;
   }
 
-  onTraineeChange(traineeId: number): void {
-    this.data.form.get('traineeId')?.setValue(traineeId);
-    if (traineeId && this.data.loadSessionsFn) {
-      this.isLoadingSessions = true;
-      this.sessionOptions = [];
-      this.data.form.get('courseSessionId')?.setValue(null);
-      this.cdr.detectChanges();
-      this.data.loadSessionsFn(traineeId);
-    }
-  }
-
   // ==========================================================================
-  // SAVE
+  // SAVE - FIXED STATUS MAPPING
   // ==========================================================================
 
   save(): void {
-    if (this.data.form.valid) {
-      const formValue = this.data.form.value;
+    const formValue = this.data.form.value;
 
-      // Map status ID to enum name
-      let statusValue = formValue.status;
-      if (typeof statusValue === 'number') {
-        statusValue = this.STATUS_ENUM_MAP[statusValue] || statusValue;
-      }
-
-      const attendanceData = {
-        traineeId: formValue.traineeId,
-        courseSessionId: formValue.courseSessionId,
-        status: statusValue,
-        attendanceDate: formValue.attendanceDate,
-        checkInTime: formValue.checkInTime || null,
-        checkOutTime: formValue.checkOutTime || null,
-        lateTime: formValue.lateTime || null,
-        note: formValue.note || null
-      };
-
-      console.log('Saving attendance data:', attendanceData);
-      this.dialogRef.close(attendanceData);
+    // Map status ID to enum name - FIXED
+    let statusValue = formValue.status;
+    
+    // If status is a number, map it to the enum string
+    if (typeof statusValue === 'number') {
+      statusValue = this.STATUS_ENUM_MAP[statusValue] || statusValue;
     }
+    
+    // If status is null or undefined, use a default
+    if (!statusValue) {
+      statusValue = 'PRESENT'; // Default status
+    }
+
+    const attendanceData = {
+      traineeId: formValue.traineeId,
+      courseSessionId: formValue.courseSessionId,
+      status: statusValue,
+      attendanceDate: formValue.attendanceDate,
+      checkInTime: formValue.checkInTime || null,
+      checkOutTime: formValue.checkOutTime || null,
+      lateTime: formValue.lateTime || null,
+      note: formValue.note || null
+    };
+
+    console.log('Saving attendance data:', attendanceData);
+    this.dialogRef.close(attendanceData);
   }
 }

@@ -10,18 +10,21 @@ import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.course.model.entity.Course;
+import bs.service.department.model.entity.Department;
+import bs.service.employee.api.repository.CourseSessionRepository;
 import bs.service.employee.api.repository.EmployeeRepository;
 import bs.service.employee.api.repository.TrainerCourseRepository;
+import bs.service.employee.api.repository.TrainerDepartmentRepository;
 import bs.service.employee.api.service.EmployeeService;
 import bs.service.employee.core.mapper.EmployeeMapper;
-import bs.service.employee.model.entity.Employee;
-import bs.service.employee.model.entity.EmployeeContact;
-import bs.service.employee.model.entity.TrainerCourse;
+import bs.service.employee.model.entity.*;
 import bs.service.employee.model.enums.EmployeeAttendanceStatus;
 import bs.service.employee.model.enums.EmployeeDomains;
 import bs.service.employee.model.enums.EmployeeTypes;
+import bs.service.employee.model.filter.CourseSessionSearchFilter;
 import bs.service.employee.model.filter.EmployeeSearchFilter;
 import bs.service.employee.model.filter.TrainerCourseSearchFilter;
+import bs.service.employee.model.filter.TrainerDepartmentSearchFilter;
 import bs.service.employee.model.generated.*;
 import bs.service.file.api.service.FileService;
 import lombok.AllArgsConstructor;
@@ -35,8 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_CONTACT_NOT_FOUND;
-import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_NOT_FOUND;
+import static bs.service.employee.model.enums.EmployeeErrors.*;
 
 @Service
 @AllArgsConstructor
@@ -46,10 +48,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final TrainerCourseRepository trainerCourseRepository;
     private final FileService fileService;
+    private final TrainerDepartmentRepository trainerDepartmentRepository;
+    private final CourseSessionRepository courseSessionRepository;
 
     @Override
     @Transactional
     public NewRecordVTO createEmployee(EmployeeDTO employeeDTO) {
+        EmployeeSearchFilter employeeSearchFilter=EmployeeSearchFilter.builder().pagination(PaginationInfo.noPagination()).isDeleted(false).quickSearchQuery(employeeDTO.getNationalId()).build();
+        List<Employee> employees=employeeRepository.selectAllByFilters(employeeSearchFilter);
+        if(employees!=null && !employees.isEmpty()){
+            throw new BusinessException(NATIONAL_ID_ALREADY_EXISTS,employeeDTO.getNationalId());
+        }
         Employee employee = employeeMapper.toEmployee(employeeDTO);
         employee.setIsActive(true);
         employee.setIsDeleted(false);
@@ -65,6 +74,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
         Employee employeeToUpdate = employeeMapper.toEmployee(employeeDTO);
         employeeToUpdate.setId(employeeId);
+        employeeToUpdate.setIsActive(employeeDTO.getIsActive());
+        employeeToUpdate.setIsDeleted(false);
         fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employeeToUpdate.getId()), Collections.singletonList(employeeToUpdate.getImageUrl()));
         employeeRepository.update(employeeToUpdate);
         return NewRecordVTO.builder().id(employeeId).build();
@@ -91,8 +102,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<TrainerCourse> trainerCourses=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter);
         List<Course> courses=trainerCourses.stream().map(TrainerCourse::getCourse).toList();
         List<LookupVTO> lookupVTOs=employeeMapper.toLookupCourseVTOs(courses);
+        TrainerDepartmentSearchFilter trainerDepartmentSearchFilter=TrainerDepartmentSearchFilter.builder().trainerId(employeeId).build();
+        List<EmployeeDepartment> employeeDepartments=trainerDepartmentRepository.selectAllByFilters(trainerDepartmentSearchFilter);
+        List<Department> departments=employeeDepartments.stream().map(EmployeeDepartment::getDepartment).toList();
+        List<LookupVTO> departmentLookupVTOs=employeeMapper.toDepartmentLookupVTOs(departments);
         EmployeeVTO employeeVTO= employeeMapper.toEmployeeVTO(employee);
+        employeeVTO.setDepartments(departmentLookupVTOs);
         employeeVTO.setCourses(lookupVTOs);
+        CourseSessionSearchFilter courseSessionSearchFilter=CourseSessionSearchFilter.builder().employeeId(employeeId).build();
+        List<CourseSession> courseSessions=courseSessionRepository.selectAllByFilters(courseSessionSearchFilter);
+        List<CourseSessionVTO> courseSessionVTOS=employeeMapper.toCourseSessionVTOs(courseSessions);
+        employeeVTO.setSessions(courseSessionVTOS);
         return employeeVTO;
     }
 

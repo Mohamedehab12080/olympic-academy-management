@@ -54,9 +54,6 @@ public abstract class EmployeeMapper {
 
     // ==================== Lookup Mappings ====================
 
-    public abstract LookupVTO toLookupVTO(Department department);
-    public abstract List<LookupVTO> toLookupVTO(List<Department> departments);
-
     @Mapping(target = "title", source = "fullName")
     public abstract LookupVTO toLookupVTO(Employee employee);
 
@@ -135,6 +132,9 @@ public abstract class EmployeeMapper {
     public abstract ContactTypes toContactType(String contactType);
     public abstract String fromContactType(ContactTypes contactType);
 
+    @Mapping(target = "trainer", source = "employee")
+    public abstract TrainerDepartmentVTO toTrainerDepartmentVTO(EmployeeDepartment employeeDepartment);
+
     // Lookup list mappings
     @Mapping(target = "salaryType", expression= "java(toLookupVTOFromSalaryType(employee.getSalaryType()))")
     @Mapping(target = "employeeType", expression= "java(toLookupVTOFromEmployeeType(employee.getEmployeeType()))")
@@ -167,4 +167,14 @@ public abstract class EmployeeMapper {
     @Mapping(target = "status", expression = "java(toLookupVTOFromSessionStatus(courseSession.getStatus()))")
     public abstract CourseSessionVTO toCourseSessionVTO(CourseSession courseSession);
     public abstract List<CourseSessionVTO> toCourseSessionVTOs(List<CourseSession> courseSessions);
+    public abstract List<TrainerDepartmentVTO> toTrainerDepartmentVTOs(List<EmployeeDepartment> employeeDepartments);
+
+    public abstract LookupVTO toEmployeeDepartmentLookupVTO(EmployeeDepartment employeeDepartment);
+
+    public abstract List<LookupVTO> toEmployeeDepartmentLookupVTOs(List<EmployeeDepartment> employeeDepartments);
+
+
+    public abstract LookupVTO toDepartmentLookupVTO(Department departments);
+
+    public abstract List<LookupVTO> toDepartmentLookupVTOs(List<Department> departments);
 }

@@ -1,4 +1,5 @@
-import { LookupVTO, LightUserVTO, Gender, ContactType, SalaryType } from './common.model';
+// employee.model.ts
+import { LookupVTO, LightUserVTO, Gender, ContactType, SalaryType } from './../models/common.model';
 
 // ==================== Enums (specific to Employee module) ====================
 
@@ -49,6 +50,7 @@ export interface EmployeeDTO {
   birthDate?: string;
   gender?: Gender;  // From common.model
   salary?: number;
+  isActive?:boolean;
   remainedSalary?: number;
   salaryType?: SalaryType;  // From common.model
   employeeType: EmployeeType;
@@ -78,7 +80,6 @@ export interface CourseSessionDTO {
   status?: SessionStatus;  // { id: number; title: string }
   note?: string;
 }
-
 
 // ==================== VTOs (received from backend - use LookupVTO for enums) ====================
 
@@ -156,17 +157,25 @@ export interface CourseSessionVTO {
 
 export interface TrainerCourseVTO {
   id: number;
+  trainer:LookupVTO;
   course: LookupVTO;
   createdOn: string;
   createdBy: LightUserVTO;
 }
 
-export interface TrainerCourseAssignmentVTO {
+// ==================== Trainer Department VTOs ====================
+
+export interface TrainerDepartmentVTO {
   id: number;
   trainer: LookupVTO;
-  course: LookupVTO;
+  department: LookupVTO;
   createdOn: string;
   createdBy: LightUserVTO;
+}
+
+export interface TrainerDepartmentResultSet {
+  total: number;
+  items: TrainerDepartmentVTO[];
 }
 
 // ==================== Result Sets ====================
@@ -180,7 +189,7 @@ export interface EmployeeListItem {
   id: number;
   fullName: string;
   nationalId: string;
-  imageUrl:string;
+  imageUrl: string;
   gender: LookupVTO;
   employeeType: LookupVTO;
   hireDate: string;
@@ -208,11 +217,6 @@ export interface TrainerCourseResultSet {
   items: TrainerCourseVTO[];
 }
 
-export interface TrainerCourseAssignmentResultSet {
-  total: number;
-  items: TrainerCourseAssignmentVTO[];
-}
-
 export interface CourseSessionResultSet {
   total: number;
   items: CourseSessionVTO[];
@@ -231,8 +235,12 @@ export interface DailyAttendanceReport {
   details: EmployeeAttendanceListItem[];
 }
 
-// ==================== DTO for Assigning Course to Trainer ====================
+// ==================== DTOs for Assigning ====================
 
 export interface AssignCourseDTO {
   courseId: number;
+}
+
+export interface AssignDepartmentDTO {
+  departmentId: number[];  
 }

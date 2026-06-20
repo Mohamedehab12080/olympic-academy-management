@@ -8,23 +8,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
+
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrainerCourseSearchFilter extends SearchFilter<TrainerCourseSearchFilter.OrderByAttributes> {
+public class TrainerDepartmentSearchFilter extends SearchFilter<TrainerDepartmentSearchFilter.OrderByAttributes> {
 
-    private String quickSearch;
+    private String quickSearchQuery;
+    private Boolean isActive;
+    private Boolean isDeleted;
+    private LocalDate createdOnFrom;
+    private LocalDate createdOnTo;
     private Integer trainerId;
-    private Integer courseId;
-
+    private Integer departmentId;
 
     @Getter
     @AllArgsConstructor
     public enum OrderByAttributes implements OrderAttributes {
         CREATION_DATE("item.createdOn", false);
-
         private final String attributeName;
         private final Boolean isLocalized;
     }
+
 }

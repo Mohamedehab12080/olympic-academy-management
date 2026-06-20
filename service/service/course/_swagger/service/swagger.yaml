@@ -11,6 +11,7 @@ servers:
 
 tags:
   - name: Course
+  - name: CourseLookup
 
 paths:
   /courses:
@@ -106,9 +107,25 @@ paths:
   /lookup/course-types:
     get:
       tags:
-        - Lookup
+        - CourseLookup
       summary: Get all course types for lookup
       operationId: getAllCourseTypesLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/courses:
+    get:
+      tags:
+        - CourseLookup
+      summary: Get all courses lookup
+      operationId: getAllCoursesLookup
       responses:
         '200':
           description: OK

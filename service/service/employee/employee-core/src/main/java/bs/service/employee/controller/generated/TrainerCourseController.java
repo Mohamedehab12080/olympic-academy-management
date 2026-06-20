@@ -9,7 +9,6 @@ import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.model.generated.AssignCourseDTO;
-import bs.service.employee.model.generated.TrainerCourseAssignmentResultSet;
 import bs.service.employee.model.generated.TrainerCourseResultSet;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 public interface TrainerCourseController {
 
     /**
-     * POST /trainers/{trainerId}/courses : Assign a course to a trainer
+     * POST /trainers/courses : Assign a course to a trainer
      *
      * @param trainerId
      *            (required)
@@ -47,7 +46,7 @@ public interface TrainerCourseController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewRecordVTO.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.POST, value = "/trainers/{trainerId}/courses", produces = {
+    @RequestMapping(method = RequestMethod.POST, value = "/trainers/courses", produces = {
             "application/json" }, consumes = { "application/json" })
 
     ResponseEntity<NewRecordVTO> _assignCourseToTrainer(
@@ -55,44 +54,14 @@ public interface TrainerCourseController {
             @Parameter(name = "AssignCourseDTO", description = "", required = true) @Valid @RequestBody AssignCourseDTO assignCourseDTO);
 
     /**
-     * GET /trainers/courses/assignments : Get all trainer-course assignments with filters
+     * GET /trainers/courses : Get all courses assigned to a trainer
      *
      * @param trainerId
      *            (optional)
      * @param courseId
      *            (optional)
-     * @param pageNum
-     *            (optional, default to 0)
-     * @param pageSize
-     *            (optional, default to 25)
-     * @param orderDir
-     *            Order Direction (optional)
-     * @param orderBy
-     *            Order By Attribute (optional)
-     *
-     * @return OK (status code 200) or Bad Request (status code 400)
-     */
-    @Operation(operationId = "getAllTrainerCourseAssignments", summary = "Get all trainer-course assignments with filters", tags = {
-            "TrainerCourse" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = TrainerCourseAssignmentResultSet.class)) }),
-                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
-                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.GET, value = "/trainers/courses/assignments", produces = {
-            "application/json" })
-
-    ResponseEntity<TrainerCourseAssignmentResultSet> _getAllTrainerCourseAssignments(
-            @Parameter(name = "trainerId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainerId", required = false) Integer trainerId,
-            @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
-            @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
-            @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
-            @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
-            @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
-
-    /**
-     * GET /trainers/{trainerId}/courses : Get all courses assigned to a trainer
-     *
-     * @param trainerId
-     *            (required)
+     * @param quickSearch
+     *            (optional)
      * @param pageNum
      *            (optional, default to 0)
      * @param pageSize
@@ -109,11 +78,12 @@ public interface TrainerCourseController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = TrainerCourseResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.GET, value = "/trainers/{trainerId}/courses", produces = {
-            "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/trainers/courses", produces = { "application/json" })
 
     ResponseEntity<TrainerCourseResultSet> _getTrainerCourses(
-            @Parameter(name = "trainerId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("trainerId") Integer trainerId,
+            @Parameter(name = "trainerId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainerId", required = false) Integer trainerId,
+            @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
             @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,

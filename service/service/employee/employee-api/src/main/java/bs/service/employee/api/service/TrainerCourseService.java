@@ -31,20 +31,7 @@ public interface TrainerCourseService {
      * @param orderBy Order by attribute
      * @return TrainerCourseResultSet containing list of courses
      */
-    TrainerCourseResultSet getTrainerCoursesByFilter(Integer trainerId, Integer pageNum, Integer pageSize,
-                                             OrderDirections orderDir, String orderBy);
-
-    /**
-     * Get all trainer-course assignments with optional filters
-     * @param trainerId Optional trainer ID filter
-     * @param courseId Optional course ID filter
-     * @param pageNum Page number
-     * @param pageSize Page size
-     * @param orderDir Order direction
-     * @param orderBy Order by attribute
-     * @return TrainerCourseAssignmentResultSet containing all assignments
-     */
-    TrainerCourseAssignmentResultSet getAllTrainerCourseAssignmentsByFilter(Integer trainerId, Integer courseId,
-                                                                    Integer pageNum, Integer pageSize,
-                                                                    OrderDirections orderDir, String orderBy);
+    TrainerCourseResultSet getTrainerCoursesByFilter(String quickSearch,Integer trainerId, Integer courseId,
+                                                     Integer pageNum, Integer pageSize,
+                                                     OrderDirections orderDir, String orderBy);
 }

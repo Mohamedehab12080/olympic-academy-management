@@ -46,6 +46,11 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
+    public List<Department> selectDepartmentByIdIn(List<Integer> ids) {
+        return departmentJPARepository.findAllById(ids);
+    }
+
+    @Override
     public List<Department> selectAllByFilters(DepartmentSearchFilter filters) {
         return queryBuilder.selectAllByFilters(filters);
     }

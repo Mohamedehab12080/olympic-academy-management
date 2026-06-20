@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.*;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
 @Validated
 @Controller
-@Tag(name = "Lookup", description = "the Lookup API")
-public interface LookupController {
+@Tag(name = "CourseLookup", description = "the CourseLookup API")
+public interface CourseLookupController {
 
     /**
      * GET /lookup/course-types : Get all course types for lookup
@@ -31,13 +31,29 @@ public interface LookupController {
      * @return OK (status code 200) or Bad Request (status code 400)
      */
     @Operation(operationId = "getAllCourseTypesLookup", summary = "Get all course types for lookup", tags = {
-            "Lookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+            "CourseLookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/lookup/course-types", produces = { "application/json" })
 
     ResponseEntity<LookupResultSet> _getAllCourseTypesLookup(
+
+    );
+
+    /**
+     * GET /lookup/courses : Get all courses lookup
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllCoursesLookup", summary = "Get all courses lookup", tags = {
+            "CourseLookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/lookup/courses", produces = { "application/json" })
+
+    ResponseEntity<LookupResultSet> _getAllCoursesLookup(
 
     );
 

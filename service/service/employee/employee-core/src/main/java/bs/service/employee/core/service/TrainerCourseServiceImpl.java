@@ -56,8 +56,11 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
                 .courseId(courseId)
                 .pagination(PaginationInfo.noPagination())
                 .build();
-        TrainerCourse trainerCourse=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter).stream().findFirst().orElseThrow(()-> new BusinessException(COURSE_ALREADY_ASSIGNED_TO_TRAINER, trainerId, courseId));
 
+        List<TrainerCourse> trainerCourses=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter);
+        if(trainerCourses!=null && !trainerCourses.isEmpty()){
+           throw new BusinessException(COURSE_ALREADY_ASSIGNED_TO_TRAINER, trainerId, courseId);
+        }
 
         TrainerCourse assignment = TrainerCourse.builder()
                 .trainer(trainer)
@@ -81,33 +84,21 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
     }
 
     @Override
-    public TrainerCourseResultSet getTrainerCoursesByFilter(Integer trainerId, Integer pageNum, Integer pageSize,
-                                                    OrderDirections orderDir, String orderBy) {
+    public TrainerCourseResultSet getTrainerCoursesByFilter(String quickSearch,Integer trainerId, Integer courseId,
+                                                            Integer pageNum, Integer pageSize,
+                                                            OrderDirections orderDir, String orderBy) {
         // Verify trainer exists
-        employeeRepository.selectById(trainerId)
-                .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, trainerId));
+        if(trainerId!=null){
+            employeeRepository.selectById(trainerId)
+                    .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, trainerId));
+
+        }
+        if(courseId!=null){
+            courseRepository.selectById(courseId).orElseThrow(() -> new BusinessException(COURSE_NOT_FOUND, courseId));
+        }
 
         TrainerCourseSearchFilter filter = TrainerCourseSearchFilter.builder()
-                .trainerId(trainerId)
-                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
-                .defaultSorting(new SortingInfo<>(TrainerCourseSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
-                .sorting(new SortingInfo<>(orderBy, orderDir))
-                .build();
-
-        List<TrainerCourse> assignments = trainerCourseRepository.selectAllByFilters(filter);
-        List<TrainerCourseVTO> items = employeeMapper.toTrainerCourseVTOs(assignments);
-
-        return TrainerCourseResultSet.builder()
-                .items(items)
-                .total(items.size())
-                .build();
-    }
-
-    @Override
-    public TrainerCourseAssignmentResultSet getAllTrainerCourseAssignmentsByFilter(Integer trainerId, Integer courseId,
-                                                                           Integer pageNum, Integer pageSize,
-                                                                           OrderDirections orderDir, String orderBy) {
-        TrainerCourseSearchFilter filter = TrainerCourseSearchFilter.builder()
+                .quickSearch(quickSearch)
                 .trainerId(trainerId)
                 .courseId(courseId)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
@@ -116,11 +107,12 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
                 .build();
 
         List<TrainerCourse> assignments = trainerCourseRepository.selectAllByFilters(filter);
-        var items = employeeMapper.toTrainerCourseAssignmentVTOs(assignments);
+        var items = employeeMapper.toTrainerCourseVTOs(assignments);
 
-        return TrainerCourseAssignmentResultSet.builder()
+        return TrainerCourseResultSet.builder()
                 .items(items)
                 .total(items.size())
                 .build();
     }
+
 }

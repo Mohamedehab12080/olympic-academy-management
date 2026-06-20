@@ -101,7 +101,16 @@
             <column name="department_id" type="int">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_by_id" type="int"/>
         </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_employee_department_created_by"
+                baseTableName="oa_employee_department"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
 
         <addForeignKeyConstraint
                 constraintName="fk_employee_department_employee"

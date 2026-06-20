@@ -64,4 +64,7 @@ public abstract class CourseMapper {
     // ==================== Lookup List Mappings ====================
 
     public abstract List<LookupVTO> toLookupCourseTypeVTOs(List<CourseTypes> courseTypes);
+
+    public abstract List<LookupVTO> toLookupVTOs(List<Course> courses);
+
 }

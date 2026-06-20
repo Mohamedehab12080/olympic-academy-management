@@ -42,7 +42,6 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
         log.info("Creating trainee attendance for traineeId: {}, sessionId: {}",
                 traineeAttendanceDTO.getTraineeId(), traineeAttendanceDTO.getCourseSessionId());
 
-        // التحقق من أن المتدرب مسجل في هذه الدورة
         boolean isEnrolled = traineeAttendanceRepository.isTraineeEnrolledInCourse(
                 traineeAttendanceDTO.getTraineeId(), traineeAttendanceDTO.getCourseSessionId());
 
@@ -50,7 +49,6 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
             throw new BusinessException(TRAINEE_NOT_ENROLLED_IN_COURSE, traineeAttendanceDTO.getTraineeId());
         }
 
-        // التحقق من عدم وجود سجل حضور مكرر
         TraineeAttendanceSearchFilter checkFilter = TraineeAttendanceSearchFilter.builder()
                 .traineeId(traineeAttendanceDTO.getTraineeId())
                 .courseSessionId(traineeAttendanceDTO.getCourseSessionId())
@@ -69,7 +67,6 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
         LocalTime parsedCheckIn=traineeAttendanceDTO.getCheckInTime()!=null?LocalTime.parse(traineeAttendanceDTO.getCheckInTime()):null;
         LocalTime parsedCheckOut=traineeAttendanceDTO.getCheckOutTime()!=null?LocalTime.parse(traineeAttendanceDTO.getCheckOutTime()):null;
 
-        // التحقق من صحة وقت الدخول والخروج
         if (parsedCheckIn!= null && parsedCheckOut != null) {
             if (parsedCheckIn.isAfter(parsedCheckOut)) {
                 throw new BusinessException(CHECK_IN_TIME_AFTER_CHECK_OUT_TIME);
@@ -78,13 +75,11 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
 
         TraineeAttendance traineeAttendance = traineeMapper.toTraineeAttendance(traineeAttendanceDTO);
         traineeAttendance.setStatus(traineeAttendanceDTO.getStatus()!=null?traineeAttendanceDTO.getStatus().getId():TraineeAttendanceStatus.PRESENT.getId());
-        // تعيين attendanceDate من تاريخ الجلسة أو التاريخ الحالي
         if (traineeAttendanceDTO.getAttendanceDate() != null) {
             traineeAttendance.setAttendanceDate(traineeAttendanceDTO.getAttendanceDate());
         } else {
             traineeAttendance.setAttendanceDate(LocalDate.now());
         }
-//        traineeAttendance.setCourseSession(traineeAttendanceDTO.getCourseSessionId());
         traineeAttendance = traineeAttendanceRepository.insert(traineeAttendance);
 
         log.info("Trainee attendance created with id: {}", traineeAttendance.getId());
@@ -96,7 +91,6 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
     public NewRecordVTO updateTraineeAttendance(Integer attendanceId, TraineeAttendanceDTO traineeAttendanceDTO) {
         log.info("Updating trainee attendance with id: {}", attendanceId);
 
-        // التحقق من وجود سجل الحضور
         TraineeAttendance traineeAttendance = traineeAttendanceRepository.selectById(attendanceId)
                 .orElseThrow(() -> new BusinessException(ATTENDANCE_NOT_FOUND, attendanceId));
 

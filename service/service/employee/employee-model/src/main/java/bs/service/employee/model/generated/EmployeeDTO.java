@@ -46,6 +46,8 @@ public class EmployeeDTO implements Serializable {
 
     private EmployeeTypes employeeType;
 
+    private Boolean isActive;
+
     private String imageUrl;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -227,6 +229,27 @@ public class EmployeeDTO implements Serializable {
         this.employeeType = employeeType;
     }
 
+    public EmployeeDTO isActive(Boolean isActive) {
+        this.isActive = isActive;
+        return this;
+    }
+
+    /**
+     * Get isActive
+     *
+     * @return isActive
+     */
+
+    @Schema(name = "isActive", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isActive")
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     public EmployeeDTO imageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
         return this;
@@ -344,6 +367,7 @@ public class EmployeeDTO implements Serializable {
                 && Objects.equals(this.remainedSalary, employeeDTO.remainedSalary)
                 && Objects.equals(this.salaryType, employeeDTO.salaryType)
                 && Objects.equals(this.employeeType, employeeDTO.employeeType)
+                && Objects.equals(this.isActive, employeeDTO.isActive)
                 && Objects.equals(this.imageUrl, employeeDTO.imageUrl)
                 && Objects.equals(this.hireDate, employeeDTO.hireDate)
                 && Objects.equals(this.departmentIds, employeeDTO.departmentIds)
@@ -353,7 +377,7 @@ public class EmployeeDTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(fullName, nationalId, birthDate, gender, salary, remainedSalary, salaryType, employeeType,
-                imageUrl, hireDate, departmentIds, contacts);
+                isActive, imageUrl, hireDate, departmentIds, contacts);
     }
 
     @Override
@@ -368,6 +392,7 @@ public class EmployeeDTO implements Serializable {
         sb.append("    remainedSalary: ").append(toIndentedString(remainedSalary)).append("\n");
         sb.append("    salaryType: ").append(toIndentedString(salaryType)).append("\n");
         sb.append("    employeeType: ").append(toIndentedString(employeeType)).append("\n");
+        sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    hireDate: ").append(toIndentedString(hireDate)).append("\n");
         sb.append("    departmentIds: ").append(toIndentedString(departmentIds)).append("\n");

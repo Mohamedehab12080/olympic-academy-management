@@ -1,3 +1,4 @@
+// main-layout.component.ts
 import { Component, HostListener } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -28,10 +29,10 @@ import { AuthService } from '../../core/auth/auth.service';
         <div class="nav-scroll-wrapper">
           <mat-nav-list>
             <!-- Dashboard -->
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+            <!-- <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [class.compact]="!sidebarExpanded">
               <mat-icon>dashboard</mat-icon>
               <span *ngIf="sidebarExpanded">لوحة التحكم</span>
-            </a>
+            </a> -->
             
             <!-- Management Section -->
             <div class="nav-section-title" *ngIf="sidebarExpanded">الإدارة</div>
@@ -71,6 +72,19 @@ import { AuthService } from '../../core/auth/auth.service';
               <span *ngIf="sidebarExpanded">المواقع</span>
             </a>
             
+            <!-- Trainer Management Section -->
+            <div class="nav-section-title" *ngIf="sidebarExpanded">إدارة المدربين</div>
+            
+            <a mat-list-item routerLink="/employees/trainer-departments" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+              <mat-icon>business</mat-icon>
+              <span *ngIf="sidebarExpanded">أقسام المدربين</span>
+            </a>
+            
+            <a mat-list-item routerLink="/employees/trainer-courses" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="sidebarExpanded">دورات المدربين</span>
+            </a>
+            
             <!-- Attendance Section -->
             <div class="nav-section-title" *ngIf="sidebarExpanded">الحضور</div>
             
@@ -87,7 +101,7 @@ import { AuthService } from '../../core/auth/auth.service';
             <!-- Reports Section -->
             <div class="nav-section-title" *ngIf="sidebarExpanded">التقارير</div>
             
-            <a mat-list-item routerLink="/reports/attendance" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+            <!-- <a mat-list-item routerLink="/reports/attendance" routerLinkActive="active" [class.compact]="!sidebarExpanded">
               <mat-icon>assessment</mat-icon>
               <span *ngIf="sidebarExpanded">تقرير الحضور</span>
             </a>
@@ -111,7 +125,7 @@ import { AuthService } from '../../core/auth/auth.service';
               <mat-icon>menu_book</mat-icon>
               <span *ngIf="sidebarExpanded">تقرير الدورات</span>
             </a>
-            
+             -->
             <a mat-list-item routerLink="/reports/financial" routerLinkActive="active" [class.compact]="!sidebarExpanded">
               <mat-icon>attach_money</mat-icon>
               <span *ngIf="sidebarExpanded">تقرير مالي</span>

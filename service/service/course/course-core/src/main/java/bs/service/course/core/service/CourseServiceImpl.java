@@ -1,6 +1,8 @@
 package bs.service.course.core.service;
 
 import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.LookupResultSet;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
@@ -131,5 +133,23 @@ public class CourseServiceImpl implements CourseService {
                 .collect(Collectors.toList());
 
         return CourseResultSet.builder().items(courseVTOS).total(courseVTOS.size()).build();
+    }
+
+    @Override
+    public LookupResultSet getAllCoursesLookup() {
+        CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder()
+                .isActive(true)
+                .isDeleted(false)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
+        List<LookupVTO> lookupVTOS=courseMapper.toLookupVTOs(courses);
+        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
+    }
+
+    @Override
+    public LookupResultSet getAllCoursesTypesLookup() {
+        List<LookupVTO> lookupVTOS=courseMapper.toLookupCourseTypeVTOs(List.of(CourseTypes.values()));
+        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
     }
 }

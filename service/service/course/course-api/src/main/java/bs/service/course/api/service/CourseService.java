@@ -1,5 +1,6 @@
 package bs.service.course.api.service;
 
+import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.course.model.enums.CourseTypes;
@@ -15,4 +16,6 @@ public interface CourseService {
     void deleteCourseById(Integer courseId);
     CourseVTO getCourseById(Integer courseId);
     CourseResultSet getAllCourses(String quickSearch, Boolean isActive, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo);
+    LookupResultSet getAllCoursesLookup();
+    LookupResultSet getAllCoursesTypesLookup();
 }

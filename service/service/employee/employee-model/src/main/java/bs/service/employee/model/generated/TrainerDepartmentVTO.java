@@ -15,14 +15,14 @@ import org.hibernate.validator.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
- * TrainerCourseVTO
+ * TrainerDepartmentVTO
  */
 @lombok.Builder
 @lombok.AllArgsConstructor
 @lombok.NoArgsConstructor
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
-public class TrainerCourseVTO implements Serializable {
+public class TrainerDepartmentVTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,14 +30,14 @@ public class TrainerCourseVTO implements Serializable {
 
     private LookupVTO trainer;
 
-    private LookupVTO course;
+    private LookupVTO department;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
 
     private LightUserVTO createdBy;
 
-    public TrainerCourseVTO id(Integer id) {
+    public TrainerDepartmentVTO id(Integer id) {
         this.id = id;
         return this;
     }
@@ -58,7 +58,7 @@ public class TrainerCourseVTO implements Serializable {
         this.id = id;
     }
 
-    public TrainerCourseVTO trainer(LookupVTO trainer) {
+    public TrainerDepartmentVTO trainer(LookupVTO trainer) {
         this.trainer = trainer;
         return this;
     }
@@ -79,28 +79,28 @@ public class TrainerCourseVTO implements Serializable {
         this.trainer = trainer;
     }
 
-    public TrainerCourseVTO course(LookupVTO course) {
-        this.course = course;
+    public TrainerDepartmentVTO department(LookupVTO department) {
+        this.department = department;
         return this;
     }
 
     /**
-     * Get course
+     * Get department
      *
-     * @return course
+     * @return department
      */
     @Valid
-    @Schema(name = "course", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("course")
-    public LookupVTO getCourse() {
-        return course;
+    @Schema(name = "department", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("department")
+    public LookupVTO getDepartment() {
+        return department;
     }
 
-    public void setCourse(LookupVTO course) {
-        this.course = course;
+    public void setDepartment(LookupVTO department) {
+        this.department = department;
     }
 
-    public TrainerCourseVTO createdOn(LocalDateTime createdOn) {
+    public TrainerDepartmentVTO createdOn(LocalDateTime createdOn) {
         this.createdOn = createdOn;
         return this;
     }
@@ -121,7 +121,7 @@ public class TrainerCourseVTO implements Serializable {
         this.createdOn = createdOn;
     }
 
-    public TrainerCourseVTO createdBy(LightUserVTO createdBy) {
+    public TrainerDepartmentVTO createdBy(LightUserVTO createdBy) {
         this.createdBy = createdBy;
         return this;
     }
@@ -150,25 +150,26 @@ public class TrainerCourseVTO implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        TrainerCourseVTO trainerCourseVTO = (TrainerCourseVTO) o;
-        return Objects.equals(this.id, trainerCourseVTO.id) && Objects.equals(this.trainer, trainerCourseVTO.trainer)
-                && Objects.equals(this.course, trainerCourseVTO.course)
-                && Objects.equals(this.createdOn, trainerCourseVTO.createdOn)
-                && Objects.equals(this.createdBy, trainerCourseVTO.createdBy);
+        TrainerDepartmentVTO trainerDepartmentVTO = (TrainerDepartmentVTO) o;
+        return Objects.equals(this.id, trainerDepartmentVTO.id)
+                && Objects.equals(this.trainer, trainerDepartmentVTO.trainer)
+                && Objects.equals(this.department, trainerDepartmentVTO.department)
+                && Objects.equals(this.createdOn, trainerDepartmentVTO.createdOn)
+                && Objects.equals(this.createdBy, trainerDepartmentVTO.createdBy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, trainer, course, createdOn, createdBy);
+        return Objects.hash(id, trainer, department, createdOn, createdBy);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class TrainerCourseVTO {\n");
+        sb.append("class TrainerDepartmentVTO {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    trainer: ").append(toIndentedString(trainer)).append("\n");
-        sb.append("    course: ").append(toIndentedString(course)).append("\n");
+        sb.append("    department: ").append(toIndentedString(department)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("}");

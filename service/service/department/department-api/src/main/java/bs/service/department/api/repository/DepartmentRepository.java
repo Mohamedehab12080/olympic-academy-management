@@ -11,6 +11,7 @@ public interface DepartmentRepository {
     Department insert(Department department);
     Department update(Department department);
     Optional<Department> selectDepartmentById(Integer id);
+    List<Department> selectDepartmentByIdIn(List<Integer> ids);
     List<Department> selectAllByFilters(DepartmentSearchFilter filters);
     Integer countAllByFilters(DepartmentSearchFilter filters);
 }

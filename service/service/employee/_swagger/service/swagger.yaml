@@ -14,6 +14,7 @@ tags:
   - name: EmployeeContact
   - name: EmployeeAttendance
   - name: TrainerCourse
+  - name: TrainerDepartment
   - name: Lookup
 
 paths:
@@ -433,14 +434,115 @@ paths:
 
   # ==================== Trainer Course Endpoints ====================
 
-  /trainers/{trainerId}/courses:
+  /trainers/departments:
+    get:
+      tags:
+        - TrainerDepartment
+      summary: Get all departments assigned to a trainer
+      operationId: getTrainerDepartments
+      parameters:
+        - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPDepartmentId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainerDepartmentResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainers/{trainerId}/departments:
+    post:
+      tags:
+        - TrainerDepartment
+      summary: Assign a department to a trainer
+      operationId: assignDepartmentToTrainer
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignDepartmentDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainers/{trainerdepartmentId}:
+    get:
+      tags:
+        - TrainerDepartment
+      summary: Get trainer department details
+      operationId: getTrainerDepartmentById
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerDepartmentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainerDepartmentVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+    put:
+      tags:
+        - TrainerDepartment
+      summary: Update trainer department
+      operationId: updateTrainerDepartment
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerDepartmentId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignDepartmentDTO'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    delete:
+      tags:
+        - TrainerDepartment
+      summary: Unassign a department from a trainer
+      operationId: unassignDepartmentFromTrainer
+      parameters:
+        - $ref: '#/components/parameters/PPTrainerDepartmentId'
+      responses:
+        '204':
+          description: NO Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /trainers/courses:
     get:
       tags:
         - TrainerCourse
       summary: Get all courses assigned to a trainer
       operationId: getTrainerCourses
       parameters:
-        - $ref: '#/components/parameters/PPTrainerId'
+        - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -493,28 +595,28 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
-  /trainers/courses/assignments:
-    get:
-      tags:
-        - TrainerCourse
-      summary: Get all trainer-course assignments with filters
-      operationId: getAllTrainerCourseAssignments
-      parameters:
-        - $ref: '#/components/parameters/QPTrainerId'
-        - $ref: '#/components/parameters/QPCourseId'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
-        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainerCourseAssignmentResultSet'
-        '400':
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+#  /trainers/courses/assignments:
+#    get:
+#      tags:
+#        - TrainerCourse
+#      summary: Get all trainer-course assignments with filters
+#      operationId: getAllTrainerCourseAssignments
+#      parameters:
+#        - $ref: '#/components/parameters/QPTrainerId'
+#        - $ref: '#/components/parameters/QPCourseId'
+#        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
+#        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
+#        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
+#        - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderBy'
+#      responses:
+#        '200':
+#          description: OK
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/TrainerCourseAssignmentResultSet'
+#        '400':
+#          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
   # ==================== Course Session Endpoints ====================
 
@@ -685,6 +787,27 @@ components:
       name: trainerId
       in: path
       required: true
+      schema:
+        type: integer
+        format: int32
+    PPTrainerDepartmentId:
+      name: trainerDepartmentId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPDepartmentId:
+      name: departmentId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    QPDepartmentId:
+      name: departmentId
+      in: query
+      required: false
       schema:
         type: integer
         format: int32
@@ -962,6 +1085,8 @@ components:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
         employeeType:
           $ref: '#/components/schemas/EmployeeTypes'
+        isActive:
+          type: boolean
         imageUrl:
           type: string
         hireDate:
@@ -1044,6 +1169,17 @@ components:
           $ref: '#/components/schemas/SessionStatus'
         note:
           type: string
+
+    AssignDepartmentDTO:
+      type: object
+      required:
+        - departmentId
+      properties:
+        departmentId:
+          type: array
+          items:
+            type: integer
+            format: int32
 
     AssignCourseDTO:
       type: object
@@ -1182,12 +1318,31 @@ components:
         lastModifiedBy:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
 
+    TrainerDepartmentVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        trainer:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        department:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+
     TrainerCourseVTO:
       type: object
       properties:
         id:
           type: integer
           format: int32
+        trainer:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         createdOn:
@@ -1335,6 +1490,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EmployeeAttendanceListItem'
+
+    TrainerDepartmentResultSet:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainerDepartmentVTO'
 
     TrainerCourseResultSet:
       type: object

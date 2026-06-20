@@ -21,11 +21,9 @@ public class TrainerCourseControllerImpl implements TrainerCourseController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<TrainerCourseResultSet> _getTrainerCourses(Integer trainerId, Integer pageNum,
-                                                                     Integer pageSize, OrderDirections orderDir,
-                                                                     String orderBy) {
+    public ResponseEntity<TrainerCourseResultSet> _getTrainerCourses(Integer trainerId, Integer courseId, String quickSearch, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
         TrainerCourseResultSet result = trainerCourseService.getTrainerCoursesByFilter(
-                trainerId, pageNum, pageSize, orderDir, orderBy);
+                quickSearch,trainerId, courseId, pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
     }
 
@@ -41,16 +39,5 @@ public class TrainerCourseControllerImpl implements TrainerCourseController {
     public ResponseEntity<Void> _unassignCourseFromTrainer(Integer trainerId, Integer courseId) {
         trainerCourseService.unassignCourseFromTrainer(trainerId, courseId);
         return ResponseEntity.ok().build();
-    }
-
-    @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<TrainerCourseAssignmentResultSet> _getAllTrainerCourseAssignments(
-            Integer trainerId, Integer courseId, Integer pageNum, Integer pageSize,
-            OrderDirections orderDir, String orderBy) {
-
-        TrainerCourseAssignmentResultSet result = trainerCourseService.getAllTrainerCourseAssignmentsByFilter(
-                trainerId, courseId, pageNum, pageSize, orderDir, orderBy);
-        return ResponseEntity.ok(result);
     }
 }

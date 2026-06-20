@@ -23,6 +23,7 @@ public class CourseSearchFilter extends SearchFilter<CourseSearchFilter.OrderByA
     private LocalDate startDateTo;
     private LocalDate endDateFrom;
     private LocalDate endDateTo;
+    private Boolean isDeleted;
 
     @Getter
     @AllArgsConstructor

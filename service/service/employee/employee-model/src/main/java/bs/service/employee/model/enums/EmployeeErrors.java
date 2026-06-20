@@ -34,7 +34,9 @@ public enum EmployeeErrors implements Errors {
     START_TIME_AFTER_END_TIME(EmployeeDomains.COURSE_SESSION, "0002", "وقت البدء يجب أن يكون قبل وقت الانتهاء"),
     SESSION_DATE_IN_PAST(EmployeeDomains.COURSE_SESSION, "0003", "لا يمكن إنشاء جلسة في تاريخ مضى"),
     PLACE_NOT_FOUND_FOR_SESSION(EmployeeDomains.COURSE_SESSION, "0004", "المكان غير موجود للجلسة {0}"),
-    COURSE_SESSION_TIME_CONFLICT(EmployeeDomains.COURSE_SESSION, "0005", "توجد جلسة أخرى للمدرب في نفس التوقيت {0}");
+    COURSE_SESSION_TIME_CONFLICT(EmployeeDomains.COURSE_SESSION, "0005", "توجد جلسة أخرى للمدرب في نفس التوقيت {0}"),
+
+    EMPLOYEE_DEPARTMENT_NOT_FOUND(EmployeeDomains.EMPLOYEE_DEPARTMENT, "0001", "هذا القسم غير موجود{0}");
 
     private final Domains domain;
     private final String code;
