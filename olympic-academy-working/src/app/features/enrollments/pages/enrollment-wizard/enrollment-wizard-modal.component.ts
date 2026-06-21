@@ -1,4 +1,4 @@
-// enrollment-wizard-modal.component.ts
+// enrollment-wizard-modal.component.ts - Complete updated version
 
 import { Component, OnInit, Inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -18,6 +18,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import { EnrollmentService } from '../../../../core/services/enrollment.service';
 import { TraineeService } from '../../../../core/services/trainee.service';
@@ -37,6 +38,11 @@ interface TraineeLookup {
   imageUrl: string;
   imagePreviewUrl?: string;
   academicYear?: string;
+}
+
+export interface EnrollmentWizardData {
+  enrollmentId?: number;
+  traineeId?: number; // For pre-selecting trainee from trainee wizard
 }
 
 @Component({
@@ -61,6 +67,7 @@ interface TraineeLookup {
     MatTooltipModule,
     MatCheckboxModule,
     MatChipsModule,
+    MatSlideToggleModule,
     SearchableSelectComponent
   ],
   template: `
@@ -375,7 +382,13 @@ interface TraineeLookup {
                       <span matSuffix>جم</span>
                     </mat-form-field>
                   </div>
-                  <div class="form-field"></div>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>نسبة الخصم</mat-label>
+                      <input matInput type="number" formControlName="discountPercentage" (input)="onDiscountPercentageChange()">
+                      <span matSuffix>%</span>
+                    </mat-form-field>
+                  </div>
                 </div>
 
                 <!-- Fourth Row - Discount with Auto Calculation -->
@@ -389,23 +402,27 @@ interface TraineeLookup {
                   </div>
                   <div class="form-field">
                     <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>نسبة الخصم</mat-label>
-                      <input matInput type="number" formControlName="discountPercentage" (input)="onDiscountPercentageChange()">
-                      <span matSuffix>%</span>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Fifth Row - Final Amount -->
-                <div class="form-row highlight">
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
                       <mat-label>المبلغ النهائي</mat-label>
                       <input matInput type="number" formControlName="finalSubscriptionValue" readonly>
                       <span matSuffix>جم</span>
                     </mat-form-field>
                   </div>
-                  <div class="form-field"></div>
+                </div>
+
+                <!-- Status Toggle - Only visible in Edit Mode -->
+                <div class="full-width status-toggle" *ngIf="isEditMode">
+                  <mat-slide-toggle 
+                    [color]="'primary'"
+                    [checked]="enrollmentForm.get('isActive')?.value"
+                    (change)="enrollmentForm.get('isActive')?.setValue($event.checked)">
+                    <div class="toggle-label">
+                      <mat-icon>account_circle</mat-icon>
+                      <span>حالة التسجيل</span>
+                    </div>
+                    <div class="toggle-status" [class.active]="enrollmentForm.get('isActive')?.value">
+                      {{ enrollmentForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
+                    </div>
+                  </mat-slide-toggle>
                 </div>
 
                 <!-- Payment Option -->
@@ -806,16 +823,40 @@ interface TraineeLookup {
       border: 1px solid rgba(217, 119, 6, 0.15);
     }
 
-    .highlight {
-      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-      padding: 20px;
-      border-radius: 16px;
-      margin: 20px 0;
-      border: 1px solid rgba(79, 70, 229, 0.15);
+    .status-toggle {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .highlight .mat-form-field {
-      background: white;
-      border-radius: 8px;
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .toggle-label mat-icon {
+      color: #667eea;
+    }
+
+    .toggle-status {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .toggle-status.active {
+      background: #d1fae5;
+      color: #065f46;
     }
 
     .payment-option {
@@ -973,13 +1014,14 @@ export class EnrollmentWizardModalComponent implements OnInit {
   isSubmitting = false;
   isEditMode = false;
   enrollmentId: number | null = null;
+  preSelectedTraineeId: number | null = null; // For when opened from trainee wizard
   showPaymentSection: boolean = false;
   makePaymentDirectly: boolean = false;
 
   constructor(
     private dialog: MatDialog,
     private dialogRef: MatDialogRef<EnrollmentWizardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: { enrollmentId?: number },
+    @Inject(MAT_DIALOG_DATA) private data: EnrollmentWizardData,
     private fb: FormBuilder,
     private enrollmentService: EnrollmentService,
     private traineeService: TraineeService,
@@ -991,6 +1033,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
   ) {
     this.isEditMode = !!data?.enrollmentId;
     this.enrollmentId = data?.enrollmentId || null;
+    this.preSelectedTraineeId = data?.traineeId || null;
     
     this.step1Form = this.fb.group({ traineeId: [null, Validators.required] });
     this.step2Form = this.fb.group({ courseId: [null, Validators.required] });
@@ -1004,6 +1047,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
       discountAmount: [null],
       discountPercentage: [null],
       finalSubscriptionValue: [{ value: null, disabled: true }],
+      isActive: [true],
       note: ['']
     });
   }
@@ -1018,15 +1062,36 @@ export class EnrollmentWizardModalComponent implements OnInit {
       }
     });
     
+    // If in edit mode, load enrollment data
     if (this.isEditMode && this.enrollmentId) {
       this.loadEnrollmentData();
+    }
+    // If pre-selected trainee ID is provided (from trainee wizard)
+    else if (this.preSelectedTraineeId) {
+      // Wait for trainees to load then select the trainee
+      this.selectPreSelectedTrainee();
+    }
+  }
+
+  selectPreSelectedTrainee(): void {
+    // This will be called after trainees are loaded
+    if (this.trainees.length > 0 && this.preSelectedTraineeId) {
+      const trainee = this.trainees.find(t => t.id === this.preSelectedTraineeId);
+      if (trainee) {
+        this.step1Form.patchValue({ traineeId: trainee.id });
+        this.selectedTrainee = trainee;
+        if (trainee.imageUrl) {
+          this.loadTraineeImage(trainee);
+        }
+        this.notification.showSuccess(`تم اختيار المتدرب: ${trainee.title}`);
+      }
     }
   }
 
   loadLookupData(): void {
     this.isLoading = true;
     
-    // Load trainees with proper typing
+    // Load trainees
     this.traineeService.getAllTraineesLookup().subscribe({
       next: (res: any) => {
         this.trainees = res.list || [];
@@ -1035,6 +1100,12 @@ export class EnrollmentWizardModalComponent implements OnInit {
           value: t.id, 
           label: t.title 
         }));
+        
+        // Check if we have a pre-selected trainee
+        if (this.preSelectedTraineeId && this.trainees.length > 0) {
+          this.selectPreSelectedTrainee();
+        }
+        
         this.isLoading = false;
       },
       error: (err) => {
@@ -1044,6 +1115,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
       }
     });
 
+    // Load courses
     this.courseService.getAllCourses().subscribe({
       next: (res: any) => {
         this.courses = res.items || [];
@@ -1052,6 +1124,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
       error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
     });
 
+    // Load trainers
     this.employeeService.getAllTrainersLookup().subscribe({
       next: (res: any) => {
         this.trainers = res.list || [];
@@ -1089,7 +1162,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
     }
 
     this.isLoading = true;
-    // Find trainee by national ID
     const trainee = this.trainees.find(t => t.nationalId === nationalId.trim());
     
     if (trainee) {
@@ -1099,7 +1171,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
       if (this.barcodeInput) {
         this.barcodeInput.nativeElement.value = '';
       }
-      // Load trainee image if available
       if (trainee.imageUrl) {
         this.loadTraineeImage(trainee);
       }
@@ -1109,31 +1180,26 @@ export class EnrollmentWizardModalComponent implements OnInit {
     this.isLoading = false;
   }
 
-  // enrollment-wizard-modal.component.ts - Fix the loadTraineeImage method
-
-loadTraineeImage(trainee: TraineeLookup): void {
-  if (trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
-    this.fileService.downloadFile(trainee.imageUrl).subscribe({
-      next: (blob) => {
-        const blobUrl = URL.createObjectURL(blob);
-        // Update the trainee in the array and the selected trainee
-        const index = this.trainees.findIndex(t => t.id === trainee.id);
-        if (index !== -1) {
-          this.trainees[index] = { ...this.trainees[index], imagePreviewUrl: blobUrl };
+  loadTraineeImage(trainee: TraineeLookup): void {
+    if (trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
+      this.fileService.downloadFile(trainee.imageUrl).subscribe({
+        next: (blob) => {
+          const blobUrl = URL.createObjectURL(blob);
+          const index = this.trainees.findIndex(t => t.id === trainee.id);
+          if (index !== -1) {
+            this.trainees[index] = { ...this.trainees[index], imagePreviewUrl: blobUrl };
+          }
+          if (this.selectedTrainee && this.selectedTrainee.id === trainee.id) {
+            this.selectedTrainee = this.trainees[index] || null;
+          }
+          this.selectedTrainee = { ...this.selectedTrainee } as TraineeLookup;
+        },
+        error: () => {
+          trainee.imagePreviewUrl = '';
         }
-        // Update selected trainee by reassigning from the array
-        if (this.selectedTrainee && this.selectedTrainee.id === trainee.id) {
-          this.selectedTrainee = this.trainees[index] || null;
-        }
-        // Force change detection
-        this.selectedTrainee = { ...this.selectedTrainee } as TraineeLookup;
-      },
-      error: () => {
-        trainee.imagePreviewUrl = '';
-      }
-    });
+      });
+    }
   }
-}
 
   openAddEnrollmentTypeDialog(): void {
     const dialogRef = this.dialog.open(AddEnrollmentTypeDialogComponent, {
@@ -1171,12 +1237,36 @@ loadTraineeImage(trainee: TraineeLookup): void {
     this.isLoading = true;
     this.enrollmentService.getEnrollmentById(this.enrollmentId!).subscribe({
       next: (enrollment: any) => {
-        this.step1Form.patchValue({ traineeId: enrollment.trainee?.id });
-        this.onTraineeSelect();
-        this.step2Form.patchValue({ courseId: enrollment.course?.id });
-        this.step3Form.patchValue({ trainerId: enrollment.trainer?.id });
-        this.onCourseSelect();
+        console.log('Loading enrollment data:', enrollment);
         
+        const traineeId = enrollment.trainee?.id;
+        const courseId = enrollment.course?.id;
+        const trainerId = enrollment.trainer?.id;
+        
+        // Set trainee
+        if (traineeId) {
+          this.step1Form.patchValue({ traineeId: traineeId });
+          this.selectedTrainee = this.trainees.find(t => t.id === traineeId) || null;
+          if (this.selectedTrainee && this.selectedTrainee.imageUrl) {
+            this.loadTraineeImage(this.selectedTrainee);
+          }
+        }
+        
+        // Set course
+        if (courseId) {
+          this.step2Form.patchValue({ courseId: courseId });
+          this.selectedCourse = this.courses.find(c => c.id === courseId) || null;
+          if (this.selectedCourse) {
+            this.setDateValidators();
+          }
+        }
+        
+        // Set trainer
+        if (trainerId) {
+          this.step3Form.patchValue({ trainerId: trainerId });
+        }
+        
+        // Set enrollment status
         let enrollmentStatusObj = null;
         if (enrollment.enrollmentStatus) {
           switch(enrollment.enrollmentStatus) {
@@ -1187,6 +1277,7 @@ loadTraineeImage(trainee: TraineeLookup): void {
           }
         }
         
+        // Patch enrollment form with all data including isActive
         this.enrollmentForm.patchValue({
           enrollmentTypeId: enrollment.enrollmentType?.id,
           startDate: enrollment.startDate,
@@ -1195,13 +1286,15 @@ loadTraineeImage(trainee: TraineeLookup): void {
           subscriptionValue: enrollment.subscriptionValue,
           discountAmount: enrollment.discountAmount,
           discountPercentage: enrollment.discountPercentage,
+          isActive: enrollment.isActive !== undefined ? enrollment.isActive : true,
           note: enrollment.note
         });
         
         this.calculateFinalValue();
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading enrollment:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
         this.isLoading = false;
       }
@@ -1321,6 +1414,7 @@ loadTraineeImage(trainee: TraineeLookup): void {
       discountAmount: this.enrollmentForm.get('discountAmount')?.value,
       discountPercentage: this.enrollmentForm.get('discountPercentage')?.value,
       finalSubscriptionValue: this.enrollmentForm.get('finalSubscriptionValue')?.value,
+      isActive: this.enrollmentForm.get('isActive')?.value,
       note: this.enrollmentForm.get('note')?.value,
       isNewEnrollment: !this.isEditMode
     };
@@ -1384,6 +1478,7 @@ loadTraineeImage(trainee: TraineeLookup): void {
             <div class="info-item"><div class="info-label">قيمة الاشتراك:</div><div class="info-value amount">${(data.subscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
             ${data.discountAmount ? `<div class="info-item"><div class="info-label">الخصم:</div><div class="info-value">${data.discountAmount.toLocaleString('ar-EG')} جم</div></div>` : ''}
             <div class="info-item"><div class="info-label">المبلغ النهائي:</div><div class="info-value amount">${(data.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
+            <div class="info-item"><div class="info-label">الحالة:</div><div class="info-value">${data.isActive !== undefined ? (data.isActive ? 'نشط' : 'غير نشط') : 'نشط'}</div></div>
           </div>
           ${data.note ? `<div class="section-title">ملاحظات</div><p>${data.note}</p>` : ''}
           <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
@@ -1449,6 +1544,7 @@ loadTraineeImage(trainee: TraineeLookup): void {
     
     const finalSubscriptionValue = this.enrollmentForm.get('finalSubscriptionValue')?.value || 0;
     const enrollmentTypeId = this.enrollmentForm.get('enrollmentTypeId')?.value;
+    const isActive = this.enrollmentForm.get('isActive')?.value !== undefined ? this.enrollmentForm.get('isActive')?.value : true;
     
     const enrollmentData = {
       traineeId: this.step1Form.get('traineeId')?.value,
@@ -1464,8 +1560,11 @@ loadTraineeImage(trainee: TraineeLookup): void {
       discountPercentage: this.enrollmentForm.get('discountPercentage')?.value,
       finalSubscriptionValue: finalSubscriptionValue,
       remainedSubscriptionValue: finalSubscriptionValue,
+      isActive: isActive,
       note: this.enrollmentForm.get('note')?.value
     };
+
+    console.log('Submitting enrollment data:', enrollmentData);
 
     if (this.isEditMode && this.enrollmentId) {
       this.enrollmentService.updateEnrollment(this.enrollmentId, enrollmentData as any).subscribe({

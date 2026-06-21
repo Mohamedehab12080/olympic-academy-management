@@ -1,5 +1,6 @@
 package bs.service.employee.core.service;
 
+import bs.lib.common.api.service.ValidateService;
 import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.enums.SalaryTypes;
 import bs.lib.common.model.exception.BusinessException;
@@ -50,6 +51,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final FileService fileService;
     private final TrainerDepartmentRepository trainerDepartmentRepository;
     private final CourseSessionRepository courseSessionRepository;
+    private final ValidateService validateService;
 
     @Override
     @Transactional
@@ -123,6 +125,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                                              Gender gender, EmployeeTypes employeeType,
                                              SalaryTypes salaryType, Integer pageNum, Integer pageSize,
                                              OrderDirections orderDir, String orderBy) {
+        validateService.validateFromToFilters(hireDateFrom,hireDateTo);
+        validateService.validateFromToFilters(createdOnFrom,createdOnTo);
 
         EmployeeSearchFilter employeeSearchFilter = EmployeeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)

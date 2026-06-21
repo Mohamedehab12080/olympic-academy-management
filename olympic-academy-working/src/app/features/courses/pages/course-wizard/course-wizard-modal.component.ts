@@ -1,3 +1,5 @@
+// course-wizard-modal.component.ts
+
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -18,8 +20,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { CourseService } from '../../../../core/services/course.service';
 import { DepartmentService } from '../../../../core/services/department.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
 
 @Component({
   selector: 'app-course-wizard-modal',
@@ -40,8 +40,7 @@ import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
     MatProgressSpinnerModule,
     MatDividerModule,
     MatCardModule,
-    MatTooltipModule,
-    SearchableSelectComponent
+    MatTooltipModule
   ],
   template: `
     <div class="wizard-container" dir="rtl">
@@ -80,45 +79,52 @@ import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
                 <div class="form-grid">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>اسم الدورة *</mat-label>
-                    <input matInput formControlName="title">
+                    <input matInput formControlName="title" placeholder="أدخل اسم الدورة">
                     <mat-error *ngIf="basicInfoForm.get('title')?.hasError('required')">اسم الدورة مطلوب</mat-error>
                   </mat-form-field>
 
-                  <app-searchable-select
-                    [ngModel]="basicInfoForm.get('departmentId')?.value"
-                    (ngModelChange)="basicInfoForm.get('departmentId')?.setValue($event)"
-                    label="القسم *"
-                    [options]="departmentOptions"
-                    [required]="true"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>القسم *</mat-label>
+                    <mat-select formControlName="departmentId">
+                      <mat-option [value]="null">اختر القسم</mat-option>
+                      <mat-option *ngFor="let dept of departments" [value]="dept.id">
+                        {{ dept.title }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="basicInfoForm.get('departmentId')?.hasError('required')">القسم مطلوب</mat-error>
+                  </mat-form-field>
 
-                  <app-searchable-select
-                    [ngModel]="basicInfoForm.get('courseType')?.value"
-                    (ngModelChange)="basicInfoForm.get('courseType')?.setValue($event)"
-                    label="نوع الدورة *"
-                    [options]="courseTypeOptions"
-                    [required]="true"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>نوع الدورة *</mat-label>
+                    <mat-select formControlName="courseType">
+                      <mat-option [value]="null">اختر النوع</mat-option>
+                      <mat-option *ngFor="let type of courseTypes" [value]="type.value">
+                        {{ type.title }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="basicInfoForm.get('courseType')?.hasError('required')">نوع الدورة مطلوب</mat-error>
+                  </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>المدة (ساعة) *</mat-label>
-                    <input matInput type="number" formControlName="duration">
+                    <input matInput type="number" formControlName="duration" placeholder="أدخل المدة بالساعات">
                     <mat-error *ngIf="basicInfoForm.get('duration')?.hasError('required')">المدة مطلوبة</mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('duration')?.hasError('min')">المدة يجب أن تكون أكبر من 0</mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>السعر *</mat-label>
-                    <input matInput type="number" formControlName="price">
+                    <input matInput type="number" formControlName="price" placeholder="أدخل السعر">
                     <span matSuffix>جم</span>
                     <mat-error *ngIf="basicInfoForm.get('price')?.hasError('required')">السعر مطلوب</mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('price')?.hasError('min')">السعر يجب أن يكون أكبر من 0</mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>السعة القصوى</mat-label>
-                    <input matInput type="number" formControlName="maxCapacity">
+                    <input matInput type="number" formControlName="maxCapacity" placeholder="أدخل السعة القصوى">
                     <span matSuffix>متدرب</span>
+                    <mat-error *ngIf="basicInfoForm.get('maxCapacity')?.hasError('min')">السعة يجب أن تكون أكبر من 0</mat-error>
                   </mat-form-field>
                 </div>
               </form>
@@ -154,6 +160,7 @@ import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
                     <input matInput [matDatepicker]="endPicker" formControlName="endDate">
                     <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
                     <mat-datepicker #endPicker></mat-datepicker>
+                    <mat-error *ngIf="datesForm.get('endDate')?.hasError('futureDate')">تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء</mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width full-width-row">
@@ -201,7 +208,7 @@ import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
                   <mat-card-title>التواريخ والوصف</mat-card-title>
                   <div class="summary-grid">
                     <div><strong>تاريخ البدء:</strong> {{ datesForm.get('startDate')?.value | date:'dd/MM/yyyy' }}</div>
-                    <div><strong>تاريخ الانتهاء:</strong> {{ datesForm.get('endDate')?.value | date:'dd/MM/yyyy'  }}</div>
+                    <div><strong>تاريخ الانتهاء:</strong> {{ datesForm.get('endDate')?.value | date:'dd/MM/yyyy' }}</div>
                     <div class="full-width"><strong>الوصف:</strong> {{ datesForm.get('description')?.value || '-' }}</div>
                   </div>
                 </mat-card>
@@ -380,6 +387,32 @@ import { COURSE_TYPES, CourseType } from '../../../../core/models/course.model';
       z-index: 1000;
     }
 
+    /* Fix for mat-select dropdown in dialog */
+    ::ng-deep .mat-select-panel {
+      background: white !important;
+      max-height: 300px !important;
+      min-width: 200px !important;
+    }
+
+    ::ng-deep .mat-select-panel .mat-option {
+      padding: 0 16px !important;
+      height: 48px !important;
+    }
+
+    ::ng-deep .mat-select-panel .mat-option:hover {
+      background: #f3f4f6 !important;
+    }
+
+    ::ng-deep .mat-select-panel .mat-option.mat-selected {
+      background: #dbeafe !important;
+      color: #1e40af !important;
+    }
+
+    /* Fix for datepicker in dialog */
+    ::ng-deep .mat-datepicker-popup {
+      z-index: 10000 !important;
+    }
+
     @media (max-width: 768px) {
       .wizard-container {
         min-width: 90vw;
@@ -411,10 +444,7 @@ export class CourseWizardModalComponent implements OnInit {
   datesForm: FormGroup;
   
   departments: any[] = [];
-  courseTypes = COURSE_TYPES;
-  
-  departmentOptions: SelectOption[] = [];
-  courseTypeOptions: SelectOption[] = [];
+  courseTypes: any[] = []; // Will store { id, title, value } from backend
   
   isLoading = false;
   isSubmitting = false;
@@ -433,12 +463,12 @@ export class CourseWizardModalComponent implements OnInit {
     this.courseId = data?.courseId || null;
     
     this.basicInfoForm = this.fb.group({
-      title: ['', Validators.required],
+      title: ['', [Validators.required, Validators.minLength(3)]],
       departmentId: [null, Validators.required],
       courseType: [null, Validators.required],
-      duration: [null, Validators.required],
-      price: [null, Validators.required],
-      maxCapacity: [null]
+      duration: [null, [Validators.required, Validators.min(1)]],
+      price: [null, [Validators.required, Validators.min(0)]],
+      maxCapacity: [null, [Validators.min(1)]]
     });
     
     this.datesForm = this.fb.group({
@@ -449,30 +479,53 @@ export class CourseWizardModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadSelectOptions();
     this.loadDepartments();
+    this.loadCourseTypes();
     
     if (this.isEditMode && this.courseId) {
       this.loadCourseData();
     }
   }
 
-  loadSelectOptions(): void {
-    // Store full course type object for display
-    this.courseTypeOptions = COURSE_TYPES.map(t => ({ 
-      value: t,  // Full object with id, title, and value
-      label: t.title 
-    }));
-  }
-
   loadDepartments(): void {
     this.departmentService.getAllDepartmentsLookup().subscribe({
       next: (res: any) => {
         this.departments = res.list || [];
-        this.departmentOptions = this.departments.map(d => ({ value: d.id, label: d.title }));
+        console.log('Departments loaded:', this.departments);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading departments:', err);
         this.notification.showError('حدث خطأ في تحميل الأقسام');
+      }
+    });
+  }
+
+  loadCourseTypes(): void {
+    this.courseService.getAllCoursesTypesLookup().subscribe({
+      next: (res: any) => {
+        // The backend returns LookupResultSet with list of { id, title, imageUrl }
+        // We need to map the title to the enum value
+        const typeMap: { [key: string]: string } = {
+          'تأهيل': 'QUALIFICATION',
+          'تدريب': 'TRAINING'
+        };
+        
+        this.courseTypes = (res.list || []).map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          value: typeMap[item.title] || item.title // Map Arabic title to enum constant
+        }));
+        
+        console.log('Course types loaded:', this.courseTypes);
+      },
+      error: (err) => {
+        console.error('Error loading course types:', err);
+        this.notification.showError('حدث خطأ في تحميل أنواع الدورات');
+        // Fallback to hardcoded values
+        this.courseTypes = [
+          { id: 1, title: 'تأهيل', value: 'QUALIFICATION' },
+          { id: 2, title: 'تدريب', value: 'TRAINING' }
+        ];
       }
     });
   }
@@ -481,29 +534,30 @@ export class CourseWizardModalComponent implements OnInit {
     this.isLoading = true;
     this.courseService.getCourseById(this.courseId!).subscribe({
       next: (course: any) => {
-        // Find matching course type from the enum constant string or object
-        let courseTypeObj = null;
-        
+        // Get the course type value from the LookupVTO
+        let courseTypeValue = null;
         if (course.courseType) {
-          // If backend returns LookupVTO (has id and title)
+          // If course.courseType is a LookupVTO with title
           if (typeof course.courseType === 'object' && course.courseType.title) {
-            courseTypeObj = COURSE_TYPES.find(ct => ct.title === course.courseType.title);
-          }
-          // If backend returns string (enum constant like "QUALIFICATION")
-          else if (typeof course.courseType === 'string') {
-            // Try matching by enum value first
-            courseTypeObj = COURSE_TYPES.find(ct => ct.value === course.courseType);
-            // If not found, try matching by title
-            if (!courseTypeObj) {
-              courseTypeObj = COURSE_TYPES.find(ct => ct.title === course.courseType);
+            // Find matching course type by title from the loaded courseTypes
+            const matchedType = this.courseTypes.find(ct => ct.title === course.courseType.title);
+            if (matchedType) {
+              courseTypeValue = matchedType.value; // This will be "QUALIFICATION" or "TRAINING"
+            } else {
+              // Fallback: use the title itself
+              courseTypeValue = course.courseType.title;
             }
+          }
+          // If course.courseType is already a string value
+          else if (typeof course.courseType === 'string') {
+            courseTypeValue = course.courseType;
           }
         }
         
         this.basicInfoForm.patchValue({
           title: course.title,
           departmentId: course.department?.id,
-          courseType: courseTypeObj || null,
+          courseType: courseTypeValue,
           duration: course.duration,
           price: course.price,
           maxCapacity: course.maxCapacity
@@ -517,7 +571,8 @@ export class CourseWizardModalComponent implements OnInit {
         
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading course data:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات الدورة');
         this.isLoading = false;
       }
@@ -531,16 +586,12 @@ export class CourseWizardModalComponent implements OnInit {
   }
 
   getCourseTypeName(): string {
-    const courseType = this.basicInfoForm.get('courseType')?.value;
-    if (courseType) {
-      if (typeof courseType === 'object') {
-        return courseType.title;
-      }
-      // If it's a string, try to find matching CourseType
-      const found = COURSE_TYPES.find(ct => ct.title === courseType || ct.value === courseType);
-      return found?.title || courseType;
-    }
-    return '-';
+    const courseTypeValue = this.basicInfoForm.get('courseType')?.value;
+    if (!courseTypeValue) return '-';
+    
+    // Find the course type by its value (enum constant)
+    const found = this.courseTypes.find(ct => ct.value === courseTypeValue);
+    return found?.title || courseTypeValue;
   }
 
   printPreview(): void {
@@ -655,10 +706,6 @@ export class CourseWizardModalComponent implements OnInit {
     
     this.isSubmitting = true;
     
-    const courseTypeObj = this.basicInfoForm.get('courseType')?.value;
-    
-    // CRITICAL: Send the enum constant (QUALIFICATION or TRAINING)
-    // This matches what your backend expects for CourseTypes enum
     const courseData: any = {
       title: this.basicInfoForm.get('title')?.value,
       description: this.datesForm.get('description')?.value || null,
@@ -668,11 +715,11 @@ export class CourseWizardModalComponent implements OnInit {
       startDate: this.datesForm.get('startDate')?.value,
       endDate: this.datesForm.get('endDate')?.value || null,
       imageUrl: null,
-      courseType: courseTypeObj?.value, // This sends "QUALIFICATION" or "TRAINING"
+      courseType: this.basicInfoForm.get('courseType')?.value, // Sends "QUALIFICATION" or "TRAINING"
       price: this.basicInfoForm.get('price')?.value
     };
     
-    console.log('Sending course data:', courseData); // Debug: Should show courseType as "QUALIFICATION" or "TRAINING"
+    console.log('Sending course data:', courseData);
     
     if (this.isEditMode && this.courseId) {
       this.courseService.updateCourse(this.courseId, courseData).subscribe({

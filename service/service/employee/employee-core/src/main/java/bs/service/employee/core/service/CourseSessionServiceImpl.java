@@ -1,5 +1,6 @@
 package bs.service.employee.core.service;
 
+import bs.lib.common.api.service.ValidateService;
 import bs.lib.common.model.exception.BusinessException;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
@@ -38,6 +39,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
     private final EmployeeRepository employeeRepository;
     private final PlaceRepository placeRepository;
     private final EmployeeMapper employeeMapper;
+    private final ValidateService validateService;
 
     @Override
     @Transactional
@@ -134,6 +136,9 @@ public class CourseSessionServiceImpl implements CourseSessionService {
 
     @Override
     public CourseSessionResultSet getAllSessionsByFilter(Integer courseId, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+
+        validateService.validateFromToFilters(sessionDateFrom,sessionDateTo);
+
         CourseSessionSearchFilter filter = CourseSessionSearchFilter.builder()
                 .courseId(courseId)
                 .employeeId(trainerId)

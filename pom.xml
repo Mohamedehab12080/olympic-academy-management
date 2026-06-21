@@ -174,6 +174,9 @@
 									bs.lib.common.model.generated.CommonEnrollmentVTO
 								</importMapping>
 
+								<importMapping>AcademicYear =
+									bs.service.trainee.model.enums.AcademicYear
+								</importMapping>
 								<importMapping>TraineeAttendanceStatus =
 									bs.service.trainee.model.enums.TraineeAttendanceStatus
 								</importMapping>
@@ -318,6 +321,9 @@
 										bs.lib.common.model.generated.CommonEnrollmentVTO
 									</importMapping>
 
+									<importMapping>AcademicYear =
+										bs.service.trainee.model.enums.AcademicYear
+									</importMapping>
 									<importMapping>PlaceVTO =
 										bs.service.place.model.generated.PlaceVTO
 									</importMapping>

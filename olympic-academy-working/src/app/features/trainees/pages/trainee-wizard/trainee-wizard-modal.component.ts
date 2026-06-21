@@ -3,7 +3,7 @@
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,7 +15,6 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
@@ -25,9 +24,112 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { FileService } from '../../../../core/services/file.service';
 import { FileDomain } from '../../../../core/models/file.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
-import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { GENDERS, CONTACT_TYPES, ContactType } from '../../../../core/models/common.model';
 import { TraineeContactDTO } from '../../../../core/models/trainee.model';
+import { EnrollmentWizardModalComponent } from '../../../enrollments/pages/enrollment-wizard/enrollment-wizard-modal.component';
+
+// ============ HELPER FUNCTIONS ============
+
+function mapGenderToEnum(gender: any): string | null {
+  if (!gender) return null;
+  
+  if (typeof gender === 'string') {
+    const normalized = gender.trim();
+    if (normalized === 'انثي' || normalized === 'أنثى' || 
+        normalized === 'FEMALE' || normalized === 'female' ||
+        normalized === 'FEMALE' || normalized === '2') {
+      return 'FEMALE';
+    }
+    if (normalized === 'ذكر' || normalized === 'MALE' || normalized === 'male' || normalized === '1') {
+      return 'MALE';
+    }
+    return null;
+  }
+  
+  if (typeof gender === 'object') {
+    if (gender.title) {
+      const title = gender.title.trim();
+      if (title === 'انثي' || title === 'أنثى' || title === 'FEMALE' || title === 'female') {
+        return 'FEMALE';
+      }
+      if (title === 'ذكر' || title === 'MALE' || title === 'male') {
+        return 'MALE';
+      }
+    }
+    if (gender.value) {
+      const value = gender.value.trim();
+      if (value === 'FEMALE' || value === 'female' || value === 'انثي' || value === 'أنثى') {
+        return 'FEMALE';
+      }
+      if (value === 'MALE' || value === 'male' || value === 'ذكر') {
+        return 'MALE';
+      }
+    }
+    if (gender.id !== undefined) {
+      if (gender.id === 1 || gender.id === '1') return 'MALE';
+      if (gender.id === 2 || gender.id === '2') return 'FEMALE';
+    }
+    return null;
+  }
+  
+  return null;
+}
+
+function mapAcademicYearToEnum(academicYear: any): string | null {
+  if (!academicYear) return null;
+  
+  if (typeof academicYear === 'string') {
+    const normalized = academicYear.trim();
+    if (normalized === '1' || normalized === '_1') return '_1';
+    if (normalized === '2' || normalized === '_2') return '_2';
+    if (normalized === '3' || normalized === '_3') return '_3';
+    if (normalized === '4' || normalized === '_4') return '_4';
+    return null;
+  }
+  
+  if (typeof academicYear === 'object' && academicYear.title) {
+    const title = academicYear.title.trim();
+    if (title === '1' || title === '_1') return '_1';
+    if (title === '2' || title === '_2') return '_2';
+    if (title === '3' || title === '_3') return '_3';
+    if (title === '4' || title === '_4') return '_4';
+    return null;
+  }
+  
+  return null;
+}
+
+function mapContactTypeToEnum(contactType: any): string | null {
+  if (!contactType) return null;
+  
+  if (typeof contactType === 'string') {
+    const normalized = contactType.trim().toLowerCase();
+    if (normalized === 'email' || normalized === 'بريد إلكتروني') return 'EMAIL';
+    if (normalized === 'phone' || normalized === 'جوال' || normalized === 'هاتف') return 'PHONE';
+    return null;
+  }
+  
+  if (typeof contactType === 'object' && contactType.title) {
+    const title = contactType.title.trim().toLowerCase();
+    if (title === 'email' || title === 'بريد إلكتروني') return 'EMAIL';
+    if (title === 'phone' || title === 'جوال' || title === 'هاتف') return 'PHONE';
+    return null;
+  }
+  
+  return null;
+}
+
+// ============ COMPONENT ============
+
+interface EnumMapping {
+  id: number;
+  title: string;
+  enumName: string;
+}
+
+export interface TraineeWizardData {
+  traineeId?: number;
+  traineeData?: any;
+}
 
 @Component({
   selector: 'app-trainee-wizard-modal',
@@ -48,11 +150,9 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
     MatProgressSpinnerModule,
     MatDividerModule,
     MatCardModule,
-    MatChipsModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    FileUploadComponent,
-    SearchableSelectComponent
+    FileUploadComponent
   ],
   template: `
     <div class="wizard-container" dir="rtl">
@@ -116,7 +216,12 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>السنة الدراسية</mat-label>
-                    <input matInput formControlName="academicYear">
+                    <mat-select formControlName="academicYear">
+                      <mat-option [value]="null">لا يوجد</mat-option>
+                      <mat-option *ngFor="let year of academicYearOptions" [value]="year.enumName">
+                        {{ year.title }}
+                      </mat-option>
+                    </mat-select>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
@@ -126,13 +231,15 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
                     <mat-datepicker #birthPicker></mat-datepicker>
                   </mat-form-field>
 
-                  <app-searchable-select
-                    [ngModel]="basicInfoForm.get('gender')?.value"
-                    (ngModelChange)="basicInfoForm.get('gender')?.setValue($event)"
-                    label="الجنس"
-                    [options]="genderOptions"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>الجنس</mat-label>
+                    <mat-select formControlName="gender">
+                      <mat-option [value]="null">لا يوجد</mat-option>
+                      <mat-option *ngFor="let gender of genderOptions" [value]="gender.enumName">
+                        {{ gender.title }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>العنوان</mat-label>
@@ -176,14 +283,15 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
               <form [formGroup]="contactsForm">
                 <div formArrayName="contacts">
                   <div *ngFor="let contact of contactsArray.controls; let i=index" [formGroupName]="i" class="contact-row">
-                    <app-searchable-select
-                      [ngModel]="contact.get('contactType')?.value"
-                      (ngModelChange)="contact.get('contactType')?.setValue($event)"
-                      label="نوع جهة الاتصال"
-                      [options]="contactTypeOptions"
-                      [required]="true"
-                      [ngModelOptions]="{standalone: true}">
-                    </app-searchable-select>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>نوع جهة الاتصال</mat-label>
+                      <mat-select formControlName="contactType">
+                        <mat-option *ngFor="let type of contactTypeOptions" [value]="type.enumName">
+                          {{ type.title }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="contact.get('contactType')?.hasError('required')">النوع مطلوب</mat-error>
+                    </mat-form-field>
 
                     <mat-form-field appearance="outline" class="contact-value">
                       <mat-label>القيمة</mat-label>
@@ -233,13 +341,15 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
                       <input matInput formControlName="certificateNumber">
                     </mat-form-field>
 
-                    <app-searchable-select
-                      [ngModel]="cert.get('courseId')?.value"
-                      (ngModelChange)="cert.get('courseId')?.setValue($event)"
-                      label="الدورة"
-                      [options]="courseOptions"
-                      [ngModelOptions]="{standalone: true}">
-                    </app-searchable-select>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>الدورة</mat-label>
+                      <mat-select formControlName="courseId">
+                        <mat-option [value]="null">لا يوجد</mat-option>
+                        <mat-option *ngFor="let course of courseOptions" [value]="course.value">
+                          {{ course.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>تاريخ الإصدار</mat-label>
@@ -342,9 +452,9 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
                   <div class="summary-grid">
                     <div><strong>الاسم:</strong> {{ basicInfoForm.get('fullName')?.value }}</div>
                     <div><strong>رقم الهوية:</strong> {{ basicInfoForm.get('nationalId')?.value }}</div>
-                    <div><strong>السنة الدراسية:</strong> {{ basicInfoForm.get('academicYear')?.value || '-' }}</div>
+                    <div><strong>السنة الدراسية:</strong> {{ getAcademicYearTitle(basicInfoForm.get('academicYear')?.value) || '-' }}</div>
                     <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
-                    <div><strong>الجنس:</strong> {{ basicInfoForm.get('gender')?.value?.title }}</div>
+                    <div><strong>الجنس:</strong> {{ getGenderTitle(basicInfoForm.get('gender')?.value) || '-' }}</div>
                     <div><strong>العنوان:</strong> {{ basicInfoForm.get('address')?.value || '-' }}</div>
                     <div *ngIf="isEditMode"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
                   </div>
@@ -354,7 +464,7 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
                   <mat-card-title>جهات الاتصال</mat-card-title>
                   <div class="contacts-summary">
                     <div *ngFor="let contact of getContactsList()" class="summary-item">
-                      <strong>{{ contact.contactType?.title }}:</strong> {{ contact.contactValue }}
+                      <strong>{{ getContactTypeTitle(contact.contactType) }}:</strong> {{ contact.contactValue }}
                     </div>
                   </div>
                 </mat-card>
@@ -637,6 +747,32 @@ import { TraineeContactDTO } from '../../../../core/models/trainee.model';
       z-index: 1000;
     }
 
+    /* Fix for mat-select dropdown in dialog */
+    ::ng-deep .mat-select-panel {
+      background: white !important;
+      max-height: 300px !important;
+      min-width: 200px !important;
+    }
+
+    ::ng-deep .mat-select-panel .mat-option {
+      padding: 0 16px !important;
+      height: 48px !important;
+    }
+
+    ::ng-deep .mat-select-panel .mat-option:hover {
+      background: #f3f4f6 !important;
+    }
+
+    ::ng-deep .mat-select-panel .mat-option.mat-selected {
+      background: #dbeafe !important;
+      color: #1e40af !important;
+    }
+
+    /* Fix for datepicker in dialog */
+    ::ng-deep .mat-datepicker-popup {
+      z-index: 10000 !important;
+    }
+
     @media (max-width: 768px) {
       .wizard-container {
         min-width: 90vw;
@@ -666,9 +802,10 @@ export class TraineeWizardModalComponent implements OnInit {
   certificatesForm: FormGroup;
   healthConditionsForm: FormGroup;
   
-  genderOptions: SelectOption[] = [];
-  contactTypeOptions: SelectOption[] = [];
-  courseOptions: SelectOption[] = [];
+  genderOptions: EnumMapping[] = [];
+  contactTypeOptions: EnumMapping[] = [];
+  academicYearOptions: EnumMapping[] = [];
+  courseOptions: { value: number; label: string }[] = [];
   
   traineeImageFid: string | null = null;
   createdTraineeId: number | null = null;
@@ -677,6 +814,7 @@ export class TraineeWizardModalComponent implements OnInit {
   isSubmitting = false;
   isEditMode = false;
   traineeId: number | null = null;
+  traineeData: any = null;
   
   FileDomain = FileDomain;
   
@@ -686,20 +824,27 @@ export class TraineeWizardModalComponent implements OnInit {
 
   constructor(
     private dialogRef: MatDialogRef<TraineeWizardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: { traineeId?: number },
+    @Inject(MAT_DIALOG_DATA) private data: TraineeWizardData,
     private fb: FormBuilder,
     private traineeService: TraineeService,
     private courseService: CourseService,
     private notification: NotificationService,
-    private fileService: FileService
+    private fileService: FileService,
+    private dialog: MatDialog
   ) {
     this.isEditMode = !!data?.traineeId;
     this.traineeId = data?.traineeId || null;
+    this.traineeData = data?.traineeData || null;
+    
+    console.log('🔍 TraineeWizardModal - Constructor:');
+    console.log('  isEditMode:', this.isEditMode);
+    console.log('  traineeId:', this.traineeId);
+    console.log('  traineeData:', this.traineeData ? '✅ Has data' : '❌ No data');
     
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
       nationalId: ['', Validators.required],
-      academicYear: [''],
+      academicYear: [null],
       birthDate: [''],
       gender: [null],
       address: [''],
@@ -724,20 +869,35 @@ export class TraineeWizardModalComponent implements OnInit {
     this.loadCourses();
     this.addContact();
     
-    if (this.isEditMode && this.traineeId) {
+    // If edit mode, load the trainee data
+    if (this.isEditMode) {
       this.loadTraineeData();
     }
   }
 
   loadSelectOptions(): void {
-    this.genderOptions = GENDERS.map(g => ({ value: g, label: g.title }));
-    this.contactTypeOptions = CONTACT_TYPES.map(c => ({ value: c, label: c.title }));
+    this.genderOptions = [
+      { id: 1, title: 'ذكر', enumName: 'MALE' },
+      { id: 2, title: 'انثي', enumName: 'FEMALE' }
+    ];
+
+    this.contactTypeOptions = [
+      { id: 1, title: 'بريد إلكتروني', enumName: 'EMAIL' },
+      { id: 2, title: 'جوال', enumName: 'PHONE' }
+    ];
+
+    this.academicYearOptions = [
+      { id: 1, title: '1', enumName: '_1' },
+      { id: 2, title: '2', enumName: '_2' },
+      { id: 3, title: '3', enumName: '_3' },
+      { id: 4, title: '4', enumName: '_4' }
+    ];
   }
 
   loadCourses(): void {
-    this.courseService.getAllCourses().subscribe({
+    this.courseService.getAllCoursesLookup().subscribe({
       next: (res: any) => {
-        this.courseOptions = (res.items || []).map((c: any) => ({ value: c.id, label: c.title }));
+        this.courseOptions = (res.list || []).map((c: any) => ({ value: c.id, label: c.title }));
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل الدورات');
@@ -747,82 +907,113 @@ export class TraineeWizardModalComponent implements OnInit {
 
   loadTraineeData(): void {
     this.isLoading = true;
+    
+    // If we have trainee data passed directly, use it
+    if (this.traineeData) {
+      console.log('✅ Using passed trainee data');
+      this.patchTraineeData(this.traineeData);
+      this.isLoading = false;
+      return;
+    }
+    
+    // Fallback: Load from API if no data passed
+    console.log('🔄 Loading trainee from API');
     this.traineeService.getTraineeById(this.traineeId!).subscribe({
       next: (t: any) => {
-        let genderObj = null;
-        if (t.gender) {
-          genderObj = t.gender === 'MALE' ? GENDERS.find(g => g.id === 1) : GENDERS.find(g => g.id === 2);
-        }
-        
-        this.basicInfoForm.patchValue({
-          fullName: t.fullName,
-          nationalId: t.nationalId,
-          academicYear: t.academicYear,
-          birthDate: t.birthDate,
-          gender: genderObj,
-          address: t.address,
-          isActive: t.isActive !== undefined ? t.isActive : true
-        });
-        
-        if (t.imageUrl) {
-          this.traineeImageFid = t.imageUrl;
-        }
-        
-        if (t.contacts?.length) {
-          while (this.contactsArray.length) this.contactsArray.removeAt(0);
-          t.contacts.forEach((c: any) => {
-            let contactTypeObj = null;
-            if (c.contactType) {
-              switch(c.contactType) {
-                case 'EMAIL':
-                  contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 1);
-                  break;
-                case 'PHONE':
-                  contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 2);
-                  break;
-                default:
-                  contactTypeObj = CONTACT_TYPES.find(ct => ct.id === 2);
-              }
-            }
-            this.contactsArray.push(this.fb.group({
-              contactType: [contactTypeObj, Validators.required],
-              contactValue: [c.contactValue, Validators.required]
-            }));
-          });
-        }
-        
-        if (t.certificates?.length) {
-          while (this.certificatesArray.length) this.certificatesArray.removeAt(0);
-          t.certificates.forEach((c: any) => {
-            this.certificatesArray.push(this.fb.group({
-              certificateName: [c.certificateName],
-              certificateNumber: [c.certificateNumber],
-              courseId: [c.course?.id],
-              issueDate: [c.issueDate],
-              grade: [c.grade]
-            }));
-          });
-        }
-        
-        if (t.healthConditions?.length) {
-          while (this.healthConditionsArray.length) this.healthConditionsArray.removeAt(0);
-          t.healthConditions.forEach((h: any) => {
-            this.healthConditionsArray.push(this.fb.group({
-              title: [h.title],
-              description: [h.description],
-              medication: [h.medication],
-              note: [h.note]
-            }));
-          });
-        }
-        
+        console.log('✅ Trainee loaded from API');
+        this.patchTraineeData(t);
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('❌ Error loading trainee data:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
         this.isLoading = false;
       }
     });
+  }
+
+  private patchTraineeData(t: any): void {
+    console.log('📋 Patching trainee data:', t);
+    
+    const genderEnum = mapGenderToEnum(t.gender);
+    const academicYearEnum = mapAcademicYearToEnum(t.academicYear);
+    
+    console.log('  Gender mapped to:', genderEnum);
+    console.log('  Academic Year mapped to:', academicYearEnum);
+    
+    // Patch the form
+    this.basicInfoForm.patchValue({
+      fullName: t.fullName || '',
+      nationalId: t.nationalId || '',
+      academicYear: academicYearEnum,
+      birthDate: t.birthDate || null,
+      gender: genderEnum,
+      address: t.address || '',
+      isActive: t.isActive !== undefined ? t.isActive : true
+    });
+    
+    console.log('📝 Form values after patch:', this.basicInfoForm.value);
+    
+    if (t.imageUrl) {
+      this.traineeImageFid = t.imageUrl;
+    }
+    
+    // Load contacts
+    if (t.contacts && t.contacts.length > 0) {
+      while (this.contactsArray.length) this.contactsArray.removeAt(0);
+      t.contacts.forEach((c: any) => {
+        const contactTypeEnum = mapContactTypeToEnum(c.contactType);
+        this.contactsArray.push(this.fb.group({
+          contactType: [contactTypeEnum, Validators.required],
+          contactValue: [c.contactValue, Validators.required]
+        }));
+      });
+    }
+    
+    // Load certificates
+    if (t.certificates && t.certificates.length > 0) {
+      while (this.certificatesArray.length) this.certificatesArray.removeAt(0);
+      t.certificates.forEach((c: any) => {
+        this.certificatesArray.push(this.fb.group({
+          certificateName: [c.certificateName],
+          certificateNumber: [c.certificateNumber],
+          courseId: [c.course?.id],
+          issueDate: [c.issueDate],
+          grade: [c.grade]
+        }));
+      });
+    }
+    
+    // Load health conditions
+    if (t.healthConditions && t.healthConditions.length > 0) {
+      while (this.healthConditionsArray.length) this.healthConditionsArray.removeAt(0);
+      t.healthConditions.forEach((h: any) => {
+        this.healthConditionsArray.push(this.fb.group({
+          title: [h.title],
+          description: [h.description],
+          medication: [h.medication],
+          note: [h.note]
+        }));
+      });
+    }
+  }
+
+  getGenderTitle(enumName: string | null): string | null {
+    if (!enumName) return null;
+    const found = this.genderOptions.find(g => g.enumName === enumName);
+    return found ? found.title : null;
+  }
+
+  getAcademicYearTitle(enumName: string | null): string | null {
+    if (!enumName) return null;
+    const found = this.academicYearOptions.find(y => y.enumName === enumName);
+    return found ? found.title : null;
+  }
+
+  getContactTypeTitle(enumName: string | null): string | null {
+    if (!enumName) return null;
+    const found = this.contactTypeOptions.find(c => c.enumName === enumName);
+    return found ? found.title : null;
   }
 
   onImageUploaded(fid: string): void {
@@ -904,9 +1095,9 @@ export class TraineeWizardModalComponent implements OnInit {
     const previewData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
       nationalId: this.basicInfoForm.get('nationalId')?.value,
-      academicYear: this.basicInfoForm.get('academicYear')?.value,
+      academicYear: this.getAcademicYearTitle(this.basicInfoForm.get('academicYear')?.value),
       birthDate: this.basicInfoForm.get('birthDate')?.value,
-      gender: this.basicInfoForm.get('gender')?.value,
+      gender: this.getGenderTitle(this.basicInfoForm.get('gender')?.value),
       address: this.basicInfoForm.get('address')?.value,
       isActive: this.basicInfoForm.get('isActive')?.value,
       contacts: this.getContactsList(),
@@ -986,7 +1177,7 @@ export class TraineeWizardModalComponent implements OnInit {
             <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${this.escapeHtml(data.fullName) || '-'}</div></div>
             <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${this.escapeHtml(data.nationalId) || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ الميلاد</div><div class="info-value">${data.birthDate ? new Date(data.birthDate).toLocaleDateString('ar-EG') : '-'}</div></div>
-            <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${data.gender?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${data.gender || '-'}</div></div>
             <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${this.escapeHtml(data.academicYear) || '-'}</div></div>
             <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${this.escapeHtml(data.address) || '-'}</div></div>
             ${!data.isNewTrainee ? `<div class="info-item"><div class="info-label">الحالة</div><div class="info-value">${data.isActive ? 'نشط' : 'غير نشط'}</div></div>` : ''}
@@ -1019,6 +1210,22 @@ export class TraineeWizardModalComponent implements OnInit {
       .replace(/'/g, '&#39;');
   }
 
+  private openEnrollmentWizard(traineeId: number): void {
+    this.dialogRef.close(true);
+    setTimeout(() => {
+      const enrollmentDialogRef = this.dialog.open(EnrollmentWizardModalComponent, {
+        width: '900px',
+        maxWidth: '90vw',
+        data: { traineeId: traineeId }
+      });
+      enrollmentDialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.notification.showSuccess('تم إضافة التسجيل بنجاح');
+        }
+      });
+    }, 300);
+  }
+
   submitTrainee(): void {
     if (this.basicInfoForm.invalid) {
       this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
@@ -1028,31 +1235,19 @@ export class TraineeWizardModalComponent implements OnInit {
     this.isSubmitting = true;
     
     const genderValue = this.basicInfoForm.get('gender')?.value;
-    const genderEnum = genderValue ? (genderValue.id === 1 ? 'MALE' : 'FEMALE') : null;
+    const academicYearValue = this.basicInfoForm.get('academicYear')?.value;
     
-    // Get valid contacts from the form
-    const contactsList = this.getContactsList().map(contact => {
-      const contactTypeObj = contact.contactType;
-      let contactTypeEnum = 'PHONE';
-      if (contactTypeObj) {
-        if (contactTypeObj.id === 1) contactTypeEnum = 'EMAIL';
-        else if (contactTypeObj.id === 2) contactTypeEnum = 'PHONE';
-      }
-      return {
-        contactType: contactTypeEnum,
-        contactValue: contact.contactValue
-      };
-    });
-    
-    // Log contacts to verify
-    console.log('Contacts being submitted:', contactsList);
+    const contactsList = this.getContactsList().map(contact => ({
+      contactType: contact.contactType,
+      contactValue: contact.contactValue
+    }));
     
     const formData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
       nationalId: this.basicInfoForm.get('nationalId')?.value,
-      academicYear: this.basicInfoForm.get('academicYear')?.value,
+      academicYear: academicYearValue,
       birthDate: this.basicInfoForm.get('birthDate')?.value,
-      gender: genderEnum,
+      gender: genderValue,
       address: this.basicInfoForm.get('address')?.value,
       isActive: this.basicInfoForm.get('isActive')?.value,
       contacts: contactsList,
@@ -1067,10 +1262,7 @@ export class TraineeWizardModalComponent implements OnInit {
       imageUrl: this.traineeImageFid
     };
     
-    console.log('Full form data being submitted:', formData);
-    
     if (this.isEditMode && this.traineeId) {
-      // Update existing trainee with all data
       this.traineeService.updateTrainee(this.traineeId, formData as any).subscribe({
         next: () => {
           this.notification.showSuccess('تم تحديث المتدرب بنجاح');
@@ -1084,21 +1276,20 @@ export class TraineeWizardModalComponent implements OnInit {
         }
       });
     } else {
-      // Create new trainee first
       this.traineeService.createTrainee(formData as any).subscribe({
         next: (res: any) => {
-          // Get the created trainee ID
           this.createdTraineeId = res.id;
-          console.log('Trainee created with ID:', this.createdTraineeId);
           
-          // Now add contacts one by one if there are any
           if (contactsList.length > 0 && this.createdTraineeId) {
             this.addContactsSequentially(this.createdTraineeId, contactsList);
           } else {
-            // No contacts to add, just close the wizard
-            this.notification.showSuccess('تم إضافة المتدرب بنجاح');
-            this.dialogRef.close(true);
             this.isSubmitting = false;
+            this.notification.showSuccess('تم إضافة المتدرب بنجاح');
+            if (this.createdTraineeId) {
+              this.openEnrollmentWizard(this.createdTraineeId);
+            } else {
+              this.dialogRef.close(true);
+            }
           }
         },
         error: (err) => {
@@ -1110,33 +1301,28 @@ export class TraineeWizardModalComponent implements OnInit {
     }
   }
 
-  /**
-   * Add contacts sequentially after trainee is created
-   */
   private addContactsSequentially(traineeId: number, contacts: any[]): void {
     let completed = 0;
     const total = contacts.length;
     let hasError = false;
 
     contacts.forEach((contact, index) => {
-      // Create contact DTO
       const contactDTO: TraineeContactDTO = {
-        contactType: contact.contactType, // Already mapped to 'EMAIL' or 'PHONE'
+        contactType: contact.contactType as any,
         contactValue: contact.contactValue
       };
-
-      console.log(`Adding contact ${index + 1}/${total}:`, contactDTO);
 
       this.traineeService.createTraineeContact(traineeId, contactDTO).subscribe({
         next: () => {
           completed++;
-          console.log(`Contact ${index + 1} added successfully`);
-          
-          // All contacts added successfully
           if (completed === total && !hasError) {
-            this.notification.showSuccess(`تم إضافة المتدرب و ${total} جهة اتصال بنجاح`);
-            this.dialogRef.close(true);
             this.isSubmitting = false;
+            this.notification.showSuccess(`تم إضافة المتدرب و ${total} جهة اتصال بنجاح`);
+            if (traineeId) {
+              this.openEnrollmentWizard(traineeId);
+            } else {
+              this.dialogRef.close(true);
+            }
           }
         },
         error: (err) => {

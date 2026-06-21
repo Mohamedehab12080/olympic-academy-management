@@ -81,6 +81,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         Enrollment enrollmentToUpdate = enrollmentMapper.toEnrollment(enrollmentDTO);
         enrollmentToUpdate.setId(enrollmentId);
+        enrollmentToUpdate.setIsDeleted(false);
+        enrollmentToUpdate.setIsActive(enrollmentDTO.getIsActive());
         enrollmentRepository.update(enrollmentToUpdate);
         return NewRecordVTO.builder().id(enrollmentId).build();
     }

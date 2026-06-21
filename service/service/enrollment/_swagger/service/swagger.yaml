@@ -407,6 +407,8 @@ components:
         remainedSubscriptionValue:
           type: integer
           format: int32
+        isActive:
+          type: boolean
         note:
           type: string
 

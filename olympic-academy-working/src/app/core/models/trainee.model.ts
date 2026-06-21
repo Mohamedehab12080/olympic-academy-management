@@ -1,3 +1,4 @@
+// trainee.model.ts
 import { LightUserVTO, LookupVTO, Gender, ContactType, CommonEnrollmentVTO } from './common.model';
 
 // ==================== Enums (specific to Trainee module) ====================
@@ -12,6 +13,20 @@ export const TRAINEE_ATTENDANCE_STATUSES: TraineeAttendanceStatus[] = [
   { id: 2, title: 'غائب' },
   { id: 3, title: 'متأخر' },
   { id: 4, title: 'معذور' }
+];
+
+// ==================== Academic Year Enum ====================
+
+export interface AcademicYear {
+  id: number;
+  title: string;
+}
+
+export const ACADEMIC_YEARS: AcademicYear[] = [
+  { id: 1, title: '1' },
+  { id: 2, title: '2' },
+  { id: 3, title: '3' },
+  { id: 4, title: '4' }
 ];
 
 // ==================== DTOs (sent to backend - use enum objects with id and title) ====================
@@ -36,9 +51,9 @@ export interface TraineeLookupResultSet {
 export interface TraineeDTO {
   fullName: string;
   nationalId: string;
-  academicYear?: string;
+  academicYear?: AcademicYear;  // Changed from string to AcademicYear object
   birthDate?: string;
-  isActive?:boolean;
+  isActive?: boolean;
   gender?: Gender;  // From common.model
   address?: string;
   imageUrl?: string;
@@ -66,10 +81,10 @@ export interface TraineeVTO {
   id: number;
   fullName: string;
   nationalId: string;
-  academicYear?: string;
+  academicYear?: LookupVTO;  // Changed from string to AcademicYear object
   birthDate?: string;
   gender?: LookupVTO;  // From common.model
-  enrollments?:CommonEnrollmentVTO[];
+  enrollments?: CommonEnrollmentVTO[];
   isActive: boolean;
   address?: string;
   imageUrl?: string;
@@ -117,8 +132,8 @@ export interface TraineeListItem {
   fullName: string;
   nationalId: string;
   isActive: boolean;
-  academicYear: string;
-  imageUrl:string;
+  academicYear: LookupVTO;  // Keep as string for display (the title from AcademicYear)
+  imageUrl: string;
   gender: LookupVTO;  // From common.model
 }
 

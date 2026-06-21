@@ -1,5 +1,4 @@
-// employee-list.component.ts
-
+// employee-list.component.ts - Gender Filter Removed
 import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,9 +25,9 @@ import { ReportService } from '../../../../core/services/report.service';
 import { FileService } from '../../../../core/services/file.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { EMPLOYEE_TYPES } from '../../../../core/models/employee.model';
-import { GENDERS } from '../../../../core/models/common.model';
-import { EmployeeDetailsModalComponent } from './../employee-details/employee-details-modal.component';
-import { EmployeeWizardModalComponent } from './../employee-form/employee-wizard-modal.component';
+import { EmployeeDetailsModalComponent } from '../employee-details/employee-details-modal.component';
+import { EmployeeWizardModalComponent } from '../employee-form/employee-wizard-modal.component';
+import { ErrorVTO } from '../../../../core/models/common.model';
 
 interface EmployeeListItem {
   id: number;
@@ -73,20 +72,18 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'employeeType', 'gender', 'hireDate', 'departments', 'status', 'actions'];
   dataSource = new MatTableDataSource<EmployeeListItem>([]);
   allEmployees: EmployeeListItem[] = [];
-  imageUrls: Map<number, string> = new Map(); // Store blob URLs for each employee
+  imageUrls: Map<number, string> = new Map();
   isLoading = false;
 
   // Filters
   searchText = '';
-  employeeTypeFilter: number | null = null;
-  genderFilter: number | null = null;
-  statusFilter: boolean | null = null;
-  hireDateFrom: string | null = null;
-  hireDateTo: string | null = null;
+  employeeTypeFilter: string | null = null;  // 'TRAINER' or 'MANAGER'
+  statusFilter: boolean | null = null;       // true or false
+  hireDateFrom: any = null;
+  hireDateTo: any = null;
 
   // Options for searchable selects
   employeeTypeOptions: SelectOption[] = [];
-  genderOptions: SelectOption[] = [];
   statusOptions: SelectOption[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -124,7 +121,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clean up all blob URLs
     this.imageUrls.forEach(url => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
@@ -134,16 +130,14 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadSelectOptions(): void {
+    // Employee Type Options
     this.employeeTypeOptions = [
       { value: null, label: 'الكل' },
-      ...EMPLOYEE_TYPES.map(t => ({ value: t.id, label: t.title }))
+      { value: 'TRAINER', label: 'مدرب' },
+      { value: 'MANAGER', label: 'مدير' }
     ];
 
-    this.genderOptions = [
-      { value: null, label: 'الكل' },
-      ...GENDERS.map(g => ({ value: g.id, label: g.title }))
-    ];
-
+    // Status Options
     this.statusOptions = [
       { value: null, label: 'الكل' },
       { value: true, label: 'نشط' },
@@ -151,16 +145,51 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
   }
 
+  private formatDateForBackend(date: any): string | null {
+    if (!date) return null;
+    
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+    
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return null;
+      
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      return null;
+    }
+  }
+
   loadEmployees(): void {
     this.isLoading = true;
     
     const params: any = {};
     if (this.searchText) params.quickSearch = this.searchText;
-    if (this.employeeTypeFilter) params.employeeType = this.employeeTypeFilter;
-    if (this.genderFilter) params.genderId = this.genderFilter;
-    if (this.statusFilter !== null) params.isActive = this.statusFilter;
-    if (this.hireDateFrom) params.hireDateFrom = this.hireDateFrom;
-    if (this.hireDateTo) params.hireDateTo = this.hireDateTo;
+    
+    if (this.employeeTypeFilter) {
+      params.employeeType = this.employeeTypeFilter;
+    }
+    
+    if (this.statusFilter !== null) {
+      params.isActive = this.statusFilter;
+    }
+    
+    if (this.hireDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.hireDateFrom);
+      if (formattedDate) params.hireDateFrom = formattedDate;
+    }
+    if (this.hireDateTo) {
+      const formattedDate = this.formatDateForBackend(this.hireDateTo);
+      if (formattedDate) params.hireDateTo = formattedDate;
+    }
+
+    console.log('Loading employees with params:', params);
 
     this.employeeService.getAllEmployees(params).subscribe({
       next: (res: any) => {
@@ -168,17 +197,47 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadAllImages();
         this.dataSource.data = this.allEmployees;
         this.isLoading = false;
-        console.log(res);
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الموظفين');
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
         this.isLoading = false;
       }
     });
   }
 
+  onSearchChange(): void {
+    this.loadEmployees();
+  }
+
+  onEmployeeTypeChange(value: string | null): void {
+    this.employeeTypeFilter = value;
+    this.loadEmployees();
+  }
+
+  onStatusChange(value: boolean | null): void {
+    this.statusFilter = value;
+    this.loadEmployees();
+  }
+
+  onDateFromChange(): void {
+    this.loadEmployees();
+  }
+
+  onDateToChange(): void {
+    this.loadEmployees();
+  }
+
+  resetFilters(): void {
+    this.searchText = '';
+    this.employeeTypeFilter = null;
+    this.statusFilter = null;
+    this.hireDateFrom = null;
+    this.hireDateTo = null;
+    this.loadEmployees();
+    this.notification.showSuccess('تم مسح جميع الفلاتر');
+  }
+
   loadAllImages(): void {
-    // Clear existing image URLs
     this.imageUrls.forEach(url => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
@@ -186,7 +245,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.imageUrls.clear();
 
-    // Load images for employees that have imageUrl (FID)
     this.allEmployees.forEach(employee => {
       this.loadImage(employee);
     });
@@ -194,19 +252,15 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadImage(employee: EmployeeListItem): void {
     const fid = employee.imageUrl;
-    // Check if fid is a valid FID (15 or 18 digits)
     if (fid && /^\d{15}(\d{3})?$/.test(fid)) {
       this.fileService.downloadFile(fid).subscribe({
         next: (blob) => {
-          // Clean up previous blob URL if exists
           const existingUrl = this.imageUrls.get(employee.id);
           if (existingUrl && existingUrl.startsWith('blob:')) {
             URL.revokeObjectURL(existingUrl);
           }
-          // Create new blob URL
           const blobUrl = URL.createObjectURL(blob);
           this.imageUrls.set(employee.id, blobUrl);
-          // Refresh the table data to show the image
           this.dataSource.data = [...this.dataSource.data];
         },
         error: (error) => {
@@ -225,54 +279,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     return url && url.startsWith('blob:') ? url : null;
   }
 
-  applyFilters(): void {
-    let filtered = [...this.allEmployees];
-    
-    if (this.searchText) {
-      const search = this.searchText.toLowerCase();
-      filtered = filtered.filter(e => 
-        e.fullName?.toLowerCase().includes(search) || 
-        e.nationalId?.includes(search)
-      );
-    }
-    
-    if (this.employeeTypeFilter !== null) {
-      filtered = filtered.filter(e => e.employeeType?.id === this.employeeTypeFilter);
-    }
-    
-    if (this.genderFilter !== null) {
-      filtered = filtered.filter(e => e.gender?.id === this.genderFilter);
-    }
-    
-    if (this.statusFilter !== null) {
-      filtered = filtered.filter(e => e.isActive === this.statusFilter);
-    }
-    
-    if (this.hireDateFrom) {
-      filtered = filtered.filter(e => e.hireDate && e.hireDate >= this.hireDateFrom!);
-    }
-    
-    if (this.hireDateTo) {
-      filtered = filtered.filter(e => e.hireDate && e.hireDate <= this.hireDateTo!);
-    }
-    
-    this.dataSource.data = filtered;
-    if (this.paginator) {
-      this.paginator.firstPage();
-    }
-  }
-
-  resetFilters(): void {
-    this.searchText = '';
-    this.employeeTypeFilter = null;
-    this.genderFilter = null;
-    this.statusFilter = null;
-    this.hireDateFrom = null;
-    this.hireDateTo = null;
-    this.loadEmployees();
-    this.notification.showSuccess('تم مسح جميع الفلاتر');
-  }
-
   viewEmployee(id: number): void {
     this.employeeService.getEmployeeById(id).subscribe({
       next: (employee) => {
@@ -282,8 +288,8 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           maxWidth: '90vw'
         });
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات الموظف');
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
       }
     });
   }
@@ -323,7 +329,9 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.notification.showSuccess('تم حذف الموظف بنجاح');
           this.loadEmployees();
         },
-        error: () => this.notification.showError('حدث خطأ في حذف الموظف')
+        error: (err: ErrorVTO) => {
+          this.notification.showError(err);
+        }
       });
     }
   }
@@ -358,19 +366,21 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
 
     const filterTexts: string[] = [];
-    if (this.employeeTypeFilter !== null) {
-      const type = EMPLOYEE_TYPES.find(t => t.id === this.employeeTypeFilter);
-      if (type) filterTexts.push(`نوع الموظف: ${type.title}`);
-    }
-    if (this.genderFilter !== null) {
-      const gender = GENDERS.find(g => g.id === this.genderFilter);
-      if (gender) filterTexts.push(`الجنس: ${gender.title}`);
+    if (this.employeeTypeFilter) {
+      const type = this.employeeTypeFilter === 'TRAINER' ? 'مدرب' : 'مدير';
+      filterTexts.push(`نوع الموظف: ${type}`);
     }
     if (this.statusFilter !== null) {
       filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
     }
-    if (this.hireDateFrom) filterTexts.push(`من تاريخ التوظيف: ${this.hireDateFrom}`);
-    if (this.hireDateTo) filterTexts.push(`إلى تاريخ التوظيف: ${this.hireDateTo}`);
+    if (this.hireDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.hireDateFrom);
+      if (formattedDate) filterTexts.push(`من تاريخ التوظيف: ${formattedDate}`);
+    }
+    if (this.hireDateTo) {
+      const formattedDate = this.formatDateForBackend(this.hireDateTo);
+      if (formattedDate) filterTexts.push(`إلى تاريخ التوظيف: ${formattedDate}`);
+    }
     if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
     let tableRows = '';

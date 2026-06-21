@@ -1,3 +1,4 @@
+<!-- course-list.component.html -->
 <div class="courses-container">
   <mat-card class="main-card">
     <!-- Header Section -->
@@ -22,25 +23,25 @@
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
-          <app-searchable-select
-            [ngModel]="filters.courseTypeId"
-            (ngModelChange)="filters.courseTypeId = $event; loadCourses()"
-            label="نوع الدورة"
-            [options]="courseTypeOptions"
-            [required]="false"
-            class="filter-select"
-            [ngModelOptions]="{standalone: true}">
-          </app-searchable-select>
+          <!-- Course Type Filter - Updated to use courseType -->
+          <mat-form-field appearance="outline" class="filter-select">
+            <mat-label>نوع الدورة</mat-label>
+            <mat-select [(ngModel)]="filters.courseType" (selectionChange)="loadCourses()">
+              <mat-option *ngFor="let option of courseTypeOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
-          <app-searchable-select
-            [ngModel]="filters.isActive"
-            (ngModelChange)="filters.isActive = $event; loadCourses()"
-            label="الحالة"
-            [options]="statusOptions"
-            [required]="false"
-            class="filter-select"
-            [ngModelOptions]="{standalone: true}">
-          </app-searchable-select>
+          <!-- Status Filter -->
+          <mat-form-field appearance="outline" class="filter-select">
+            <mat-label>الحالة</mat-label>
+            <mat-select [(ngModel)]="filters.isActive" (selectionChange)="loadCourses()">
+              <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
 
         <div class="filters-row">
@@ -144,7 +145,7 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
             <td mat-cell *matCellDef="let course; let i = index">
               {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
-             </td>
+            </td>
           </ng-container>
 
           <!-- Title Column -->
@@ -152,7 +153,7 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>اسم الدورة</th>
             <td mat-cell *matCellDef="let course" class="clickable-cell" (click)="viewCourse(course.id)">
               <strong>{{ course.title }}</strong>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Department Column -->
@@ -160,17 +161,19 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>القسم</th>
             <td mat-cell *matCellDef="let course">
               <span class="dept-badge">{{ course.department?.title || '-' }}</span>
-             </td>
+            </td>
           </ng-container>
 
-          <!-- Course Type Column -->
+          <!-- Course Type Column - Updated to use helper method -->
           <ng-container matColumnDef="courseType">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>النوع</th>
             <td mat-cell *matCellDef="let course">
-              <span class="type-badge" [class.qualification]="course.courseType?.id === 1" [class.training]="course.courseType?.id === 2">
-                {{ course.courseType?.title }}
+              <span class="type-badge" 
+                    [class.qualification]="course.courseType?.value === 'QUALIFICATION' || course.courseType?.title === 'تأهيل'" 
+                    [class.training]="course.courseType?.value === 'TRAINING' || course.courseType?.title === 'تدريب'">
+                {{ getCourseTypeTitle(course.courseType) }}
               </span>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Duration Column -->
@@ -181,7 +184,7 @@
                 <mat-icon>schedule</mat-icon>
                 <span>{{ course.duration || 0 }} ساعة</span>
               </div>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Price Column -->
@@ -189,7 +192,7 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>السعر</th>
             <td mat-cell *matCellDef="let course">
               <span class="price-value">{{ course.price | currency:'EGP' }}</span>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Enrollments Count Column -->
@@ -200,7 +203,7 @@
                 <mat-icon>people</mat-icon>
                 <span>{{ course.enrollmentsCount || 0 }}</span>
               </div>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Total Revenue Column -->
@@ -208,7 +211,7 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الإيرادات</th>
             <td mat-cell *matCellDef="let course">
               <span class="revenue-value">{{ course.totalRevenue || 0 | currency:'EGP' }}</span>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Status Column -->
@@ -218,7 +221,7 @@
               <span class="status-badge" [class.active]="course.isActive" [class.inactive]="!course.isActive">
                 {{ course.isActive ? 'نشط' : 'غير نشط' }}
               </span>
-             </td>
+            </td>
           </ng-container>
 
           <!-- Actions Column -->
@@ -236,7 +239,7 @@
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
-             </td>
+            </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -253,8 +256,8 @@
                   إضافة دورة جديدة
                 </button>
               </div>
-             </td>
-           </tr>
+            </td>
+          </tr>
         </table>
       </div>
 

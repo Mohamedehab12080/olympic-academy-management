@@ -18,13 +18,13 @@
         <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilters()" placeholder="اسم، رقم هوية...">
+            <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" placeholder="اسم، رقم هوية...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
           <app-searchable-select
             [ngModel]="employeeTypeFilter"
-            (ngModelChange)="employeeTypeFilter = $event; applyFilters()"
+            (ngModelChange)="onEmployeeTypeChange($event)"
             label="نوع الموظف"
             [options]="employeeTypeOptions"
             [required]="false"
@@ -32,17 +32,8 @@
           </app-searchable-select>
 
           <app-searchable-select
-            [ngModel]="genderFilter"
-            (ngModelChange)="genderFilter = $event; applyFilters()"
-            label="الجنس"
-            [options]="genderOptions"
-            [required]="false"
-            class="filter-select">
-          </app-searchable-select>
-
-          <app-searchable-select
             [ngModel]="statusFilter"
-            (ngModelChange)="statusFilter = $event; applyFilters()"
+            (ngModelChange)="onStatusChange($event)"
             label="الحالة"
             [options]="statusOptions"
             [required]="false"
@@ -53,14 +44,14 @@
         <div class="filters-row">
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ التوظيف من</mat-label>
-            <input matInput [matDatepicker]="hireDateFromPicker" [(ngModel)]="hireDateFrom" (dateChange)="applyFilters()">
+            <input matInput [matDatepicker]="hireDateFromPicker" [(ngModel)]="hireDateFrom" (dateChange)="onDateFromChange()">
             <mat-datepicker-toggle matSuffix [for]="hireDateFromPicker"></mat-datepicker-toggle>
             <mat-datepicker #hireDateFromPicker></mat-datepicker>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ التوظيف إلى</mat-label>
-            <input matInput [matDatepicker]="hireDateToPicker" [(ngModel)]="hireDateTo" (dateChange)="applyFilters()">
+            <input matInput [matDatepicker]="hireDateToPicker" [(ngModel)]="hireDateTo" (dateChange)="onDateToChange()">
             <mat-datepicker-toggle matSuffix [for]="hireDateToPicker"></mat-datepicker-toggle>
             <mat-datepicker #hireDateToPicker></mat-datepicker>
           </mat-form-field>
@@ -131,7 +122,7 @@
       </div>
 
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table">
+        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="loadEmployees()">
           <!-- Index Column -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>

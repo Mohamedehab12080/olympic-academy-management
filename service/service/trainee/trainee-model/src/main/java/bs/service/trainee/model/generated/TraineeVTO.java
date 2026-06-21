@@ -36,7 +36,7 @@ public class TraineeVTO implements Serializable {
 
     private String nationalId;
 
-    private String academicYear;
+    private LookupVTO academicYear;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
@@ -134,7 +134,7 @@ public class TraineeVTO implements Serializable {
         this.nationalId = nationalId;
     }
 
-    public TraineeVTO academicYear(String academicYear) {
+    public TraineeVTO academicYear(LookupVTO academicYear) {
         this.academicYear = academicYear;
         return this;
     }
@@ -144,14 +144,14 @@ public class TraineeVTO implements Serializable {
      *
      * @return academicYear
      */
-
+    @Valid
     @Schema(name = "academicYear", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("academicYear")
-    public String getAcademicYear() {
+    public LookupVTO getAcademicYear() {
         return academicYear;
     }
 
-    public void setAcademicYear(String academicYear) {
+    public void setAcademicYear(LookupVTO academicYear) {
         this.academicYear = academicYear;
     }
 

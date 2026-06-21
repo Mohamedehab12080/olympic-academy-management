@@ -1,3 +1,4 @@
+// course-session-list.component.ts - COMPLETE UPDATED VERSION
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,8 +27,31 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { ReportService } from '../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { SESSION_STATUSES, CourseSessionVTO } from '../../../../core/models/employee.model';
-import { CourseSessionDetailsModalComponent } from './../course-session-details/course-session-details-modal.component';
-import { CourseSessionFormModalComponent } from './../course-session-form/course-session-form-modal.component';
+import { CourseSessionDetailsModalComponent } from '../course-session-details/course-session-details-modal.component';
+import { CourseSessionFormModalComponent } from '../course-session-form/course-session-form-modal.component';
+import { ErrorVTO } from '../../../../core/models/common.model';
+
+// ============================================================================
+// STATUS ENUM MAP
+// ============================================================================
+
+const STATUS_ENUM_MAP: { [key: number]: string } = {
+  1: 'SCHEDULED',
+  2: 'IN_PROGRESS',
+  3: 'COMPLETED',
+  4: 'CANCELLED'
+};
+
+const STATUS_ID_MAP: { [key: string]: number } = {
+  'SCHEDULED': 1,
+  'IN_PROGRESS': 2,
+  'COMPLETED': 3,
+  'CANCELLED': 4
+};
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 @Component({
   selector: 'app-course-session-list',
@@ -71,7 +95,7 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
     courseId: null as number | null,
     trainerId: null as number | null,
     placeId: null as number | null,
-    status: null as number | null,
+    status: null as string | null,
     sessionDateFrom: null as string | null,
     sessionDateTo: null as string | null
   };
@@ -112,7 +136,10 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
   loadSelectOptions(): void {
     this.statusOptions = [
       { value: null, label: 'الكل' },
-      ...this.sessionStatuses.map(s => ({ value: s.id, label: s.title }))
+      ...this.sessionStatuses.map(s => ({ 
+        value: STATUS_ENUM_MAP[s.id] || s.id,
+        label: s.title 
+      }))
     ];
   }
 
@@ -126,7 +153,9 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
           ...this.courses.map(c => ({ value: c.id, label: c.title }))
         ];
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
+      }
     });
 
     // Load trainers
@@ -138,7 +167,9 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
           ...this.trainers.map(t => ({ value: t.id, label: t.title }))
         ];
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل المدربين')
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
+      }
     });
 
     // Load places
@@ -150,9 +181,44 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
           ...this.places.map(p => ({ value: p.id, label: p.title }))
         ];
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل الأماكن')
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
+      }
     });
   }
+
+  // ==========================================================================
+  // DATE FORMATTING HELPERS
+  // ==========================================================================
+
+  /**
+   * Format date to yyyy-MM-dd for backend
+   */
+  private formatDateForBackend(date: any): string | null {
+    if (!date) return null;
+    
+    // If it's already a string in yyyy-MM-dd format, return it
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+    
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return null;
+      
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // ==========================================================================
+  // LOAD SESSIONS
+  // ==========================================================================
 
   loadSessions(): void {
     this.isLoading = true;
@@ -162,9 +228,20 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
     if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
     if (this.filters.placeId) params.placeId = this.filters.placeId;
     if (this.filters.status) params.status = this.filters.status;
-    if (this.filters.sessionDateFrom) params.sessionDateFrom = this.filters.sessionDateFrom;
-    if (this.filters.sessionDateTo) params.sessionDateTo = this.filters.sessionDateTo;
+    
+    // Format dates for backend - yyyy-MM-dd
+    if (this.filters.sessionDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateFrom);
+      if (formattedDate) params.sessionDateFrom = formattedDate;
+    }
+    if (this.filters.sessionDateTo) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateTo);
+      if (formattedDate) params.sessionDateTo = formattedDate;
+    }
+    
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+
+    console.log('Loading sessions with params:', params);
 
     this.sessionService.getAllSessionsByFilter(params).subscribe({
       next: (res: any) => {
@@ -172,12 +249,47 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
         this.dataSource.data = this.allSessions;
         this.isLoading = false;
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الجلسات');
+      error: (err: ErrorVTO) => {
+        console.error('Error loading sessions:', err);
+        // Check for specific error codes
+        if (err.code === 'INVALID_DATE_RANGE_FROM_AFTER_TO') {
+          this.notification.showError('تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية');
+        } else {
+          this.notification.showError(err);
+        }
         this.isLoading = false;
       }
     });
   }
+
+  // ==========================================================================
+  // HELPER METHODS
+  // ==========================================================================
+
+  getStatusEnum(id: number): string {
+    return STATUS_ENUM_MAP[id] || '';
+  }
+
+  getStatusIdFromEnum(enumValue: string | null): number | null {
+    if (!enumValue) return null;
+    return STATUS_ID_MAP[enumValue] || null;
+  }
+
+  formatTime(time: string): string {
+    if (!time) return '-';
+    
+    const [hours, minutes] = time.split(':');
+    let hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'م' : 'ص';
+    hour = hour % 12;
+    hour = hour ? hour : 12;
+    const hourStr = hour.toString().padStart(2, '0');
+    return `${hourStr}:${minutes} ${ampm}`;
+  }
+
+  // ==========================================================================
+  // FILTERS
+  // ==========================================================================
 
   applyQuickSearch(event: Event): void {
     this.quickSearch = (event.target as HTMLInputElement).value;
@@ -198,136 +310,9 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
-  // Helper method to format time to 12-hour format with AM/PM
-  formatTime(time: string): string {
-    if (!time) return '-';
-    
-    // If time is already in HH:mm format (24-hour)
-    const [hours, minutes] = time.split(':');
-    let hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'م' : 'ص';
-    hour = hour % 12;
-    hour = hour ? hour : 12; // Convert 0 to 12
-    const hourStr = hour.toString().padStart(2, '0');
-    return `${hourStr}:${minutes} ${ampm}`;
-  }
-
-  // Open Add Modal
-  openAddModal(): void {
-    const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
-      width: '800px',
-      maxWidth: '90vw',
-      disableClose: true,
-      data: {
-        mode: 'add'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === 'saved') {
-        this.loadSessions();
-      }
-    });
-  }
-
-  // Open Edit Modal
-  editSession(session: any): void {
-    // Fetch full session details including all fields
-    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
-      next: (fullSession: CourseSessionVTO) => {
-        const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
-          width: '800px',
-          maxWidth: '90vw',
-          disableClose: true,
-          data: {
-            mode: 'edit',
-            session: fullSession,
-            courseId: session.course.id,
-            sessionId: session.id
-          }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          if (result === 'updated') {
-            this.loadSessions();
-          }
-        });
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات الجلسة');
-      }
-    });
-  }
-
-  viewSessionDetails(session: any): void {
-    // Fetch full session details including createdBy, lastModifiedBy
-    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
-      next: (fullSession: CourseSessionVTO) => {
-        const dialogRef = this.dialog.open(CourseSessionDetailsModalComponent, {
-          data: fullSession,
-          width: '650px',
-          maxWidth: '90vw'
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          if (result?.action === 'delete') {
-            this.confirmAndDelete(result.session);
-          } else if (result?.action === 'edit') {
-            // Open edit modal when user clicks Edit from details
-            this.openEditModalFromDetails(result.session);
-          }
-        });
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل تفاصيل الجلسة');
-      }
-    });
-  }
-
-  // Add this new method to handle edit from details modal
-  openEditModalFromDetails(session: any): void {
-    // Fetch full session details including all fields
-    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
-      next: (fullSession: CourseSessionVTO) => {
-        const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
-          width: '800px',
-          maxWidth: '90vw',
-          disableClose: true,
-          data: {
-            mode: 'edit',
-            session: fullSession,
-            courseId: session.course.id,
-            sessionId: session.id
-          }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          if (result === 'updated') {
-            this.loadSessions();
-          }
-        });
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات الجلسة');
-      }
-    });
-  }
-
-  confirmAndDelete(session: any): void {
-    if (confirm(`هل أنت متأكد من حذف الجلسة "${session.title}"؟`)) {
-      this.sessionService.deleteCourseSession(session.course.id, session.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم حذف الجلسة بنجاح');
-          this.loadSessions();
-        },
-        error: () => this.notification.showError('حدث خطأ في حذف الجلسة')
-      });
-    }
-  }
-
-  deleteSession(session: any): void {
-    this.confirmAndDelete(session);
-  }
+  // ==========================================================================
+  // STATUS HELPERS
+  // ==========================================================================
 
   getStatusCount(statusId: number): number {
     return this.dataSource.data.filter(s => s.status?.id === statusId).length;
@@ -352,6 +337,126 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
     };
     return colors[statusId] || 'default';
   }
+
+  // ==========================================================================
+  // MODAL OPERATIONS
+  // ==========================================================================
+
+  openAddModal(): void {
+    const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: {
+        mode: 'add'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'saved') {
+        this.loadSessions();
+      }
+    });
+  }
+
+  editSession(session: any): void {
+    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
+      next: (fullSession: CourseSessionVTO) => {
+        const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
+          width: '800px',
+          maxWidth: '90vw',
+          disableClose: true,
+          data: {
+            mode: 'edit',
+            session: fullSession,
+            courseId: session.course.id,
+            sessionId: session.id
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'updated') {
+            this.loadSessions();
+          }
+        });
+      },
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
+      }
+    });
+  }
+
+  viewSessionDetails(session: any): void {
+    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
+      next: (fullSession: CourseSessionVTO) => {
+        const dialogRef = this.dialog.open(CourseSessionDetailsModalComponent, {
+          data: fullSession,
+          width: '650px',
+          maxWidth: '90vw'
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result?.action === 'delete') {
+            this.confirmAndDelete(result.session);
+          } else if (result?.action === 'edit') {
+            this.openEditModalFromDetails(result.session);
+          }
+        });
+      },
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
+      }
+    });
+  }
+
+  openEditModalFromDetails(session: any): void {
+    this.sessionService.getCourseSessionById(session.course.id, session.id).subscribe({
+      next: (fullSession: CourseSessionVTO) => {
+        const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
+          width: '800px',
+          maxWidth: '90vw',
+          disableClose: true,
+          data: {
+            mode: 'edit',
+            session: fullSession,
+            courseId: session.course.id,
+            sessionId: session.id
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'updated') {
+            this.loadSessions();
+          }
+        });
+      },
+      error: (err: ErrorVTO) => {
+        this.notification.showError(err);
+      }
+    });
+  }
+
+  confirmAndDelete(session: any): void {
+    if (confirm(`هل أنت متأكد من حذف الجلسة "${session.title}"؟`)) {
+      this.sessionService.deleteCourseSession(session.course.id, session.id).subscribe({
+        next: () => {
+          this.notification.showSuccess('تم حذف الجلسة بنجاح');
+          this.loadSessions();
+        },
+        error: (err: ErrorVTO) => {
+          this.notification.showError(err);
+        }
+      });
+    }
+  }
+
+  deleteSession(session: any): void {
+    this.confirmAndDelete(session);
+  }
+
+  // ==========================================================================
+  // EXPORTS
+  // ==========================================================================
 
   exportToExcel(): void {
     if (this.dataSource.data.length === 0) {
@@ -399,11 +504,17 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
       if (place) filterTexts.push(`المكان: ${place.title}`);
     }
     if (this.filters.status) {
-      const status = this.sessionStatuses.find(s => s.id === this.filters.status);
+      const status = this.sessionStatuses.find(s => s.id === this.getStatusIdFromEnum(this.filters.status));
       if (status) filterTexts.push(`الحالة: ${status.title}`);
     }
-    if (this.filters.sessionDateFrom) filterTexts.push(`من تاريخ: ${this.filters.sessionDateFrom}`);
-    if (this.filters.sessionDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.sessionDateTo}`);
+    if (this.filters.sessionDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateFrom);
+      if (formattedDate) filterTexts.push(`من تاريخ: ${formattedDate}`);
+    }
+    if (this.filters.sessionDateTo) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateTo);
+      if (formattedDate) filterTexts.push(`إلى تاريخ: ${formattedDate}`);
+    }
     if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
     // Build table rows
@@ -429,11 +540,10 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
             ${session.status?.title || '-'}
           </td>
-        </td>
+        </tr>
       `;
     });
 
-    // Create print container
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -529,7 +639,6 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
       </html>
     `;
 
-    // Open in new window for printing
     const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
@@ -537,7 +646,6 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit {
       this.isLoading = false;
       this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
     } else {
-      // Fallback
       document.body.appendChild(printContainer);
       window.print();
       setTimeout(() => {

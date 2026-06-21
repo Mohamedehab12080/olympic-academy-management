@@ -24,7 +24,7 @@ export interface CourseDTO {
   startDate: string;
   endDate?: string;
   imageUrl?: string;
-  courseType: string;  // Send enum constant: "QUALIFICATION" or "TRAINING"
+  courseType: CourseType;  // Send enum constant: "QUALIFICATION" or "TRAINING"
   price: number;
 }
 

@@ -3,7 +3,6 @@ package bs.service.trainee.core.service;
 import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.exception.BusinessException;
 import bs.lib.common.model.generated.CommonEnrollmentVTO;
-import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
@@ -15,6 +14,7 @@ import bs.service.trainee.api.repository.TraineeRepository;
 import bs.service.trainee.api.service.TraineeService;
 import bs.service.trainee.core.mapper.TraineeMapper;
 import bs.service.trainee.model.entity.Trainee;
+import bs.service.trainee.model.enums.AcademicYear;
 import bs.service.trainee.model.enums.TraineeDomains;
 import bs.service.trainee.model.filter.TraineeSearchFilter;
 import bs.service.trainee.model.generated.*;
@@ -48,7 +48,9 @@ public class TraineeServiceImpl implements TraineeService {
         }
         Trainee trainee = traineeMapper.toTrainee(traineeDTO);
         trainee = traineeRepository.insert(trainee);
-        fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(trainee.getId()), Collections.singletonList(trainee.getImageUrl()));
+        if(traineeDTO.getImageUrl()!=null){
+            fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(trainee.getId()), Collections.singletonList(trainee.getImageUrl()));
+        }
         return NewRecordVTO.builder().id(trainee.getId()).build();
     }
 
@@ -60,7 +62,9 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee traineeToUpdate = traineeMapper.toTrainee(traineeDTO);
         traineeToUpdate.setId(traineeId);
         traineeRepository.update(traineeToUpdate);
-        fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(traineeToUpdate.getId()), Collections.singletonList(traineeToUpdate.getImageUrl()));
+        if(traineeDTO.getImageUrl()!=null){
+            fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(traineeToUpdate.getId()), Collections.singletonList(traineeToUpdate.getImageUrl()));
+        }
         return NewRecordVTO.builder().id(traineeId).build();
     }
 
@@ -87,14 +91,14 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public TraineeResultSet getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, String academicYear,
+    public TraineeResultSet getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, AcademicYear academicYear,
                                                    LocalDate createdOnFrom, LocalDate createdOnTo,
                                                    Integer pageNum, Integer pageSize,
                                                    OrderDirections orderDir, String orderBy) {
         TraineeSearchFilter filter = TraineeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .gender(gender)
-                .academicYear(academicYear)
+                .academicYear(academicYear!=null ?academicYear.getTitle():null)
                 .createdOnFrom(createdOnFrom)
                 .createdOnTo(createdOnTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

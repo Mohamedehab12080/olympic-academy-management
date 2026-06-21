@@ -1,3 +1,5 @@
+// course-list.component.ts
+
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,9 +26,15 @@ import { CourseSessionService } from '../../../../core/services/course-session.s
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { COURSE_TYPES } from '../../../../core/models/course.model';
 import { CourseWizardModalComponent } from '../course-wizard/course-wizard-modal.component';
 import { CourseDetailsModalComponent } from '../course-details/course-details-modal.component';
+
+// Helper to map backend LookupVTO to display title
+interface CourseTypeLookup {
+  id: number;
+  title: string;     // Arabic title "تأهيل" أو "تدريب"
+  value: string;     // Enum constant "QUALIFICATION" or "TRAINING"
+}
 
 @Component({
   selector: 'app-course-list',
@@ -63,26 +71,27 @@ export class CourseListComponent implements OnInit, AfterViewInit {
 
   filters = {
     quickSearch: '',
-    courseTypeId: null as number | null,
+    courseType: null as string | null,
     isActive: null as boolean | null,
-    startDateFrom: null as string | null,
-    startDateTo: null as string | null,
-    endDateFrom: null as string | null,
-    endDateTo: null as string | null
+    startDateFrom: null as Date | null,  // Changed to Date type
+    startDateTo: null as Date | null,    // Changed to Date type
+    endDateFrom: null as Date | null,    // Changed to Date type
+    endDateTo: null as Date | null       // Changed to Date type
   };
 
   courseTypeOptions: SelectOption[] = [];
   statusOptions: SelectOption[] = [];
+  courseTypes: CourseTypeLookup[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   get qualCount(): number {
-    return this.allCourses.filter(c => c.courseType?.id === 1).length;
+    return this.allCourses.filter(c => c.courseType?.value === 'QUALIFICATION' || c.courseType?.title === 'تأهيل').length;
   }
 
   get trainCount(): number {
-    return this.allCourses.filter(c => c.courseType?.id === 2).length;
+    return this.allCourses.filter(c => c.courseType?.value === 'TRAINING' || c.courseType?.title === 'تدريب').length;
   }
 
   get totalRevenue(): number {
@@ -100,6 +109,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadCourseTypes();
     this.loadSelectOptions();
     this.loadCourses();
   }
@@ -109,12 +119,56 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
-  loadSelectOptions(): void {
+  /**
+   * Format a Date object to YYYY-MM-DD string for API
+   */
+  private formatDateForAPI(date: Date | null): string | null {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  loadCourseTypes(): void {
+    this.courseService.getAllCoursesTypesLookup().subscribe({
+      next: (res: any) => {
+        const typeMap: { [key: string]: string } = {
+          'تأهيل': 'QUALIFICATION',
+          'تدريب': 'TRAINING'
+        };
+        
+        this.courseTypes = (res.list || []).map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          value: typeMap[item.title] || item.title
+        }));
+        
+        console.log('Course types loaded:', this.courseTypes);
+        this.updateCourseTypeOptions();
+      },
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل أنواع الدورات');
+        this.courseTypes = [
+          { id: 1, title: 'تأهيل', value: 'QUALIFICATION' },
+          { id: 2, title: 'تدريب', value: 'TRAINING' }
+        ];
+        this.updateCourseTypeOptions();
+      }
+    });
+  }
+
+  updateCourseTypeOptions(): void {
     this.courseTypeOptions = [
       { value: null, label: 'الكل' },
-      ...COURSE_TYPES.map(t => ({ value: t.id, label: t.title }))
+      ...this.courseTypes.map(t => ({ 
+        value: t.value,
+        label: t.title 
+      }))
     ];
+  }
 
+  loadSelectOptions(): void {
     this.statusOptions = [
       { value: null, label: 'الكل' },
       { value: true, label: 'نشط' },
@@ -127,21 +181,26 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     
     const params: any = {};
     if (this.filters.quickSearch) params.quickSearch = this.filters.quickSearch;
-    if (this.filters.courseTypeId) params.courseType = this.filters.courseTypeId;
+    if (this.filters.courseType) params.courseType = this.filters.courseType;
     if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
-    if (this.filters.startDateFrom) params.startDateFrom = this.filters.startDateFrom;
-    if (this.filters.startDateTo) params.startDateTo = this.filters.startDateTo;
-    if (this.filters.endDateFrom) params.endDateFrom = this.filters.endDateFrom;
-    if (this.filters.endDateTo) params.endDateTo = this.filters.endDateTo;
+    
+    // Format dates before sending to API
+    if (this.filters.startDateFrom) params.startDateFrom = this.formatDateForAPI(this.filters.startDateFrom);
+    if (this.filters.startDateTo) params.startDateTo = this.formatDateForAPI(this.filters.startDateTo);
+    if (this.filters.endDateFrom) params.endDateFrom = this.formatDateForAPI(this.filters.endDateFrom);
+    if (this.filters.endDateTo) params.endDateTo = this.formatDateForAPI(this.filters.endDateTo);
+
+    console.log('Sending params to API:', params);
 
     this.courseService.getAllCourses(params).subscribe({
       next: (res: any) => {
         this.allCourses = res.items || [];
-        // Course objects already contain enrollmentCount and totalRevenue from backend
         this.dataSource.data = [...this.allCourses];
         this.isLoading = false;
+        console.log('Courses loaded:', this.allCourses);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading courses:', err);
         this.notification.showError('حدث خطأ في تحميل الدورات');
         this.isLoading = false;
       }
@@ -151,7 +210,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
   resetFilters(): void {
     this.filters = {
       quickSearch: '',
-      courseTypeId: null,
+      courseType: null,
       isActive: null,
       startDateFrom: null,
       startDateTo: null,
@@ -162,14 +221,27 @@ export class CourseListComponent implements OnInit, AfterViewInit {
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
+  getCourseTypeTitle(courseType: any): string {
+    if (!courseType) return '-';
+    
+    if (typeof courseType === 'object' && courseType.title) {
+      return courseType.title;
+    }
+    
+    if (typeof courseType === 'string') {
+      const found = this.courseTypes.find(t => t.value === courseType);
+      return found?.title || courseType;
+    }
+    
+    return '-';
+  }
+
   viewCourse(id: number): void {
     this.isLoading = true;
     
-    // Find the course from the existing list (already has enrollmentCount and totalRevenue)
     const existingCourse = this.allCourses.find(c => c.id === id);
     
     if (existingCourse) {
-      // Use the existing course data
       this.courseSessionService.getAllCourseSessionsByFilter(id).subscribe({
         next: (sessionsRes: any) => {
           this.dialog.open(CourseDetailsModalComponent, {
@@ -195,7 +267,6 @@ export class CourseListComponent implements OnInit, AfterViewInit {
         }
       });
     } else {
-      // Fallback: fetch from API if not found in list
       this.courseService.getCourseById(id).subscribe({
         next: (course) => {
           this.courseSessionService.getAllCourseSessionsByFilter(id).subscribe({
@@ -281,7 +352,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
       '#': index + 1,
       'اسم الدورة': course.title,
       'القسم': course.department?.title || '-',
-      'النوع': course.courseType?.title || '-',
+      'النوع': this.getCourseTypeTitle(course.courseType),
       'المدة': `${course.duration || 0} ساعة`,
       'السعر': course.price || 0,
       'عدد المسجلين': course.enrollmentsCount || 0,
@@ -301,18 +372,16 @@ export class CourseListComponent implements OnInit, AfterViewInit {
 
     this.isLoading = true;
 
-    // Build filter text
     const filterTexts: string[] = [];
     if (this.filters.quickSearch) filterTexts.push(`بحث: ${this.filters.quickSearch}`);
-    if (this.filters.courseTypeId) {
-      const courseType = COURSE_TYPES.find(t => t.id === this.filters.courseTypeId);
+    if (this.filters.courseType) {
+      const courseType = this.courseTypes.find(t => t.value === this.filters.courseType);
       if (courseType) filterTexts.push(`نوع الدورة: ${courseType.title}`);
     }
     if (this.filters.isActive !== null) {
       filterTexts.push(`الحالة: ${this.filters.isActive ? 'نشط' : 'غير نشط'}`);
     }
 
-    // Build table rows
     let tableRows = '';
     this.dataSource.data.forEach((course: any, index: number) => {
       const statusColor = course.isActive ? '#d1fae5' : '#fee2e2';
@@ -322,19 +391,18 @@ export class CourseListComponent implements OnInit, AfterViewInit {
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${course.title || '-'}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${course.department?.title || '-'}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${course.courseType?.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${this.getCourseTypeTitle(course.courseType)}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${course.duration || 0} ساعة</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${(course.price || 0).toLocaleString('ar-EG')} جم</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${course.enrollmentsCount || 0}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${(course.totalRevenue || 0).toLocaleString('ar-EG')} جم</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd; background-color: ${statusColor}; color: ${statusTextColor};">
             ${course.isActive ? 'نشط' : 'غير نشط'}
-           </td>
-         </tr>
+          </td>
+        </tr>
       `;
     });
 
-    // Create print container
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -430,7 +498,7 @@ export class CourseListComponent implements OnInit, AfterViewInit {
               <th>عدد المسجلين</th>
               <th>الإيرادات</th>
               <th>الحالة</th>
-             </tr>
+            </tr>
           </thead>
           <tbody>${tableRows}</tbody>
         </table>

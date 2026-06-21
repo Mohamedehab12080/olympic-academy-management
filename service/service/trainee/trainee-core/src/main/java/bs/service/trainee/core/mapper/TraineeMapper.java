@@ -15,6 +15,7 @@ import bs.service.enrollment.model.entity.Enrollment;
 import bs.service.enrollment.model.enums.EnrollmentStatus;
 import bs.service.enrollment.model.generated.EnrollmentVTO;
 import bs.service.trainee.model.entity.*;
+import bs.service.trainee.model.enums.AcademicYear;
 import bs.service.trainee.model.enums.TraineeAttendanceStatus;
 import bs.service.trainee.model.generated.*;
 import bs.service.user.model.entity.User;
@@ -23,6 +24,7 @@ import org.mapstruct.*;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 
 @Mapper(componentModel = "spring",
@@ -49,6 +51,13 @@ public abstract class TraineeMapper {
         return EnumMapperUtils.toLookupVTO(statusId, TraineeAttendanceStatus.class);
     }
 
+    protected AcademicYear toAcademicYear(String academicYearId) {
+        if(academicYearId!=null){
+            return EnumMapperUtils.toEnum(Integer.parseInt(academicYearId), AcademicYear.class);
+        }
+        return null;
+    }
+
     protected EnrollmentStatus toEnrollmentStatus(Integer statusId) {
         return EnumMapperUtils.toEnum(statusId, EnrollmentStatus.class);
     }
@@ -56,6 +65,10 @@ public abstract class TraineeMapper {
     // Convert database Integer ID to your custom PaymentStatus enum
     protected PaymentStatus toPaymentStatus(Integer statusId) {
         return EnumMapperUtils.toEnum(statusId, PaymentStatus.class);
+    }
+
+    protected LookupVTO toLookupVTO(AcademicYear academicYear) {
+        return EnumMapperUtils.toLookupVTO(academicYear);
     }
 
     protected LookupVTO toLookupVTO(EnrollmentStatus status) {
@@ -135,16 +148,19 @@ public abstract class TraineeMapper {
 
     // DTO to Entity - convert LookupVTO to ID
     @Mapping(target = "gender", source = "gender.id")
+    @Mapping(target = "academicYear", source = "academicYear.title")
     public abstract Trainee toTrainee(TraineeDTO traineeDTO);
 
     // Entity to VTO - use qualifiedByName to specify which converter to use
     @Mapping(target = "gender", qualifiedByName = "genderToLookup")
-    @Mapping(target = "contacts", source = "contacts")  // This will use toTraineeContactVTOs
+    @Mapping(target = "contacts", source = "contacts")
+    @Mapping(target = "academicYear", expression = "java(toLookupVTO(toAcademicYear(trainee.getAcademicYear())))")// This will use toTraineeContactVTOs
     public abstract TraineeVTO toTraineeVTO(Trainee trainee);
 
     // List Item mapping - use qualifiedByName
     @Mapping(target = "gender", qualifiedByName = "genderToLookup")
     @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "academicYear", expression = "java(toLookupVTO(toAcademicYear(trainee.getAcademicYear())))")// This will use toTraineeContactVTOs
     public abstract TraineeListItem toTraineeListItem(Trainee trainee);
 
     public abstract List<TraineeListItem> toTraineeListItems(List<Trainee> trainees);

@@ -54,6 +54,8 @@ public class EnrollmentDTO implements Serializable {
 
     private Integer remainedSubscriptionValue;
 
+    private Boolean isActive;
+
     private String note;
 
     public EnrollmentDTO traineeId(Integer traineeId) {
@@ -330,6 +332,27 @@ public class EnrollmentDTO implements Serializable {
         this.remainedSubscriptionValue = remainedSubscriptionValue;
     }
 
+    public EnrollmentDTO isActive(Boolean isActive) {
+        this.isActive = isActive;
+        return this;
+    }
+
+    /**
+     * Get isActive
+     *
+     * @return isActive
+     */
+
+    @Schema(name = "isActive", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isActive")
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
     public EnrollmentDTO note(String note) {
         this.note = note;
         return this;
@@ -373,6 +396,7 @@ public class EnrollmentDTO implements Serializable {
                 && Objects.equals(this.discountPercentage, enrollmentDTO.discountPercentage)
                 && Objects.equals(this.finalSubscriptionValue, enrollmentDTO.finalSubscriptionValue)
                 && Objects.equals(this.remainedSubscriptionValue, enrollmentDTO.remainedSubscriptionValue)
+                && Objects.equals(this.isActive, enrollmentDTO.isActive)
                 && Objects.equals(this.note, enrollmentDTO.note);
     }
 
@@ -380,7 +404,7 @@ public class EnrollmentDTO implements Serializable {
     public int hashCode() {
         return Objects.hash(traineeId, courseId, trainerId, enrollmentTypeId, startDate, endDate, enrollmentStatus,
                 paymentStatus, subscriptionValue, discountAmount, discountPercentage, finalSubscriptionValue,
-                remainedSubscriptionValue, note);
+                remainedSubscriptionValue, isActive, note);
     }
 
     @Override
@@ -400,6 +424,7 @@ public class EnrollmentDTO implements Serializable {
         sb.append("    discountPercentage: ").append(toIndentedString(discountPercentage)).append("\n");
         sb.append("    finalSubscriptionValue: ").append(toIndentedString(finalSubscriptionValue)).append("\n");
         sb.append("    remainedSubscriptionValue: ").append(toIndentedString(remainedSubscriptionValue)).append("\n");
+        sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
         sb.append("    note: ").append(toIndentedString(note)).append("\n");
         sb.append("}");
         return sb.toString();

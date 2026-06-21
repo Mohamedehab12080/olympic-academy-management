@@ -400,7 +400,6 @@
   color: #9ca3af;
 }
 
-/* Make sure the table cell for image is properly aligned */
 .mat-column-image {
   text-align: center;
   width: 70px;
@@ -418,7 +417,7 @@
   }
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);

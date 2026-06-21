@@ -646,7 +646,7 @@ components:
       in: query
       required: false
       schema:
-        type: string
+        $ref: '#/components/schemas/AcademicYear'
     QPCourseId:
       name: courseId
       in: query
@@ -692,6 +692,16 @@ components:
   schemas:
     # ==================== Enums ====================
 
+    AcademicYear:
+      type: object
+      properties:
+        id:
+          type: integer
+          enum: [1, 2, 3, 4]
+        title:
+          type: string
+          enum: ["1", "2", "3", "4"]
+
     TraineeAttendanceStatus:
       type: object
       properties:
@@ -718,7 +728,7 @@ components:
         nationalId:
           type: string
         academicYear:
-          type: string
+          $ref: '#/components/schemas/AcademicYear'
         birthDate:
           type: string
           format: date
@@ -845,7 +855,7 @@ components:
         nationalId:
           type: string
         academicYear:
-          type: string
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         birthDate:
           type: string
           format: date
@@ -994,7 +1004,7 @@ components:
         isActive:
           type: boolean
         academicYear:
-          type: string
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         gender:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
 

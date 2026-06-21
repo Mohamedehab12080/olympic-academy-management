@@ -9,6 +9,6 @@ import lombok.Getter;
 public enum CourseTypes implements EnumWithIdAndTitle {
     QUALIFICATION(1,"تأهيل"),TRAINING(2,"تدريب");
 
-    private Integer id;
-    private String title;
+    private final Integer id;
+    private final String title;
 }

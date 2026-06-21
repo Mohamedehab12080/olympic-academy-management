@@ -1,6 +1,7 @@
 package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.enums.Gender;
+import bs.service.trainee.model.enums.AcademicYear;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -31,7 +32,7 @@ public class TraineeDTO implements Serializable {
 
     private String nationalId;
 
-    private String academicYear;
+    private AcademicYear academicYear;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate birthDate;
@@ -89,7 +90,7 @@ public class TraineeDTO implements Serializable {
         this.nationalId = nationalId;
     }
 
-    public TraineeDTO academicYear(String academicYear) {
+    public TraineeDTO academicYear(AcademicYear academicYear) {
         this.academicYear = academicYear;
         return this;
     }
@@ -99,14 +100,14 @@ public class TraineeDTO implements Serializable {
      *
      * @return academicYear
      */
-
+    @Valid
     @Schema(name = "academicYear", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("academicYear")
-    public String getAcademicYear() {
+    public AcademicYear getAcademicYear() {
         return academicYear;
     }
 
-    public void setAcademicYear(String academicYear) {
+    public void setAcademicYear(AcademicYear academicYear) {
         this.academicYear = academicYear;
     }
 

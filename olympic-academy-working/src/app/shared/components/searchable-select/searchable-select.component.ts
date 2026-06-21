@@ -1,5 +1,4 @@
-// searchable-select.component.ts - FIXED
-
+// searchable-select.component.ts
 import { Component, Input, forwardRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -128,8 +127,8 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnInit, 
   @Input() multiple: boolean = false;
   @Input() required: boolean = false;
   @Input() disabled: boolean = false;
+  @Input() compareWith: (val1: any, val2: any) => boolean = (val1, val2) => val1 === val2;
   
-  // Use a separate internal value
   selectedValue: any = null;
   searchTerm: string = '';
   filteredOptions: SelectOption[] = [];
@@ -160,28 +159,27 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnInit, 
 
   isSelected(value: any): boolean {
     if (this.multiple && Array.isArray(this.selectedValue)) {
-      return this.selectedValue.includes(value);
+      return this.selectedValue.some(v => this.compareWith(v, value));
     }
-    return this.selectedValue === value;
+    return this.compareWith(this.selectedValue, value);
   }
 
   onSelectionChange(event: any) {
-    // Get the actual value from the event
+    // Get the value from the event
     const value = event.value;
     
-    // Handle null/undefined properly
-    let finalValue = value;
+    // Handle null/undefined
     if (value === null || value === undefined || value === 'null' || value === '') {
-      finalValue = null;
+      this.selectedValue = null;
+    } else {
+      this.selectedValue = value;
     }
     
-    this.selectedValue = finalValue;
-    this.onChange(finalValue);
+    this.onChange(this.selectedValue);
     this.onTouched();
   }
 
   writeValue(value: any): void {
-    // Handle null/undefined properly
     if (value === null || value === undefined || value === 'null' || value === '') {
       this.selectedValue = null;
     } else {

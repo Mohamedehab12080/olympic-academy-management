@@ -15,7 +15,32 @@ import { TraineeVTO, TraineeCertificateVTO, TraineeContactVTO, HealthConditionVT
 import { CommonEnrollmentVTO } from '../../../../core/models/common.model';
 import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-modal.component';
 import { FileService } from '../../../../core/services/file.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import * as JsBarcode from 'jsbarcode';
+
+// Helper mapping for enum names to display titles
+const GENDER_MAP: { [key: string]: string } = {
+  'MALE': 'ذكر',
+  'FEMALE': 'أنثى'
+};
+
+const CONTACT_TYPE_MAP: { [key: string]: string } = {
+  'EMAIL': 'بريد إلكتروني',
+  'PHONE': 'جوال'
+};
+
+const ACADEMIC_YEAR_MAP: { [key: string]: string } = {
+  '_1': '1',
+  '_2': '2',
+  '_3': '3',
+  '_4': '4'
+};
+
+// Helper to get display title from enum name
+function getDisplayTitle(enumName: string | undefined, map: { [key: string]: string }): string {
+  if (!enumName) return '-';
+  return map[enumName] || enumName;
+}
 
 @Component({
   selector: 'app-trainee-details-modal',
@@ -40,8 +65,11 @@ import * as JsBarcode from 'jsbarcode';
           <h2>ملف المتدرب</h2>
         </div>
         <div class="header-actions">
-          <button mat-icon-button (click)="printTraineeDocument()" matTooltip="طباعة الملف">
-            <mat-icon>print</mat-icon>
+          <button mat-icon-button (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+            <mat-icon>description</mat-icon>
+          </button>
+          <button mat-icon-button (click)="printTraineeCard()" matTooltip="طباعة البطاقة">
+            <mat-icon>credit_card</mat-icon>
           </button>
           <button mat-icon-button mat-dialog-close class="close-btn">
             <mat-icon>close</mat-icon>
@@ -74,11 +102,11 @@ import * as JsBarcode from 'jsbarcode';
             </mat-chip>
             <mat-chip *ngIf="trainee.academicYear">
               <mat-icon>school</mat-icon>
-              السنة {{ trainee.academicYear }}
+              السنة {{ getAcademicYearDisplay(trainee.academicYear) }}
             </mat-chip>
             <mat-chip *ngIf="trainee.gender">
-              <mat-icon>{{ trainee.gender?.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
-              {{ trainee.gender?.title }}
+              <mat-icon>{{ getGenderDisplay(trainee.gender) === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+              {{ getGenderDisplay(trainee.gender) }}
             </mat-chip>
           </div>
         </div>
@@ -117,10 +145,10 @@ import * as JsBarcode from 'jsbarcode';
               </div>
 
               <div class="info-item">
-                <mat-icon>{{ trainee.gender?.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+                <mat-icon>{{ getGenderDisplay(trainee.gender) === 'ذكر' ? 'male' : 'female' }}</mat-icon>
                 <div>
                   <label>الجنس</label>
-                  <p>{{ trainee.gender?.title || '-' }}</p>
+                  <p>{{ getGenderDisplay(trainee.gender) }}</p>
                 </div>
               </div>
 
@@ -128,7 +156,7 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>school</mat-icon>
                 <div>
                   <label>السنة الدراسية</label>
-                  <p>{{ trainee.academicYear || '-' }}</p>
+                  <p>{{ getAcademicYearDisplay(trainee.academicYear) }}</p>
                 </div>
               </div>
 
@@ -180,9 +208,9 @@ import * as JsBarcode from 'jsbarcode';
           <div class="tab-content">
             <div class="contacts-list" *ngIf="contacts.length > 0; else noContacts">
               <div class="contact-card" *ngFor="let contact of contacts">
-                <mat-icon>{{ getContactIcon(contact.contactType?.title || '') }}</mat-icon>
+                <mat-icon>{{ getContactIcon(contact.contactType) }}</mat-icon>
                 <div class="contact-info">
-                  <label>{{ contact.contactType?.title || 'جهة اتصال' }}</label>
+                  <label>{{ getContactTypeDisplay(contact.contactType) }}</label>
                   <p>{{ contact.contactValue }}</p>
                 </div>
               </div>
@@ -353,9 +381,13 @@ import * as JsBarcode from 'jsbarcode';
       
       <!-- Modal Actions -->
       <div class="modal-actions">
-        <button mat-raised-button color="accent" (click)="printTraineeDocument()" matTooltip="طباعة الملف">
-          <mat-icon>print</mat-icon>
-          طباعة
+        <button mat-raised-button color="accent" (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+          <mat-icon>description</mat-icon>
+          طباعة الملف
+        </button>
+        <button mat-raised-button color="primary" (click)="printTraineeCard()" matTooltip="طباعة البطاقة">
+          <mat-icon>credit_card</mat-icon>
+          طباعة البطاقة
         </button>
         <button mat-raised-button color="primary" (click)="editTrainee()">
           <mat-icon>edit</mat-icon>
@@ -768,7 +800,8 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
     @Inject(MAT_DIALOG_DATA) private data: TraineeVTO,
     private router: Router,
     private dialog: MatDialog,
-    private fileService: FileService
+    private fileService: FileService,
+    private notification: NotificationService
   ) {
     this.trainee = data;
     this.contacts = data.contacts || [];
@@ -792,6 +825,40 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
     if (this.blobUrl) {
       URL.revokeObjectURL(this.blobUrl);
     }
+  }
+
+  // Helper methods to display enum values
+  getGenderDisplay(gender: any): string {
+    if (!gender) return '-';
+    if (typeof gender === 'object' && gender.title) {
+      return gender.title;
+    }
+    if (typeof gender === 'string') {
+      return getDisplayTitle(gender, GENDER_MAP);
+    }
+    return '-';
+  }
+
+  getAcademicYearDisplay(academicYear: any): string {
+    if (!academicYear) return '-';
+    if (typeof academicYear === 'object' && academicYear.title) {
+      return academicYear.title;
+    }
+    if (typeof academicYear === 'string') {
+      return getDisplayTitle(academicYear, ACADEMIC_YEAR_MAP);
+    }
+    return '-';
+  }
+
+  getContactTypeDisplay(contactType: any): string {
+    if (!contactType) return 'جهة اتصال';
+    if (typeof contactType === 'object' && contactType.title) {
+      return contactType.title;
+    }
+    if (typeof contactType === 'string') {
+      return getDisplayTitle(contactType, CONTACT_TYPE_MAP);
+    }
+    return 'جهة اتصال';
   }
 
   loadImage(): void {
@@ -837,17 +904,20 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  getContactIcon(contactType: string): string {
+  getContactIcon(contactType: any): string {
+    const type = typeof contactType === 'string' ? contactType : contactType?.title || '';
     const icons: { [key: string]: string } = {
       'جوال': 'phone_android',
       'هاتف': 'phone',
       'بريد إلكتروني': 'email',
+      'EMAIL': 'email',
+      'PHONE': 'phone_android',
       'واتساب': 'chat',
       'فيسبوك': 'facebook',
       'تويتر': 'twitter',
       'انستجرام': 'instagram'
     };
-    return icons[contactType] || 'contact_phone';
+    return icons[type] || 'contact_phone';
   }
 
   editTrainee(): void {
@@ -869,19 +939,25 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
     this.dialogRef.close({ action: 'delete', trainee: this.trainee });
   }
 
-  printTraineeDocument(): void {
+  /**
+   * Print the small thermal card (بطاقة)
+   */
+  printTraineeCard(): void {
     this.generateBarcode();
     setTimeout(() => {
       const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
       const printWindow = window.open('', '_blank', 'width=400,height=600');
       if (!printWindow) {
-        alert('تعذر فتح نافذة الطباعة');
+        this.notification.showError('تعذر فتح نافذة الطباعة');
         return;
       }
 
       const t = this.trainee;
       const imagePreviewUrl = this.imageUrl || '';
       const today = new Date().toLocaleDateString('ar-EG');
+
+      const genderDisplay = this.getGenderDisplay(t.gender);
+      const academicYearDisplay = this.getAcademicYearDisplay(t.academicYear);
 
       printWindow.document.write(`
         <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
@@ -908,19 +984,20 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
           .thermal-footer { display: flex; justify-content: space-between; gap: 3mm; margin-top: 3mm; }
           .thermal-signature { flex: 1; text-align: center; font-size: 7px; }
           .thermal-line { border-top: 0.5px solid #000; margin-bottom: 1mm; padding-top: 4mm; }
+          .no-print { display: none; }
         </style>
         </head>
         <body>
         <div class="thermal-card">
           <div class="thermal-header"><div class="thermal-title">الأكاديمية الأولمبية</div><div class="thermal-subtitle">بطاقة هوية متدرب</div></div>
           <div class="thermal-photo"><img src="${imagePreviewUrl}" onerror="this.style.display='none'"></div>
-          <div class="thermal-name">${t.fullName || ''}</div>
+          <div class="thermal-name">${this.escapeHtml(t.fullName) || ''}</div>
           <div class="thermal-id">رقم الهوية: ${t.nationalId || ''}</div>
           <div class="thermal-divider"></div>
           <table class="thermal-table">
             <tr><td class="thermal-label">📅 تاريخ الميلاد</td><td class="thermal-value">${t.birthDate ? new Date(t.birthDate).toLocaleDateString('ar-EG') : '-'}</td></tr>
-            <tr><td class="thermal-label">🧑 الجنس</td><td class="thermal-value">${t.gender?.title || '-'}</td></tr>
-            <tr><td class="thermal-label">📚 السنة الدراسية</td><td class="thermal-value">${t.academicYear || '-'}</td></tr>
+            <tr><td class="thermal-label">🧑 الجنس</td><td class="thermal-value">${genderDisplay}</td></tr>
+            <tr><td class="thermal-label">📚 السنة الدراسية</td><td class="thermal-value">${academicYearDisplay}</td></tr>
             <tr><td class="thermal-label">📍 العنوان</td><td class="thermal-value">${(t.address || '').substring(0, 25)}</td></tr>
             <tr><td class="thermal-label">✓ الحالة</td><td class="thermal-value">${t.isActive ? 'نشط' : 'غير نشط'}</td></tr>
           </table>
@@ -930,6 +1007,379 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
         </div>
         <script>window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };<\/script>
         </body></html>
+      `);
+      printWindow.document.close();
+    }, 300);
+  }
+
+  /**
+   * Print the complete profile document (ملف) with all sections
+   */
+  printProfileDocument(): void {
+    this.generateBarcode();
+    setTimeout(() => {
+      const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+      if (!printWindow) {
+        this.notification.showError('تعذر فتح نافذة الطباعة');
+        return;
+      }
+
+      const t = this.trainee;
+      const imagePreviewUrl = this.imageUrl || '';
+      const today = new Date().toLocaleDateString('ar-EG');
+      const genderDisplay = this.getGenderDisplay(t.gender);
+      const academicYearDisplay = this.getAcademicYearDisplay(t.academicYear);
+
+      // Build contacts HTML
+      let contactsHtml = '';
+      if (this.contacts.length > 0) {
+        contactsHtml = `
+          <h2>📞 جهات الاتصال</h2>
+          <div class="info-grid">
+            ${this.contacts.map(c => `
+              <div class="info-item">
+                <div class="info-label">${this.getContactTypeDisplay(c.contactType)}</div>
+                <div class="info-value">${c.contactValue}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        contactsHtml = `
+          <h2>📞 جهات الاتصال</h2>
+          <div class="info-item full-width" style="text-align: center; color: #9ca3af;">لا توجد جهات اتصال مسجلة</div>
+        `;
+      }
+
+      // Build certificates HTML
+      let certificatesHtml = '';
+      if (this.certificates.length > 0) {
+        certificatesHtml = `
+          <h2>🎓 الشهادات</h2>
+          <div class="info-grid">
+            ${this.certificates.map(c => `
+              <div class="info-item">
+                <div class="info-label">${c.certificateName}</div>
+                <div class="info-value">
+                  رقم: ${c.certificateNumber || '-'}<br>
+                  الدورة: ${c.course?.title || '-'}<br>
+                  تاريخ الإصدار: ${c.issueDate ? new Date(c.issueDate).toLocaleDateString('ar-EG') : '-'}<br>
+                  الدرجة: ${c.grade || '-'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        certificatesHtml = `
+          <h2>🎓 الشهادات</h2>
+          <div class="info-item full-width" style="text-align: center; color: #9ca3af;">لا توجد شهادات مسجلة</div>
+        `;
+      }
+
+      // Build health conditions HTML
+      let healthHtml = '';
+      if (this.healthConditions.length > 0) {
+        healthHtml = `
+          <h2>🏥 الحالات الصحية</h2>
+          <div class="info-grid">
+            ${this.healthConditions.map(h => `
+              <div class="info-item">
+                <div class="info-label">${h.title}</div>
+                <div class="info-value">
+                  ${h.description ? `الوصف: ${h.description}` : ''}
+                  ${h.medication ? `<br>العلاج: ${h.medication}` : ''}
+                  ${h.note ? `<br>ملاحظات: ${h.note}` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        healthHtml = `
+          <h2>🏥 الحالات الصحية</h2>
+          <div class="info-item full-width" style="text-align: center; color: #9ca3af;">لا توجد حالات صحية مسجلة</div>
+        `;
+      }
+
+      // Build enrollments HTML
+      let enrollmentsHtml = '';
+      if (this.enrollments.length > 0) {
+        enrollmentsHtml = `
+          <h2>📋 التسجيلات</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الدورة</th>
+                <th>المدرب</th>
+                <th>تاريخ البداية</th>
+                <th>تاريخ الانتهاء</th>
+                <th>القيمة</th>
+                <th>المتبقي</th>
+                <th>حالة التسجيل</th>
+                <th>حالة الدفع</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${this.enrollments.map(e => `
+                <tr>
+                  <td>${e.course?.title || '-'}</td>
+                  <td>${e.trainer?.title || '-'}</td>
+                  <td>${e.startDate ? new Date(e.startDate).toLocaleDateString('ar-EG') : '-'}</td>
+                  <td>${e.endDate ? new Date(e.endDate).toLocaleDateString('ar-EG') : '-'}</td>
+                  <td>${e.finalSubscriptionValue?.toLocaleString('ar-EG') || '0'} جم</td>
+                  <td>${e.remainedSubscriptionValue?.toLocaleString('ar-EG') || '0'} جم</td>
+                  <td>${e.enrollmentStatus?.title || '-'}</td>
+                  <td>${e.paymentStatus?.title || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } else {
+        enrollmentsHtml = `
+          <h2>📋 التسجيلات</h2>
+          <div class="info-item full-width" style="text-align: center; color: #9ca3af;">لا توجد تسجيلات لهذا المتدرب</div>
+        `;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>ملف متدرب - ${this.escapeHtml(t.fullName)}</title>
+          <style>
+            * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+            @media print { 
+              body { margin: 0; padding: 20px; } 
+              .no-print { display: none; } 
+            }
+            body { 
+              max-width: 800px; 
+              margin: 0 auto; 
+              padding: 20px; 
+              background: white; 
+              direction: rtl;
+            }
+            .profile-container { background: white; }
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              padding: 20px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              border-radius: 12px;
+            }
+            .header h1 { margin: 0; font-size: 24px; }
+            .header p { margin: 10px 0 0 0; font-size: 12px; opacity: 0.9; }
+            .profile-details {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+              padding: 10px;
+              background: #f9fafb;
+              border-radius: 8px;
+              font-size: 13px;
+            }
+            .photo-section { 
+              text-align: center; 
+              margin-bottom: 20px;
+            }
+            .photo-section img {
+              width: 120px;
+              height: 120px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 3px solid #667eea;
+            }
+            .photo-section .placeholder {
+              width: 120px;
+              height: 120px;
+              border-radius: 50%;
+              background: #f3f4f6;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+              border: 3px solid #667eea;
+              font-size: 48px;
+            }
+            h2 {
+              color: #667eea;
+              border-bottom: 2px solid #667eea;
+              padding-bottom: 8px;
+              margin-top: 24px;
+              margin-bottom: 16px;
+              font-size: 18px;
+            }
+            .info-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 12px;
+              margin-bottom: 16px;
+            }
+            .info-item {
+              padding: 8px 12px;
+              background: #f9fafb;
+              border-radius: 8px;
+              border-bottom: 1px solid #e5e7eb;
+            }
+            .info-item.full-width {
+              grid-column: span 2;
+            }
+            .info-label { 
+              font-weight: 600; 
+              color: #374151; 
+              font-size: 11px; 
+              margin-bottom: 2px;
+            }
+            .info-value { 
+              color: #1f2937; 
+              font-size: 13px; 
+              font-weight: 500;
+            }
+            .data-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 16px;
+              font-size: 12px;
+            }
+            .data-table th {
+              background: #f8fafc;
+              color: #1e293b;
+              font-weight: 600;
+              padding: 8px;
+              border: 1px solid #e2e8f0;
+              text-align: center;
+            }
+            .data-table td {
+              padding: 6px 8px;
+              border: 1px solid #e2e8f0;
+              text-align: center;
+            }
+            .barcode-section {
+              text-align: center;
+              margin: 20px 0;
+              padding: 16px;
+              background: #f9fafb;
+              border-radius: 8px;
+            }
+            .barcode-section img {
+              max-width: 300px;
+            }
+            .barcode-number {
+              font-size: 14px;
+              font-weight: 600;
+              color: #667eea;
+              font-family: monospace;
+              margin-top: 4px;
+              letter-spacing: 1px;
+            }
+            .signature-section {
+              margin-top: 40px;
+              display: flex;
+              justify-content: space-between;
+              gap: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #e5e7eb;
+            }
+            .signature-box { text-align: center; flex: 1; }
+            .signature-line {
+              width: 100%;
+              border-top: 1px solid #000;
+              margin-top: 40px;
+              padding-top: 8px;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding: 16px;
+              font-size: 10px;
+              color: #9ca3af;
+            }
+            .watermark {
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              opacity: 0.05;
+              font-size: 80px;
+              white-space: nowrap;
+              pointer-events: none;
+            }
+            @media print { .watermark { display: none; } }
+            @media (max-width: 600px) { 
+              .info-grid { grid-template-columns: 1fr; }
+              .info-item.full-width { grid-column: span 1; }
+              .signature-section { flex-direction: column; align-items: center; gap: 30px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="watermark">الأكاديمية الأولمبية</div>
+          <div class="profile-container">
+            <div class="header">
+              <h1>ملف المتدرب</h1>
+              <p>نظام إدارة الأكاديمية الأولمبية</p>
+            </div>
+            
+            <div class="profile-details">
+              <div><strong>رقم الملف:</strong> #${t.id}</div>
+              <div><strong>تاريخ الطباعة:</strong> ${today}</div>
+            </div>
+
+            <div class="photo-section">
+              ${imagePreviewUrl ? `<img src="${imagePreviewUrl}" alt="${t.fullName}">` : '<div class="placeholder">📷</div>'}
+              <h2 style="border-bottom: none; margin-top: 8px;">${t.fullName}</h2>
+              <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <span style="padding: 4px 12px; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 12px; font-weight: 600;">${t.isActive ? 'نشط' : 'غير نشط'}</span>
+                <span style="padding: 4px 12px; background: #dbeafe; color: #1e40af; border-radius: 20px; font-size: 12px; font-weight: 600;">${t.nationalId}</span>
+                <span style="padding: 4px 12px; background: #fef3c7; color: #92400e; border-radius: 20px; font-size: 12px; font-weight: 600;">${genderDisplay}</span>
+                ${t.academicYear ? `<span style="padding: 4px 12px; background: #f3e8ff; color: #6b21a8; border-radius: 20px; font-size: 12px; font-weight: 600;">السنة ${academicYearDisplay}</span>` : ''}
+              </div>
+            </div>
+
+            <h2>📋 المعلومات الشخصية</h2>
+            <div class="info-grid">
+              <div class="info-item"><div class="info-label">الاسم الكامل</div><div class="info-value">${t.fullName || '-'}</div></div>
+              <div class="info-item"><div class="info-label">رقم الهوية</div><div class="info-value">${t.nationalId || '-'}</div></div>
+              <div class="info-item"><div class="info-label">تاريخ الميلاد</div><div class="info-value">${t.birthDate ? new Date(t.birthDate).toLocaleDateString('ar-EG') : '-'}</div></div>
+              <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${genderDisplay}</div></div>
+              <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${academicYearDisplay}</div></div>
+              <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${t.address || '-'}</div></div>
+              <div class="info-item"><div class="info-label">تاريخ التسجيل</div><div class="info-value">${t.createdOn ? new Date(t.createdOn).toLocaleDateString('ar-EG') : '-'}</div></div>
+              <div class="info-item"><div class="info-label">تمت الإضافة بواسطة</div><div class="info-value">${t.createdBy?.fullName || '-'}</div></div>
+              ${t.lastModifiedOn ? `<div class="info-item"><div class="info-label">آخر تحديث</div><div class="info-value">${new Date(t.lastModifiedOn).toLocaleDateString('ar-EG')}</div></div>` : ''}
+              ${t.lastModifiedBy ? `<div class="info-item"><div class="info-label">تم التحديث بواسطة</div><div class="info-value">${t.lastModifiedBy?.fullName || '-'}</div></div>` : ''}
+            </div>
+
+            ${contactsHtml}
+            ${certificatesHtml}
+            ${healthHtml}
+            ${enrollmentsHtml}
+
+            <!-- Barcode Section -->
+            <h2>📱 الباركود</h2>
+            <div class="barcode-section">
+              <img src="${barcodeImage}" alt="Barcode">
+              <div class="barcode-number">${t.nationalId || ''}</div>
+            </div>
+
+            <div class="signature-section">
+              <div class="signature-box"><div class="signature-line"></div><div>توقيع المتدرب</div></div>
+              <div class="signature-box"><div class="signature-line"></div><div>توقيع ولي الأمر</div></div>
+              <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
+            </div>
+
+            <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+          </div>
+          <div class="no-print" style="text-align: center; margin-top: 20px;">
+            <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
+          </div>
+        </body>
+        </html>
       `);
       printWindow.document.close();
     }, 300);

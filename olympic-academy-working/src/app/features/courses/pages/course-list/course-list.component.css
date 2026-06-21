@@ -1,3 +1,5 @@
+/* course-list.component.css */
+
 /* Main Container */
 .courses-container {
   padding: 24px;
@@ -414,6 +416,7 @@
   .stats-grid {
     gap: 12px;
     padding: 16px;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .stat-card {
@@ -437,10 +440,161 @@
     align-items: flex-start;
     gap: 12px;
   }
+
+  .data-table {
+    min-width: 900px;
+  }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .data-table {
+    min-width: 700px;
+  }
+
+  .page-header {
+    padding: 16px;
+  }
+
+  .header-title h1 {
+    font-size: 18px;
+  }
+
+  .add-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* MatSelect Overrides for RTL */
+::ng-deep .mat-select-panel {
+  max-height: 300px !important;
+}
+
+::ng-deep .mat-option {
+  font-size: 14px !important;
+  padding: 0 16px !important;
+}
+
+/* MatPaginator Overrides */
+::ng-deep .mat-paginator-container {
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+}
+
+::ng-deep .mat-paginator-range-label {
+  margin: 0 12px !important;
+}
+
+/* Hover effect for mat-select options */
+::ng-deep .mat-option:hover:not(.mat-option-disabled) {
+  background: #eff6ff !important;
+}
+
+/* Selected option styling */
+::ng-deep .mat-option.mat-selected:not(.mat-option-disabled) {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Status chip transitions */
+.status-badge {
+  transition: all 0.3s ease;
+}
+
+/* Card hover effects */
+.stat-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth table row hover */
+.data-row {
+  transition: background-color 0.2s ease;
+}
+
+/* Button click ripple effect */
+.add-button,
+.reset-btn,
+.export-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Loading spinner container */
+.loading-container mat-spinner {
+  margin-bottom: 8px;
+}
+
+/* Empty state icon animation */
+.no-data-message mat-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Print styles */
+@media print {
+  .courses-container {
+    padding: 0;
+    background: white;
+  }
+
+  .main-card {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .page-header {
+    background: #2563eb !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .add-button,
+  .reset-btn,
+  .export-btn,
+  .action-buttons,
+  .filter-actions {
+    display: none !important;
+  }
+
+  .filters-card {
+    border: 1px solid #e5e7eb;
+  }
+
+  .data-table .mat-header-cell {
+    background: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .type-badge.qualification,
+  .type-badge.training,
+  .status-badge.active,
+  .status-badge.inactive {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .stats-grid {
+    background: #f9fafb;
+  }
+
+  .stat-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .custom-paginator {
+    display: none !important;
   }
 }

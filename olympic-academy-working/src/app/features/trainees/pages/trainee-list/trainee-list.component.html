@@ -1,6 +1,7 @@
+<!-- trainee-list.component.html -->
 <div class="trainees-container">
   <mat-card class="main-card">
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="page-header">
       <div class="header-title">
         <h1>المتدربين</h1>
@@ -12,64 +13,72 @@
       </button>
     </div>
 
-    <!-- Filters Section -->
+    <!-- Filters -->
     <div class="filters-card">
       <div class="filters-grid">
         <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput [(ngModel)]="searchText" (ngModelChange)="applyFilters()" placeholder="اسم، رقم هوية، أو سنة دراسية...">
+            <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" placeholder="اسم، رقم هوية...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
-          <app-searchable-select
-            [ngModel]="genderFilter"
-            (ngModelChange)="genderFilter = $event; applyFilters()"
-            label="الجنس"
-            [options]="genderOptions"
-            [required]="false"
-            class="filter-select">
-          </app-searchable-select>
+          <!-- Gender Filter -->
+          <mat-form-field appearance="outline" class="filter-select">
+            <mat-label>الجنس</mat-label>
+            <mat-select [(ngModel)]="genderFilter" (selectionChange)="onGenderChange($event.value)">
+              <mat-option *ngFor="let option of genderOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
-          <app-searchable-select
-            [ngModel]="statusFilter"
-            (ngModelChange)="statusFilter = $event; applyFilters()"
-            label="الحالة"
-            [options]="statusOptions"
-            [required]="false"
-            class="filter-select">
-          </app-searchable-select>
+          <!-- Status Filter -->
+          <mat-form-field appearance="outline" class="filter-select">
+            <mat-label>الحالة</mat-label>
+            <mat-select [(ngModel)]="statusFilter" (selectionChange)="onStatusChange($event.value)">
+              <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
+          <!-- Academic Year Filter -->
           <mat-form-field appearance="outline" class="filter-select">
             <mat-label>السنة الدراسية</mat-label>
-            <mat-select [(ngModel)]="academicYearFilter" (selectionChange)="applyFilters()">
-              <mat-option [value]="null">الكل</mat-option>
-              <mat-option value="الأولى">السنة الأولى</mat-option>
-              <mat-option value="الثانية">السنة الثانية</mat-option>
-              <mat-option value="الثالثة">السنة الثالثة</mat-option>
-              <mat-option value="الرابعة">السنة الرابعة</mat-option>
+            <mat-select [(ngModel)]="academicYearFilter" (selectionChange)="onAcademicYearChange($event.value)">
+              <mat-option *ngFor="let option of academicYearOptions" [value]="option.value">
+                {{ option.label }}
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
 
-        <div class="filter-actions">
-          <button mat-stroked-button (click)="clearFilters()" class="reset-btn">
-            <mat-icon>refresh</mat-icon>
-            مسح الكل
-          </button>
-          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.filteredData.length === 0" class="export-btn">
-            <mat-icon>grid_on</mat-icon>
-            تصدير Excel
-          </button>
-          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.filteredData.length === 0" class="export-btn">
-            <mat-icon>picture_as_pdf</mat-icon>
-            تصدير PDF
-          </button>
+        <div class="filters-row">
+          <div class="filter-actions">
+            <button mat-stroked-button (click)="clearFilters()" class="reset-btn">
+              <mat-icon>refresh</mat-icon>
+              مسح الكل
+            </button>
+            <!-- NEW: Print Cards Button -->
+            <button mat-stroked-button color="primary" (click)="printTraineeCards()" [disabled]="dataSource.filteredData.length === 0" class="export-btn cards-btn">
+              <mat-icon>credit_card</mat-icon>
+              طباعة البطاقات
+            </button>
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.filteredData.length === 0" class="export-btn">
+              <mat-icon>grid_on</mat-icon>
+              تصدير Excel
+            </button>
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.filteredData.length === 0" class="export-btn">
+              <mat-icon>picture_as_pdf</mat-icon>
+              تصدير PDF
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Statistics -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">👥</div>
@@ -94,13 +103,13 @@
       </div>
     </div>
 
-    <!-- Loading State -->
+    <!-- Loading -->
     <div class="loading-container" *ngIf="isLoading">
       <mat-spinner diameter="50"></mat-spinner>
       <p>جاري تحميل المتدربين...</p>
     </div>
 
-    <!-- Table Section -->
+    <!-- Table -->
     <div class="table-section" *ngIf="!isLoading">
       <div class="table-header" *ngIf="dataSource.filteredData.length > 0">
         <div class="records-count">
@@ -110,88 +119,86 @@
       </div>
 
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table">
-          <!-- Index Column -->
+        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="loadTrainees()">
+          <!-- Index -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
-            <td mat-cell *matCellDef="let t; let i = index">
+            <td mat-cell *matCellDef="let trainee; let i = index">
               {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
             </td>
           </ng-container>
 
-          <!-- Image Column -->
+          <!-- Image -->
           <ng-container matColumnDef="image">
             <th mat-header-cell *matHeaderCellDef>الصورة</th>
-            <td mat-cell *matCellDef="let t" class="image-cell">
+            <td mat-cell *matCellDef="let trainee" class="image-cell">
               <div class="trainee-avatar-container">
                 <img 
-                  *ngIf="getImageUrl(t.id) as imgUrl" 
+                  *ngIf="getImageUrl(trainee.id) as imgUrl" 
                   [src]="imgUrl" 
                   class="trainee-avatar" 
-                  [alt]="t.fullName"
-                  (error)="imageUrls.set(t.id, '')">
-                <mat-icon *ngIf="!getImageUrl(t.id)" class="avatar-icon">person</mat-icon>
+                  [alt]="trainee.fullName"
+                  (error)="imageUrls.set(trainee.id, '')">
+                <mat-icon *ngIf="!getImageUrl(trainee.id)" class="avatar-icon">person</mat-icon>
               </div>
             </td>
           </ng-container>
 
-          <!-- Full Name Column -->
+          <!-- Full Name -->
           <ng-container matColumnDef="fullName">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الاسم</th>
-            <td mat-cell *matCellDef="let t" class="clickable-cell" (click)="viewTrainee(t.id)">
-              <strong>{{ t.fullName }}</strong>
+            <td mat-cell *matCellDef="let trainee" class="clickable-cell" (click)="viewTrainee(trainee.id)">
+              <strong>{{ trainee.fullName }}</strong>
             </td>
           </ng-container>
 
-          <!-- National ID Column -->
+          <!-- National ID -->
           <ng-container matColumnDef="nationalId">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>رقم الهوية</th>
-            <td mat-cell *matCellDef="let t" (click)="viewTrainee(t.id)" class="clickable-cell">
-              {{ t.nationalId }}
-            </td>
+            <td mat-cell *matCellDef="let trainee">{{ trainee.nationalId }}</td>
           </ng-container>
 
-          <!-- Academic Year Column -->
+          <!-- Academic Year -->
           <ng-container matColumnDef="academicYear">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>السنة الدراسية</th>
-            <td mat-cell *matCellDef="let t">
-              <span class="year-badge">{{ t.academicYear || '-' }}</span>
+            <td mat-cell *matCellDef="let trainee">
+              <mat-chip>{{ trainee.academicYear?.title || '-' }}</mat-chip>
             </td>
           </ng-container>
 
-          <!-- Gender Column -->
+          <!-- Gender -->
           <ng-container matColumnDef="gender">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الجنس</th>
-            <td mat-cell *matCellDef="let t">
+            <td mat-cell *matCellDef="let trainee">
               <div class="gender-info">
-                <mat-icon>{{ t.gender?.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
-                <span>{{ t.gender?.title }}</span>
+                <mat-icon>{{ trainee.gender?.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+                <span>{{ trainee.gender?.title || '-' }}</span>
               </div>
             </td>
           </ng-container>
 
-          <!-- Status Column -->
+          <!-- Status -->
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
-            <td mat-cell *matCellDef="let t">
-              <span class="status-badge" [class.active]="t.isActive" [class.inactive]="!t.isActive">
-                {{ t.isActive ? 'نشط' : 'غير نشط' }}
+            <td mat-cell *matCellDef="let trainee">
+              <span class="status-badge" [class.active]="trainee.isActive" [class.inactive]="!trainee.isActive">
+                {{ trainee.isActive ? 'نشط' : 'غير نشط' }}
               </span>
             </td>
           </ng-container>
 
-          <!-- Actions Column -->
+          <!-- Actions -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-            <td mat-cell *matCellDef="let t">
+            <td mat-cell *matCellDef="let trainee">
               <div class="action-buttons">
-                <button mat-icon-button color="primary" (click)="viewTrainee(t.id); $event.stopPropagation()" matTooltip="عرض الملف الشخصي">
+                <button mat-icon-button color="primary" (click)="viewTrainee(trainee.id); $event.stopPropagation()" matTooltip="عرض التفاصيل">
                   <mat-icon>visibility</mat-icon>
                 </button>
-                <button mat-icon-button color="accent" (click)="editTrainee(t.id); $event.stopPropagation()" matTooltip="تعديل">
+                <button mat-icon-button color="accent" (click)="editTrainee(trainee.id); $event.stopPropagation()" matTooltip="تعديل">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteTrainee(t); $event.stopPropagation()" matTooltip="حذف">
+                <button mat-icon-button color="warn" (click)="deleteTrainee(trainee); $event.stopPropagation()" matTooltip="حذف">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -201,7 +208,7 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewTrainee(row.id)"></tr>
 
-          <!-- No Data Row -->
+          <!-- No Data -->
           <tr class="mat-row no-data-row" *matNoDataRow>
             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
               <div class="no-data-message">
@@ -213,7 +220,7 @@
                 </button>
               </div>
             </td>
-           </tr>
+          </tr>
         </table>
       </div>
 

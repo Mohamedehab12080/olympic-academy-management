@@ -34,6 +34,7 @@ export interface EnrollmentDTO {
   discountPercentage?: number;
   finalSubscriptionValue?: number;
   remainedSubscriptionValue?: number;
+  isActive?:boolean;
   note?: string;
 }
 

@@ -83,6 +83,7 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .reset-btn,
@@ -95,6 +96,22 @@
 .reset-btn:hover,
 .export-btn:hover {
   transform: translateY(-1px);
+}
+
+/* Cards Button - New Style */
+.cards-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+.cards-btn:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46a1 100%) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.cards-btn:disabled {
+  background: #e5e7eb !important;
+  color: #9ca3af !important;
 }
 
 /* Statistics Cards */
