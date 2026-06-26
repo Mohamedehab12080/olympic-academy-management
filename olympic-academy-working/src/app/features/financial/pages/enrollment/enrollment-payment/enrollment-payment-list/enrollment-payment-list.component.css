@@ -1,68 +1,484 @@
+/* enrollment-payment-list.component.css - PROFESSIONAL REDESIGN */
+
+/* ==========================================================================
+   MAIN CONTAINER
+   ========================================================================== */
 .payments-container {
   padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #f5f7fa;
+  min-height: calc(100vh - 64px);
 }
 
+.main-card {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px 20px 0 0;
 }
 
-.page-header h1 {
+.header-title h1 {
+  margin: 0 0 6px 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.header-title p {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 13px;
+  opacity: 0.9;
 }
 
-.filters {
+.add-button {
+  background: white !important;
+  color: #6d28d9 !important;
+  font-weight: 600;
+  padding: 0 24px;
+  transition: all 0.3s;
+}
+
+.add-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   FILTERS - PROFESSIONAL REDESIGN
+   ========================================================================== */
+.filters-card {
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Row 1: Search + Barcode + Export */
+.filter-row-main {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.search-field {
+  flex: 2;
+  min-width: 200px;
+}
+
+.search-field ::ng-deep .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.search-field ::ng-deep .mat-form-field-flex {
+  padding: 0 12px !important;
+  background: white !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  transition: all 0.3s !important;
+  height: 56px !important;
+}
+
+.search-field ::ng-deep .mat-form-field-flex:hover {
+  border-color: #667eea !important;
+}
+
+.search-field ::ng-deep .mat-form-field-flex.mat-focused {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+.search-field ::ng-deep .mat-form-field-outline {
+  display: none !important;
+}
+
+.search-field ::ng-deep .mat-form-field-infix {
+  padding: 10px 0 !important;
+  border-top: 0 !important;
+}
+
+/* ==========================================================================
+   BARCODE SEARCH - PROFESSIONAL DESIGN
+   ========================================================================== */
+.barcode-search {
+  flex: 1.5;
+  min-width: 200px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.barcode-search:hover {
+  border-color: #667eea;
+}
+
+.barcode-search:focus-within {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.barcode-search-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 56px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.barcode-search-header:hover {
+  background: #f8fafc;
+}
+
+.barcode-icon {
+  color: #667eea;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.barcode-label {
+  flex: 1;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.barcode-arrow {
+  color: #94a3b8;
+  transition: transform 0.3s;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.barcode-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.barcode-search-body {
+  border-top: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  animation: slideDown 0.3s ease-out;
+  background: #fafbfc;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.barcode-input-group {
+  display: flex;
+  gap: 8px;
   align-items: center;
 }
 
-.filter-field {
+.barcode-field {
   flex: 1;
-  min-width: 180px;
 }
 
-.loading {
+.barcode-field ::ng-deep .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.barcode-field ::ng-deep .mat-form-field-flex {
+  padding: 0 12px !important;
+  background: white !important;
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  height: 44px !important;
+}
+
+.barcode-field ::ng-deep .mat-form-field-flex.mat-focused {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+.barcode-field ::ng-deep .mat-form-field-outline {
+  display: none !important;
+}
+
+.barcode-field ::ng-deep .mat-form-field-infix {
+  padding: 8px 0 !important;
+  border-top: 0 !important;
+}
+
+.barcode-field ::ng-deep .mat-input-element {
+  font-size: 13px !important;
+}
+
+.barcode-search-btn {
+  height: 44px;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.barcode-search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.barcode-clear-btn {
+  color: #6b7280 !important;
+  width: 44px;
+  height: 44px;
+}
+
+.barcode-clear-btn:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+  border-radius: 6px !important;
+}
+
+.barcode-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: #f3e8ff;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #6d28d9;
+}
+
+.barcode-hint mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.barcode-hint strong {
+  color: #4c1d95;
+}
+
+.barcode-hint-action {
+  margin-right: auto;
+  color: #7c3aed;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   EXPORT ACTIONS
+   ========================================================================== */
+.export-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.export-actions button {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  color: #6b7280;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.export-actions button:hover {
+  background: #f3e8ff;
+  color: #667eea;
+  border-color: #e5d5ff;
+}
+
+.export-actions button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.export-actions .mat-accent:hover {
+  background: #d1fae5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.export-actions .mat-warn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+/* ==========================================================================
+   ROW 2: SELECTS
+   ========================================================================== */
+.filter-row-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.date-range-wrapper {
+  display: flex;
+  gap: 12px;
+  flex: 1.2;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.date-field {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* ==========================================================================
+   ROW 3: ACTIVE FILTERS
+   ========================================================================== */
+.filter-row-active {
   display: flex;
   justify-content: center;
-  padding: 40px;
 }
 
-.table-container {
-  overflow-x: auto;
-  margin-top: 20px;
+.active-filters-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: #f8fafc;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  font-size: 13px;
+  color: #6b7280;
 }
 
-.full-width {
-  width: 100%;
+.active-filters-info mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #667eea;
 }
 
-.no-data {
-  text-align: center;
-  padding: 40px;
-  color: #666;
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
-.no-data mat-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 16px;
+.clear-all-btn {
+  color: #ef4444 !important;
+  font-size: 12px;
+  padding: 0 8px;
+  height: 32px;
 }
 
-/* Totals Section Styles */
+.clear-all-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================================================
+   FILTER FIELD OVERRIDES
+   ========================================================================== */
+.filter-field ::ng-deep .mat-form-field-wrapper,
+.date-field ::ng-deep .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.filter-field ::ng-deep .mat-form-field-flex,
+.date-field ::ng-deep .mat-form-field-flex {
+  padding: 0 12px !important;
+  background: white !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  transition: all 0.3s !important;
+  height: 56px !important;
+}
+
+.filter-field ::ng-deep .mat-form-field-flex:hover,
+.date-field ::ng-deep .mat-form-field-flex:hover {
+  border-color: #667eea !important;
+}
+
+.filter-field ::ng-deep .mat-form-field-flex.mat-focused,
+.date-field ::ng-deep .mat-form-field-flex.mat-focused {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+.filter-field ::ng-deep .mat-form-field-outline,
+.date-field ::ng-deep .mat-form-field-outline {
+  display: none !important;
+}
+
+.filter-field ::ng-deep .mat-form-field-infix,
+.date-field ::ng-deep .mat-form-field-infix {
+  padding: 10px 0 !important;
+  border-top: 0 !important;
+}
+
+.filter-field ::ng-deep .mat-form-field-label-wrapper,
+.date-field ::ng-deep .mat-form-field-label-wrapper {
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   TABLE SECTION
+   ========================================================================== */
+.table-section {
+  padding: 0 24px 24px 24px;
+}
+
+/* ==========================================================================
+   TOTALS SECTION
+   ========================================================================== */
 .totals-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
+  padding: 20px 24px;
+  margin: 20px 0 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -73,7 +489,7 @@
   color: white;
   font-size: 18px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
@@ -86,7 +502,7 @@
 
 .totals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
@@ -97,7 +513,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
   cursor: default;
 }
 
@@ -113,6 +529,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .total-icon mat-icon {
@@ -129,129 +546,426 @@
 .total-label {
   font-size: 13px;
   color: #6b7280;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-weight: 500;
 }
 
 .total-value {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 700;
   color: #1f2937;
   line-height: 1.2;
 }
 
-/* Color variations for different cards */
-.total-payments .total-icon {
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
+.total-payments .total-icon { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+.total-amount .total-icon { background: linear-gradient(135deg, #10b981, #047857); }
+.total-remaining .total-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.total-average .total-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+/* ==========================================================================
+   TABLE HEADER
+   ========================================================================== */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f3e8ff;
+  border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.total-amount .total-icon {
-  background: linear-gradient(135deg, #10b981, #047857);
+.records-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6d28d9;
+  font-weight: 500;
+  font-size: 13px;
 }
 
-.total-remaining .total-icon {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+.records-count mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
 
-.total-average .total-icon {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+.table-actions mat-chip-listbox {
+  display: flex;
+  gap: 8px;
 }
 
-/* Table Styles */
-.mat-mdc-table {
-  background: white;
+.table-actions mat-chip-option {
+  font-size: 12px;
+  padding: 4px 12px;
+}
+
+.table-actions mat-chip-option mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================================================
+   TABLE
+   ========================================================================== */
+.table-wrapper {
+  overflow-x: auto;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.mat-mdc-header-row {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+.data-table {
+  width: 100%;
+  min-width: 1000px;
 }
 
-.mat-mdc-header-cell {
-  font-weight: 600;
+.data-table .mat-header-cell {
+  background: #f8fafc;
   color: #1e293b;
-  font-size: 14px;
-  border-bottom-color: #e2e8f0;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 14px 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.data-table .mat-cell {
+  padding: 12px 12px;
+  font-size: 13px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.data-row {
+  transition: background-color 0.2s;
 }
 
 .data-row:hover {
   background-color: #f8fafc;
-  transition: background-color 0.2s ease;
 }
 
-.mat-mdc-cell {
-  color: #334155;
-  border-bottom-color: #f1f5f9;
+.clickable-cell {
+  font-weight: 600;
+  color: #667eea;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .payments-container {
-    padding: 16px;
-  }
-  
+/* ==========================================================================
+   TRAINEE INFO
+   ========================================================================== */
+.trainee-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trainee-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.trainee-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trainee-avatar.default-avatar {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trainee-avatar.default-avatar mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #6366f1;
+}
+
+/* ==========================================================================
+   AMOUNT & STATUS
+   ========================================================================== */
+.amount-cell { font-weight: 600; }
+.amount-value { color: #059669; font-weight: 700; }
+.remained-value { color: #f59e0b; font-weight: 500; }
+.remained-value.zero { color: #10b981; }
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.paid { background: #d1fae5; color: #065f46; }
+.status-badge.partial { background: #fef3c7; color: #92400e; }
+.status-badge.pending { background: #e0e7ff; color: #3730a3; }
+.status-badge.failed { background: #fee2e2; color: #991b1b; }
+.status-badge.refunded { background: #fce4ec; color: #880e4f; }
+.status-badge.cancelled { background: #f3f4f6; color: #6b7280; }
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.action-buttons button:hover {
+  transform: scale(1.1);
+}
+
+/* ==========================================================================
+   LOADING
+   ========================================================================== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 16px;
+}
+
+.loading-container p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   NO DATA
+   ========================================================================== */
+.no-data-message {
+  text-align: center;
+  padding: 60px;
+  color: #9ca3af;
+}
+
+.no-data-message mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  color: #d1d5db;
+}
+
+.no-data-message p {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+}
+
+/* ==========================================================================
+   PAGINATOR
+   ========================================================================== */
+.paginator-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-controls button {
+  color: #64748b;
+}
+
+.pagination-controls button:disabled {
+  color: #d1d5db;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
+  padding: 0 12px;
+}
+
+.page-size-select {
+  width: 80px;
+  margin: 0 8px;
+}
+
+.page-size-select ::ng-deep .mat-form-field-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+.page-size-select ::ng-deep .mat-form-field-flex {
+  background: white !important;
+  border-radius: 8px !important;
+  padding: 0 8px !important;
+  border: 1px solid #e5e7eb !important;
+  height: 40px !important;
+}
+
+.page-size-select ::ng-deep .mat-form-field-infix {
+  padding: 6px 0 !important;
+  border-top: 0 !important;
+}
+
+.page-size-select ::ng-deep .mat-form-field-outline {
+  display: none !important;
+}
+
+.total-items {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1200px) {
+  .totals-grid { grid-template-columns: repeat(2, 1fr); }
+  .filter-select { max-width: 180px; }
+}
+
+@media (max-width: 992px) {
   .page-header {
     flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .page-header h1 {
     text-align: center;
+    gap: 16px;
+    padding: 20px;
   }
-  
-  .totals-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .total-card {
-    padding: 12px;
-  }
-  
-  .total-value {
-    font-size: 20px;
-  }
-  
-  .filters {
-    flex-direction: column;
-  }
-  
-  .filter-field {
-    width: 100%;
-  }
+
+  .filter-row-main { flex-wrap: wrap; }
+  .search-field { flex: 1 1 100%; }
+  .barcode-search { flex: 1 1 100%; }
+  .export-actions { flex: 1 1 100%; justify-content: flex-end; }
+  .filter-row-selects { flex-wrap: wrap; }
+  .filter-select { flex: 1 1 calc(50% - 6px); max-width: none; min-width: 120px; }
+  .date-range-wrapper { flex: 1 1 calc(50% - 6px); max-width: none; min-width: 200px; }
 }
 
-/* Print styles */
-@media print {
-  .payments-container {
-    padding: 0;
-  }
-  
-  .page-header button,
-  .filters button,
-  .mat-paginator,
-  .total-card:hover {
-    display: none;
-  }
-  
-  .totals-section {
-    background: #f3f4f6;
-    break-inside: avoid;
-  }
-  
-  .totals-header {
-    color: #1f2937;
-    border-bottom-color: #d1d5db;
-  }
-  
-  .total-card {
-    box-shadow: none;
-    border: 1px solid #e5e7eb;
-  }
-  
-  .mat-mdc-table {
-    box-shadow: none;
-  }
+@media (max-width: 768px) {
+  .payments-container { padding: 16px; }
+  .page-header { flex-direction: column; text-align: center; gap: 16px; padding: 20px; }
+  .header-title h1 { font-size: 22px; }
+  .filters-card { padding: 12px 16px; }
+  .filter-row-main { flex-direction: column; gap: 8px; }
+  .search-field { width: 100%; }
+  .barcode-search { width: 100%; }
+  .barcode-search-header { height: 48px; padding: 0 12px; }
+  .barcode-search-body { padding: 10px 12px; }
+  .barcode-input-group { flex-wrap: wrap; }
+  .barcode-field { min-width: 100%; }
+  .barcode-search-btn { flex: 1; }
+  .export-actions { width: 100%; justify-content: center; }
+  .filter-row-selects { flex-direction: column; gap: 8px; }
+  .filter-select { width: 100%; min-width: 100%; max-width: none; }
+  .date-range-wrapper { width: 100%; min-width: 100%; max-width: none; flex-direction: column; gap: 8px; }
+  .date-field { width: 100%; }
+  .totals-grid { grid-template-columns: 1fr; gap: 12px; }
+  .total-card { padding: 12px; }
+  .total-value { font-size: 20px; }
+  .table-section { padding: 0 16px 16px 16px; }
+  .table-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .table-actions mat-chip-listbox { flex-wrap: wrap; }
+  .paginator-container { flex-direction: column; align-items: center; gap: 12px; }
+  .pagination-controls { flex-wrap: wrap; justify-content: center; }
+  .barcode-hint-action { display: none; }
 }
+
+@media (max-width: 480px) {
+  .header-title h1 { font-size: 18px; }
+  .add-button { width: 100%; }
+  .total-value { font-size: 18px; }
+  .total-icon { width: 40px; height: 40px; }
+  .total-icon mat-icon { font-size: 20px; width: 20px; height: 20px; }
+  .data-table .mat-header-cell,
+  .data-table .mat-cell { padding: 8px 8px; font-size: 12px; }
+  .trainee-avatar { width: 28px; height: 28px; }
+  .trainee-avatar.default-avatar mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  .page-info { font-size: 12px; padding: 0 8px; }
+}
+
+/* ==========================================================================
+   PRINT
+   ========================================================================== */
+@media print {
+  .payments-container { padding: 0; background: white; }
+  .main-card { box-shadow: none; border-radius: 0; }
+  .page-header { background: #667eea !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0; }
+  .filters-card { border: 1px solid #e5e7eb; }
+  .totals-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; break-inside: avoid; }
+  .total-card { border: 1px solid #e5e7eb; }
+  .data-row:hover { background-color: transparent; }
+  .no-data-message button { display: none; }
+  .action-buttons { display: none; }
+  .add-button { display: none; }
+  .export-actions { display: none; }
+  .barcode-search { display: none; }
+  .paginator-container { display: none; }
+  .table-header { background: #f3e8ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ==========================================================================
+   SCROLLBAR
+   ========================================================================== */
+.table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+.table-wrapper::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+.table-wrapper::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 10px; }
+.table-wrapper::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+
+/* ==========================================================================
+   MATERIAL OVERRIDES
+   ========================================================================== */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline { color: #d1d5db !important; }
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline { color: #667eea !important; }
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick { color: #667eea !important; }
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-label { color: #6b7280 !important; }
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-label { color: #667eea !important; }
+::ng-deep .mat-select-value-text { color: #1e293b !important; }
+::ng-deep .mat-option { direction: rtl !important; font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif !important; }
+::ng-deep .mat-option.mat-active { background: #eef2ff !important; }
+::ng-deep .mat-option:hover { background: #f5f3ff !important; }
+::ng-deep .mat-form-field-infix { direction: rtl !important; }
+::ng-deep .mat-input-element { direction: rtl !important; }
+::ng-deep .mat-datepicker-toggle { color: #6b7280 !important; }
+::ng-deep .mat-datepicker-toggle:hover { color: #667eea !important; }
+::ng-deep .mat-form-field-suffix { color: #94a3b8 !important; }
+::ng-deep .mat-form-field-suffix:hover { color: #667eea !important; }
+::ng-deep .mat-dialog-container { padding: 0 !important; border-radius: 24px !important; overflow: hidden !important; }
+::ng-deep .mat-chip-option.mat-primary.mat-selected { background: #d1fae5 !important; color: #065f46 !important; }
+::ng-deep .mat-chip-option.mat-accent.mat-selected { background: #fef3c7 !important; color: #92400e !important; }
+::ng-deep .mat-chip-option.mat-warn.mat-selected { background: #e0e7ff !important; color: #3730a3 !important; }

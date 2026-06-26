@@ -26,11 +26,20 @@ public class EmployeeAttendanceQueryBuilder extends AbstractQueryBuilderV2<Emplo
                     .condition("item.isDeleted = :PH").build());
 
 
+        if (filters.getQuickSearch() != null && !filters.getQuickSearch().trim().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("quickSearch").value("%" + filters.getQuickSearch() + "%")
+                    .condition("(LOWER(item.employee.fullName) LIKE LOWER(:PH))").build());
+
+        if (filters.getEmployeeNationalId() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("employeeNationalId").value(filters.getEmployeeNationalId())
+                    .condition("item.employee.nationalId = :PH").build());
+
+
         if (filters.getEmployeeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("employeeId").value(filters.getEmployeeId())
                     .condition("item.employee.id = :PH").build());
 
-        if (filters.getStatus() != null && !filters.getStatus().trim().isEmpty())
+        if (filters.getStatus() != null)
             qbConditions.add(QBCondition.builder().placeHolder("status").value(filters.getStatus())
                     .condition("item.status = :PH").build());
 

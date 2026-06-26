@@ -21,6 +21,14 @@ public class SalaryIncentiveQueryBuilder extends AbstractQueryBuilderV2<SalaryIn
     public List<QBCondition> evaluateWhereConditions(SalaryIncentiveSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getQuickSearch() != null && !filters.getQuickSearch().trim().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("title").value("%" + filters.getQuickSearch() + "%")
+                    .condition("LOWER(item.employee.fullName) LIKE LOWER(:PH)").build());
+
+        if (filters.getEmployeeNationalId() != null && !filters.getEmployeeNationalId().trim().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("employeeNationalId").value(filters.getEmployeeNationalId())
+                    .condition("item.employee.nationalId = :PH").build());
+
         if (filters.getEmployeeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("employeeId").value(filters.getEmployeeId())
                     .condition("item.employee.id = :PH").build());

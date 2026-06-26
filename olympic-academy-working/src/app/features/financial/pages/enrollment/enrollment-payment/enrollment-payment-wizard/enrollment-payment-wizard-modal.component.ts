@@ -1,3 +1,5 @@
+// enrollment-payment-wizard-modal.component.ts - FIXED TYPE ISSUE
+
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -18,6 +20,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { EnrollmentService } from '../../../../../../core/services/enrollment.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
+import { ReportService } from '../../../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { PAYMENT_STATUSES } from '../../../../../../core/models/common.model';
 
@@ -63,6 +66,8 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
   paymentId?: number;
   isLoading = false;
   isSubmitting = false;
+  showSuccess = false;
+  paymentResult: any = null;
   
   // Data collections
   enrollments: any[] = [];
@@ -93,6 +98,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     private financialService: FinancialService,
     private enrollmentService: EnrollmentService,
     private notification: NotificationService,
+    private reportService: ReportService,
     private dialogRef: MatDialogRef<EnrollmentPaymentWizardModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -137,7 +143,6 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
   loadEnrollmentsList() {
     this.isLoading = true;
-    // Get all enrollments with their current remaining values
     this.enrollmentService.getAllEnrollmentsByFilter().subscribe({
       next: (res: any) => {
         this.enrollments = res.items || [];
@@ -194,10 +199,8 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
           note: res.note
         });
         
-        // Fetch fresh enrollment data
         this.fetchFreshEnrollmentData(res.enrollment?.id, res.paidAmount, res.remainedValue);
         
-        // Mark steps as completed for edit mode
         this.steps.forEach(step => step.completed = true);
         this.currentStep = 3;
         
@@ -212,14 +215,11 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
   fetchFreshEnrollmentData(enrollmentId: number, currentPaidAmount?: number, currentRemainingValue?: number) {
     this.isLoadingEnrollment = true;
-    // Fetch the specific enrollment to get real-time data
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
-        // Use the real remainedSubscriptionValue from the backend
         const realRemainingValue = enrollment.remainedSubscriptionValue || 0;
         
         if (this.isEditMode && currentPaidAmount !== undefined && currentRemainingValue !== undefined) {
-          // For edit mode, we need to add back the current payment to get the previous remaining
           const previousRemaining = realRemainingValue + currentPaidAmount;
           this.currentRemainingAmount = previousRemaining;
           
@@ -228,7 +228,6 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
             totalPaidAmount: (enrollment.finalSubscriptionValue || 0) - previousRemaining
           });
         } else {
-          // For create mode
           this.currentRemainingAmount = realRemainingValue;
           this.paymentForm.patchValue({
             currentRemaining: realRemainingValue,
@@ -277,10 +276,8 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     
     this.isLoadingEnrollment = true;
     
-    // Fetch the specific enrollment to get real-time data
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
-        // Use the real remainedSubscriptionValue from the backend
         const realRemainingValue = enrollment.remainedSubscriptionValue || 0;
         this.currentRemainingAmount = realRemainingValue;
         
@@ -316,7 +313,6 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     const currentRemaining = this.paymentForm.get('currentRemaining')?.value || 0;
     const paidAmount = this.paymentForm.get('paidAmount')?.value || 0;
     
-    // Validate that paid amount doesn't exceed current remaining
     if (paidAmount > currentRemaining && currentRemaining > 0) {
       this.paymentForm.get('paidAmount')?.setErrors({ exceedsRemaining: true });
       this.notification.showWarning('المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي');
@@ -429,6 +425,596 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     return method?.title || 'غير محدد';
   }
 
+  // ==========================================================================
+  // RECEIPT PRINTING
+  // ==========================================================================
+
+  printReceipt(paymentData: any, enrollmentData: any): void {
+    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
+    }
+
+    const receiptHtml = this.generateReceiptHTML(paymentData, enrollmentData);
+    
+    printWindow.document.write(receiptHtml);
+    printWindow.document.close();
+    
+    // Auto print after a short delay to ensure content is loaded
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+    
+    this.notification.showSuccess('تم فتح الإيصال للطباعة');
+  }
+
+// In the generateReceiptHTML method - UPDATED WITH THERMAL PRINTER SUPPORT
+
+private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
+  const statusColors: { [key: string]: string } = {
+    'PAID': '#d1fae5',
+    'PARTIAL': '#fef3c7',
+    'PENDING': '#e0e7ff'
+  };
+  
+  const statusTextColors: { [key: string]: string } = {
+    'PAID': '#065f46',
+    'PARTIAL': '#92400e',
+    'PENDING': '#3730a3'
+  };
+
+  const paymentStatus = paymentData.paymentStatus || 'PENDING';
+  const statusColor = statusColors[paymentStatus] || '#f3f4f6';
+  const statusTextColor = statusTextColors[paymentStatus] || '#374151';
+  
+  const paidAmount = paymentData.paidAmount || 0;
+  const remainedValue = paymentData.remainedValue || 0;
+  const totalPaid = (enrollmentData.finalSubscriptionValue || 0) - remainedValue;
+
+  // Format date properly
+  const formatDate = (dateValue: any): string => {
+    if (!dateValue) return '-';
+    
+    let dateObj: Date;
+    if (typeof dateValue === 'string') {
+      dateObj = new Date(dateValue);
+    } else if (dateValue instanceof Date) {
+      dateObj = dateValue;
+    } else if (dateValue && typeof dateValue === 'object' && dateValue.toDate) {
+      dateObj = dateValue.toDate();
+    } else {
+      return '-';
+    }
+    
+    if (isNaN(dateObj.getTime())) return '-';
+    
+    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const dayName = days[dateObj.getDay()];
+    const day = dateObj.getDate().toString().padStart(2, '0');
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const hours = dateObj.getHours().toString().padStart(2, '0');
+    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+    
+    return `${dayName}، ${day}/${month}/${year} - ${hours}:${minutes}`;
+  };
+
+  // Format dates for display
+  const paymentDateFormatted = formatDate(paymentData.paymentDate);
+  const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
+  const currentDateFormatted = formatDate(new Date());
+
+  return `
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>إيصال الدفع - الأكاديمية الأولمبية</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+        }
+        
+        body {
+          background: #f0f4f8;
+          padding: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+        
+        /* ========== RECEIPT CONTAINER - 80mm Printer ========== */
+        .receipt-container {
+          max-width: 938px;
+          width: 100%;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        
+        /* ========== 58mm Printer Support ========== */
+        @media (max-width: 675px) {
+          .receipt-container {
+            max-width: 675px;
+            border-radius: 4px;
+          }
+          
+          .receipt-header {
+            padding: 12px 16px !important;
+          }
+          
+          .receipt-header h1 {
+            font-size: 16px !important;
+          }
+          
+          .receipt-header .logo {
+            font-size: 24px !important;
+          }
+          
+          .receipt-header .subtitle {
+            font-size: 10px !important;
+          }
+          
+          .receipt-header .receipt-number {
+            font-size: 10px !important;
+            padding: 4px 12px !important;
+          }
+          
+          .receipt-body {
+            padding: 12px 16px 16px !important;
+          }
+          
+          .section-title {
+            font-size: 12px !important;
+          }
+          
+          .info-row {
+            font-size: 11px !important;
+            padding: 4px 0 !important;
+          }
+          
+          .info-row .value.amount {
+            font-size: 13px !important;
+          }
+          
+          .payment-details {
+            padding: 10px !important;
+          }
+          
+          .status-badge {
+            font-size: 10px !important;
+            padding: 2px 10px !important;
+          }
+          
+          .receipt-footer {
+            padding: 10px 16px !important;
+            font-size: 9px !important;
+          }
+          
+          .print-btn {
+            padding: 8px 20px !important;
+            font-size: 12px !important;
+          }
+        }
+        
+        /* ========== Print Styles ========== */
+        @media print {
+          body {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          
+          .receipt-container {
+            max-width: 100% !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          
+          .print-btn-container {
+            display: none !important;
+          }
+          
+          .receipt-header {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          .status-badge {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          .payment-details {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+        
+        /* ========== Header ========== */
+        .receipt-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 20px 24px;
+          color: white;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .receipt-header::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          right: -50%;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 50%;
+        }
+        
+        .receipt-header .logo {
+          font-size: 28px;
+          margin-bottom: 2px;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .receipt-header h1 {
+          font-size: 20px;
+          font-weight: 700;
+          margin-bottom: 2px;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .receipt-header .subtitle {
+          font-size: 11px;
+          opacity: 0.85;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .receipt-header .receipt-number {
+          margin-top: 8px;
+          padding: 4px 14px;
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 20px;
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 500;
+          position: relative;
+          z-index: 1;
+          backdrop-filter: blur(4px);
+        }
+        
+        /* ========== Body ========== */
+        .receipt-body {
+          padding: 20px 24px 24px;
+        }
+        
+        .receipt-section {
+          margin-bottom: 16px;
+        }
+        
+        .receipt-section:last-child {
+          margin-bottom: 0;
+        }
+        
+        .section-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #667eea;
+          margin-bottom: 10px;
+          padding-bottom: 6px;
+          border-bottom: 2px solid #eef2f6;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .section-title .icon {
+          font-size: 16px;
+        }
+        
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 5px 0;
+          font-size: 13px;
+          border-bottom: 1px dashed #f1f5f9;
+        }
+        
+        .info-row:last-child {
+          border-bottom: none;
+        }
+        
+        .info-row .label {
+          color: #6b7280;
+        }
+        
+        .info-row .value {
+          font-weight: 500;
+          color: #1e293b;
+        }
+        
+        .info-row .value.highlight {
+          color: #059669;
+          font-weight: 700;
+        }
+        
+        .info-row .value.amount {
+          font-size: 15px;
+        }
+        
+        /* ========== Payment Details ========== */
+        .payment-details {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 12px 16px;
+          margin-top: 6px;
+        }
+        
+        .payment-details .info-row {
+          border-bottom-color: #e2e8f0;
+          padding: 4px 0;
+        }
+        
+        .payment-details .info-row:last-child {
+          border-bottom: none;
+        }
+        
+        /* ========== Status Badge ========== */
+        .status-badge {
+          display: inline-block;
+          padding: 3px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+        
+        /* ========== Footer ========== */
+        .receipt-footer {
+          padding: 12px 24px;
+          background: #f8fafc;
+          text-align: center;
+          font-size: 10px;
+          color: #94a3b8;
+          border-top: 1px solid #eef2f6;
+        }
+        
+        .receipt-footer .footer-logo {
+          font-weight: 600;
+          color: #667eea;
+        }
+        
+        /* ========== Print Button ========== */
+        .print-btn-container {
+          text-align: center;
+          padding: 12px 24px;
+          background: white;
+          border-top: 1px solid #eef2f6;
+        }
+        
+        .print-btn {
+          padding: 10px 28px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .print-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* ========== Divider Line (for thermal printer) ========== */
+        .divider-line {
+          border: none;
+          border-top: 2px dashed #e2e8f0;
+          margin: 8px 0;
+        }
+        
+        /* ========== Thermal Printer Optimizations ========== */
+        @media print and (max-width: 675px) {
+          .receipt-container {
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          
+          .receipt-body {
+            padding: 8px 12px !important;
+          }
+          
+          .payment-details {
+            padding: 8px 10px !important;
+          }
+          
+          .info-row {
+            font-size: 10px !important;
+            padding: 3px 0 !important;
+          }
+          
+          .section-title {
+            font-size: 11px !important;
+          }
+          
+          .receipt-header {
+            padding: 10px 12px !important;
+          }
+          
+          .receipt-header h1 {
+            font-size: 14px !important;
+          }
+          
+          .receipt-footer {
+            padding: 8px 12px !important;
+            font-size: 8px !important;
+          }
+        }
+        
+        /* ========== Mobile Responsive ========== */
+        @media (max-width: 480px) {
+          body {
+            padding: 10px;
+          }
+          
+          .receipt-body {
+            padding: 12px 16px 16px;
+          }
+          
+          .receipt-header {
+            padding: 16px;
+          }
+          
+          .receipt-header h1 {
+            font-size: 17px;
+          }
+          
+          .info-row {
+            font-size: 12px;
+          }
+          
+          .payment-details {
+            padding: 10px 12px;
+          }
+          
+          .receipt-footer {
+            padding: 10px 16px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="receipt-container">
+        <!-- Header -->
+        <div class="receipt-header">
+          <div class="logo">🏛️</div>
+          <h1>إيصال الدفع</h1>
+          <div class="subtitle">الأكاديمية الأولمبية</div>
+          <div class="receipt-number">
+            رقم الإيصال: #${paymentData.id || 'N/A'}
+          </div>
+        </div>
+        
+        <!-- Body -->
+        <div class="receipt-body">
+          <!-- Enrollment Info -->
+          <div class="receipt-section">
+            <div class="section-title">
+              <span class="icon">📚</span>
+              معلومات التسجيل
+            </div>
+            <div class="info-row">
+              <span class="label">المتدرب</span>
+              <span class="value">${enrollmentData.trainee?.title || '-'}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">الدورة</span>
+              <span class="value">${enrollmentData.course?.title || '-'}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">تاريخ التسجيل</span>
+              <span class="value">${enrollmentDateFormatted}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">القيمة الإجمالية</span>
+              <span class="value">${enrollmentData.finalSubscriptionValue || 0} جم</span>
+            </div>
+          </div>
+          
+          <hr class="divider-line">
+          
+          <!-- Payment Details -->
+          <div class="receipt-section">
+            <div class="section-title">
+              <span class="icon">💰</span>
+              تفاصيل الدفعة
+            </div>
+            <div class="payment-details">
+              <div class="info-row">
+                <span class="label">تاريخ الدفع</span>
+                <span class="value">${paymentDateFormatted}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">المبلغ المدفوع</span>
+                <span class="value highlight amount">${paidAmount.toLocaleString('ar-EG')} جم</span>
+              </div>
+              <div class="info-row">
+                <span class="label">طريقة الدفع</span>
+                <span class="value">${paymentData.paymentMethodTitle || '-'}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">المبلغ المتبقي</span>
+                <span class="value ${remainedValue === 0 ? 'highlight' : ''}">${remainedValue.toLocaleString('ar-EG')} جم</span>
+              </div>
+              <div class="info-row">
+                <span class="label">إجمالي المدفوع</span>
+                <span class="value highlight">${totalPaid.toLocaleString('ar-EG')} جم</span>
+              </div>
+              <div class="info-row" style="border-bottom: none; padding-top: 6px;">
+                <span class="label">حالة الدفع</span>
+                <span class="value">
+                  <span class="status-badge" style="background: ${statusColor}; color: ${statusTextColor};">
+                    ${paymentData.paymentStatusTitle || 'قيد الانتظار'}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Note -->
+          ${paymentData.note ? `
+            <hr class="divider-line">
+            <div class="receipt-section">
+              <div class="section-title">
+                <span class="icon">📝</span>
+                ملاحظات
+              </div>
+              <div class="info-row" style="border-bottom: none;">
+                <span style="color: #4b5563; font-size: 12px;">${paymentData.note}</span>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+        
+        <!-- Footer -->
+        <div class="receipt-footer">
+          <div class="footer-logo">🏛️ الأكاديمية الأولمبية</div>
+          <div style="margin-top: 2px;">شكراً لثقتكم بنا</div>
+          <div style="margin-top: 2px; font-size: 9px;">${currentDateFormatted}</div>
+        </div>
+        
+        <!-- Print Button -->
+        <div class="print-btn-container">
+          <button class="print-btn" onclick="window.print();">
+            🖨️ طباعة الإيصال
+          </button>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+  // ==========================================================================
+  // SUBMIT WITH RECEIPT OPTION
+  // ==========================================================================
+
   onSubmit(): void {
     if (this.paymentForm.invalid) {
       this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
@@ -445,7 +1031,8 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
     const paymentStatusObj = this.paymentForm.get('paymentStatusObj')?.value;
     
-    let paymentStatusEnum = null;
+    // FIXED: Explicitly type paymentStatusEnum as string | null
+    let paymentStatusEnum: string | null = null;
     if (paymentStatusObj) {
       switch(paymentStatusObj.id) {
         case 1:
@@ -484,36 +1071,73 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    if (this.isEditMode && this.paymentId) {
-      this.financialService.updateEnrollmentPayment(this.paymentId, paymentData as any).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم تحديث الدفعة بنجاح');
-          this.dialogRef.close(true);
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Update error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث الدفعة');
-          this.isSubmitting = false;
+    const serviceCall = this.isEditMode && this.paymentId
+      ? this.financialService.updateEnrollmentPayment(this.paymentId, paymentData as any)
+      : this.financialService.createEnrollmentPayment(paymentData as any);
+
+    serviceCall.subscribe({
+      next: (response: any) => {
+        this.notification.showSuccess(this.isEditMode ? 'تم تحديث الدفعة بنجاح' : 'تم إضافة الدفعة بنجاح');
+        this.isSubmitting = false;
+        
+        // Store payment result for receipt
+        this.paymentResult = {
+          id: response.id || this.paymentId,
+          paidAmount: paidAmount,
+          remainedValue: this.getNewRemaining(),
+          paymentDate: this.paymentForm.get('paymentDate')?.value,
+          paymentMethodTitle: this.getPaymentMethodLabel(),
+          paymentStatus: paymentStatusEnum,
+          paymentStatusTitle: this.getPaymentStatusLabel(),
+          note: this.paymentForm.get('note')?.value
+        };
+        
+        // Show success with receipt option
+        this.showSuccess = true;
+        this.currentStep = 3; // Stay on confirmation step
+        
+        // Show receipt print option
+        this.notification.showSuccess('تمت العملية بنجاح! يمكنك طباعة الإيصال.');
+        
+        // Auto print receipt for new payments (not for edit)
+        if (!this.isEditMode) {
+          setTimeout(() => {
+            this.printReceipt(this.paymentResult, this.selectedEnrollment);
+          }, 600);
         }
-      });
-    } else {
-      this.financialService.createEnrollmentPayment(paymentData as any).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم إضافة الدفعة بنجاح');
+        
+        // Close dialog after a delay if user doesn't interact
+        setTimeout(() => {
           this.dialogRef.close(true);
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Create error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الدفعة');
-          this.isSubmitting = false;
-        }
-      });
-    }
+        }, 10000); // Close after 10 seconds
+      },
+      error: (err) => {
+        console.error('Error:', err);
+        this.notification.showError(err.error?.messageEn || (this.isEditMode ? 'حدث خطأ في تحديث الدفعة' : 'حدث خطأ في إضافة الدفعة'));
+        this.isSubmitting = false;
+      }
+    });
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    if (this.showSuccess) {
+      this.dialogRef.close(true);
+    } else {
+      this.dialogRef.close(false);
+    }
+  }
+
+  // ==========================================================================
+  // RECEIPT BUTTON ACTIONS
+  // ==========================================================================
+
+  printReceiptFromSuccess(): void {
+    if (this.paymentResult) {
+      this.printReceipt(this.paymentResult, this.selectedEnrollment);
+    }
+  }
+
+  closeAfterSuccess(): void {
+    this.dialogRef.close(true);
   }
 }

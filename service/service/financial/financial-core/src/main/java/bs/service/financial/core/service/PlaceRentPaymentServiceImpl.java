@@ -112,7 +112,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
 
         return PlaceRentPaymentResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(placeRentPaymentRepository.countAllByFilters(filter))
                 .build();
     }
 }

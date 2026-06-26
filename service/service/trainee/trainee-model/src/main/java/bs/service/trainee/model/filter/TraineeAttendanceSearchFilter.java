@@ -17,10 +17,13 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class TraineeAttendanceSearchFilter extends SearchFilter<TraineeAttendanceSearchFilter.OrderByAttributes> {
 
+    private String traineeNationalId;
+    private String quickSearch;
     private Integer traineeId;
     private Integer courseId;
     private Integer courseSessionId;
-    private String status;
+    private String sessionDay;
+    private Integer status;
     private LocalDate attendanceDateFrom;
     private LocalDate attendanceDateTo;
     private LocalTime checkInFrom;

@@ -73,14 +73,9 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
 
     @Override
     @Transactional
-    public void unassignCourseFromTrainer(Integer trainerId, Integer courseId) {
-        TrainerCourseSearchFilter trainerCourseSearchFilter=TrainerCourseSearchFilter.builder()
-                .trainerId(trainerId)
-                .courseId(courseId)
-                .pagination(PaginationInfo.noPagination())
-                .build();
-        TrainerCourse assignment=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter).stream().findFirst().orElseThrow(()-> new BusinessException(COURSE_ALREADY_ASSIGNED_TO_TRAINER, trainerId, courseId));
-        trainerCourseRepository.delete(assignment);
+    public void unassignCourseFromTrainer(Integer trainerCourseId) {
+        TrainerCourse trainerCourse=trainerCourseRepository.selectById(trainerCourseId).orElseThrow(()-> new BusinessException(COURSE_NOT_FOUND, trainerCourseId));
+        trainerCourseRepository.delete(trainerCourse);
     }
 
     @Override
@@ -111,7 +106,7 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
 
         return TrainerCourseResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(trainerCourseRepository.countAllByFilters(filter))
                 .build();
     }
 

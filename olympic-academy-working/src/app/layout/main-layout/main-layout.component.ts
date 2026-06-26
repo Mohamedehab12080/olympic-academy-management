@@ -1,4 +1,3 @@
-// main-layout.component.ts
 import { Component, HostListener } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -17,22 +16,21 @@ import { AuthService } from '../../core/auth/auth.service';
         
         <div class="sidenav-header">
           <div class="logo-container">
-            <mat-icon class="logo-icon">sports_score</mat-icon>
+            <!-- Logo Image - Blue Theme -->
+            <div class="logo-wrapper">
+              <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية" class="logo-image" [class.collapsed]="!sidebarExpanded">
+            </div>
             <span class="logo-text" *ngIf="sidebarExpanded">الأكاديمية الأولمبية</span>
           </div>
-          <button mat-icon-button class="toggle-btn" (click)="toggleSidebarExpanded()" *ngIf="!isMobile">
-            <mat-icon>{{ sidebarExpanded ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-          </button>
         </div>
         
         <!-- Scrollable nav list -->
         <div class="nav-scroll-wrapper">
           <mat-nav-list>
-            <!-- Dashboard -->
-            <!-- <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-              <mat-icon>dashboard</mat-icon>
-              <span *ngIf="sidebarExpanded">لوحة التحكم</span>
-            </a> -->
+                <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+                  <mat-icon>dashboard</mat-icon>
+                  <span *ngIf="sidebarExpanded">لوحة التحكم</span>
+                </a>
             
             <!-- Management Section -->
             <div class="nav-section-title" *ngIf="sidebarExpanded">الإدارة</div>
@@ -101,31 +99,6 @@ import { AuthService } from '../../core/auth/auth.service';
             <!-- Reports Section -->
             <div class="nav-section-title" *ngIf="sidebarExpanded">التقارير</div>
             
-            <!-- <a mat-list-item routerLink="/reports/attendance" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-              <mat-icon>assessment</mat-icon>
-              <span *ngIf="sidebarExpanded">تقرير الحضور</span>
-            </a>
-            
-            <a mat-list-item routerLink="/reports/employee" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-              <mat-icon>people_alt</mat-icon>
-              <span *ngIf="sidebarExpanded">تقرير الموظفين</span>
-            </a>
-            
-            <a mat-list-item routerLink="/reports/trainee" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-              <mat-icon>school</mat-icon>
-              <span *ngIf="sidebarExpanded">تقرير المتدربين</span>
-            </a>
-            
-            <a mat-list-item routerLink="/reports/enrollment" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-              <mat-icon>receipt</mat-icon>
-              <span *ngIf="sidebarExpanded">تقرير التسجيلات</span>
-            </a>
-            
-            <a mat-list-item routerLink="/reports/course" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-              <mat-icon>menu_book</mat-icon>
-              <span *ngIf="sidebarExpanded">تقرير الدورات</span>
-            </a>
-             -->
             <a mat-list-item routerLink="/reports/financial" routerLinkActive="active" [class.compact]="!sidebarExpanded">
               <mat-icon>attach_money</mat-icon>
               <span *ngIf="sidebarExpanded">تقرير مالي</span>
@@ -233,45 +206,73 @@ import { AuthService } from '../../core/auth/auth.service';
       padding: 20px 16px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       border-bottom: 1px solid #e5e7eb;
       background: white;
-      position: relative;
+      min-height: 80px;
     }
 
     .logo-container {
       display: flex;
       align-items: center;
       gap: 12px;
+      overflow: visible;
+      width: 100%;
+      justify-content: center;
     }
 
-    .logo-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-      color: #2563eb;
+    /* Logo Wrapper - Blue Theme (matching project colors) */
+    .logo-wrapper {
+      display: inline-block;
+      /* Blue color matching the project theme (#2563eb / #3b82f6) */
+      filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(210deg) brightness(95%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Slightly different blue shade - more vibrant */
+    /* .logo-wrapper {
+      filter: brightness(0) saturate(100%) invert(25%) sepia(100%) saturate(2500%) hue-rotate(215deg) brightness(90%);
+    } */
+
+    /* Darker blue */
+    /* .logo-wrapper {
+      filter: brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(3000%) hue-rotate(220deg) brightness(85%);
+    } */
+
+    .logo-image {
+      width: 64px;
+      height: 64px;
+      border-radius: 0;
+      object-fit: contain;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      display: block;
+    }
+
+    .logo-image.collapsed {
+      width: 56px;
+      height: 56px;
+    }
+
+    /* Hover effect - slight scale and glow */
+    .logo-wrapper:hover {
+      transform: scale(1.05);
+      filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(210deg) brightness(110%) drop-shadow(0 0 8px rgba(37, 99, 235, 0.3));
     }
 
     .logo-text {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: #1e293b;
       white-space: nowrap;
+      transition: opacity 0.3s ease;
     }
 
-    .toggle-btn {
-      position: absolute;
-      right: -12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: white;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s;
-    }
-
-    .toggle-btn:hover {
-      background: #f1f5f9;
-      transform: translateY(-50%) scale(1.1);
+    .sidenav.collapsed .logo-text {
+      display: none;
     }
 
     /* Navigation Scroll Wrapper */
@@ -435,6 +436,7 @@ import { AuthService } from '../../core/auth/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .user-avatar mat-icon {
@@ -494,6 +496,7 @@ import { AuthService } from '../../core/auth/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .menu-avatar mat-icon {
@@ -586,6 +589,11 @@ import { AuthService } from '../../core/auth/auth.service';
         position: fixed;
         z-index: 1000;
         height: 100%;
+        width: 280px !important;
+      }
+      
+      .sidenav.collapsed {
+        width: 280px !important;
       }
       
       .content {
@@ -625,6 +633,11 @@ import { AuthService } from '../../core/auth/auth.service';
         padding: 12px 16px 4px 16px;
         font-size: 10px;
       }
+
+      .logo-image {
+        width: 56px;
+        height: 56px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -660,6 +673,28 @@ import { AuthService } from '../../core/auth/auth.service';
         font-size: 20px;
         width: 20px;
         height: 20px;
+      }
+
+      .logo-image {
+        width: 48px;
+        height: 48px;
+      }
+
+      .logo-text {
+        font-size: 14px;
+      }
+
+      .sidenav-header {
+        padding: 16px 12px;
+        min-height: 70px;
+      }
+
+      .sidenav {
+        width: 260px !important;
+      }
+      
+      .sidenav.collapsed {
+        width: 260px !important;
       }
     }
   `]
@@ -703,7 +738,7 @@ export class MainLayoutComponent {
     this.isMobile = window.innerWidth <= 768;
     if (this.isMobile) {
       this.sidebarOpen = false;
-      this.sidebarExpanded = false;
+      this.sidebarExpanded = true;
     } else {
       this.sidebarOpen = true;
       this.sidebarExpanded = true;
@@ -713,14 +748,6 @@ export class MainLayoutComponent {
   toggleSidebar() {
     if (this.isMobile) {
       this.sidebarOpen = !this.sidebarOpen;
-    } else {
-      this.sidebarExpanded = !this.sidebarExpanded;
-    }
-  }
-
-  toggleSidebarExpanded() {
-    if (!this.isMobile) {
-      this.sidebarExpanded = !this.sidebarExpanded;
     }
   }
 

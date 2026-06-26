@@ -94,14 +94,16 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
     }
 
     @Override
-    public EnrollmentPaymentResultSet getAllEnrollmentPaymentsByFilter(Integer enrollmentId,Integer courseId, Integer paymentMethodId,
+    public EnrollmentPaymentResultSet getAllEnrollmentPaymentsByFilter(String traineeNationalId,Integer enrollmentId,Integer courseId, Integer paymentMethodId,
                                                                        PaymentStatus status, LocalDate paymentDateFrom,
-                                                                       LocalDate paymentDateTo, Integer pageNum,
+                                                                       LocalDate paymentDateTo,String quickSearch, Integer pageNum,
                                                                        Integer pageSize, OrderDirections orderDir,
                                                                        String orderBy) {
         EnrollmentPaymentSearchFilter filter = EnrollmentPaymentSearchFilter.builder()
                 .enrollmentId(enrollmentId)
                 .courseId(courseId)
+                .quickSearch(quickSearch)
+                .traineeNationalId(traineeNationalId)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)
@@ -116,7 +118,7 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
 
         return EnrollmentPaymentResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(enrollmentPaymentRepository.countAllByFilters(filter))
                 .build();
     }
 }

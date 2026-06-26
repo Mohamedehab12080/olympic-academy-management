@@ -335,7 +335,9 @@ paths:
       summary: Retrieve list of employees attendances
       operationId: getAllEmployeesAttendances
       parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPEmployeeNationalId'
         - $ref: '#/components/parameters/QPEmployeeAttendanceStatus'
         - $ref: '#/components/parameters/QPAttendanceDateFrom'
         - $ref: '#/components/parameters/QPAttendanceDateTo'
@@ -484,7 +486,7 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
-  /trainers/{trainerdepartmentId}:
+  /trainers/{trainerdepartmentId}/departmnet:
     get:
       tags:
         - TrainerDepartment
@@ -557,6 +559,7 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /trainers/{trainerId}/courses:
     post:
       tags:
         - TrainerCourse
@@ -580,15 +583,14 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
-  /trainers/{trainerId}/courses/{courseId}:
+  /trainers/{trainerCourseId}/course:
     delete:
       tags:
         - TrainerCourse
       summary: Unassign a course from a trainer
       operationId: unassignCourseFromTrainer
       parameters:
-        - $ref: '#/components/parameters/PPTrainerId'
-        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/PPTrainerCourseId'
       responses:
         '200':
           description: OK
@@ -640,7 +642,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
@@ -651,6 +655,7 @@ paths:
       operationId: getAllCourseSessionsByFilter
       parameters:
         - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPSessionStatus'
         - $ref: '#/components/parameters/QPSessionDateFrom'
         - $ref: '#/components/parameters/QPSessionDateTo'
@@ -680,6 +685,7 @@ paths:
       operationId: getAllSessionsByFilter
       parameters:
         - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPTrainerId'
         - $ref: '#/components/parameters/QPPlaceId'
         - $ref: '#/components/parameters/QPSessionStatus'
@@ -703,15 +709,14 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
-  /courses/{courseId}/sessions/{sessionId}:
+  /courses/{courseSessionId}/course-session:
     put:
       tags:
         - CourseSession
       summary: Update course session
       operationId: updateCourseSession
       parameters:
-        - $ref: '#/components/parameters/PPCourseId'
-        - $ref: '#/components/parameters/PPSessionId'
+        - $ref: '#/components/parameters/PPCourseSessionId'
       requestBody:
         content:
           application/json:
@@ -724,7 +729,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
@@ -734,8 +741,7 @@ paths:
       summary: Get course session by id
       operationId: getCourseSessionById
       parameters:
-        - $ref: '#/components/parameters/PPCourseId'
-        - $ref: '#/components/parameters/PPSessionId'
+        - $ref: '#/components/parameters/PPCourseSessionId'
       responses:
         '200':
           description: OK
@@ -752,8 +758,7 @@ paths:
       summary: Delete course session (soft delete)
       operationId: deleteCourseSession
       parameters:
-        - $ref: '#/components/parameters/PPCourseId'
-        - $ref: '#/components/parameters/PPSessionId'
+        - $ref: '#/components/parameters/PPCourseSessionId'
       responses:
         '200':
           description: OK
@@ -797,6 +802,13 @@ components:
       schema:
         type: integer
         format: int32
+    PPTrainerCourseId:
+      name: trainerCourseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
     PPDepartmentId:
       name: departmentId
       in: path
@@ -813,6 +825,13 @@ components:
         format: int32
     PPCourseId:
       name: courseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPCourseSessionId:
+      name: courseSessionId
       in: path
       required: true
       schema:
@@ -835,6 +854,13 @@ components:
 
     QPContactValue:
       name: contactValue
+      in: query
+      required: false
+      schema:
+        type: string
+
+    QPEmployeeNationalId:
+      name: employeeNationalId
       in: query
       required: false
       schema:
@@ -977,6 +1003,12 @@ components:
       schema:
         type: string
         format: date
+    QPSessionDay:
+      name: sessionDay
+      in: query
+      required: false
+      schema:
+        type: string
     QPSessionDateTo:
       name: sessionDateTo
       in: query
@@ -1068,8 +1100,6 @@ components:
           type: string
         nationalId:
           type: string
-          minLength: 14
-          maxLength: 14
         birthDate:
           type: string
           format: date
@@ -1134,14 +1164,15 @@ components:
         note:
           type: string
 
+
     CourseSessionDTO:
       type: object
       required:
         - title
-        - trainerId
+        - trainersId
         - courseId
         - placeId
-        - sessionDate
+        - sessionDays
         - startTime
         - endTime
       properties:
@@ -1150,15 +1181,21 @@ components:
         courseId:
           type: integer
           format: int32
-        trainerId:
-          type: integer
-          format: int32
+        trainersId:
+          type: array
+          items:
+            type: integer
+            format: int32
         placeId:
           type: integer
           format: int32
         sessionDate:
           type: string
           format: date
+        sessionDays:
+          type: array
+          items:
+            type: string
         startTime:
           type: string
           format: time
@@ -1541,6 +1578,8 @@ components:
         sessionDate:
           type: string
           format: date
+        sessionDay:
+          type: string
         startTime:
           type: string
           format: time

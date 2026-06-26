@@ -36,7 +36,6 @@ import { MatExpansionModule } from '@angular/material/expansion';
 // Components
 import { AppComponent } from './app.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
 
 // Routes
@@ -54,7 +53,6 @@ import { authInterceptor } from './core/auth/auth.interceptor';
   declarations: [
     AppComponent,
     MainLayoutComponent,
-    DashboardComponent,
     ToastComponent
   ],
   imports: [

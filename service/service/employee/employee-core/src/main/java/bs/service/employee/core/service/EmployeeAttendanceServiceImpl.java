@@ -87,6 +87,9 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
         EmployeeAttendance attendanceToUpdate = employeeMapper.toEmployeeAttendance(employeeAttendanceDTO);
         attendanceToUpdate.setId(attendanceId);
         attendanceToUpdate.setEmployee(employee);
+        attendanceToUpdate.setIsDeleted(false);
+        attendanceToUpdate.setCreatedOn(employeeAttendance.getCreatedOn());
+        attendanceToUpdate.setCreatedBy(employeeAttendance.getCreatedBy());
         employeeAttendanceRepository.update(attendanceToUpdate);
 
         return NewRecordVTO.builder().id(attendanceId).build();
@@ -119,11 +122,13 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
     }
 
     @Override
-    public EmployeeAttendanceResultSet getAllEmployeeAttendances(Integer employeeId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public EmployeeAttendanceResultSet getAllEmployeeAttendances(String quickSearch,Integer employeeId,String employeeNationalId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         EmployeeAttendanceSearchFilter filter = EmployeeAttendanceSearchFilter.builder()
                 .employeeId(employeeId)
-                .status(status!=null ?status.title:null)
+                .status(status!=null ?status.id:null)
+                .quickSearch(quickSearch)
+                .employeeNationalId(employeeNationalId)
                 .isDeleted(false)
                 .attendanceDateFrom(attendanceDateFrom)
                 .attendanceDateTo(attendanceDateTo)
@@ -141,7 +146,7 @@ public class EmployeeAttendanceServiceImpl implements EmployeeAttendanceService 
 
         return EmployeeAttendanceResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(employeeAttendanceRepository.countAllByFilters(filter))
                 .build();
     }
 

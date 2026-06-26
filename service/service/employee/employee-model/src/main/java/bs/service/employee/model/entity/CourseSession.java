@@ -45,6 +45,10 @@ public class CourseSession {
     @Basic
     private LocalDate sessionDate;
 
+    @Column(name = "session_day")
+    @Basic
+    private String sessionDay;
+
     @Column(name = "start_time")
     @Basic
     private LocalTime startTime;

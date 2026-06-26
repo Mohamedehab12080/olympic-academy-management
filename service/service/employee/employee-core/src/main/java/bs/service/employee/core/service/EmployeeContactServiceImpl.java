@@ -56,7 +56,6 @@ public class EmployeeContactServiceImpl implements EmployeeContactService {
 
         contact.setContactType(employeeContactDTO.getContactType().getId());
         contact.setContactValue(employeeContactDTO.getContactValue());
-
         employeeRepository.update(employee);
         return NewRecordVTO.builder().id(contactId).build();    }
 

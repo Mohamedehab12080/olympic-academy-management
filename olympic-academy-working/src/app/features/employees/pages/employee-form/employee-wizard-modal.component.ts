@@ -1,5 +1,6 @@
-// employee-wizard-modal.component.ts - COMPLETE FIXED VERSION
-import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+// employee-wizard-modal.component.ts - COMPLETE WORKING VERSION WITH CONTACT CREATION FIXED
+
+import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -16,9 +17,10 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { Subject, finalize } from 'rxjs';
 
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { DepartmentService } from '../../../../core/services/department.service';
@@ -27,10 +29,39 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { FileService } from '../../../../core/services/file.service';
 import { FileDomain } from '../../../../core/models/file.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
-import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { EMPLOYEE_TYPES, EmployeeDTO, EmployeeContactDTO } from '../../../../core/models/employee.model';
+import { 
+  EMPLOYEE_TYPES, 
+  EmployeeType,
+  AssignDepartmentDTO, 
+  AssignCourseDTO,
+  EmployeeVTO,
+  EmployeeContactVTO,
+  TrainerDepartmentVTO,
+  TrainerCourseVTO
+} from '../../../../core/models/employee.model';
 import { GENDERS, SALARY_TYPES, CONTACT_TYPES, Gender, ContactType, SalaryType } from '../../../../core/models/common.model';
-import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/employee.model';
+
+// ============================================================
+// INTERFACES
+// ============================================================
+
+interface DepartmentAssignment {
+  id: number;
+  title: string;
+  assigned: boolean;
+  assignmentId?: number;
+}
+
+interface CourseAssignment {
+  id: number;
+  title: string;
+  assigned: boolean;
+  assignmentId?: number;
+}
+
+// ============================================================
+// COMPONENT
+// ============================================================
 
 @Component({
   selector: 'app-employee-wizard-modal',
@@ -56,8 +87,7 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
     MatTableModule,
     MatCheckboxModule,
     MatSlideToggleModule,
-    FileUploadComponent,
-    SearchableSelectComponent
+    FileUploadComponent
   ],
   template: `
     <div class="wizard-container" dir="rtl">
@@ -109,43 +139,49 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
                 <div class="form-grid">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>الاسم الكامل *</mat-label>
-                    <input matInput formControlName="fullName">
+                    <input matInput formControlName="fullName" placeholder="أدخل الاسم الكامل">
                     <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('required')">الاسم مطلوب</mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('minlength')">الاسم يجب أن يكون على الأقل 3 أحرف</mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>رقم الهوية *</mat-label>
-                    <input matInput formControlName="nationalId" maxlength="14">
+                    <input matInput formControlName="nationalId" placeholder="أدخل رقم الهوية">
                     <mat-error *ngIf="basicInfoForm.get('nationalId')?.hasError('required')">رقم الهوية مطلوب</mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('nationalId')?.hasError('pattern')">رقم الهوية يجب أن يحتوي على أرقام فقط</mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>تاريخ الميلاد</mat-label>
-                    <input matInput [matDatepicker]="birthPicker" formControlName="birthDate">
+                    <input matInput [matDatepicker]="birthPicker" formControlName="birthDate" placeholder="اختر تاريخ الميلاد">
                     <mat-datepicker-toggle matSuffix [for]="birthPicker"></mat-datepicker-toggle>
                     <mat-datepicker #birthPicker></mat-datepicker>
                   </mat-form-field>
 
-                  <app-searchable-select
-                    [ngModel]="basicInfoForm.get('gender')?.value"
-                    (ngModelChange)="basicInfoForm.get('gender')?.setValue($event)"
-                    label="الجنس"
-                    [options]="genderOptions"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>الجنس</mat-label>
+                    <mat-select formControlName="gender">
+                      <mat-option [value]="null">اختر الجنس</mat-option>
+                      <mat-option *ngFor="let gender of genderOptions" [value]="gender.value">
+                        {{ gender.label }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
 
-                  <app-searchable-select
-                    [ngModel]="basicInfoForm.get('employeeType')?.value"
-                    (ngModelChange)="basicInfoForm.get('employeeType')?.setValue($event)"
-                    label="نوع الموظف *"
-                    [options]="employeeTypeOptions"
-                    [required]="true"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>نوع الموظف *</mat-label>
+                    <mat-select formControlName="employeeType">
+                      <mat-option [value]="null">اختر نوع الموظف</mat-option>
+                      <mat-option *ngFor="let type of employeeTypeOptions" [value]="type.value">
+                        {{ type.label }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="basicInfoForm.get('employeeType')?.hasError('required')">نوع الموظف مطلوب</mat-error>
+                  </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>تاريخ التوظيف</mat-label>
-                    <input matInput [matDatepicker]="hirePicker" formControlName="hireDate">
+                    <input matInput [matDatepicker]="hirePicker" formControlName="hireDate" placeholder="اختر تاريخ التوظيف">
                     <mat-datepicker-toggle matSuffix [for]="hirePicker"></mat-datepicker-toggle>
                     <mat-datepicker #hirePicker></mat-datepicker>
                   </mat-form-field>
@@ -191,7 +227,7 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
                       <div class="form-field">
                         <mat-form-field appearance="outline" class="full-width">
                           <mat-label>الراتب الأساسي</mat-label>
-                          <input matInput type="number" formControlName="salary">
+                          <input matInput type="number" formControlName="salary" placeholder="أدخل الراتب">
                           <span matSuffix>جم</span>
                         </mat-form-field>
                       </div>
@@ -203,7 +239,7 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
                       <div class="form-field">
                         <mat-form-field appearance="outline" class="full-width">
                           <mat-label>الراتب المتبقي</mat-label>
-                          <input matInput type="number" formControlName="remainedSalary">
+                          <input matInput type="number" formControlName="remainedSalary" placeholder="أدخل الراتب المتبقي">
                           <span matSuffix>جم</span>
                         </mat-form-field>
                       </div>
@@ -213,13 +249,15 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
                   <mat-card class="financial-card info">
                     <mat-card-content>
                       <div class="form-field">
-                        <app-searchable-select
-                          [ngModel]="financialForm.get('salaryType')?.value"
-                          (ngModelChange)="financialForm.get('salaryType')?.setValue($event)"
-                          label="نوع الراتب"
-                          [options]="salaryTypeOptions"
-                          [ngModelOptions]="{standalone: true}">
-                        </app-searchable-select>
+                        <mat-form-field appearance="outline" class="full-width">
+                          <mat-label>نوع الراتب</mat-label>
+                          <mat-select formControlName="salaryType">
+                            <mat-option [value]="null">اختر نوع الراتب</mat-option>
+                            <mat-option *ngFor="let type of salaryTypeOptions" [value]="type.value">
+                              {{ type.label }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
                       </div>
                     </mat-card-content>
                   </mat-card>
@@ -254,24 +292,32 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
               </div>
 
               <form [formGroup]="departmentsForm">
-                <div class="department-selection-grid">
-                  <div *ngFor="let dept of departments" class="department-item">
+                <div class="selection-grid">
+                  <div *ngFor="let dept of departmentAssignments" class="selection-item">
                     <mat-checkbox 
-                      [checked]="isDepartmentSelected(dept.id)"
-                      (change)="toggleDepartment(dept.id, $event.checked)">
+                      [checked]="dept.assigned"
+                      (change)="toggleDepartment(dept, $event.checked)"
+                      [disabled]="isSubmitting">
                       {{ dept.title }}
                     </mat-checkbox>
+                    <span class="assignment-status" *ngIf="isEditMode && dept.assigned && dept.assignmentId">
+                      <mat-icon class="assigned-icon">check_circle</mat-icon>
+                    </span>
                   </div>
                 </div>
                 
-                <div class="selected-departments" *ngIf="selectedDepartments.length > 0">
-                  <label>الأقسام المختارة:</label>
-                  <div class="department-chips">
-                    <mat-chip *ngFor="let dept of selectedDepartments" (removed)="removeDepartment(dept.id)">
+                <div class="selected-items" *ngIf="getSelectedDepartments().length > 0">
+                  <label>الأقسام المختارة ({{ getSelectedDepartments().length }}):</label>
+                  <div class="items-chips">
+                    <mat-chip *ngFor="let dept of getSelectedDepartments()" (removed)="removeDepartment(dept)">
                       {{ dept.title }}
                       <mat-icon matChipRemove>cancel</mat-icon>
                     </mat-chip>
                   </div>
+                </div>
+                <div class="no-selection" *ngIf="getSelectedDepartments().length === 0">
+                  <mat-icon>info</mat-icon>
+                  <span>لم يتم اختيار أي قسم</span>
                 </div>
               </form>
             </div>
@@ -308,24 +354,32 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
               </div>
 
               <form [formGroup]="coursesForm">
-                <div class="course-selection-grid" *ngIf="isTrainer">
-                  <div *ngFor="let course of allCourses" class="course-item">
+                <div class="selection-grid" *ngIf="isTrainer">
+                  <div *ngFor="let course of courseAssignments" class="selection-item">
                     <mat-checkbox 
-                      [checked]="isCourseSelected(course.id)"
-                      (change)="toggleCourse(course.id, $event.checked)">
+                      [checked]="course.assigned"
+                      (change)="toggleCourse(course, $event.checked)"
+                      [disabled]="isSubmitting">
                       {{ course.title }}
                     </mat-checkbox>
+                    <span class="assignment-status" *ngIf="isEditMode && course.assigned && course.assignmentId">
+                      <mat-icon class="assigned-icon">check_circle</mat-icon>
+                    </span>
                   </div>
                 </div>
                 
-                <div class="selected-courses" *ngIf="selectedCourses.length > 0 && isTrainer">
-                  <label>الدورات المختارة:</label>
-                  <div class="course-chips">
-                    <mat-chip *ngFor="let course of selectedCourses" (removed)="removeCourse(course.id)">
+                <div class="selected-items" *ngIf="getSelectedCourses().length > 0 && isTrainer">
+                  <label>الدورات المختارة ({{ getSelectedCourses().length }}):</label>
+                  <div class="items-chips">
+                    <mat-chip *ngFor="let course of getSelectedCourses()" (removed)="removeCourse(course)">
                       {{ course.title }}
                       <mat-icon matChipRemove>cancel</mat-icon>
                     </mat-chip>
                   </div>
+                </div>
+                <div class="no-selection" *ngIf="isTrainer && getSelectedCourses().length === 0">
+                  <mat-icon>info</mat-icon>
+                  <span>لم يتم اختيار أي دورة</span>
                 </div>
               </form>
             </div>
@@ -351,24 +405,37 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
               <form [formGroup]="contactsForm">
                 <div formArrayName="contacts">
                   <div *ngFor="let contact of contactsArray.controls; let i=index" [formGroupName]="i" class="contact-row">
-                    <app-searchable-select
-                      [ngModel]="contact.get('contactType')?.value"
-                      (ngModelChange)="contact.get('contactType')?.setValue($event)"
-                      label="نوع جهة الاتصال"
-                      [options]="contactTypeOptions"
-                      [required]="true"
-                      [ngModelOptions]="{standalone: true}">
-                    </app-searchable-select>
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>نوع جهة الاتصال</mat-label>
+                      <mat-select formControlName="contactType">
+                        <mat-option [value]="null">اختر النوع</mat-option>
+                        <mat-option *ngFor="let type of contactTypeOptions" [value]="type.value">
+                          {{ type.label }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="contact.get('contactType')?.hasError('required')">النوع مطلوب</mat-error>
+                    </mat-form-field>
 
                     <mat-form-field appearance="outline" class="contact-value">
                       <mat-label>القيمة</mat-label>
-                      <input matInput formControlName="contactValue" placeholder="مثال: 05xxxxxxxx">
+                      <input matInput formControlName="contactValue" placeholder="مثال: 05xxxxxxxx أو example@email.com">
                       <mat-error *ngIf="contact.get('contactValue')?.hasError('required')">القيمة مطلوبة</mat-error>
                     </mat-form-field>
 
-                    <button mat-icon-button color="warn" (click)="removeContact(i)" type="button" matTooltip="حذف" *ngIf="contactsArray.length > 1">
-                      <mat-icon>delete</mat-icon>
-                    </button>
+                    <div class="contact-actions">
+                      <button mat-icon-button color="warn" (click)="removeContact(i)" type="button" matTooltip="حذف" [disabled]="contactsArray.length <= 1">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                      <span class="contact-status" *ngIf="isEditMode && contact.get('id')?.value">
+                        <mat-icon class="status-icon existing" matTooltip="جهة اتصال حالية">check_circle</mat-icon>
+                      </span>
+                      <span class="contact-status" *ngIf="isEditMode && !contact.get('id')?.value">
+                        <mat-icon class="status-icon new" matTooltip="جهة اتصال جديدة">add_circle</mat-icon>
+                      </span>
+                      <span class="contact-status" *ngIf="isEditMode && contact.get('id')?.value && contact.get('isModified')?.value">
+                        <mat-icon class="status-icon modified" matTooltip="تم التعديل">edit</mat-icon>
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <button mat-stroked-button type="button" (click)="addContact()" class="add-contact-btn">
@@ -404,8 +471,8 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
                     <div><strong>الاسم:</strong> {{ basicInfoForm.get('fullName')?.value }}</div>
                     <div><strong>رقم الهوية:</strong> {{ basicInfoForm.get('nationalId')?.value }}</div>
                     <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
-                    <div><strong>الجنس:</strong> {{ basicInfoForm.get('gender')?.value?.title }}</div>
-                    <div><strong>نوع الموظف:</strong> {{ basicInfoForm.get('employeeType')?.value?.title }}</div>
+                    <div><strong>الجنس:</strong> {{ basicInfoForm.get('gender')?.value?.title || '-' }}</div>
+                    <div><strong>نوع الموظف:</strong> {{ basicInfoForm.get('employeeType')?.value?.title || '-' }}</div>
                     <div><strong>تاريخ التوظيف:</strong> {{ basicInfoForm.get('hireDate')?.value | date:'dd/MM/yyyy' }}</div>
                     <div *ngIf="isEditMode"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
                   </div>
@@ -416,29 +483,35 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
                   <div class="summary-grid">
                     <div><strong>الراتب:</strong> {{ financialForm.get('salary')?.value | currency:'EGP' }}</div>
                     <div><strong>الراتب المتبقي:</strong> {{ financialForm.get('remainedSalary')?.value | currency:'EGP' }}</div>
-                    <div><strong>نوع الراتب:</strong> {{ financialForm.get('salaryType')?.value?.title }}</div>
+                    <div><strong>نوع الراتب:</strong> {{ financialForm.get('salaryType')?.value?.title || '-' }}</div>
                   </div>
                 </mat-card>
 
-                <mat-card class="summary-card" *ngIf="selectedDepartments.length > 0">
-                  <mat-card-title>الأقسام</mat-card-title>
-                  <div class="department-chips">
-                    <mat-chip *ngFor="let dept of selectedDepartments">{{ dept.title }}</mat-chip>
+                <mat-card class="summary-card" *ngIf="getSelectedDepartments().length > 0">
+                  <mat-card-title>الأقسام ({{ getSelectedDepartments().length }})</mat-card-title>
+                  <div class="items-chips">
+                    <mat-chip *ngFor="let dept of getSelectedDepartments()">{{ dept.title }}</mat-chip>
                   </div>
                 </mat-card>
 
-                <mat-card class="summary-card" *ngIf="selectedCourses.length > 0 && isTrainer">
-                  <mat-card-title>الدورات</mat-card-title>
-                  <div class="course-chips">
-                    <mat-chip *ngFor="let course of selectedCourses">{{ course.title }}</mat-chip>
+                <mat-card class="summary-card" *ngIf="getSelectedCourses().length > 0 && isTrainer">
+                  <mat-card-title>الدورات ({{ getSelectedCourses().length }})</mat-card-title>
+                  <div class="items-chips">
+                    <mat-chip *ngFor="let course of getSelectedCourses()">{{ course.title }}</mat-chip>
                   </div>
                 </mat-card>
 
                 <mat-card class="summary-card" *ngIf="getContactsList().length > 0">
-                  <mat-card-title>جهات الاتصال</mat-card-title>
+                  <mat-card-title>جهات الاتصال ({{ getContactsList().length }})</mat-card-title>
                   <div class="contacts-summary">
                     <div *ngFor="let contact of getContactsList()" class="summary-item">
-                      <strong>{{ contact.contactType?.title }}:</strong> {{ contact.contactValue }}
+                      <strong>{{ contact.contactType?.title || 'جهة اتصال' }}:</strong> {{ contact.contactValue }}
+                      <span class="contact-action-badge" *ngIf="isEditMode && contact.id">
+                        <mat-icon class="existing-badge" matTooltip="موجود">check_circle</mat-icon>
+                      </span>
+                      <span class="contact-action-badge" *ngIf="isEditMode && !contact.id">
+                        <mat-icon class="new-badge" matTooltip="جديد">add_circle</mat-icon>
+                      </span>
                     </div>
                   </div>
                 </mat-card>
@@ -658,75 +731,50 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
       gap: 16px;
       align-items: center;
       margin-bottom: 16px;
+      padding: 12px 16px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      transition: border-color 0.3s;
+    }
+
+    .contact-row:hover {
+      border-color: #f59e0b;
     }
 
     .contact-value {
       width: 100%;
     }
 
-    .add-contact-btn {
-      margin-top: 16px;
-    }
-
-    .selected-departments, .selected-courses {
-      margin-top: 16px;
-    }
-
-    .selected-departments label, .selected-courses label {
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .department-chips, .course-chips {
+    .contact-actions {
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
       gap: 8px;
     }
 
-    .summary-section {
+    .contact-status {
       display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .summary-card {
-      padding: 16px;
-    }
-
-    .summary-card mat-card-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #f59e0b;
-      margin-bottom: 12px;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .summary-item {
-      padding: 4px 0;
-      border-bottom: 1px solid #f3f4f6;
-    }
-
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.95);
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
-      border-radius: 24px;
-      z-index: 1000;
+    }
+
+    .status-icon {
+      font-size: 20px;
+    }
+
+    .status-icon.existing {
+      color: #10b981;
+    }
+
+    .status-icon.new {
+      color: #3b82f6;
+    }
+
+    .status-icon.modified {
+      color: #f59e0b;
+    }
+
+    .add-contact-btn {
+      margin-top: 16px;
     }
 
     .step-header {
@@ -758,7 +806,7 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
       color: #64748b;
     }
 
-    .department-selection-grid, .course-selection-grid {
+    .selection-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 12px;
@@ -769,14 +817,59 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
       border: 1px solid #e5e7eb;
     }
 
-    .department-item, .course-item {
+    .selection-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       padding: 8px 12px;
       border-radius: 8px;
       transition: background 0.2s;
     }
 
-    .department-item:hover, .course-item:hover {
+    .selection-item:hover {
       background: #f8fafc;
+    }
+
+    .assignment-status {
+      display: flex;
+      align-items: center;
+    }
+
+    .assigned-icon {
+      color: #10b981;
+      font-size: 16px;
+    }
+
+    .selected-items {
+      margin-top: 16px;
+    }
+
+    .selected-items label {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .items-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .no-selection {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 8px;
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .no-selection mat-icon {
+      color: #d1d5db;
     }
 
     .info-banner {
@@ -793,6 +886,75 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
 
     .info-banner mat-icon {
       color: #f59e0b;
+    }
+
+    .summary-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .summary-section h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .summary-card {
+      padding: 16px;
+    }
+
+    .summary-card mat-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f59e0b;
+      margin-bottom: 12px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .summary-item {
+      padding: 4px 0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contact-action-badge {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .existing-badge {
+      color: #10b981;
+      font-size: 16px;
+    }
+
+    .new-badge {
+      color: #3b82f6;
+      font-size: 16px;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border-radius: 24px;
+      z-index: 1000;
     }
 
     @media (max-width: 768px) {
@@ -816,54 +978,62 @@ import { AssignDepartmentDTO, AssignCourseDTO } from '../../../../core/models/em
         width: 100%;
         justify-content: center;
       }
-      .department-selection-grid, .course-selection-grid {
+      .selection-grid {
+        grid-template-columns: 1fr;
+      }
+      .summary-grid {
         grid-template-columns: 1fr;
       }
     }
   `]
 })
-export class EmployeeWizardModalComponent implements OnInit {
+export class EmployeeWizardModalComponent implements OnInit, OnDestroy {
   @ViewChild('stepper') stepper!: MatStepper;
   
+  // Form Groups
   basicInfoForm: FormGroup;
   financialForm: FormGroup;
   departmentsForm: FormGroup;
   coursesForm: FormGroup;
   contactsForm: FormGroup;
   
-  departments: any[] = [];
+  // Department and Course assignments
+  departmentAssignments: DepartmentAssignment[] = [];
+  courseAssignments: CourseAssignment[] = [];
   allCourses: any[] = [];
-  selectedDepartmentIds: number[] = [];
-  selectedCourseIds: number[] = [];
   
-  genderOptions: SelectOption[] = [];
-  employeeTypeOptions: SelectOption[] = [];
-  salaryTypeOptions: SelectOption[] = [];
-  contactTypeOptions: SelectOption[] = [];
+  // Options
+  genderOptions: any[] = [];
+  employeeTypeOptions: any[] = [];
+  salaryTypeOptions: any[] = [];
+  contactTypeOptions: any[] = [];
   
+  // State
   employeeImageFid: string | null = null;
-  
   isLoading = false;
   isSubmitting = false;
   isEditMode = false;
   employeeId: number | null = null;
   isTrainer: boolean = false;
   
+  // Contact tracking
+  private deletedContactIds: number[] = [];
+  private destroy$ = new Subject<void>();
+  
   FileDomain = FileDomain;
   
+  // Getters
   get contactsArray() { return this.contactsForm.get('contacts') as FormArray; }
-  
-  get selectedDepartments(): any[] {
-    return this.departments.filter(d => this.selectedDepartmentIds.includes(d.id));
+  get selectedDepartments(): DepartmentAssignment[] {
+    return this.departmentAssignments.filter(d => d.assigned);
   }
-  
-  get selectedCourses(): any[] {
-    return this.allCourses.filter(c => this.selectedCourseIds.includes(c.id));
+  get selectedCourses(): CourseAssignment[] {
+    return this.courseAssignments.filter(c => c.assigned);
   }
 
   constructor(
     private dialogRef: MatDialogRef<EmployeeWizardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: { employeeId?: number },
+    @Inject(MAT_DIALOG_DATA) private data: { employeeId?: number; employeeData?: any },
     private fb: FormBuilder,
     private employeeService: EmployeeService,
     private departmentService: DepartmentService,
@@ -875,9 +1045,10 @@ export class EmployeeWizardModalComponent implements OnInit {
     this.isEditMode = !!data?.employeeId;
     this.employeeId = data?.employeeId || null;
     
+    // Initialize forms
     this.basicInfoForm = this.fb.group({
-      fullName: ['', Validators.required],
-      nationalId: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.minLength(3)]],
+      nationalId: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
       birthDate: [''],
       gender: [null],
       employeeType: [null, Validators.required],
@@ -891,13 +1062,8 @@ export class EmployeeWizardModalComponent implements OnInit {
       salaryType: [null]
     });
     
-    this.departmentsForm = this.fb.group({
-      departmentIds: [[]]
-    });
-    
-    this.coursesForm = this.fb.group({
-      courseIds: [[]]
-    });
+    this.departmentsForm = this.fb.group({});
+    this.coursesForm = this.fb.group({});
     
     this.contactsForm = this.fb.group({
       contacts: this.fb.array([])
@@ -914,15 +1080,25 @@ export class EmployeeWizardModalComponent implements OnInit {
     this.basicInfoForm.get('employeeType')?.valueChanges.subscribe((type) => {
       this.isTrainer = type?.id === 1;
       if (!this.isTrainer) {
-        this.selectedCourseIds = [];
-        this.coursesForm.patchValue({ courseIds: [] });
+        this.courseAssignments.forEach(c => c.assigned = false);
+        this.coursesForm.updateValueAndValidity();
       }
+      this.cdr.detectChanges();
     });
     
     if (this.isEditMode && this.employeeId) {
       this.loadEmployeeData();
     }
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ============================================================
+  // LOADING METHODS
+  // ============================================================
 
   loadSelectOptions(): void {
     this.genderOptions = GENDERS.map(g => ({ value: g, label: g.title }));
@@ -934,7 +1110,14 @@ export class EmployeeWizardModalComponent implements OnInit {
   loadDepartments(): void {
     this.departmentService.getAllDepartmentsLookup().subscribe({
       next: (res: any) => {
-        this.departments = res.list || [];
+        const departments = res.list || [];
+        this.departmentAssignments = departments.map((d: any) => ({
+          id: d.id,
+          title: d.title,
+          assigned: false,
+          assignmentId: undefined
+        }));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل الأقسام');
@@ -946,6 +1129,13 @@ export class EmployeeWizardModalComponent implements OnInit {
     this.courseService.getAllCoursesLookup().subscribe({
       next: (res: any) => {
         this.allCourses = res.list || [];
+        this.courseAssignments = this.allCourses.map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          assigned: false,
+          assignmentId: undefined
+        }));
+        this.cdr.detectChanges();
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل الدورات');
@@ -953,33 +1143,33 @@ export class EmployeeWizardModalComponent implements OnInit {
     });
   }
 
+  // ============================================================
+  // EMPLOYEE DATA LOADING
+  // ============================================================
+
   loadEmployeeData(): void {
     this.isLoading = true;
     this.employeeService.getEmployeeById(this.employeeId!).subscribe({
-      next: (emp: any) => {
-        console.log('Loading employee data:', emp);
+      next: (emp: EmployeeVTO) => {
+        console.log('📋 Loading employee data:', emp);
         
-        // FIX: Map gender - Use the object directly since it's already a LookupVTO
-        let genderObj: any = null;
-        if (emp.gender) {
-          // emp.gender is already an object with id and title
-          genderObj = GENDERS.find(g => g.id === emp.gender.id) || null;
+        // Map gender
+        let genderObj: Gender | null = null;
+        if (emp.gender && emp.gender.id) {
+          genderObj = GENDERS.find(g => g.id === emp.gender?.id) || null;
         }
-        console.log('Mapped gender:', genderObj);
         
-        // FIX: Map employee type - Use the object directly since it's already a LookupVTO
-        let employeeTypeObj: any = null;
-        if (emp.employeeType) {
-          // emp.employeeType is already an object with id and title
+        // Map employee type
+        let employeeTypeObj: EmployeeType | null = null;
+        if (emp.employeeType && emp.employeeType.id) {
           employeeTypeObj = EMPLOYEE_TYPES.find(t => t.id === emp.employeeType.id) || null;
           this.isTrainer = emp.employeeType.id === 1;
         }
-        console.log('Mapped employee type:', employeeTypeObj);
         
-        // Map salary type - Use the object directly
-        let salaryTypeObj: any = null;
-        if (emp.salaryType) {
-          salaryTypeObj = SALARY_TYPES.find(s => s.id === emp.salaryType.id) || null;
+        // Map salary type
+        let salaryTypeObj: SalaryType | null = null;
+        if (emp.salaryType && emp.salaryType.id) {
+          salaryTypeObj = SALARY_TYPES.find(s => s.id === emp.salaryType?.id) || null;
         }
         
         // Patch basic info
@@ -993,15 +1183,6 @@ export class EmployeeWizardModalComponent implements OnInit {
           isActive: emp.isActive !== undefined ? emp.isActive : true
         });
         
-        // Force update for SearchableSelect components
-        setTimeout(() => {
-          this.basicInfoForm.patchValue({
-            gender: genderObj,
-            employeeType: employeeTypeObj
-          });
-          this.cdr.detectChanges();
-        }, 100);
-        
         // Patch financial info
         this.financialForm.patchValue({
           salary: emp.salary || null,
@@ -1009,72 +1190,154 @@ export class EmployeeWizardModalComponent implements OnInit {
           salaryType: salaryTypeObj
         });
         
-        // Load Departments - Handle null case
-        const departmentIds = emp.departments?.map((d: any) => d.id) || [];
-        console.log('Loaded department IDs:', departmentIds);
-        this.selectedDepartmentIds = [...departmentIds];
-        this.departmentsForm.patchValue({
-          departmentIds: this.selectedDepartmentIds
-        });
+        // ============================================================
+        // LOAD DEPARTMENTS
+        // ============================================================
+        this.loadTrainerDepartmentAssignments(emp);
         
-        // Force update for departments
-        setTimeout(() => {
-          this.departmentsForm.patchValue({
-            departmentIds: this.selectedDepartmentIds
-          });
-          this.cdr.detectChanges();
-        }, 150);
+        // ============================================================
+        // LOAD COURSES
+        // ============================================================
+        this.loadTrainerCourseAssignments(emp);
         
-        // Load Courses - Handle null case
-        const courseIds = emp.courses?.map((c: any) => c.id) || [];
-        console.log('Loaded course IDs:', courseIds);
-        this.selectedCourseIds = [...courseIds];
-        this.coursesForm.patchValue({
-          courseIds: this.selectedCourseIds
-        });
-        
-        // Force update for courses
-        setTimeout(() => {
-          this.coursesForm.patchValue({
-            courseIds: this.selectedCourseIds
-          });
-          this.cdr.detectChanges();
-        }, 150);
+        // ============================================================
+        // LOAD CONTACTS
+        // ============================================================
+        this.loadContacts(emp.contacts || []);
         
         // Set image
         if (emp.imageUrl) {
           this.employeeImageFid = emp.imageUrl;
         }
         
-        // Patch contacts with IDs
-        if (emp.contacts && emp.contacts.length > 0) {
-          while (this.contactsArray.length) {
-            this.contactsArray.removeAt(0);
-          }
-          emp.contacts.forEach((c: any) => {
-            let contactTypeObj: any = null;
-            if (c.contactType) {
-              // c.contactType is already an object with id and title
-              contactTypeObj = CONTACT_TYPES.find(ct => ct.id === c.contactType.id) || null;
-            }
-            this.contactsArray.push(this.fb.group({
-              id: [c.id],
-              contactType: [contactTypeObj, Validators.required],
-              contactValue: [c.contactValue || '', Validators.required]
-            }));
-          });
-        }
-        
         this.cdr.detectChanges();
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading employee:', err);
+        console.error('❌ Error loading employee:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات الموظف');
         this.isLoading = false;
       }
     });
   }
+
+  // ============================================================
+  // LOAD TRAINER DEPARTMENT ASSIGNMENTS
+  // ============================================================
+
+  private loadTrainerDepartmentAssignments(emp: EmployeeVTO): void {
+    if (emp.departments && emp.departments.length > 0) {
+      const deptMap = new Map<number, number>();
+      emp.departments.forEach((d: any) => {
+        deptMap.set(d.id, d.id);
+      });
+      
+      this.departmentAssignments.forEach(dept => {
+        if (deptMap.has(dept.id)) {
+          dept.assigned = true;
+        }
+      });
+    }
+    
+    if (emp.employeeType?.id === 1) {
+      this.employeeService.getTrainerDepartments({ trainerId: emp.id, pageSize: 100 }).subscribe({
+        next: (res: any) => {
+          const items = res.items || [];
+          items.forEach((item: any) => {
+            const deptId = item.department?.id;
+            if (deptId) {
+              const assignment = this.departmentAssignments.find(d => d.id === deptId);
+              if (assignment) {
+                assignment.assigned = true;
+                assignment.assignmentId = item.id;
+              }
+            }
+          });
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading trainer department assignments:', err);
+        }
+      });
+    }
+  }
+
+  // ============================================================
+  // LOAD TRAINER COURSE ASSIGNMENTS
+  // ============================================================
+
+  private loadTrainerCourseAssignments(emp: EmployeeVTO): void {
+    if (emp.courses && emp.courses.length > 0) {
+      const courseMap = new Map<number, number>();
+      emp.courses.forEach((c: any) => {
+        courseMap.set(c.id, c.id);
+      });
+      
+      this.courseAssignments.forEach(course => {
+        if (courseMap.has(course.id)) {
+          course.assigned = true;
+        }
+      });
+    }
+    
+    if (emp.employeeType?.id === 1) {
+      this.employeeService.getTrainerCourses({ trainerId: emp.id, pageSize: 100 }).subscribe({
+        next: (res: any) => {
+          const items = res.items || [];
+          items.forEach((item: any) => {
+            const courseId = item.course?.id;
+            if (courseId) {
+              const assignment = this.courseAssignments.find(c => c.id === courseId);
+              if (assignment) {
+                assignment.assigned = true;
+                assignment.assignmentId = item.id;
+              }
+            }
+          });
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading trainer course assignments:', err);
+        }
+      });
+    }
+  }
+
+  // ============================================================
+  // CONTACT LOADING
+  // ============================================================
+
+  private loadContacts(contacts: EmployeeContactVTO[]): void {
+    while (this.contactsArray.length) {
+      this.contactsArray.removeAt(0);
+    }
+    
+    if (contacts && contacts.length > 0) {
+      contacts.forEach((c: EmployeeContactVTO) => {
+        let contactTypeObj: ContactType | null = null;
+        if (c.contactType && c.contactType.id) {
+          contactTypeObj = CONTACT_TYPES.find(ct => ct.id === c.contactType.id) || null;
+        }
+        
+        this.contactsArray.push(this.fb.group({
+          id: [c.id],
+          contactType: [contactTypeObj, Validators.required],
+          contactValue: [c.contactValue || '', Validators.required],
+          isNew: [false],
+          isDeleted: [false],
+          isModified: [false],
+          originalValue: [c.contactValue || ''],
+          originalType: [contactTypeObj]
+        }));
+      });
+    } else {
+      this.addContact();
+    }
+  }
+
+  // ============================================================
+  // IMAGE HANDLING
+  // ============================================================
 
   onImageUploaded(fid: string): void {
     this.employeeImageFid = fid;
@@ -1086,62 +1349,245 @@ export class EmployeeWizardModalComponent implements OnInit {
     this.notification.showSuccess('تم حذف الصورة');
   }
 
-  isDepartmentSelected(deptId: number): boolean {
-    return this.selectedDepartmentIds.includes(deptId);
-  }
+  // ============================================================
+  // EMPLOYEE TYPE HANDLING
+  // ============================================================
 
-  toggleDepartment(deptId: number, checked: boolean): void {
-    if (checked) {
-      if (!this.selectedDepartmentIds.includes(deptId)) {
-        this.selectedDepartmentIds.push(deptId);
-      }
-    } else {
-      this.selectedDepartmentIds = this.selectedDepartmentIds.filter(id => id !== deptId);
+  onEmployeeTypeChange(type: EmployeeType | null): void {
+    this.isTrainer = type?.id === 1;
+    if (!this.isTrainer) {
+      this.courseAssignments.forEach(c => c.assigned = false);
+      this.coursesForm.updateValueAndValidity();
     }
-    this.departmentsForm.patchValue({ departmentIds: this.selectedDepartmentIds });
+    this.cdr.detectChanges();
   }
 
-  removeDepartment(deptId: number): void {
-    this.selectedDepartmentIds = this.selectedDepartmentIds.filter(id => id !== deptId);
-    this.departmentsForm.patchValue({ departmentIds: this.selectedDepartmentIds });
-  }
+  // ============================================================
+  // DEPARTMENT MANAGEMENT
+  // ============================================================
 
-  isCourseSelected(courseId: number): boolean {
-    return this.selectedCourseIds.includes(courseId);
-  }
-
-  toggleCourse(courseId: number, checked: boolean): void {
-    if (checked) {
-      if (!this.selectedCourseIds.includes(courseId)) {
-        this.selectedCourseIds.push(courseId);
-      }
-    } else {
-      this.selectedCourseIds = this.selectedCourseIds.filter(id => id !== courseId);
+  toggleDepartment(dept: DepartmentAssignment, checked: boolean): void {
+    dept.assigned = checked;
+    if (!checked) {
+      dept.assignmentId = undefined;
     }
-    this.coursesForm.patchValue({ courseIds: this.selectedCourseIds });
+    this.departmentsForm.updateValueAndValidity();
+    this.cdr.detectChanges();
   }
 
-  removeCourse(courseId: number): void {
-    this.selectedCourseIds = this.selectedCourseIds.filter(id => id !== courseId);
-    this.coursesForm.patchValue({ courseIds: this.selectedCourseIds });
+  removeDepartment(dept: DepartmentAssignment): void {
+    dept.assigned = false;
+    dept.assignmentId = undefined;
+    this.departmentsForm.updateValueAndValidity();
+    this.cdr.detectChanges();
   }
+
+  getSelectedDepartments(): DepartmentAssignment[] {
+    return this.departmentAssignments.filter(d => d.assigned);
+  }
+
+  // ============================================================
+  // COURSE MANAGEMENT
+  // ============================================================
+
+  toggleCourse(course: CourseAssignment, checked: boolean): void {
+    course.assigned = checked;
+    if (!checked) {
+      course.assignmentId = undefined;
+    }
+    this.coursesForm.updateValueAndValidity();
+    this.cdr.detectChanges();
+  }
+
+  removeCourse(course: CourseAssignment): void {
+    course.assigned = false;
+    course.assignmentId = undefined;
+    this.coursesForm.updateValueAndValidity();
+    this.cdr.detectChanges();
+  }
+
+  getSelectedCourses(): CourseAssignment[] {
+    return this.courseAssignments.filter(c => c.assigned);
+  }
+
+  // ============================================================
+  // CONTACTS MANAGEMENT - FULL CRUD
+  // ============================================================
 
   addContact(): void {
-    this.contactsArray.push(this.fb.group({
+    const contactGroup = this.fb.group({
       id: [null],
       contactType: [null, Validators.required],
-      contactValue: ['', Validators.required]
-    }));
+      contactValue: ['', Validators.required],
+      isNew: [true],
+      isDeleted: [false],
+      isModified: [false],
+      originalValue: [''],
+      originalType: [null]
+    });
+    
+    this.contactsArray.push(contactGroup);
+    this.cdr.detectChanges();
   }
 
   removeContact(index: number): void {
-    this.contactsArray.removeAt(index);
+    const contactGroup = this.contactsArray.at(index);
+    const contactId = contactGroup.get('id')?.value;
+    
+    if (contactId) {
+      contactGroup.patchValue({ 
+        isDeleted: true,
+        isModified: false
+      });
+      this.deletedContactIds.push(contactId);
+      this.contactsArray.removeAt(index);
+    } else {
+      this.contactsArray.removeAt(index);
+    }
+    
+    this.cdr.detectChanges();
   }
 
   getContactsList(): any[] {
     const contacts = this.contactsArray.value;
-    return contacts.filter((c: any) => c.contactType && c.contactValue && c.contactValue.trim() !== '');
+    return contacts.filter((c: any) => 
+      c.contactType && 
+      c.contactValue && 
+      c.contactValue.trim() !== '' &&
+      !c.isDeleted
+    );
   }
+
+  /**
+   * Map ContactType object to enum string for API
+   * IMPORTANT: 
+   * - id: 1 = 'ايميل' -> 'EMAIL'
+   * - id: 2 = 'هاتف' -> 'PHONE'
+   */
+  private mapContactTypeToEnum(contactType: ContactType | null): string {
+    if (!contactType) {
+      return 'PHONE';
+    }
+    if (contactType.id === 1) {
+      return 'EMAIL';
+    }
+    if (contactType.id === 2) {
+      return 'PHONE';
+    }
+    return 'PHONE';
+  }
+
+  /**
+   * Create contacts for a given employee
+   */
+  private createContactsForEmployee(employeeId: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const contacts = this.getContactsList();
+      
+      if (contacts.length === 0) {
+        console.log('ℹ️ No contacts to create');
+        resolve();
+        return;
+      }
+      
+      console.log(`📋 Creating ${contacts.length} contacts for employee ${employeeId}`);
+      
+      const createOperations = contacts.map((contact: any) => {
+        const contactDTO = {
+          contactType: this.mapContactTypeToEnum(contact.contactType),
+          contactValue: contact.contactValue
+        };
+        console.log(`  Creating contact: Type=${contact.contactType?.title} (id=${contact.contactType?.id}) -> ${contactDTO.contactType}, Value=${contactDTO.contactValue}`);
+        return this.employeeService.createEmployeeContact(employeeId, contactDTO).toPromise();
+      });
+      
+      Promise.all(createOperations)
+        .then(() => {
+          console.log(`✅ All ${contacts.length} contacts created successfully`);
+          resolve();
+        })
+        .catch((error) => {
+          console.error('❌ Error creating contacts:', error);
+          reject(error);
+        });
+    });
+  }
+
+  /**
+   * Process contacts for submission (Edit Mode)
+   */
+  private processContacts(employeeId: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const contacts = this.contactsArray.value;
+      
+      const contactsToCreate = contacts.filter((c: any) => 
+        c.contactType && 
+        c.contactValue && 
+        c.contactValue.trim() !== '' &&
+        !c.isDeleted &&
+        !c.id
+      );
+      
+      const contactsToUpdate = contacts.filter((c: any) => 
+        c.contactType && 
+        c.contactValue && 
+        c.contactValue.trim() !== '' &&
+        !c.isDeleted &&
+        c.id &&
+        (c.isModified ||
+         c.contactValue !== c.originalValue ||
+         c.contactType?.id !== c.originalType?.id)
+      );
+      
+      const contactsToDelete = this.deletedContactIds;
+      
+      console.log('📋 Contact processing summary (Edit Mode):');
+      console.log('  New contacts to create:', contactsToCreate.length);
+      console.log('  Existing contacts to update:', contactsToUpdate.length);
+      console.log('  Contacts to delete:', contactsToDelete.length);
+      
+      const createOperations = contactsToCreate.map((contact: any) => {
+        const contactDTO = {
+          contactType: this.mapContactTypeToEnum(contact.contactType),
+          contactValue: contact.contactValue
+        };
+        return this.employeeService.createEmployeeContact(employeeId, contactDTO).toPromise();
+      });
+      
+      const updateOperations = contactsToUpdate.map((contact: any) => {
+        const contactDTO = {
+          contactType: this.mapContactTypeToEnum(contact.contactType),
+          contactValue: contact.contactValue
+        };
+        return this.employeeService.updateEmployeeContact(employeeId, contact.id, contactDTO).toPromise();
+      });
+      
+      const deleteOperations = contactsToDelete.map((contactId: number) => {
+        return this.employeeService.deleteEmployeeContact(employeeId, contactId).toPromise();
+      });
+      
+      const allOperations = [...createOperations, ...updateOperations, ...deleteOperations];
+      
+      if (allOperations.length === 0) {
+        resolve();
+        return;
+      }
+      
+      Promise.all(allOperations)
+        .then(() => {
+          console.log('✅ All contact operations completed successfully');
+          resolve();
+        })
+        .catch((error) => {
+          console.error('❌ Error processing contacts:', error);
+          reject(error);
+        });
+    });
+  }
+
+  // ============================================================
+  // PRINT METHODS
+  // ============================================================
 
   private escapeHtml(str: string | null | undefined): string {
     if (!str) return '';
@@ -1156,7 +1602,7 @@ export class EmployeeWizardModalComponent implements OnInit {
   async printPreview(): Promise<void> {
     let imagePreviewUrl: string | null = null;
     
-    if (this.employeeImageFid && /^\d{15}(\d{3})?$/.test(this.employeeImageFid)) {
+    if (this.employeeImageFid) {
       try {
         const blob = await this.fileService.downloadFile(this.employeeImageFid).toPromise();
         if (blob) {
@@ -1177,8 +1623,8 @@ export class EmployeeWizardModalComponent implements OnInit {
       salary: this.financialForm.get('salary')?.value,
       remainedSalary: this.financialForm.get('remainedSalary')?.value,
       salaryType: this.financialForm.get('salaryType')?.value,
-      departments: this.selectedDepartments,
-      courses: this.selectedCourses,
+      departments: this.getSelectedDepartments(),
+      courses: this.getSelectedCourses(),
       contacts: this.getContactsList(),
       imageUrl: imagePreviewUrl,
       isNewEmployee: !this.isEditMode,
@@ -1205,6 +1651,26 @@ export class EmployeeWizardModalComponent implements OnInit {
     
     const today = new Date().toLocaleDateString('ar-EG');
     
+    let departmentsHtml = '';
+    if (data.departments && data.departments.length > 0) {
+      departmentsHtml = data.departments.map((d: any) => `<span class="dept-chip">${d.title}</span>`).join('');
+    }
+    
+    let coursesHtml = '';
+    if (data.courses && data.courses.length > 0) {
+      coursesHtml = data.courses.map((c: any) => `<span class="course-chip">${c.title}</span>`).join('');
+    }
+    
+    let contactsHtml = '';
+    if (data.contacts && data.contacts.length > 0) {
+      contactsHtml = data.contacts.map((c: any) => `
+        <div class="contact-item">
+          <span class="contact-type">${c.contactType?.title || 'جهة اتصال'}:</span>
+          <span>${c.contactValue}</span>
+        </div>
+      `).join('');
+    }
+    
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -1228,25 +1694,16 @@ export class EmployeeWizardModalComponent implements OnInit {
           .info-label { font-weight: 600; color: #374151; font-size: 13px; margin-bottom: 4px; }
           .info-value { color: #1f2937; font-size: 14px; }
           .info-value.amount { font-weight: 700; color: #f59e0b; }
-          .full-width { grid-column: span 2; }
-          .contacts-list { display: flex; flex-direction: column; gap: 8px; }
+          .contacts-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
           .contact-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
           .contact-type { font-weight: 600; color: #f59e0b; min-width: 100px; }
-          .department-chips, .course-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-          .dept-chip, .course-chip { background: #f3f4f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
-          .declaration { margin: 24px 0; padding: 16px; background: #f9fafb; border-radius: 12px; font-size: 12px; line-height: 1.6; text-align: justify; }
+          .dept-chip, .course-chip { display: inline-block; background: #f3f4f6; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 2px; }
           .signature-section { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
           .signature-box { text-align: center; flex: 1; }
           .signature-line { width: 100%; border-top: 1px solid #000; margin-top: 40px; padding-top: 8px; }
-          .signature-date { font-size: 10px; color: #6b7280; margin-top: 8px; }
           .footer { text-align: center; margin-top: 30px; padding: 16px; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
           .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; font-size: 60px; white-space: nowrap; pointer-events: none; }
           @media print { .watermark { display: none; } }
-          @media (max-width: 600px) { 
-            .info-grid { grid-template-columns: 1fr; } 
-            .signature-section { flex-direction: column; align-items: center; gap: 30px; }
-            .signature-box { width: 100%; }
-          }
         </style>
       </head>
       <body>
@@ -1273,6 +1730,29 @@ export class EmployeeWizardModalComponent implements OnInit {
             <div class="info-item"><div class="info-label">تاريخ التوظيف</div><div class="info-value">${data.hireDate ? new Date(data.hireDate).toLocaleDateString('ar-EG') : '-'}</div></div>
             ${!data.isNewEmployee ? `<div class="info-item"><div class="info-label">الحالة</div><div class="info-value">${data.isActive ? 'نشط' : 'غير نشط'}</div></div>` : ''}
           </div>
+          
+          <h2>💰 المعلومات المالية</h2>
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">الراتب</div><div class="info-value amount">${data.salary || 0} جم</div></div>
+            <div class="info-item"><div class="info-label">الراتب المتبقي</div><div class="info-value">${data.remainedSalary || 0} جم</div></div>
+            <div class="info-item"><div class="info-label">نوع الراتب</div><div class="info-value">${data.salaryType?.title || '-'}</div></div>
+          </div>
+          
+          ${data.departments && data.departments.length > 0 ? `
+            <h2>🏢 الأقسام (${data.departments.length})</h2>
+            <div>${departmentsHtml}</div>
+          ` : ''}
+          
+          ${data.courses && data.courses.length > 0 ? `
+            <h2>📚 الدورات (${data.courses.length})</h2>
+            <div>${coursesHtml}</div>
+          ` : ''}
+          
+          ${data.contacts && data.contacts.length > 0 ? `
+            <h2>📞 جهات الاتصال (${data.contacts.length})</h2>
+            <div class="contacts-list">${contactsHtml}</div>
+          ` : ''}
+          
           <div class="signature-section">
             <div class="signature-box"><div class="signature-line"></div><div>توقيع الموظف</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>توقيع مدير الموارد البشرية</div></div>
@@ -1291,9 +1771,14 @@ export class EmployeeWizardModalComponent implements OnInit {
     this.notification.showSuccess('تم فتح نموذج الطلب - يمكنك طباعته للحصول على التوقيعات');
   }
 
+  // ============================================================
+  // SUBMIT METHODS
+  // ============================================================
+
   submitEmployee(): void {
     if (this.basicInfoForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
+      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح');
+      this.basicInfoForm.markAllAsTouched();
       return;
     }
     
@@ -1303,19 +1788,9 @@ export class EmployeeWizardModalComponent implements OnInit {
     const employeeTypeObj = this.basicInfoForm.get('employeeType')?.value;
     const salaryTypeObj = this.financialForm.get('salaryType')?.value;
     
-    // Proper gender mapping
-    let genderEnum = null;
-    if (genderObj) {
-      genderEnum = genderObj.id === 1 ? 'MALE' : 'FEMALE';
-    }
+    const genderEnum = genderObj ? (genderObj.id === 1 ? 'MALE' : 'FEMALE') : null;
+    const employeeTypeEnum = employeeTypeObj ? (employeeTypeObj.id === 1 ? 'TRAINER' : 'MANAGER') : null;
     
-    // Proper employee type mapping
-    let employeeTypeEnum = null;
-    if (employeeTypeObj) {
-      employeeTypeEnum = employeeTypeObj.id === 1 ? 'TRAINER' : 'MANAGER';
-    }
-    
-    // Proper salary type mapping
     let salaryTypeEnum = null;
     if (salaryTypeObj) {
       switch(salaryTypeObj.id) {
@@ -1327,29 +1802,14 @@ export class EmployeeWizardModalComponent implements OnInit {
       }
     }
     
-    // Get valid contacts
-    const contactsList = this.getContactsList().map(contact => {
-      const contactTypeObj = contact.contactType;
-      let contactTypeValue = 'PHONE';
-      if (contactTypeObj) {
-        if (contactTypeObj.id === 1) {
-          contactTypeValue = 'EMAIL';
-        } else if (contactTypeObj.id === 2) {
-          contactTypeValue = 'PHONE';
-        }
-      }
-      return {
-        id: contact.id || null,
-        contactType: contactTypeValue,
-        contactValue: contact.contactValue
-      };
-    });
+    const selectedDepartmentIds = this.getSelectedDepartments().map(d => d.id);
+    const selectedCourseIds = this.getSelectedCourses().map(c => c.id);
     
-    // =============================================
-    // For Edit Mode: Update employee and manage contacts separately
-    // =============================================
     if (this.isEditMode && this.employeeId) {
-      // Create the employee update payload WITHOUT contacts
+      // ============================================================
+      // EDIT MODE
+      // ============================================================
+      
       const employeeUpdateData: any = {
         fullName: this.basicInfoForm.get('fullName')?.value,
         nationalId: this.basicInfoForm.get('nationalId')?.value,
@@ -1360,32 +1820,42 @@ export class EmployeeWizardModalComponent implements OnInit {
         remainedSalary: this.financialForm.get('remainedSalary')?.value ? Number(this.financialForm.get('remainedSalary')?.value) : null,
         salaryType: salaryTypeEnum,
         hireDate: this.basicInfoForm.get('hireDate')?.value,
-        departmentIds: this.selectedDepartmentIds.length > 0 ? this.selectedDepartmentIds : [],
+        departmentIds: selectedDepartmentIds,
         imageUrl: this.employeeImageFid,
         isActive: this.basicInfoForm.get('isActive')?.value
       };
       
-      console.log('Updating employee (without contacts):', employeeUpdateData);
+      console.log('📤 Updating employee:', employeeUpdateData);
       
-      // Update the employee basic info
-      this.employeeService.updateEmployee(this.employeeId, employeeUpdateData).subscribe({
-        next: (res: any) => {
-          console.log('Employee updated successfully:', res);
-          
-          // Now handle contacts separately using the employee ID
-          this.handleContactsUpdate(this.employeeId!, contactsList);
-        },
-        error: (err) => {
-          console.error('Update error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث الموظف');
+      this.employeeService.updateEmployee(this.employeeId, employeeUpdateData)
+        .pipe(finalize(() => {
           this.isSubmitting = false;
-        }
-      });
-    } 
-    // =============================================
-    // For Create Mode: Create employee then add contacts
-    // =============================================
-    else {
+        }))
+        .subscribe({
+          next: () => {
+            console.log('✅ Employee updated successfully');
+            this.processContacts(this.employeeId!)
+              .then(() => {
+                console.log('✅ Contacts processed successfully');
+                this.handleDepartmentAssignments(this.employeeId!, this.departmentAssignments);
+              })
+              .catch((error) => {
+                console.error('❌ Error processing contacts:', error);
+                this.notification.showError('حدث خطأ في تحديث جهات الاتصال');
+                this.handleDepartmentAssignments(this.employeeId!, this.departmentAssignments);
+              });
+          },
+          error: (err) => {
+            console.error('❌ Update error:', err);
+            this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث الموظف');
+          }
+        });
+    } else {
+      // ============================================================
+      // CREATE MODE - Create employee first without contacts
+      // ============================================================
+      
+      // Remove contacts from the payload - they will be created separately
       const formData: any = {
         fullName: this.basicInfoForm.get('fullName')?.value,
         nationalId: this.basicInfoForm.get('nationalId')?.value,
@@ -1396,196 +1866,324 @@ export class EmployeeWizardModalComponent implements OnInit {
         remainedSalary: this.financialForm.get('remainedSalary')?.value ? Number(this.financialForm.get('remainedSalary')?.value) : null,
         salaryType: salaryTypeEnum,
         hireDate: this.basicInfoForm.get('hireDate')?.value,
-        departmentIds: this.selectedDepartmentIds.length > 0 ? this.selectedDepartmentIds : [],
-        contacts: contactsList.map(c => ({ contactType: c.contactType, contactValue: c.contactValue })),
+        departmentIds: selectedDepartmentIds,
         imageUrl: this.employeeImageFid
       };
       
-      console.log('Creating employee with contacts:', formData);
+      console.log('📤 Creating employee (without contacts):', formData);
       
-      this.employeeService.createEmployee(formData).subscribe({
-        next: (res: any) => {
-          const newEmployeeId = res.id;
-          console.log('Employee created with ID:', newEmployeeId);
-          
-          // Assign departments if not included in the create request
-          if (this.selectedDepartmentIds.length > 0) {
-            this.assignDepartmentsToEmployee(newEmployeeId, this.selectedDepartmentIds);
-          }
-          
-          // Assign courses if trainer
-          if (this.isTrainer && this.selectedCourseIds.length > 0) {
-            this.assignCoursesToEmployee(newEmployeeId, this.selectedCourseIds);
-          }
-          
-          this.notification.showSuccess('تم إضافة الموظف بنجاح');
-          this.dialogRef.close(true);
+      this.employeeService.createEmployee(formData)
+        .pipe(finalize(() => {
           this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Create error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الموظف');
-          this.isSubmitting = false;
-        }
-      });
+        }))
+        .subscribe({
+          next: (res: any) => {
+            const newEmployeeId = res.id;
+            console.log('✅ Employee created with ID:', newEmployeeId);
+            
+            // Now create contacts using the new employee ID
+            this.createContactsForEmployee(newEmployeeId)
+              .then(() => {
+                console.log('✅ All contacts created successfully');
+                
+                // Assign departments for the new employee
+                if (selectedDepartmentIds.length > 0) {
+                  this.assignDepartmentsToEmployee(newEmployeeId, selectedDepartmentIds);
+                }
+                
+                // Assign courses if trainer
+                if (this.isTrainer && selectedCourseIds.length > 0) {
+                  this.assignCoursesToEmployee(newEmployeeId, selectedCourseIds);
+                }
+                
+                this.notification.showSuccess('تم إضافة الموظف وجميع البيانات بنجاح');
+                this.dialogRef.close(true);
+              })
+              .catch((error) => {
+                console.error('❌ Error creating contacts:', error);
+                this.notification.showError('تم إضافة الموظف ولكن حدث خطأ في إضافة جهات الاتصال');
+                // Still close the dialog since employee was created
+                this.dialogRef.close(true);
+              });
+          },
+          error: (err) => {
+            console.error('❌ Create error:', err);
+            this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الموظف');
+          }
+        });
     }
   }
 
-  /**
-   * Handle contacts update in edit mode using createEmployeeContact and updateEmployeeContact
-   */
-  private handleContactsUpdate(employeeId: number, newContacts: any[]): void {
-    // Get the current employee data to know existing contacts
-    this.employeeService.getEmployeeById(employeeId).subscribe({
-      next: (emp: any) => {
-        const existingContacts = emp.contacts || [];
-        
-        // Find contacts to delete (exist in old but not in new)
-        const contactsToDelete = existingContacts.filter(
-          (old: any) => !newContacts.some((newC: any) => newC.id === old.id)
-        );
-        
-        // Find contacts to update (exist in both)
-        const contactsToUpdate = newContacts.filter(
-          (newC: any) => existingContacts.some((old: any) => old.id === newC.id)
-        );
-        
-        // Find contacts to create (exist in new but not in old)
-        const contactsToCreate = newContacts.filter(
-          (newC: any) => !existingContacts.some((old: any) => old.id === newC.id)
-        );
-        
-        console.log('Contacts to delete:', contactsToDelete);
-        console.log('Contacts to update:', contactsToUpdate);
-        console.log('Contacts to create:', contactsToCreate);
-        
-        let completed = 0;
-        const total = contactsToDelete.length + contactsToUpdate.length + contactsToCreate.length;
-        let hasError = false;
-        
-        // If no changes, close the dialog
-        if (total === 0) {
-          this.notification.showSuccess('تم تحديث الموظف بنجاح');
-          this.dialogRef.close(true);
-          this.isSubmitting = false;
-          return;
-        }
-        
-        // ==================== DELETE CONTACTS ====================
-        contactsToDelete.forEach((contact: any) => {
-          this.employeeService.deleteEmployeeContact(employeeId, contact.id).subscribe({
-            next: () => {
-              completed++;
-              console.log(`Contact ${contact.id} deleted`);
-              this.checkContactsCompletion(completed, total, hasError);
-            },
-            error: (err) => {
-              console.error(`Error deleting contact ${contact.id}:`, err);
-              hasError = true;
-              completed++;
-              this.checkContactsCompletion(completed, total, hasError);
-            }
-          });
-        });
-        
-        // ==================== UPDATE CONTACTS ====================
-        contactsToUpdate.forEach((contact: any) => {
-          const contactDTO = {
-            contactType: contact.contactType,
-            contactValue: contact.contactValue
-          };
-          this.employeeService.updateEmployeeContact(employeeId, contact.id, contactDTO).subscribe({
-            next: () => {
-              completed++;
-              console.log(`Contact ${contact.id} updated`);
-              this.checkContactsCompletion(completed, total, hasError);
-            },
-            error: (err) => {
-              console.error(`Error updating contact ${contact.id}:`, err);
-              hasError = true;
-              completed++;
-              this.checkContactsCompletion(completed, total, hasError);
-            }
-          });
-        });
-        
-        // ==================== CREATE CONTACTS ====================
-        contactsToCreate.forEach((contact: any) => {
-          const contactDTO = {
-            contactType: contact.contactType,
-            contactValue: contact.contactValue
-          };
-          this.employeeService.createEmployeeContact(employeeId, contactDTO).subscribe({
-            next: () => {
-              completed++;
-              console.log(`Contact created`);
-              this.checkContactsCompletion(completed, total, hasError);
-            },
-            error: (err) => {
-              console.error('Error creating contact:', err);
-              hasError = true;
-              completed++;
-              this.checkContactsCompletion(completed, total, hasError);
-            }
-          });
-        });
-      },
-      error: (err) => {
-        console.error('Error fetching employee for contact management:', err);
-        this.notification.showSuccess('تم تحديث الموظف بنجاح (تم تحديث المعلومات الأساسية)');
-        this.dialogRef.close(true);
-        this.isSubmitting = false;
-      }
-    });
-  }
-
-  /**
-   * Check if all contact operations are completed
-   */
-  private checkContactsCompletion(completed: number, total: number, hasError: boolean): void {
-    if (completed === total) {
-      if (hasError) {
-        this.notification.showWarning('تم تحديث الموظف مع بعض الأخطاء في جهات الاتصال');
-      } else {
-        this.notification.showSuccess('تم تحديث الموظف وجهات الاتصال بنجاح');
-      }
-      this.dialogRef.close(true);
-      this.isSubmitting = false;
-    }
-  }
+  // ============================================================
+  // ASSIGN DEPARTMENTS TO EMPLOYEE (Create Mode)
+  // ============================================================
 
   private assignDepartmentsToEmployee(employeeId: number, departmentIds: number[]): void {
-    if (!departmentIds || departmentIds.length === 0) return;
-    
-    const data: AssignDepartmentDTO = {
-      departmentId: departmentIds
-    };
-    
+    const data: AssignDepartmentDTO = { departmentId: departmentIds };
     this.employeeService.assignDepartmentToTrainer(employeeId, data).subscribe({
       next: (res: any) => {
-        console.log(`Departments ${departmentIds.join(', ')} assigned to employee ${employeeId}`, res);
+        console.log(`✅ ${departmentIds.length} departments assigned to employee ${employeeId}`, res);
+        if (res && Array.isArray(res)) {
+          res.forEach((result: any, index: number) => {
+            if (result && result.id) {
+              const deptId = departmentIds[index];
+              const assignment = this.departmentAssignments.find(d => d.id === deptId);
+              if (assignment) {
+                assignment.assignmentId = result.id;
+              }
+            }
+          });
+        }
       },
       error: (err) => {
-        console.error('Error assigning departments:', err);
-        this.notification.showWarning(`حدث خطأ في إسناد الأقسام: ${err.error?.messageEn || 'خطأ غير معروف'}`);
+        console.error('❌ Error assigning departments:', err);
+        this.notification.showError('حدث خطأ في إسناد الأقسام للموظف');
       }
     });
   }
 
+  // ============================================================
+  // ASSIGN COURSES TO EMPLOYEE (Create Mode)
+  // ============================================================
+
   private assignCoursesToEmployee(employeeId: number, courseIds: number[]): void {
-    if (!courseIds || courseIds.length === 0) return;
-    
     courseIds.forEach(courseId => {
       const data: AssignCourseDTO = { courseId: courseId };
       this.employeeService.assignCourseToTrainer(employeeId, data).subscribe({
         next: (res: any) => {
-          console.log(`Course ${courseId} assigned to employee ${employeeId}`, res);
+          console.log(`✅ Course ${courseId} assigned to employee ${employeeId}`, res);
         },
         error: (err) => {
-          console.error(`Error assigning course ${courseId}:`, err);
-          this.notification.showWarning(`حدث خطأ في إسناد الدورة: ${err.error?.messageEn || 'خطأ غير معروف'}`);
+          console.error(`❌ Error assigning course ${courseId}:`, err);
         }
       });
     });
+  }
+
+  // ============================================================
+  // DEPARTMENT ASSIGNMENT HANDLING (Edit Mode)
+  // ============================================================
+
+  private handleDepartmentAssignments(employeeId: number, assignments: DepartmentAssignment[]): void {
+    this.employeeService.getTrainerDepartments({ trainerId: employeeId, pageSize: 100 }).subscribe({
+      next: (res: any) => {
+        const currentAssignments = res.items || [];
+        
+        const currentDeptMap = new Map<number, number>();
+        currentAssignments.forEach((a: TrainerDepartmentVTO) => {
+          const deptId = a.department?.id;
+          if (deptId) {
+            currentDeptMap.set(deptId, a.id);
+          }
+        });
+        
+        const selectedDeptIds = assignments.filter(a => a.assigned).map(a => a.id);
+        
+        const toUnassign: number[] = [];
+        currentDeptMap.forEach((trainerDeptId, deptId) => {
+          if (!selectedDeptIds.includes(deptId)) {
+            toUnassign.push(trainerDeptId);
+          }
+        });
+        
+        const toAssign = selectedDeptIds.filter(deptId => !currentDeptMap.has(deptId));
+        
+        console.log('📋 Department changes - To unassign:', toUnassign, 'To assign:', toAssign);
+        
+        if (toUnassign.length === 0 && toAssign.length === 0) {
+          console.log('ℹ️ No department changes needed');
+          this.handleCourseAssignments(employeeId, this.courseAssignments);
+          return;
+        }
+        
+        let completed = 0;
+        const total = toUnassign.length + (toAssign.length > 0 ? 1 : 0);
+        let hasError = false;
+        let errors: string[] = [];
+        
+        if (toUnassign.length > 0) {
+          toUnassign.forEach(trainerDeptId => {
+            console.log(`🗑️ Unassigning department (trainerDeptId: ${trainerDeptId})`);
+            this.employeeService.unassignDepartmentFromTrainer(trainerDeptId).subscribe({
+              next: () => {
+                completed++;
+                console.log(`✅ Department unassigned`);
+                this.checkDepartmentCompletion(completed, total, employeeId, hasError, errors);
+              },
+              error: (err) => {
+                console.error(`❌ Error unassigning department:`, err);
+                hasError = true;
+                errors.push(`فشل إلغاء إسناد القسم: ${err.error?.messageEn || 'خطأ غير معروف'}`);
+                completed++;
+                this.checkDepartmentCompletion(completed, total, employeeId, hasError, errors);
+              }
+            });
+          });
+        }
+        
+        if (toAssign.length > 0) {
+          console.log(`📌 Assigning ${toAssign.length} departments to employee ${employeeId}`);
+          const data: AssignDepartmentDTO = { departmentId: toAssign };
+          this.employeeService.assignDepartmentToTrainer(employeeId, data).subscribe({
+            next: (res: any) => {
+              completed++;
+              console.log(`✅ Departments assigned successfully`);
+              if (res && Array.isArray(res)) {
+                res.forEach((result: any, index: number) => {
+                  if (result && result.id) {
+                    const deptId = toAssign[index];
+                    const assignment = assignments.find(a => a.id === deptId);
+                    if (assignment) {
+                      assignment.assignmentId = result.id;
+                    }
+                  }
+                });
+              }
+              this.checkDepartmentCompletion(completed, total, employeeId, hasError, errors);
+            },
+            error: (err) => {
+              console.error(`❌ Error assigning departments:`, err);
+              hasError = true;
+              errors.push(`فشل إسناد الأقسام: ${err.error?.messageEn || 'خطأ غير معروف'}`);
+              completed++;
+              this.checkDepartmentCompletion(completed, total, employeeId, hasError, errors);
+            }
+          });
+        } else {
+          if (toUnassign.length === 0) {
+            this.checkDepartmentCompletion(0, 0, employeeId, hasError, errors);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error fetching current department assignments:', err);
+        this.notification.showError('حدث خطأ في تحميل أقسام الموظف');
+        this.handleCourseAssignments(employeeId, this.courseAssignments);
+      }
+    });
+  }
+
+  private checkDepartmentCompletion(completed: number, total: number, employeeId: number, hasError: boolean, errors: string[]): void {
+    if (completed === total) {
+      if (hasError) {
+        this.notification.showWarning('تم تحديث الموظف مع بعض الأخطاء في إسناد الأقسام: ' + errors.join('; '));
+      }
+      this.handleCourseAssignments(employeeId, this.courseAssignments);
+    }
+  }
+
+  // ============================================================
+  // COURSE ASSIGNMENT HANDLING (Edit Mode)
+  // ============================================================
+
+  private handleCourseAssignments(employeeId: number, assignments: CourseAssignment[]): void {
+    if (!this.isTrainer) {
+      console.log('ℹ️ Employee is not a trainer, skipping course assignments');
+      this.finalizeSubmit();
+      return;
+    }
+    
+    this.employeeService.getTrainerCourses({ trainerId: employeeId, pageSize: 100 }).subscribe({
+      next: (res: any) => {
+        const currentAssignments = res.items || [];
+        
+        const currentCourseMap = new Map<number, number>();
+        currentAssignments.forEach((a: TrainerCourseVTO) => {
+          const courseId = a.course?.id;
+          if (courseId) {
+            currentCourseMap.set(courseId, a.id);
+          }
+        });
+        
+        const selectedCourseIds = assignments.filter(a => a.assigned).map(a => a.id);
+        
+        const toUnassign: number[] = [];
+        currentCourseMap.forEach((trainerCourseId, courseId) => {
+          if (!selectedCourseIds.includes(courseId)) {
+            toUnassign.push(trainerCourseId);
+          }
+        });
+        
+        const toAssign = selectedCourseIds.filter(courseId => !currentCourseMap.has(courseId));
+        
+        console.log('📋 Course changes - To unassign:', toUnassign, 'To assign:', toAssign);
+        
+        if (toUnassign.length === 0 && toAssign.length === 0) {
+          console.log('ℹ️ No course changes needed');
+          this.finalizeSubmit();
+          return;
+        }
+        
+        let completed = 0;
+        const total = toUnassign.length + toAssign.length;
+        let hasError = false;
+        let errors: string[] = [];
+        
+        if (toUnassign.length > 0) {
+          toUnassign.forEach(trainerCourseId => {
+            console.log(`🗑️ Unassigning course (trainerCourseId: ${trainerCourseId})`);
+            this.employeeService.unassignCourseFromTrainer(trainerCourseId).subscribe({
+              next: () => {
+                completed++;
+                console.log(`✅ Course unassigned`);
+                this.checkCourseCompletion(completed, total, hasError, errors);
+              },
+              error: (err) => {
+                console.error(`❌ Error unassigning course:`, err);
+                hasError = true;
+                errors.push(`فشل إلغاء إسناد الدورة: ${err.error?.messageEn || 'خطأ غير معروف'}`);
+                completed++;
+                this.checkCourseCompletion(completed, total, hasError, errors);
+              }
+            });
+          });
+        }
+        
+        if (toAssign.length > 0) {
+          toAssign.forEach(courseId => {
+            const data: AssignCourseDTO = { courseId: courseId };
+            console.log(`📌 Assigning course ${courseId} to employee ${employeeId}`);
+            this.employeeService.assignCourseToTrainer(employeeId, data).subscribe({
+              next: (res: any) => {
+                completed++;
+                console.log(`✅ Course assigned: ${courseId}`);
+                const assignment = assignments.find(a => a.id === courseId);
+                if (assignment && res && res.id) {
+                  assignment.assignmentId = res.id;
+                }
+                this.checkCourseCompletion(completed, total, hasError, errors);
+              },
+              error: (err) => {
+                console.error(`❌ Error assigning course ${courseId}:`, err);
+                hasError = true;
+                errors.push(`فشل إسناد الدورة ${courseId}: ${err.error?.messageEn || 'خطأ غير معروف'}`);
+                completed++;
+                this.checkCourseCompletion(completed, total, hasError, errors);
+              }
+            });
+          });
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error fetching current course assignments:', err);
+        this.notification.showError('حدث خطأ في تحميل دورات الموظف');
+        this.finalizeSubmit();
+      }
+    });
+  }
+
+  private checkCourseCompletion(completed: number, total: number, hasError: boolean, errors: string[]): void {
+    if (completed === total) {
+      if (hasError) {
+        this.notification.showWarning('تم تحديث الموظف مع بعض الأخطاء في إسناد الدورات: ' + errors.join('; '));
+      }
+      this.finalizeSubmit();
+    }
+  }
+
+  private finalizeSubmit(): void {
+    this.notification.showSuccess('تم تحديث الموظف وجميع البيانات بنجاح');
+    this.dialogRef.close(true);
+    this.isSubmitting = false;
   }
 }

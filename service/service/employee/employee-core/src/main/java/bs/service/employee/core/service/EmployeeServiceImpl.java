@@ -65,7 +65,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setIsActive(true);
         employee.setIsDeleted(false);
         employee = employeeRepository.insert(employee);
-        fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employee.getId()), Collections.singletonList(employee.getImageUrl()));
+        if(employeeDTO.getImageUrl()!=null){
+            fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employee.getId()), Collections.singletonList(employee.getImageUrl()));
+        }
         return NewRecordVTO.builder().id(employee.getId()).build();
     }
 
@@ -78,8 +80,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeToUpdate.setId(employeeId);
         employeeToUpdate.setIsActive(employeeDTO.getIsActive());
         employeeToUpdate.setIsDeleted(false);
-        fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employeeToUpdate.getId()), Collections.singletonList(employeeToUpdate.getImageUrl()));
+        employeeToUpdate.setCreatedOn(employee.getCreatedOn());
+        employeeToUpdate.setCreatedBy(employee.getCreatedBy());
         employeeRepository.update(employeeToUpdate);
+        if(employeeDTO.getImageUrl()!=null){
+            fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employeeToUpdate.getId()), Collections.singletonList(employeeToUpdate.getImageUrl()));
+        }
         return NewRecordVTO.builder().id(employeeId).build();
     }
 

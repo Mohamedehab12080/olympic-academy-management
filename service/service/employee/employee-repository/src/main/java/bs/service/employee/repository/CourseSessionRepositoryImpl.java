@@ -53,4 +53,9 @@ public class CourseSessionRepositoryImpl implements CourseSessionRepository {
     public Integer countAllByFilters(CourseSessionSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void delete(Integer id) {
+        courseSessionJPARepository.deleteById(id);
+    }
 }

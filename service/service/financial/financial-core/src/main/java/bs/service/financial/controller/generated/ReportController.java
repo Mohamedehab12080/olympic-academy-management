@@ -31,6 +31,24 @@ import org.springframework.web.bind.annotation.*;
 public interface ReportController {
 
     /**
+     * GET /totals/financials/main : Retrieve Main totals of financials
+     *
+     * @param mainTotalYear
+     *            (optional)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllMainTotalsOfFinancials", summary = "Retrieve Main totals of financials", tags = {
+            "Report" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = FinancialTotalVTO.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/totals/financials/main", produces = { "application/json" })
+
+    ResponseEntity<FinancialTotalVTO> _getAllMainTotalsOfFinancials(
+            @Parameter(name = "mainTotalYear", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "mainTotalYear", required = false) String mainTotalYear);
+
+    /**
      * GET /totals/financials : Retrieve totals of financials
      *
      * @param totalDateFrom

@@ -20,13 +20,13 @@
         <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput [(ngModel)]="quickSearch" (ngModelChange)="loadEnrollments()" placeholder="ابحث...">
+            <input matInput [(ngModel)]="quickSearch" (ngModelChange)="applyQuickSearch($event)" placeholder="ابحث...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
           <app-searchable-select
             [ngModel]="filters.traineeId"
-            (ngModelChange)="filters.traineeId = $event; loadEnrollments()"
+            (ngModelChange)="filters.traineeId = $event; onFilterChange()"
             label="المتدرب"
             [options]="traineeOptions"
             [required]="false"
@@ -36,7 +36,7 @@
 
           <app-searchable-select
             [ngModel]="filters.courseId"
-            (ngModelChange)="filters.courseId = $event; loadEnrollments()"
+            (ngModelChange)="filters.courseId = $event; onFilterChange()"
             label="الدورة"
             [options]="courseOptions"
             [required]="false"
@@ -46,7 +46,7 @@
 
           <app-searchable-select
             [ngModel]="filters.trainerId"
-            (ngModelChange)="filters.trainerId = $event; loadEnrollments()"
+            (ngModelChange)="filters.trainerId = $event; onFilterChange()"
             label="المدرب"
             [options]="trainerOptions"
             [required]="false"
@@ -58,7 +58,7 @@
         <div class="filters-row">
           <app-searchable-select
             [ngModel]="filters.enrollmentStatus"
-            (ngModelChange)="filters.enrollmentStatus = $event; loadEnrollments()"
+            (ngModelChange)="filters.enrollmentStatus = $event; onFilterChange()"
             label="حالة التسجيل"
             [options]="enrollmentStatusOptions"
             [required]="false"
@@ -68,7 +68,7 @@
 
           <app-searchable-select
             [ngModel]="filters.paymentStatus"
-            (ngModelChange)="filters.paymentStatus = $event; loadEnrollments()"
+            (ngModelChange)="filters.paymentStatus = $event; onFilterChange()"
             label="حالة الدفع"
             [options]="paymentStatusOptions"
             [required]="false"
@@ -89,14 +89,14 @@
 
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ البدء من</mat-label>
-            <input matInput [matDatepicker]="startFromPicker" [(ngModel)]="filters.startDateFrom" (dateChange)="loadEnrollments()">
+            <input matInput [matDatepicker]="startFromPicker" [(ngModel)]="filters.startDateFrom" (dateChange)="onFilterChange()">
             <mat-datepicker-toggle matSuffix [for]="startFromPicker"></mat-datepicker-toggle>
             <mat-datepicker #startFromPicker></mat-datepicker>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ البدء إلى</mat-label>
-            <input matInput [matDatepicker]="startToPicker" [(ngModel)]="filters.startDateTo" (dateChange)="loadEnrollments()">
+            <input matInput [matDatepicker]="startToPicker" [(ngModel)]="filters.startDateTo" (dateChange)="onFilterChange()">
             <mat-datepicker-toggle matSuffix [for]="startToPicker"></mat-datepicker-toggle>
             <mat-datepicker #startToPicker></mat-datepicker>
           </mat-form-field>
@@ -105,14 +105,14 @@
         <div class="filters-row">
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ الانتهاء من</mat-label>
-            <input matInput [matDatepicker]="endFromPicker" [(ngModel)]="filters.endDateFrom" (dateChange)="loadEnrollments()">
+            <input matInput [matDatepicker]="endFromPicker" [(ngModel)]="filters.endDateFrom" (dateChange)="onFilterChange()">
             <mat-datepicker-toggle matSuffix [for]="endFromPicker"></mat-datepicker-toggle>
             <mat-datepicker #endFromPicker></mat-datepicker>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="date-field">
             <mat-label>تاريخ الانتهاء إلى</mat-label>
-            <input matInput [matDatepicker]="endToPicker" [(ngModel)]="filters.endDateTo" (dateChange)="loadEnrollments()">
+            <input matInput [matDatepicker]="endToPicker" [(ngModel)]="filters.endDateTo" (dateChange)="onFilterChange()">
             <mat-datepicker-toggle matSuffix [for]="endToPicker"></mat-datepicker-toggle>
             <mat-datepicker #endToPicker></mat-datepicker>
           </mat-form-field>
@@ -122,11 +122,11 @@
               <mat-icon>refresh</mat-icon>
               مسح الكل
             </button>
-            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allEnrollments.length === 0" class="export-btn">
               <mat-icon>grid_on</mat-icon>
               تصدير Excel
             </button>
-            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allEnrollments.length === 0" class="export-btn">
               <mat-icon>picture_as_pdf</mat-icon>
               تصدير PDF
             </button>
@@ -136,11 +136,11 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid" *ngIf="!isLoading && dataSource.data.length > 0">
+    <div class="stats-grid" *ngIf="!isLoading && allEnrollments.length > 0">
       <div class="stat-card">
         <div class="stat-icon">📋</div>
         <div class="stat-info">
-          <h3>{{ dataSource.data.length }}</h3>
+          <h3>{{ totalItems }}</h3>
           <p>إجمالي التسجيلات</p>
         </div>
       </div>
@@ -182,20 +182,20 @@
 
     <!-- Table Section -->
     <div class="table-section" *ngIf="!isLoading">
-      <div class="table-header" *ngIf="dataSource.data.length > 0">
+      <div class="table-header" *ngIf="allEnrollments.length > 0">
         <div class="records-count">
           <mat-icon>info</mat-icon>
-          <span>عدد السجلات: {{ dataSource.data.length }} تسجيل</span>
+          <span>عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} تسجيل</span>
         </div>
       </div>
 
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table">
+        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="onSortChange($event)">
           <!-- Index Column -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
             <td mat-cell *matCellDef="let e; let i = index">
-              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+              {{ (currentPage * pageSize) + i + 1 }}
             </td>
           </ng-container>
 
@@ -332,7 +332,57 @@
         </table>
       </div>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
+      <!-- Custom Pagination Controls -->
+      <div class="custom-pagination" *ngIf="totalItems > 0">
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn" 
+            (click)="goToFirstPage()" 
+            [disabled]="currentPage === 0"
+            matTooltip="الصفحة الأولى">
+            <mat-icon>first_page</mat-icon>
+          </button>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToPreviousPage()" 
+            [disabled]="currentPage === 0"
+            matTooltip="الصفحة السابقة">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          
+          <span class="page-info">
+            صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}
+          </span>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToNextPage()" 
+            matTooltip="الصفحة التالية">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToLastPage()" 
+            [disabled]="currentPage >= getTotalPages() - 1"
+            matTooltip="الصفحة الأخيرة">
+            <mat-icon>last_page</mat-icon>
+          </button>
+        </div>
+        
+        <div class="page-size-control">
+          <label>عرض:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+          <span>نتيجة</span>
+        </div>
+        
+        <div class="records-info">
+          عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} تسجيل
+        </div>
+      </div>
     </div>
   </mat-card>
 </div>

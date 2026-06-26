@@ -19,6 +19,7 @@ import java.time.LocalTime;
 public class CourseSessionSearchFilter extends SearchFilter<CourseSessionSearchFilter.OrderByAttributes> {
 
     private Integer courseId;
+    private String sessionDay;
     private Integer employeeId;
     private Integer placeId;
     private Integer status;

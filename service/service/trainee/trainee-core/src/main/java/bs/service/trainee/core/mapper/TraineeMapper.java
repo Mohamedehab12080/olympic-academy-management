@@ -51,13 +51,6 @@ public abstract class TraineeMapper {
         return EnumMapperUtils.toLookupVTO(statusId, TraineeAttendanceStatus.class);
     }
 
-    protected AcademicYear toAcademicYear(String academicYearId) {
-        if(academicYearId!=null){
-            return EnumMapperUtils.toEnum(Integer.parseInt(academicYearId), AcademicYear.class);
-        }
-        return null;
-    }
-
     protected EnrollmentStatus toEnrollmentStatus(Integer statusId) {
         return EnumMapperUtils.toEnum(statusId, EnrollmentStatus.class);
     }
@@ -89,6 +82,8 @@ public abstract class TraineeMapper {
 
     @Mapping(target = "title", source ="fullName")
     public abstract LookupVTO toLookupVTO(Employee employee);
+
+    public abstract LightUserVTO toLightUserVTO(Trainee trainee);
 
     public abstract LightUserVTO toLightUserVTO(Employee employee);
 
@@ -148,19 +143,16 @@ public abstract class TraineeMapper {
 
     // DTO to Entity - convert LookupVTO to ID
     @Mapping(target = "gender", source = "gender.id")
-    @Mapping(target = "academicYear", source = "academicYear.title")
     public abstract Trainee toTrainee(TraineeDTO traineeDTO);
 
     // Entity to VTO - use qualifiedByName to specify which converter to use
     @Mapping(target = "gender", qualifiedByName = "genderToLookup")
     @Mapping(target = "contacts", source = "contacts")
-    @Mapping(target = "academicYear", expression = "java(toLookupVTO(toAcademicYear(trainee.getAcademicYear())))")// This will use toTraineeContactVTOs
     public abstract TraineeVTO toTraineeVTO(Trainee trainee);
 
     // List Item mapping - use qualifiedByName
     @Mapping(target = "gender", qualifiedByName = "genderToLookup")
     @Mapping(target = "imageUrl", source = "imageUrl")
-    @Mapping(target = "academicYear", expression = "java(toLookupVTO(toAcademicYear(trainee.getAcademicYear())))")// This will use toTraineeContactVTOs
     public abstract TraineeListItem toTraineeListItem(Trainee trainee);
 
     public abstract List<TraineeListItem> toTraineeListItems(List<Trainee> trainees);
@@ -198,8 +190,10 @@ public abstract class TraineeMapper {
     /**
      * Convert TraineeAttendance entity to TraineeAttendanceListItem
      */
-    @Mapping(target = "traineeName", source = "trainee.fullName")
+
+    @Mapping(target = "trainee", source = "entity.trainee")
     @Mapping(target = "sessionTitle", source = "courseSession.title")
+    @Mapping(target = "sessionDay", source = "courseSession.sessionDay")
     @Mapping(target = "courseTitle", source = "courseSession.course.title")
     @Mapping(target = "sessionDate", source = "courseSession.sessionDate")
     @Mapping(target = "status", qualifiedByName = "attendanceStatusToLookup")

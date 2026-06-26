@@ -3,6 +3,7 @@ package bs.service.file.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
@@ -15,6 +16,8 @@ import bs.service.file.core.mapper.FileMapper;
 import bs.service.file.model.generated.FileVTO;
 import bs.service.file.model.generated.UploadFileVTO;
 import bs.service.file.model.helpers.FileInfo;
+
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @AllArgsConstructor
@@ -31,9 +34,15 @@ public class FileControllerImpl implements FileController {
 
         ByteArrayResource resource = new ByteArrayResource(fileInfo.getContent());
 
+        // Fix: Use ContentDisposition builder with UTF-8 encoding for non-ASCII filenames
+        String contentDisposition = ContentDisposition
+                .builder("attachment")
+                .filename(fileInfo.getOriginalFilename(), StandardCharsets.UTF_8)
+                .build()
+                .toString();
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + fileInfo.getOriginalFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .contentType(contentType)
                 .contentLength(fileInfo.getContent().length)
                 .body(resource);
@@ -56,5 +65,4 @@ public class FileControllerImpl implements FileController {
         fileService.deleteByFid(fid);
         return ResponseEntity.noContent().build();
     }
-
 }

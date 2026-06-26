@@ -18,6 +18,12 @@ public class ReportControllerImpl implements ReportController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<FinancialTotalVTO> _getAllMainTotalsOfFinancials(String mainTotalyear) {
+        return ResponseEntity.ok(financialTotalService.getMainFinancialTotalVTO(mainTotalyear));
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<FinancialTotalVTO> _getAllTotalsOfFinancials(LocalDate totalDateFrom, LocalDate totalDateTo) {
         return ResponseEntity.ok(financialTotalService.getFinancialTotalVTO(totalDateFrom, totalDateTo));
     }

@@ -98,13 +98,19 @@ public interface TraineeAttendanceController {
     /**
      * GET /trainee-attendances : Retrieve list of trainee attendances with filters
      *
+     * @param status
+     *            (optional)
+     * @param sessionDay
+     *            (optional)
+     * @param traineeNationalId
+     *            (optional)
      * @param traineeId
      *            (optional)
      * @param courseId
      *            (optional)
      * @param courseSessionId
      *            (optional)
-     * @param status
+     * @param quickSearch
      *            (optional)
      * @param checkInFrom
      *            (optional)
@@ -137,10 +143,13 @@ public interface TraineeAttendanceController {
     @RequestMapping(method = RequestMethod.GET, value = "/trainee-attendances", produces = { "application/json" })
 
     ResponseEntity<TraineeAttendanceResultSet> _getAllTraineeAttendances(
+            @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid TraineeAttendanceStatus status,
+            @Parameter(name = "sessionDay", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDay", required = false) String sessionDay,
+            @Parameter(name = "traineeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeNationalId", required = false) String traineeNationalId,
             @Parameter(name = "traineeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeId", required = false) Integer traineeId,
             @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
             @Parameter(name = "courseSessionId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseSessionId", required = false) Integer courseSessionId,
-            @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid TraineeAttendanceStatus status,
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "checkInFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkInFrom", required = false) String checkInFrom,
             @Parameter(name = "checkInTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkInTo", required = false) String checkInTo,
             @Parameter(name = "checkOutFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "checkOutFrom", required = false) String checkOutFrom,

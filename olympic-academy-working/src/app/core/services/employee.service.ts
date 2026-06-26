@@ -37,13 +37,8 @@ export class EmployeeService {
     );
   }
 
-  getAllEmployeesLookup(): Observable<LookupResultSet> {
-    return this.api.get('/lookup/employees').pipe(
-      map((response: any) => ({
-        list: response._list || response.list || [],
-        total: response.total || 0
-      }))
-    );
+  getAllEmployeesLookup(): Observable<EmployeeLookupVTO[]> {
+    return this.api.get('/lookup/employees');
   }
 
   getAllTrainersLookup(): Observable<LookupResultSet> {
@@ -88,13 +83,13 @@ export class EmployeeService {
     return this.api.get('/employees/contacts', params);
   }
 
-  createEmployeeContact(employeeId: number, data: any): Observable<NewRecordVTO> {
-    return this.api.post(`/employees/${employeeId}/contacts`, data);
-  }
+createEmployeeContact(employeeId: number, data: { contactType: string; contactValue: string }): Observable<NewRecordVTO> {
+  return this.api.post(`/employees/${employeeId}/contacts`, data);
+}
 
-  updateEmployeeContact(employeeId: number, contactId: number, data: any): Observable<NewRecordVTO> {
-    return this.api.put(`/employees/${employeeId}/contacts/${contactId}`, data);
-  }
+updateEmployeeContact(employeeId: number, contactId: number, data: { contactType: string; contactValue: string }): Observable<NewRecordVTO> {
+  return this.api.put(`/employees/${employeeId}/contacts/${contactId}`, data);
+}
 
   deleteEmployeeContact(employeeId: number, contactId: number): Observable<void> {
     return this.api.delete(`/employees/${employeeId}/contacts/${contactId}`);
@@ -193,7 +188,7 @@ export class EmployeeService {
    * DELETE /trainers/{trainerDepartmentId}
    */
   unassignDepartmentFromTrainer(trainerDepartmentId: number): Observable<void> {
-    return this.api.delete(`/trainers/${trainerDepartmentId}`);
+    return this.api.delete(`/trainers/${trainerDepartmentId}/department`);
   }
 
   // ==================== Trainer Course Management ====================
@@ -230,10 +225,9 @@ getTrainerCourses(params?: {
 
   /**
    * Unassign a course from a trainer
-   * DELETE /trainers/{trainerId}/courses/{courseId}
    */
-  unassignCourseFromTrainer(trainerId: number, courseId: number): Observable<void> {
-    return this.api.delete(`/trainers/${trainerId}/courses/${courseId}`);
+  unassignCourseFromTrainer(trainerCourseId: number): Observable<void> {
+    return this.api.delete(`/trainers/${trainerCourseId}/course`);
   }
 
 }

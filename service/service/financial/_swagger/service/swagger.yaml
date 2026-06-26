@@ -551,12 +551,14 @@ paths:
       summary: Retrieve list of enrollment payments
       operationId: getAllEnrollmentPaymentsByFilter
       parameters:
+        - $ref: '#/components/parameters/QPTraineeNationalId'
         - $ref: '#/components/parameters/QPEnrollmentId'
         - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPPaymentMethodId'
         - $ref: '#/components/parameters/QPPaymentStatus'
         - $ref: '#/components/parameters/QPPaymentDateFrom'
         - $ref: '#/components/parameters/QPPaymentDateTo'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -758,11 +760,13 @@ paths:
       operationId: getAllSalaryIncentivesByFilter
       parameters:
         - $ref: '#/components/parameters/QPEmployeeId'
+        - $ref: '#/components/parameters/QPEmployeeNationalId'
         - $ref: '#/components/parameters/QPPaymentMethodId'
         - $ref: '#/components/parameters/QPSalaryType'
         - $ref: '#/components/parameters/QPSalaryTransactionType'
         - $ref: '#/components/parameters/QPWithdrawDateFrom'
         - $ref: '#/components/parameters/QPWithdrawDateTo'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -1047,6 +1051,24 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /totals/financials/main:
+    get:
+      tags:
+        - Report
+      summary: Retrieve Main totals of financials
+      operationId: getAllMainTotalsOfFinancials
+      parameters:
+        - $ref: '#/components/parameters/QPMainTotalYear'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialTotalVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /totals/financials:
     get:
       tags:
@@ -1196,6 +1218,12 @@ components:
       schema:
         type: string
         format: date
+    QPTraineeNationalId:
+      name: traineeNationalId
+      in: query
+      required: false
+      schema:
+        type: string
     QPEnrollmentId:
       name: enrollmentId
       in: query
@@ -1237,6 +1265,12 @@ components:
       schema:
         type: integer
         format: int32
+    QPEmployeeNationalId:
+      name: employeeNationalId
+      in: query
+      required: false
+      schema:
+        type: string
     QPSalaryTransactionType:
       name: type
       in: query
@@ -1263,6 +1297,12 @@ components:
       required: false
       schema:
         $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/SalaryTypes'
+    QPMainTotalYear:
+      name: mainTotalYear
+      in: query
+      required: false
+      schema:
+        type: string
     QPTotalDateFrom:
       name: totalDateFrom
       in: query
@@ -1892,6 +1932,9 @@ components:
       type: object
       properties:
         totalSalary:
+          type: integer
+          format: int32
+        totalAdvance:
           type: integer
           format: int32
         totalIncentives:

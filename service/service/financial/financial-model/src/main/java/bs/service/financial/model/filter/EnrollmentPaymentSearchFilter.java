@@ -17,6 +17,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class EnrollmentPaymentSearchFilter extends SearchFilter<EnrollmentPaymentSearchFilter.OrderByAttributes> {
 
+    private String quickSearch;
+    private String traineeNationalId;
     private Integer enrollmentId;
     private Integer courseId;
     private Integer paymentMethodId;

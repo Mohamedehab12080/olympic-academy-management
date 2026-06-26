@@ -1,6 +1,6 @@
-// trainee-list.component.ts - COMPLETE UPDATED VERSION
+// trainee-list.component.ts - COMPLETE WITH ENHANCED DIALOG AND PRINT CARDS PAGE SELECTION
 
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -9,13 +9,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { RouterLink } from '@angular/router';
 
 import { TraineeService } from '../../../../core/services/trainee.service';
@@ -24,18 +24,592 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { FileService } from '../../../../core/services/file.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { GENDERS } from '../../../../core/models/common.model';
-import { ACADEMIC_YEARS } from '../../../../core/models/trainee.model';
 import { TraineeDetailsModalComponent } from '../trainee-details/trainee-details-modal.component';
-import { TraineeWizardModalComponent, TraineeWizardData } from '../trainee-wizard/trainee-wizard-modal.component';
+import { TraineeWizardModalComponent } from '../trainee-wizard/trainee-wizard-modal.component';
 import { TraineeListItem } from '../../../../core/models/trainee.model';
 
-// Helper to map enum ID to enum name for backend
-enum AcademicYearEnum {
-  _1 = '_1',
-  _2 = '_2',
-  _3 = '_3',
-  _4 = '_4'
+// ============================================================================
+// PAGE SELECTION DIALOG COMPONENT - ENHANCED COLORS
+// ============================================================================
+
+@Component({
+  selector: 'app-export-page-select-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDividerModule
+  ],
+  template: `
+    <div class="dialog-container" dir="rtl">
+      <div class="dialog-header" [class.card-print]="isCardPrint">
+        <div class="header-icon" [class.card-print]="isCardPrint">
+          <mat-icon>{{ isCardPrint ? 'credit_card' : 'description' }}</mat-icon>
+        </div>
+        <div>
+          <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
+          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
+        </div>
+        <button mat-icon-button (click)="close()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <mat-divider></mat-divider>
+      
+      <div class="dialog-body">
+        <div class="info-section">
+          <div class="info-row">
+            <span class="info-label">إجمالي الصفحات</span>
+            <span class="info-value">{{ data.totalPages }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">إجمالي السجلات</span>
+            <span class="info-value">{{ data.totalItems }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">حجم الصفحة</span>
+            <span class="info-value">{{ data.pageSize }}</span>
+          </div>
+        </div>
+
+        <div class="selection-section">
+          <div class="selection-options">
+            <button 
+              mat-raised-button 
+              [color]="selectedOption === 'all' ? 'primary' : 'default'"
+              (click)="selectedOption = 'all'"
+              class="option-btn"
+              [class.selected]="selectedOption === 'all'">
+              <mat-icon>description</mat-icon>
+              <span>جميع الصفحات ({{ data.totalPages }})</span>
+              <span class="check-icon" *ngIf="selectedOption === 'all'">✓</span>
+            </button>
+            
+            <button 
+              mat-raised-button 
+              [color]="selectedOption === 'current' ? 'primary' : 'default'"
+              (click)="selectedOption = 'current'"
+              class="option-btn"
+              [class.selected]="selectedOption === 'current'">
+              <mat-icon>description</mat-icon>
+              <span>الصفحة الحالية فقط ({{ data.currentPage + 1 }})</span>
+              <span class="check-icon" *ngIf="selectedOption === 'current'">✓</span>
+            </button>
+            
+            <button 
+              mat-raised-button 
+              [color]="selectedOption === 'range' ? 'primary' : 'default'"
+              (click)="selectedOption = 'range'"
+              class="option-btn"
+              [class.selected]="selectedOption === 'range'">
+              <mat-icon>description</mat-icon>
+              <span>نطاق صفحات محدد</span>
+              <span class="check-icon" *ngIf="selectedOption === 'range'">✓</span>
+            </button>
+          </div>
+
+          <div class="range-section" *ngIf="selectedOption === 'range'">
+            <div class="range-inputs">
+              <mat-form-field appearance="outline" class="range-field">
+                <mat-label>من صفحة</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  [(ngModel)]="startPage" 
+                  [min]="1" 
+                  [max]="data.totalPages"
+                  placeholder="1">
+                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="range-field">
+                <mat-label>إلى صفحة</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  [(ngModel)]="endPage" 
+                  [min]="1" 
+                  [max]="data.totalPages"
+                  placeholder="{{ data.totalPages }}">
+                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
+                <mat-error *ngIf="startPage > endPage">يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error>
+              </mat-form-field>
+            </div>
+            
+            <div class="range-info">
+              <mat-icon>info</mat-icon>
+              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <mat-divider></mat-divider>
+      
+      <div class="dialog-actions">
+        <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="confirm()"
+          [disabled]="!isValid()"
+          class="confirm-btn">
+          <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
+          <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
+        </button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .dialog-container {
+      min-width: 480px;
+      max-width: 580px;
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      direction: rtl;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      position: relative;
+    }
+
+    .dialog-header.card-print {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      backdrop-filter: blur(4px);
+    }
+
+    .header-icon.card-print {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .header-icon mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .dialog-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .dialog-header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .close-btn {
+      color: white !important;
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.15) !important;
+      transition: all 0.3s;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+      transform: translateY(-50%) rotate(90deg);
+    }
+
+    .dialog-body {
+      padding: 24px;
+      background: #fafbfc;
+    }
+
+    .info-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1px solid #eef2f6;
+    }
+
+    .info-row {
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    .info-label {
+      display: block;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .info-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .info-value:last-child {
+      color: #667eea;
+    }
+
+    .dialog-header.card-print .info-value:last-child {
+      color: #f59e0b;
+    }
+
+    .selection-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .selection-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-btn {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 12px 20px;
+      height: auto;
+      border: 2px solid #e5e7eb;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+      background: white;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .option-btn mat-icon {
+      margin-left: 12px;
+      color: #94a3b8;
+      transition: color 0.3s;
+    }
+
+    .option-btn.selected {
+      border-color: #667eea;
+      background: #eff6ff !important;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+
+    .option-btn.selected mat-icon {
+      color: #667eea;
+    }
+
+    .dialog-header.card-print .option-btn.selected {
+      border-color: #f59e0b;
+      background: #fffbeb !important;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    }
+
+    .dialog-header.card-print .option-btn.selected mat-icon {
+      color: #f59e0b;
+    }
+
+    .option-btn:hover:not(.selected) {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    .check-icon {
+      margin-right: auto;
+      color: #667eea;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .dialog-header.card-print .check-icon {
+      color: #f59e0b;
+    }
+
+    .range-section {
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .range-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .range-field {
+      width: 100%;
+    }
+
+    .range-field ::ng-deep .mat-form-field-outline {
+      background: #fafbfc !important;
+      border-radius: 8px !important;
+    }
+
+    .range-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .range-info mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #667eea;
+    }
+
+    .dialog-header.card-print .range-info mat-icon {
+      color: #f59e0b;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      background: white;
+      border-top: 1px solid #eef2f6;
+    }
+
+    .dialog-actions button {
+      min-width: 100px;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .cancel-btn {
+      color: #64748b !important;
+    }
+
+    .cancel-btn:hover {
+      background: #f1f5f9 !important;
+    }
+
+    .confirm-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+    }
+
+    .confirm-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+    }
+
+    .confirm-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .dialog-header.card-print .confirm-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+    }
+
+    .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+    }
+
+    @media (max-width: 600px) {
+      .dialog-container {
+        min-width: 320px;
+        max-width: 95vw;
+      }
+
+      .dialog-header {
+        padding: 16px 20px;
+        flex-wrap: wrap;
+      }
+
+      .header-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .header-icon mat-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+
+      .dialog-header h2 {
+        font-size: 17px;
+      }
+
+      .dialog-body {
+        padding: 16px;
+      }
+
+      .info-section {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 12px;
+      }
+
+      .info-row:last-child {
+        grid-column: span 2;
+      }
+
+      .info-value {
+        font-size: 17px;
+      }
+
+      .range-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .dialog-actions {
+        flex-direction: column-reverse;
+        padding: 12px 16px;
+        gap: 8px;
+      }
+
+      .dialog-actions button {
+        width: 100%;
+        min-width: unset;
+      }
+
+      .close-btn {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+      }
+
+      .close-btn:hover {
+        transform: rotate(90deg);
+      }
+    }
+
+    @media (max-width: 400px) {
+      .dialog-container {
+        min-width: 280px;
+      }
+
+      .info-section {
+        grid-template-columns: 1fr;
+      }
+
+      .info-row:last-child {
+        grid-column: span 1;
+      }
+
+      .option-btn {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+
+      .option-btn mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  `]
+})
+export class ExportPageSelectDialogComponent {
+  selectedOption: 'all' | 'current' | 'range' = 'all';
+  startPage: number = 1;
+  endPage: number = 1;
+  isCardPrint: boolean = false;
+  
+  constructor(
+    private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { 
+      totalPages: number; 
+      totalItems: number; 
+      pageSize: number; 
+      currentPage: number;
+      isCardPrint?: boolean;
+    }
+  ) {
+    this.endPage = data.totalPages;
+    this.isCardPrint = data.isCardPrint || false;
+  }
+
+  getRangeCount(): number {
+    if (this.startPage <= this.endPage) {
+      return this.endPage - this.startPage + 1;
+    }
+    return 0;
+  }
+
+  getRangeRecords(): number {
+    const count = this.getRangeCount();
+    return count * this.data.pageSize;
+  }
+
+  isValid(): boolean {
+    if (this.selectedOption === 'range') {
+      return this.startPage >= 1 && 
+             this.endPage <= this.data.totalPages && 
+             this.startPage <= this.endPage;
+    }
+    return true;
+  }
+
+  confirm(): void {
+    let result: any = { option: this.selectedOption };
+    
+    if (this.selectedOption === 'range') {
+      result.startPage = this.startPage - 1; // Convert to 0-based index
+      result.endPage = this.endPage - 1;
+    }
+    
+    this.dialogRef.close(result);
+  }
+
+  close(): void {
+    this.dialogRef.close(null);
+  }
 }
+
+// ============================================================================
+// MAIN TRAINEE LIST COMPONENT
+// ============================================================================
 
 @Component({
   selector: 'app-trainee-list',
@@ -49,27 +623,39 @@ enum AcademicYearEnum {
     MatButtonModule,
     MatIconModule,
     MatTableModule,
-    MatPaginatorModule,
     MatSortModule,
     MatChipsModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTooltipModule,
     MatDialogModule,
+    MatDividerModule,
     RouterLink,
     SearchableSelectComponent
   ],
   templateUrl: './trainee-list.component.html',
   styleUrls: ['./trainee-list.component.css']
 })
-export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TraineeListComponent implements OnInit, OnDestroy {
+  Math = Math;
+  
   displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'academicYear', 'gender', 'status', 'actions'];
   dataSource = new MatTableDataSource<TraineeListItem>([]);
   allTrainees: TraineeListItem[] = [];
   imageUrls: Map<number, string> = new Map();
   isLoading = false;
   
-  // Filters
+  // ========== PAGINATION ==========
+  totalItems: number = 0;
+  pageSize: number = 25;
+  pageSizeOptions: number[] = [5, 10, 25, 50, 100];
+  currentPage: number = 0;
+  
+  // ========== SORTING ==========
+  sortBy: string = 'CREATION_DATE';
+  sortDir: string = 'DESC';
+  
+  // ========== FILTERS ==========
   searchText = '';
   genderFilter: string | null = null;
   statusFilter: boolean | null = null;
@@ -78,10 +664,6 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
   // Options for selects
   genderOptions: SelectOption[] = [];
   statusOptions: SelectOption[] = [];
-  academicYearOptions: SelectOption[] = [];
-  
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
   
   get activeCount(): number { 
     return this.allTrainees.filter(t => t.isActive).length; 
@@ -96,7 +678,8 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
     private reportService: ReportService,
     private notification: NotificationService,
     private dialog: MatDialog,
-    private fileService: FileService
+    private fileService: FileService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -104,13 +687,7 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadTrainees();
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   ngOnDestroy(): void {
-    // Clean up all blob URLs to prevent memory leaks
     this.imageUrls.forEach(url => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
@@ -120,7 +697,6 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadSelectOptions(): void {
-    // Gender Options - map to enum names
     this.genderOptions = [
       { value: null, label: 'الكل' },
       ...GENDERS.map(g => ({ 
@@ -129,24 +705,13 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
       }))
     ];
 
-    // Status Options
     this.statusOptions = [
       { value: null, label: 'الكل' },
       { value: true, label: 'نشط' },
       { value: false, label: 'غير نشط' }
     ];
-
-    // Academic Year Options - map to enum names
-    this.academicYearOptions = [
-      { value: null, label: 'الكل' },
-      ...ACADEMIC_YEARS.map(y => ({ 
-        value: this.getAcademicYearEnumName(y.id), 
-        label: y.title 
-      }))
-    ];
   }
 
-  // Helper to map gender ID to enum name
   private getGenderEnumName(id: number): string {
     const genderMap: { [key: number]: string } = {
       1: 'MALE',
@@ -155,44 +720,107 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
     return genderMap[id] || '';
   }
 
-  // Helper to map academic year ID to enum name
-  private getAcademicYearEnumName(id: number): string {
-    const yearMap: { [key: number]: string } = {
-      1: '_1',
-      2: '_2',
-      3: '_3',
-      4: '_4'
-    };
-    return yearMap[id] || '';
+  getAcademicYearDisplay(academicYear: string | undefined | null): string {
+    if (!academicYear) return '-';
+    return academicYear;
   }
 
+  // ==========================================================================
+  // GET TOTAL PAGES
+  // ==========================================================================
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  // ==========================================================================
+  // PAGINATION METHODS
+  // ==========================================================================
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 0) {
+      this.currentPage = 0;
+      this.loadTrainees();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadTrainees();
+    }
+  }
+
+  goToNextPage(): void {
+    this.currentPage++;
+    console.log('➡️ Going to next page:', this.currentPage);
+    this.loadTrainees();
+  }
+
+  goToLastPage(): void {
+    const totalPages = this.getTotalPages();
+    if (this.currentPage !== totalPages - 1 && totalPages > 0) {
+      this.currentPage = totalPages - 1;
+      this.loadTrainees();
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    console.log('📏 Page size changed to:', this.pageSize);
+    this.loadTrainees();
+  }
+
+  // ==========================================================================
+  // LOAD TRAINEES
+  // ==========================================================================
+
   loadTrainees(): void {
+    console.log('🔄 loadTrainees() called');
+    console.log(`  Current Page: ${this.currentPage}`);
+    console.log(`  Page Size: ${this.pageSize}`);
+    
     this.isLoading = true;
     const params: any = {};
     
     if (this.searchText) params.quickSearch = this.searchText;
     if (this.genderFilter) params.gender = this.genderFilter;
     if (this.statusFilter !== null) params.isActive = this.statusFilter;
-    if (this.academicYearFilter) params.academicYear = this.academicYearFilter;
+    if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
+      params.academicYear = this.academicYearFilter.trim();
+    }
+    
+    params.pageNum = this.currentPage;
+    params.pageSize = this.pageSize;
+    
+    if (this.sortBy) params.orderBy = this.sortBy;
+    if (this.sortDir) params.orderDir = this.sortDir;
+
+    console.log('📤 Sending request with params:', params);
 
     this.traineeService.getAllTraineesByFilter(params).subscribe({
       next: (res: any) => {
+        console.log('✅ Response received:', res);
+        console.log(`  Items: ${res.items?.length || 0}`);
+        console.log(`  Total: ${res.total || 0}`);
+        
         this.allTrainees = res.items || [];
+        this.totalItems = res.total || 0;
         this.loadAllImages();
         this.dataSource.data = this.allTrainees;
         this.isLoading = false;
-        console.log('Loaded trainees:', this.allTrainees);
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
-        console.error('Error loading trainees:', err);
+        console.error('❌ Error loading trainees:', err);
         this.notification.showError('حدث خطأ في تحميل المتدربين');
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
   loadAllImages(): void {
-    // Clear existing image URLs
     this.imageUrls.forEach(url => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
@@ -200,7 +828,6 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.imageUrls.clear();
 
-    // Load images for trainees that have imageUrl (FID)
     this.allTrainees.forEach(trainee => {
       this.loadImage(trainee);
     });
@@ -209,29 +836,26 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
   loadImage(trainee: TraineeListItem): void {
     const fid = trainee.imageUrl;
     if (fid) {
-      // Check if fid is a valid FID (15 or 18 digits)
       if (/^\d{15}(\d{3})?$/.test(fid)) {
         this.fileService.downloadFile(fid).subscribe({
           next: (blob) => {
-            // Clean up previous blob URL if exists
             const existingUrl = this.imageUrls.get(trainee.id);
             if (existingUrl && existingUrl.startsWith('blob:')) {
               URL.revokeObjectURL(existingUrl);
             }
-            // Create new blob URL
             const blobUrl = URL.createObjectURL(blob);
             this.imageUrls.set(trainee.id, blobUrl);
-            // Refresh the table data to show the image
             this.dataSource.data = [...this.dataSource.data];
+            this.cdr.detectChanges();
           },
           error: (error) => {
             console.error(`Failed to load image for trainee ${trainee.id}:`, error);
             this.imageUrls.set(trainee.id, '');
             this.dataSource.data = [...this.dataSource.data];
+            this.cdr.detectChanges();
           }
         });
       } else {
-        // If it's already a URL, use it directly
         this.imageUrls.set(trainee.id, fid);
       }
     } else {
@@ -244,34 +868,68 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
     return url && url.startsWith('blob:') ? url : null;
   }
 
-  // Filter methods - all call server-side
+  // ==========================================================================
+  // SORTING EVENTS
+  // ==========================================================================
+
+  onSortChange(sort: Sort): void {
+    console.log('📊 Sort changed:', sort);
+    if (sort.active && sort.direction) {
+      this.sortBy = sort.active;
+      this.sortDir = sort.direction.toUpperCase();
+    } else {
+      this.sortBy = 'CREATION_DATE';
+      this.sortDir = 'DESC';
+    }
+    this.currentPage = 0;
+    this.loadTrainees();
+  }
+
+  // ==========================================================================
+  // FILTER METHODS
+  // ==========================================================================
+
   onSearchChange(): void {
+    console.log('🔍 Search changed:', this.searchText);
+    this.currentPage = 0;
     this.loadTrainees();
   }
 
   onGenderChange(value: string | null): void {
+    console.log('🚻 Gender filter changed:', value);
     this.genderFilter = value;
+    this.currentPage = 0;
     this.loadTrainees();
   }
 
   onStatusChange(value: boolean | null): void {
+    console.log('📌 Status filter changed:', value);
     this.statusFilter = value;
+    this.currentPage = 0;
     this.loadTrainees();
   }
 
-  onAcademicYearChange(value: string | null): void {
+  onAcademicYearChange(value: string): void {
+    console.log('📚 Academic year filter changed:', value);
     this.academicYearFilter = value;
+    this.currentPage = 0;
     this.loadTrainees();
   }
 
   clearFilters(): void {
+    console.log('🧹 Clearing all filters');
     this.searchText = '';
     this.genderFilter = null;
     this.statusFilter = null;
     this.academicYearFilter = null;
+    this.currentPage = 0;
     this.loadTrainees();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
+
+  // ==========================================================================
+  // TRAINEE OPERATIONS
+  // ==========================================================================
 
   viewTrainee(id: number): void {
     this.traineeService.getTraineeById(id).subscribe({
@@ -288,32 +946,25 @@ export class TraineeListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
   
-  /**
-   * Edit trainee - passes full trainee data to the wizard
-   */
-editTrainee(id: number): void {
-  // Find the trainee from the list
-  const trainee = this.allTrainees.find(t => t.id === id);
+  editTrainee(id: number): void {
+    const trainee = this.allTrainees.find(t => t.id === id);
+    
+    const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
+      data: { 
+        traineeId: id,
+        traineeData: trainee
+      },
+      width: '900px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadTrainees();
+      }
+    });
+  }
   
-  console.log('🔍 Edit trainee - ID:', id);
-  console.log('🔍 Edit trainee - Found trainee:', trainee);
-  
-  // Open the wizard with the trainee data
-  const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
-    data: { 
-      traineeId: id,
-      traineeData: trainee // Pass the full trainee data
-    },
-    width: '900px',
-    maxWidth: '90vw'
-  });
-  
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadTrainees();
-    }
-  });
-}
   openNewTraineeModal(): void {
     const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
       data: {},
@@ -340,49 +991,693 @@ editTrainee(id: number): void {
     }
   }
 
-  /**
-   * Print multiple trainee cards (بطاقات المتدربين) - Optimized for maximum cards per page
-   */
-  printTraineeCards(): void {
-    if (this.dataSource.filteredData.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لطباعة البطاقات');
+  // ==========================================================================
+  // EXPORT FUNCTIONS WITH PAGE SELECTION
+  // ==========================================================================
+
+  private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
+    return new Promise((resolve) => {
+      const totalPages = this.getTotalPages();
+      
+      if (totalPages <= 1) {
+        // If only one page, export directly
+        resolve({ option: 'all' });
+        return;
+      }
+
+      const dialogRef = this.dialog.open(ExportPageSelectDialogComponent, {
+        width: '580px',
+        maxWidth: '95vw',
+        disableClose: true,
+        data: {
+          totalPages: totalPages,
+          totalItems: this.totalItems,
+          pageSize: this.pageSize,
+          currentPage: this.currentPage,
+          isCardPrint: isCardPrint
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        resolve(result);
+      });
+    });
+  }
+
+  private async fetchPagesForExport(startPage: number, endPage: number): Promise<TraineeListItem[]> {
+    const allData: TraineeListItem[] = [];
+    const totalPages = this.getTotalPages();
+    
+    // If exporting all pages or range, fetch each page
+    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+      const params: any = {};
+      
+      if (this.searchText) params.quickSearch = this.searchText;
+      if (this.genderFilter) params.gender = this.genderFilter;
+      if (this.statusFilter !== null) params.isActive = this.statusFilter;
+      if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
+        params.academicYear = this.academicYearFilter.trim();
+      }
+      
+      params.pageNum = page;
+      params.pageSize = this.pageSize;
+      
+      if (this.sortBy) params.orderBy = this.sortBy;
+      if (this.sortDir) params.orderDir = this.sortDir;
+      
+      try {
+        const res = await this.traineeService.getAllTraineesByFilter(params).toPromise();
+        if (res && res.items) {
+          allData.push(...res.items);
+        }
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
+        this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
+      }
+    }
+    
+    return allData;
+  }
+
+  async exportToExcel(): Promise<void> {
+    const result = await this.showExportPageSelection(false);
+    
+    if (!result) {
+      return; // User cancelled
+    }
+
+    let dataToExport: TraineeListItem[] = [];
+
+    if (result.option === 'all') {
+      // Get all pages
+      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      // Use current page data
+      dataToExport = this.allTrainees;
+    } else if (result.option === 'range') {
+      // Get specific range
+      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+    }
+
+    if (dataToExport.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
+    }
+
+    const exportData = dataToExport.map((t: TraineeListItem, i: number) => ({
+      '#': i + 1,
+      'الاسم': t.fullName,
+      'رقم الهوية': t.nationalId,
+      'السنة الدراسية': this.getAcademicYearDisplay(t.academicYear),
+      'الجنس': t.gender?.title || '-',
+      'الحالة': t.isActive ? 'نشط' : 'غير نشط'
+    }));
+    
+    this.reportService.exportToExcel(exportData, 'trainees-list', 'المتدربين');
+    this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
+  }
+
+  async exportToPDF(): Promise<void> {
+    const result = await this.showExportPageSelection(false);
+    
+    if (!result) {
+      return; // User cancelled
     }
 
     this.isLoading = true;
 
-    // Collect all image URLs for the trainees
-    const traineeImagePromises = this.dataSource.filteredData.map((trainee) => {
-      return new Promise<string>((resolve) => {
-        const fid = trainee.imageUrl;
-        if (fid && /^\d{15}(\d{3})?$/.test(fid)) {
-          this.fileService.downloadFile(fid).subscribe({
-            next: (blob) => {
-              const blobUrl = URL.createObjectURL(blob);
-              resolve(blobUrl);
-            },
-            error: () => {
-              resolve('');
-            }
-          });
-        } else if (fid) {
-          resolve(fid);
-        } else {
-          resolve('');
-        }
+    let dataToPrint: TraineeListItem[] = [];
+
+    if (result.option === 'all') {
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToPrint = this.allTrainees;
+    } else if (result.option === 'range') {
+      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+    }
+
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      this.isLoading = false;
+      return;
+    }
+
+    const filterTexts: string[] = [];
+    if (this.genderFilter) {
+      const gender = GENDERS.find(g => this.getGenderEnumName(g.id) === this.genderFilter);
+      if (gender) filterTexts.push(`الجنس: ${gender.title}`);
+    }
+    if (this.statusFilter !== null) {
+      filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
+    }
+    if (this.academicYearFilter) {
+      filterTexts.push(`السنة الدراسية: ${this.academicYearFilter}`);
+    }
+    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
+
+    // Calculate totals
+    const totalTrainees = dataToPrint.length;
+    const totalActive = dataToPrint.filter(t => t.isActive).length;
+    const totalInactive = dataToPrint.filter(t => !t.isActive).length;
+    const totalMale = dataToPrint.filter(t => t.gender?.title === 'ذكر').length;
+    const totalFemale = dataToPrint.filter(t => t.gender?.title === 'أنثى'||t.gender?.title === 'انثي').length;
+
+    // Split data into pages
+    const rowsPerPage = 20;
+    const pages: TraineeListItem[][] = [];
+    for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
+      pages.push(dataToPrint.slice(i, i + rowsPerPage));
+    }
+
+    let allPagesHTML = '';
+
+    pages.forEach((pageData: TraineeListItem[], pageIndex: number) => {
+      let tableRows = '';
+      pageData.forEach((t: TraineeListItem, index: number) => {
+        const globalIndex = (pageIndex * rowsPerPage) + index + 1;
+        const statusStyle = t.isActive 
+          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;' 
+          : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        
+        const genderStyle = t.gender?.title === 'ذكر'
+          ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+          : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        
+        tableRows += `
+          <tr>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
+            <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${t.fullName || '-'}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${t.nationalId || '-'}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${this.getAcademicYearDisplay(t.academicYear)}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${genderStyle}">${t.gender?.title || '-'}</span></td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${statusStyle}">${t.isActive ? 'نشط' : 'غير نشط'}</span></td>
+          </tr>
+        `;
       });
+
+      allPagesHTML += `
+        <div class="page-container">
+          <!-- Watermark - Using pseudo-elements -->
+          <div class="content">
+            <div class="header">
+              <h1>📋 قائمة المتدربين</h1>
+              <p>${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style="font-size: 10px; opacity: 0.8;">صفحة ${pageIndex + 1} من ${pages.length}</p>
+            </div>
+            
+            ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+            
+            ${pageIndex === 0 ? `
+            <div class="totals-grid">
+              <div class="total-card total-all">
+                <span class="total-icon">👥</span>
+                <span class="total-value">${totalTrainees}</span>
+                <span class="total-label">إجمالي</span>
+              </div>
+              <div class="total-card total-active">
+                <span class="total-icon">✅</span>
+                <span class="total-value">${totalActive}</span>
+                <span class="total-label">نشطاء</span>
+              </div>
+              <div class="total-card total-inactive">
+                <span class="total-icon">⛔</span>
+                <span class="total-value">${totalInactive}</span>
+                <span class="total-label">غير نشطاء</span>
+              </div>
+              <div class="total-card total-male">
+                <span class="total-icon">👨</span>
+                <span class="total-value">${totalMale}</span>
+                <span class="total-label">ذكور</span>
+              </div>
+              <div class="total-card total-female">
+                <span class="total-icon">👩</span>
+                <span class="total-value">${totalFemale}</span>
+                <span class="total-label">إناث</span>
+              </div>
+            </div>
+            ` : ''}
+            
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 4%;">#</th>
+                  <th style="width: 25%;">الاسم</th>
+                  <th style="width: 18%;">رقم الهوية</th>
+                  <th style="width: 16%;">السنة الدراسية</th>
+                  <th style="width: 15%;">الجنس</th>
+                  <th style="width: 22%;">الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            
+            <div class="footer">
+              الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${dataToPrint.length} متدرب
+            </div>
+          </div>
+        </div>
+      `;
     });
 
-    Promise.all(traineeImagePromises).then((imageUrls) => {
-      this.generateCardsPrintOptimized(this.dataSource.filteredData, imageUrls);
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.position = 'relative';
+    printContainer.style.width = '100%';
+    
+    // Get the logo as base64 for reliable printing
+    const logoPath = 'assets/images/simpleLogoSvg.svg';
+    
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>قائمة المتدربين</title>
+        <style>
+          * { 
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+          }
+          
+          html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: white;
+            margin: 0;
+            padding: 0;
+          }
+          
+          @page { 
+            size: A4 landscape; 
+            margin: 8mm;
+          }
+          
+          .page-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            page-break-after: always;
+            background: white;
+            overflow: hidden;
+          }
+          
+          .page-container:last-child {
+            page-break-after: auto;
+          }
+          
+          /* ===== WATERMARK with actual logo image ===== */
+          .watermark-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .watermark-wrapper img {
+            width: 45%;
+            height: 45%;
+            object-fit: contain;
+            opacity: 0.10;
+            transform: rotate(-25deg);
+            filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+          }
+          
+          .watermark-text {
+            position: absolute;
+            top: 56%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 50px;
+            font-weight: 900;
+            color: #667eea;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+          }
+          
+          /* ===== CONTENT - Above watermark ===== */
+          .content {
+            position: relative;
+            z-index: 1;
+            padding: 12px;
+            background: transparent;
+            min-height: 100vh;
+          }
+          
+          @media print {
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            .no-print { display: none !important; }
+            .page-container {
+              min-height: 100vh !important;
+              page-break-after: always !important;
+            }
+            .page-container:last-child {
+              page-break-after: auto !important;
+            }
+            .watermark-wrapper img {
+              opacity: 0.12 !important;
+              width: 50% !important;
+              height: 50% !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .watermark-text {
+              opacity: 0.06 !important;
+              font-size: 55px !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            td {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tr {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tbody {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            table {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .header {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            th {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .totals-grid {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .total-card {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+          }
+          
+          .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .header h1 { 
+            margin: 0; 
+            font-size: 18px; 
+            font-weight: 700;
+            letter-spacing: 1px;
+          }
+          .header p { 
+            margin: 2px 0 0 0; 
+            font-size: 11px; 
+            opacity: 0.9;
+          }
+          
+          .filters {
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 6px;
+            font-size: 10px;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+          }
+          .filters strong {
+            color: #1e293b;
+          }
+          
+          .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-bottom: 8px;
+          }
+          
+          .total-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 6px;
+            padding: 5px 8px;
+            text-align: center;
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 30px;
+            backdrop-filter: blur(4px);
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          .total-card .total-icon {
+            font-size: 13px;
+            flex-shrink: 0;
+          }
+          
+          .total-card .total-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+          }
+          
+          .total-card .total-label {
+            font-size: 9px;
+            color: #64748b;
+            margin-right: 2px;
+            font-weight: 500;
+          }
+          
+          .total-card.total-all {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+          }
+          .total-card.total-all .total-value {
+            color: white;
+          }
+          .total-card.total-all .total-label {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          
+          .total-card.total-active {
+            background: rgba(209, 250, 229, 0.85);
+            border-color: rgba(110, 231, 183, 0.5);
+          }
+          .total-card.total-active .total-value {
+            color: #059669;
+          }
+          
+          .total-card.total-inactive {
+            background: rgba(254, 226, 226, 0.85);
+            border-color: rgba(252, 165, 165, 0.5);
+          }
+          .total-card.total-inactive .total-value {
+            color: #dc2626;
+          }
+          
+          .total-card.total-male {
+            background: rgba(219, 234, 254, 0.85);
+            border-color: rgba(147, 197, 253, 0.5);
+          }
+          .total-card.total-male .total-value {
+            color: #2563eb;
+          }
+          
+          .total-card.total-female {
+            background: rgba(254, 243, 199, 0.85);
+            border-color: rgba(252, 211, 77, 0.5);
+          }
+          .total-card.total-female .total-value {
+            color: #92400e;
+          }
+          
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+            margin-top: 4px;
+            font-size: 10px;
+            background: transparent !important;
+          }
+          th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 4px;
+            border: 1px solid #5b6fd8;
+            text-align: center;
+            font-weight: 700;
+            font-size: 10px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          td { 
+            padding: 4px 4px; 
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            font-size: 10px;
+            background: transparent !important;
+          }
+          tr {
+            background: transparent !important;
+          }
+          tbody {
+            background: transparent !important;
+          }
+          tr:nth-child(even) td {
+            background: rgba(250, 251, 252, 0.4) !important;
+          }
+          
+          .footer {
+            text-align: center;
+            margin-top: 8px;
+            padding: 5px;
+            font-size: 8px;
+            color: rgba(148, 163, 184, 0.8);
+            border-top: 1px solid rgba(229, 231, 235, 0.3);
+          }
+          
+          @media (max-width: 768px) {
+            .watermark-wrapper img {
+              width: 65% !important;
+              height: 65% !important;
+            }
+            .watermark-text {
+              font-size: 30px !important;
+            }
+            .totals-grid {
+              grid-template-columns: repeat(3, 1fr);
+              gap: 4px;
+            }
+            .total-card {
+              padding: 4px 6px;
+              min-height: 26px;
+            }
+            .total-card .total-value {
+              font-size: 12px;
+            }
+            table { 
+              font-size: 9px; 
+            }
+            th, td { 
+              padding: 3px 2px; 
+            }
+            .header h1 {
+              font-size: 15px;
+            }
+          }
+          
+          @media (max-width: 480px) {
+            .totals-grid {
+              grid-template-columns: repeat(2, 1fr);
+            }
+            .watermark-wrapper img {
+              width: 75% !important;
+              height: 75% !important;
+            }
+            .watermark-text {
+              font-size: 20px !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${allPagesHTML}
+        
+        <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+          <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);">
+            🖨️ طباعة / PDF
+          </button>
+          <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+            ✖ إغلاق
+          </button>
+        </div>
+        
+        <!-- Watermark elements added after page content -->
+        <script>
+          // Add watermark to each page container
+          document.querySelectorAll('.page-container').forEach(function(container) {
+            // Create watermark wrapper
+            var wrapper = document.createElement('div');
+            wrapper.className = 'watermark-wrapper';
+            
+            // Create image element
+            var img = document.createElement('img');
+            img.src = '${logoPath}';
+            img.alt = 'الأكاديمية الأولمبية';
+            img.onerror = function() { this.style.display = 'none'; };
+            
+            // Create text element
+            var text = document.createElement('div');
+            text.className = 'watermark-text';
+            text.textContent = 'الأكاديمية الأولمبية';
+            
+            wrapper.appendChild(img);
+            wrapper.appendChild(text);
+            
+            // Insert watermark at the beginning of container
+            container.insertBefore(wrapper, container.firstChild);
+          });
+        <\/script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
       this.isLoading = false;
-      this.notification.showSuccess('تم فتح بطاقات المتدربين للطباعة');
-    });
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer);
+        }
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    }
   }
 
-  /**
-   * Generate print document with multiple trainee cards - Optimized for maximum cards per page
-   */
   private generateCardsPrintOptimized(trainees: TraineeListItem[], imageUrls: string[]): void {
     const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
     if (!printWindow) {
@@ -390,56 +1685,63 @@ editTrainee(id: number): void {
       return;
     }
 
-    const today = new Date().toLocaleDateString('ar-EG');
     let cardsHtml = '';
 
     trainees.forEach((trainee, index) => {
       const imageUrl = imageUrls[index] || '';
       const genderDisplay = trainee.gender?.title || '-';
-      const academicYearDisplay = trainee.academicYear?.title || '-';
+      const academicYearDisplay = this.getAcademicYearDisplay(trainee.academicYear);
       const isActive = trainee.isActive;
 
       cardsHtml += `
         <div class="card-wrapper">
           <div class="card">
-            <div class="card-header">
-              <div class="academy-name">الأكاديمية الأولمبية</div>
-              <div class="card-title">بطاقة هوية</div>
+            <!-- Watermark on Card -->
+            <div class="card-watermark">
+              <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية">
             </div>
-            <div class="card-body">
-              <div class="card-photo">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${trainee.fullName}">` : '<div class="placeholder-photo">📷</div>'}
+            <div class="card-watermark-text">الأكاديمية الأولمبية</div>
+            
+            <div class="card-content">
+              <div class="card-header">
+                <div class="academy-name">الأكاديمية الأولمبية</div>
+                <div class="card-title">بطاقة هوية</div>
               </div>
-              <div class="card-info">
-                <div class="card-name">${trainee.fullName}</div>
-                <div class="card-id">${trainee.nationalId}</div>
-                <div class="card-details">
-                  <div class="detail-row">
-                    <span class="detail-label">الجنس:</span>
-                    <span class="detail-value">${genderDisplay}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">السنة:</span>
-                    <span class="detail-value">${academicYearDisplay}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">الحالة:</span>
-                    <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
+              <div class="card-body">
+                <div class="card-photo">
+                  ${imageUrl ? `<img src="${imageUrl}" alt="${trainee.fullName}">` : '<div class="placeholder-photo">📷</div>'}
+                </div>
+                <div class="card-info">
+                  <div class="card-name">${trainee.fullName}</div>
+                  <div class="card-id">${trainee.nationalId}</div>
+                  <div class="card-details">
+                    <div class="detail-row">
+                      <span class="detail-label">الجنس:</span>
+                      <span class="detail-value">${genderDisplay}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">السنة:</span>
+                      <span class="detail-value">${academicYearDisplay}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">الحالة:</span>
+                      <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="card-footer">
-              <div class="card-barcode">
-                <svg id="barcode-${index}" class="barcode-svg"></svg>
-              </div>
-              <div class="card-signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">توقيع المتدرب</div>
-              </div>
-              <div class="card-signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">ختم الأكاديمية</div>
+              <div class="card-footer">
+                <div class="card-barcode">
+                  <svg id="barcode-${index}" class="barcode-svg"></svg>
+                </div>
+                <div class="card-signature">
+                  <div class="signature-line"></div>
+                  <div class="signature-label">توقيع المتدرب</div>
+                </div>
+                <div class="card-signature">
+                  <div class="signature-line"></div>
+                  <div class="signature-label">ختم الأكاديمية</div>
+                </div>
               </div>
             </div>
           </div>
@@ -462,7 +1764,6 @@ editTrainee(id: number): void {
             padding: 0;
           }
           
-          /* Print optimization - maximum cards per page */
           @media print {
             body { 
               margin: 0; 
@@ -482,6 +1783,16 @@ editTrainee(id: number): void {
               border-radius: 4px !important;
               min-height: 220px;
               padding: 8px 10px;
+            }
+            .card-watermark {
+              opacity: 0.08 !important;
+            }
+            .card-watermark img {
+              width: 80px !important;
+            }
+            .card-watermark-text {
+              font-size: 18px !important;
+              opacity: 0.05 !important;
             }
             .card-header {
               margin-bottom: 4px;
@@ -529,12 +1840,8 @@ editTrainee(id: number): void {
             .signature-line {
               margin: 2px 0;
             }
-            .card-issue-date {
-              display: none;
-            }
           }
           
-          /* Screen view - show cards in grid */
           @media screen {
             body { 
               margin: 0; 
@@ -548,14 +1855,6 @@ editTrainee(id: number): void {
             .card-wrapper { 
               flex: 0 0 auto;
               margin: 0;
-            }
-            .card-issue-date {
-              text-align: center;
-              font-size: 8px;
-              color: #94a3b8;
-              margin-top: 6px;
-              padding-top: 4px;
-              border-top: 1px dashed #e2e8f0;
             }
           }
           
@@ -574,7 +1873,54 @@ editTrainee(id: number): void {
             border: 1px solid #e2e8f0;
             direction: rtl;
             padding: 12px 14px;
+            position: relative;
           }
+          
+          /* ===== CARD WATERMARK ===== */
+          .card-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg) scale(1.8);
+            opacity: 0.06;
+            pointer-events: none;
+            z-index: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+          }
+          
+          .card-watermark img {
+            width: 100px;
+            height: auto;
+            filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+            opacity: 0.8;
+          }
+          
+          .card-watermark-text {
+            position: absolute;
+            top: 56%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
+            font-size: 20px;
+            font-weight: 900;
+            color: #667eea;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+            text-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+          }
+          
+          .card-content {
+            position: relative;
+            z-index: 1;
+          }
+          
           .card-header {
             text-align: center;
             border-bottom: 2px solid #667eea;
@@ -690,6 +2036,12 @@ editTrainee(id: number): void {
             .card {
               max-width: 100%;
             }
+            .card-watermark img {
+              width: 80px !important;
+            }
+            .card-watermark-text {
+              font-size: 16px !important;
+            }
           }
         </style>
       </head>
@@ -699,7 +2051,6 @@ editTrainee(id: number): void {
           <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
         <script>
-          // Generate barcodes after page load
           window.onload = function() {
             setTimeout(function() {
               const trainees = ${JSON.stringify(trainees.map(t => t.nationalId))};
@@ -729,134 +2080,64 @@ editTrainee(id: number): void {
     printWindow.document.close();
   }
 
-  exportToExcel(): void {
-    if (this.dataSource.filteredData.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      return;
-    }
-    
-    const data = this.dataSource.filteredData.map((t: TraineeListItem, i: number) => ({
-      '#': i + 1,
-      'الاسم': t.fullName,
-      'رقم الهوية': t.nationalId,
-      'السنة الدراسية': t.academicYear?.title || '-',
-      'الجنس': t.gender?.title || '-',
-      'الحالة': t.isActive ? 'نشط' : 'غير نشط'
-    }));
-    
-    this.reportService.exportToExcel(data, 'trainees-list', 'المتدربين');
-    this.notification.showSuccess('تم تصدير التقرير بنجاح');
-  }
+  // ==========================================================================
+  // PRINT CARDS WITH PAGE SELECTION
+  // ==========================================================================
 
-  exportToPDF(): void {
-    if (this.dataSource.filteredData.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      return;
-    }
+  async printTraineeCards(): Promise<void> {
+    const result = await this.showExportPageSelection(true);
     
+    if (!result) {
+      return; // User cancelled
+    }
+
     this.isLoading = true;
 
-    const filterTexts: string[] = [];
-    if (this.genderFilter) {
-      const gender = GENDERS.find(g => this.getGenderEnumName(g.id) === this.genderFilter);
-      if (gender) filterTexts.push(`الجنس: ${gender.title}`);
-    }
-    if (this.statusFilter !== null) {
-      filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
-    }
-    if (this.academicYearFilter) {
-      const year = ACADEMIC_YEARS.find(y => this.getAcademicYearEnumName(y.id) === this.academicYearFilter);
-      if (year) filterTexts.push(`السنة الدراسية: ${year.title}`);
-    }
-    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
+    let dataToPrint: TraineeListItem[] = [];
 
-    let tableRows = '';
-    this.dataSource.filteredData.forEach((t: TraineeListItem, index: number) => {
-      const statusStyle = t.isActive 
-        ? 'background-color: #d1fae5; color: #065f46;' 
-        : 'background-color: #fee2e2; color: #991b1b;';
-      
-      tableRows += `
-        <tr>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${t.fullName || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${t.nationalId || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${t.academicYear?.title || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${t.gender?.title || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">${t.isActive ? 'نشط' : 'غير نشط'}</td>
-        </tr>
-      `;
+    if (result.option === 'all') {
+      // Get all pages
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      // Use current page data
+      dataToPrint = this.allTrainees;
+    } else if (result.option === 'range') {
+      // Get specific range
+      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+    }
+
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لطباعة البطاقات');
+      this.isLoading = false;
+      return;
+    }
+
+    // Load images for all trainees
+    const traineeImagePromises = dataToPrint.map((trainee) => {
+      return new Promise<string>((resolve) => {
+        const fid = trainee.imageUrl;
+        if (fid && /^\d{15}(\d{3})?$/.test(fid)) {
+          this.fileService.downloadFile(fid).subscribe({
+            next: (blob) => {
+              const blobUrl = URL.createObjectURL(blob);
+              resolve(blobUrl);
+            },
+            error: () => {
+              resolve('');
+            }
+          });
+        } else if (fid) {
+          resolve(fid);
+        } else {
+          resolve('');
+        }
+      });
     });
 
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '20px';
-    printContainer.style.backgroundColor = 'white';
-    
-    printContainer.innerHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>قائمة المتدربين</title>
-        <style>
-          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-          @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
-          .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; }
-          .header h1 { margin: 0; font-size: 24px; }
-          .header p { margin: 10px 0 0 0; font-size: 12px; }
-          .filters { margin-bottom: 20px; padding: 10px; background-color: #f3f4f6; border-radius: 8px; font-size: 12px; }
-          .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
-          .stat-item { flex: 1; text-align: center; }
-          .stat-label { font-size: 12px; color: #6b7280; }
-          .stat-value { font-size: 20px; font-weight: bold; color: #667eea; }
-          .stat-value.active { color: #10b981; }
-          .stat-value.inactive { color: #f59e0b; }
-          table { width: 100%; border-collapse: collapse; direction: rtl; }
-          th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
-          td { padding: 8px; border: 1px solid #ddd; }
-          .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>قائمة المتدربين</h1>
-          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-          <p>عدد السجلات: ${this.dataSource.filteredData.length} متدرب</p>
-        </div>
-        ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
-        <div class="stats">
-          <div class="stat-item"><div class="stat-value">${this.allTrainees.length}</div><div class="stat-label">إجمالي المتدربين</div></div>
-          <div class="stat-item"><div class="stat-value active">${this.activeCount}</div><div class="stat-label">نشط</div></div>
-          <div class="stat-item"><div class="stat-value inactive">${this.inactiveCount}</div><div class="stat-label">غير نشط</div></div>
-        </div>
-        <table>
-          <thead>
-            <tr><th>#</th><th>الاسم</th><th>رقم الهوية</th><th>السنة الدراسية</th><th>الجنس</th><th>الحالة</th></tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
-        <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
-          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const printWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes');
-    if (printWindow) {
-      printWindow.document.write(printContainer.innerHTML);
-      printWindow.document.close();
-      this.isLoading = false;
-      this.notification.showSuccess('تم فتح التقرير - يمكنك طباعته أو حفظه كـ PDF');
-    } else {
-      document.body.appendChild(printContainer);
-      window.print();
-      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
-      this.isLoading = false;
-      this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
-    }
+    const imageUrls = await Promise.all(traineeImagePromises);
+    this.generateCardsPrintOptimized(dataToPrint, imageUrls);
+    this.isLoading = false;
+    this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
   }
+
 }

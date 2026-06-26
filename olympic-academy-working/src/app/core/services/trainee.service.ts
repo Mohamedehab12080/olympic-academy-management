@@ -44,8 +44,8 @@ export class TraineeService {
     return this.api.post(`/trainees/${traineeId}/contacts`, data);
   }
 
-  getTraineeContacts(traineeId: number, contactValue?: string): Observable<TraineeContactResultSet> {
-    return this.api.get(`/trainees/${traineeId}/contacts`, { contactValue });
+  getTraineeContacts(traineeId: number): Observable<TraineeContactResultSet> {
+    return this.api.get(`/trainees/${traineeId}/contacts`);
   }
 
   updateTraineeContact(traineeId: number, contactId: number, data: TraineeContactDTO): Observable<NewRecordVTO> {

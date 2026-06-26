@@ -55,7 +55,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         employeeRepository.selectById(enrollmentDTO.getTrainerId())
                 .orElseThrow(() -> new BusinessException(TRAINER_NOT_FOUND_FOR_ENROLLMENT, enrollmentDTO.getTrainerId()));
 
-        enrollmentTypeRepository.selectById(enrollmentDTO.getEnrollmentTypeId()).orElseThrow(()-> new BusinessException(ENROLLMENT_TYPE_NOT_FOUND));
+        if(enrollmentDTO.getEnrollmentTypeId()!=null){
+            enrollmentTypeRepository.selectById(enrollmentDTO.getEnrollmentTypeId()).orElseThrow(()-> new BusinessException(ENROLLMENT_TYPE_NOT_FOUND));
+        }
 
         EnrollmentSearchFilter enrollmentSearchFilter=EnrollmentSearchFilter.builder()
                 .traineeId(enrollmentDTO.getTraineeId())
@@ -82,7 +84,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Enrollment enrollmentToUpdate = enrollmentMapper.toEnrollment(enrollmentDTO);
         enrollmentToUpdate.setId(enrollmentId);
         enrollmentToUpdate.setIsDeleted(false);
-        enrollmentToUpdate.setIsActive(enrollmentDTO.getIsActive());
+        enrollmentToUpdate.setIsActive(enrollmentDTO.getIsActive()!=null?enrollmentDTO.getIsActive():enrollment.getIsActive());
+        enrollmentToUpdate.setCreatedBy(enrollment.getCreatedBy());
+        enrollmentToUpdate.setCreatedOn(enrollment.getCreatedOn());
         enrollmentRepository.update(enrollmentToUpdate);
         return NewRecordVTO.builder().id(enrollmentId).build();
     }
@@ -138,7 +142,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         return EnrollmentResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(enrollmentRepository.countAllByFilters(filter))
                 .build();
     }
 }

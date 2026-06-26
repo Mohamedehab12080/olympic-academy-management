@@ -38,13 +38,13 @@ public class EmployeeAttendanceControllerImpl implements EmployeeAttendanceContr
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeeAttendances(Integer employeeId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
-        return ResponseEntity.ok(employeeAttendanceService.getAllEmployeeAttendances(employeeId,status,attendanceDateFrom,attendanceDateTo,checkInFrom,checkInTo,checkOutFrom,checkOutTo,pageNum,pageSize,orderDir,orderBy));
+        return ResponseEntity.ok(employeeAttendanceService.getAllEmployeeAttendances(null,employeeId,null,status,attendanceDateFrom,attendanceDateTo,checkInFrom,checkInTo,checkOutFrom,checkOutTo,pageNum,pageSize,orderDir,orderBy));
     }
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeesAttendances(Integer employeeId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
-        return ResponseEntity.ok(employeeAttendanceService.getAllEmployeeAttendances(employeeId,status,attendanceDateFrom,attendanceDateTo,checkInFrom,checkInTo,checkOutFrom,checkOutTo,pageNum,pageSize,orderDir,orderBy));
+    public ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeesAttendances(String quickSearch, Integer employeeId, String employeeNationalId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+        return ResponseEntity.ok(employeeAttendanceService.getAllEmployeeAttendances(quickSearch,employeeId,employeeNationalId,status,attendanceDateFrom,attendanceDateTo,checkInFrom,checkInTo,checkOutFrom,checkOutTo,pageNum,pageSize,orderDir,orderBy));
     }
 
     @Override

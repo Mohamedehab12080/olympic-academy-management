@@ -57,7 +57,7 @@ public interface TrainerDepartmentController {
             @Parameter(name = "AssignDepartmentDTO", description = "", required = true) @Valid @RequestBody AssignDepartmentDTO assignDepartmentDTO);
 
     /**
-     * GET /trainers/{trainerdepartmentId} : Get trainer department details
+     * GET /trainers/{trainerdepartmentId}/departmnet : Get trainer department details
      *
      * @param trainerDepartmentId
      *            (required)
@@ -69,7 +69,7 @@ public interface TrainerDepartmentController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = TrainerDepartmentVTO.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.GET, value = "/trainers/{trainerdepartmentId}", produces = {
+    @RequestMapping(method = RequestMethod.GET, value = "/trainers/{trainerdepartmentId}/departmnet", produces = {
             "application/json" })
 
     ResponseEntity<TrainerDepartmentVTO> _getTrainerDepartmentById(
@@ -112,7 +112,7 @@ public interface TrainerDepartmentController {
             @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
-     * DELETE /trainers/{trainerdepartmentId} : Unassign a department from a trainer
+     * DELETE /trainers/{trainerdepartmentId}/departmnet : Unassign a department from a trainer
      *
      * @param trainerDepartmentId
      *            (required)
@@ -123,14 +123,14 @@ public interface TrainerDepartmentController {
             "TrainerDepartment" }, responses = { @ApiResponse(responseCode = "204", description = "NO Content"),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.DELETE, value = "/trainers/{trainerdepartmentId}", produces = {
+    @RequestMapping(method = RequestMethod.DELETE, value = "/trainers/{trainerdepartmentId}/departmnet", produces = {
             "application/json" })
 
     ResponseEntity<Void> _unassignDepartmentFromTrainer(
             @Parameter(name = "trainerDepartmentId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("trainerDepartmentId") Integer trainerDepartmentId);
 
     /**
-     * PUT /trainers/{trainerdepartmentId} : Update trainer department
+     * PUT /trainers/{trainerdepartmentId}/departmnet : Update trainer department
      *
      * @param trainerDepartmentId
      *            (required)
@@ -143,7 +143,7 @@ public interface TrainerDepartmentController {
             "TrainerDepartment" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.PUT, value = "/trainers/{trainerdepartmentId}", produces = {
+    @RequestMapping(method = RequestMethod.PUT, value = "/trainers/{trainerdepartmentId}/departmnet", produces = {
             "application/json" }, consumes = { "application/json" })
 
     ResponseEntity<Void> _updateTrainerDepartment(

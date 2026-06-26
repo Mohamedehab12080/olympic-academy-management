@@ -76,6 +76,37 @@
   min-width: 180px;
 }
 
+.barcode-toggle-btn {
+  border-color: #10b981;
+  color: #10b981;
+  padding: 0 20px;
+  height: 44px;
+  transition: all 0.2s;
+  min-width: 140px;
+}
+
+.barcode-toggle-btn:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.barcode-toggle-btn.active {
+  background: #10b981;
+  color: white;
+}
+
+.barcode-row {
+  padding: 8px 0;
+  animation: slideDown 0.3s ease;
+}
+
+.barcode-input-wrapper {
+  max-width: 400px;
+}
+
+.barcode-field {
+  width: 100%;
+}
+
 .filter-actions {
   display: flex;
   gap: 12px;
@@ -103,6 +134,11 @@
 
 .print-btn:hover {
   background-color: rgba(16, 185, 129, 0.1);
+}
+
+.print-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Statistics Cards */
@@ -200,6 +236,15 @@
   height: 18px;
 }
 
+.page-info {
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 12px;
+  background: #f3f4f6;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
 .total-amount {
   display: flex;
   align-items: center;
@@ -224,7 +269,7 @@
 
 .data-table {
   width: 100%;
-  min-width: 1200px;
+  min-width: 1300px;
 }
 
 .data-table .mat-header-cell {
@@ -256,6 +301,17 @@
 .employee-info strong {
   color: #1f2937;
   font-weight: 600;
+}
+
+/* National ID Badge */
+.national-id-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 12px;
+  font-size: 12px;
+  font-family: monospace;
 }
 
 /* Salary Badge */
@@ -402,6 +458,17 @@
   }
 }
 
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1400px) {
   .stats-grid {
@@ -444,6 +511,14 @@
   .date-field {
     width: 100%;
     min-width: 100%;
+  }
+
+  .barcode-toggle-btn {
+    width: 100%;
+  }
+
+  .barcode-input-wrapper {
+    max-width: 100%;
   }
 
   .filter-actions {
@@ -490,7 +565,7 @@
   }
 
   .data-table {
-    min-width: 1000px;
+    min-width: 1100px;
   }
 }
 
@@ -529,7 +604,9 @@
   .add-button,
   .print-btn,
   .export-btn,
-  .reset-btn {
+  .reset-btn,
+  .barcode-toggle-btn,
+  .barcode-row {
     display: none !important;
   }
   
@@ -543,8 +620,8 @@
   }
   
   .data-table .mat-header-cell {
-    background: #e5e7eb;
-    color: #000;
+    background: #e5e7eb !important;
+    color: #000 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -552,7 +629,8 @@
   .type-badge,
   .salary-badge,
   .remained-badge,
-  .amount-badge {
+  .amount-badge,
+  .national-id-badge {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

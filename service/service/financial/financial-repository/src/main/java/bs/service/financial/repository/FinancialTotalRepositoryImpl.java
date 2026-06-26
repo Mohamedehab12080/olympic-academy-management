@@ -31,6 +31,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         try {
             // 1. Get salary and incentives
             vto.setTotalSalary(getTotalSalary(startDate, endDate));
+            vto.setTotalAdvance(getTotalAdvances(startDate,endDate));
             vto.setTotalIncentives(getTotalIncentives(startDate, endDate));
 
             // 2. Get rent payments
@@ -64,8 +65,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(si.amount_withdrawn), 0)
             FROM oa_salary_incentive si
-            WHERE si.withdraw_date BETWEEN :startDate AND :endDate 
-              AND si.salary_type = 1 
+            WHERE si.withdraw_date BETWEEN :startDate AND :endDate
               AND si.salary_transaction_type = 1
               AND si.is_deleted = 0
         """;
@@ -79,9 +79,22 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(si.amount_withdrawn), 0)
             FROM oa_salary_incentive si
-            WHERE si.withdraw_date BETWEEN :startDate AND :endDate 
-              AND si.salary_type = 1 
+            WHERE si.withdraw_date BETWEEN :startDate AND :endDate
               AND si.salary_transaction_type IN (2, 3)
+              AND si.is_deleted = 0
+        """;
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("startDate", from);
+        query.setParameter("endDate", to);
+        return ((Number) query.getSingleResult()).intValue();
+    }
+
+    private int getTotalAdvances(LocalDate from, LocalDate to) {
+        String sql = """
+            SELECT COALESCE(SUM(si.amount_withdrawn), 0)
+            FROM oa_salary_incentive si
+            WHERE si.withdraw_date BETWEEN :startDate AND :endDate
+              AND si.salary_transaction_type=4
               AND si.is_deleted = 0
         """;
         Query query = entityManager.createNativeQuery(sql);

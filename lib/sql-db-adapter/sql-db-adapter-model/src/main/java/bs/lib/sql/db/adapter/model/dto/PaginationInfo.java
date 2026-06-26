@@ -27,11 +27,16 @@ public class PaginationInfo {
     }
 
     public Boolean getNoPagination() {
-        return (pageNum == null && pageSize == null);
+        // FIX: This should return true when no pagination is needed
+        // The current implementation returns (pageNum == null && pageSize == null)
+        // But the builder default sets pageNum=0 and pageSize=25, so this never returns true!
+        // You should check the noPagination flag instead
+        return noPagination != null && noPagination;
     }
 
     public static PaginationInfo noPagination() {
-        return PaginationInfo.builder().noPagination(false).build();
+        // FIX: Set noPagination to true, not false!
+        return PaginationInfo.builder().noPagination(true).build();
     }
 
     public static PaginationInfo firstItem() {

@@ -7,4 +7,8 @@ import java.time.LocalDate;
 public interface FinancialTotalService{
 
     FinancialTotalVTO getFinancialTotalVTO(LocalDate startDate, LocalDate endDate);
+
+    FinancialTotalVTO getMainFinancialTotalVTO(String year);
+
+
 }

@@ -1,27 +1,30 @@
+// app.routes.ts
+
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { AuthGuard } from './core/auth/guards/auth.guard';
 
 export const routes: Routes = [
-  // مسارات المصادقة (بدون حماية)
+  // Authentication routes (no guard)
   { path: 'login', loadComponent: () => import('./core/auth/pages/login/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./core/auth/pages/register/register.component').then(m => m.RegisterComponent) },
   { path: 'activate', loadComponent: () => import('./core/auth/pages/activate-account/activate-account.component').then(m => m.ActivateAccountComponent) },
   { path: 'forgot-password', loadComponent: () => import('./core/auth/pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
   { path: 'reset-password', loadComponent: () => import('./core/auth/pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
 
-
-  // المسارات المحمية (تتطلب تسجيل دخول)
+  // Protected routes (require login)
   {
     path: '',
     component: MainLayoutComponent,
     canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
+      { 
+        path: 'dashboard', 
+        loadComponent: () => import('./../../src/app/features/dashboard/dashboard.component').then(m => m.HomeComponent) 
+      },
       
-      // الوحدات الرئيسية
+      // Main modules
       { path: 'departments', loadChildren: () => import('./features/departments/department.module').then(m => m.DepartmentsModule) },
       { path: 'courses', loadChildren: () => import('./features/courses/course.module').then(m => m.CoursesModule) },
       { path: 'employees', loadChildren: () => import('./features/employees/employees.module').then(m => m.EmployeesModule) },
@@ -30,28 +33,24 @@ export const routes: Routes = [
       { path: 'places', loadChildren: () => import('./features/places/places.module').then(m => m.PlacesModule) },
       { path: 'financial', loadChildren: () => import('./features/financial/financial.module').then(m => m.FinancialModule) },
       
-      // ============================================
-      // الحضور (Attendance)
-      // ============================================
+      // Attendance
       { 
-      path: 'attendance/employee', 
-      loadComponent: () => import('./features/employees/pages/employee-attendance/employee-attendance.component')
-        .then(m => m.EmployeeAttendanceComponent) 
-     },
+        path: 'attendance/employee', 
+        loadComponent: () => import('./features/employees/pages/employee-attendance/employee-attendance.component')
+          .then(m => m.EmployeeAttendanceComponent) 
+      },
       { 
-    path: 'trainees/attendance', 
-    loadComponent: () => import('./features/trainees/pages/trainee-attendance/trainee-attendance.component')
-      .then(m => m.TraineeAttendanceComponent) 
-    },
+        path: 'trainees/attendance', 
+        loadComponent: () => import('./features/trainees/pages/trainee-attendance/trainee-attendance.component')
+          .then(m => m.TraineeAttendanceComponent) 
+      },
 
-    {
-      path: 'sessions',
-      loadChildren: () => import('./features/course-session/course-session.module').then(m => m.CourseSessionModule)
-    },
+      {
+        path: 'sessions',
+        loadChildren: () => import('./features/course-session/course-session.module').then(m => m.CourseSessionModule)
+      },
       
-      // ============================================
-      // التقارير (Reports)
-      // ============================================
+      // Reports
       { 
         path: 'reports/attendance', 
         loadComponent: () => import('./features/employees/reports/attendance-report/attendance-report.component')
@@ -85,6 +84,6 @@ export const routes: Routes = [
     ]
   },
 
-  // إعادة توجيه أي مسار غير معروف إلى login
+  // Redirect any unknown path to login
   { path: '**', redirectTo: 'login' }
 ];

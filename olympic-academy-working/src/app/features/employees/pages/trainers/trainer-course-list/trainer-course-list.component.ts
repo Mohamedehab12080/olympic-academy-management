@@ -1,4 +1,5 @@
-// trainer-courses-list.component.ts
+// trainer-courses-list.component.ts - UPDATED WITH CORRECT UNASSIGNMENT
+
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -430,8 +431,6 @@ export class TrainerCoursesListComponent implements OnInit {
       params.trainerId = this.selectedTrainerId;
     }
     
-    // Note: The current endpoint might not support courseId filter
-    // If it doesn't, we'll filter client-side
     if (this.selectedCourseId !== null) {
       params.courseId = this.selectedCourseId;
     }
@@ -476,7 +475,15 @@ export class TrainerCoursesListComponent implements OnInit {
 
   onSortChange(event: any): void {
     if (event.active) {
-      this.sortField = event.active;
+      // Map column names to backend field names
+      const fieldMap: { [key: string]: string } = {
+        'id': 'ID',
+        'trainer': 'TRAINER',
+        'course': 'COURSE',
+        'createdOn': 'CREATION_DATE'
+      };
+      
+      this.sortField = fieldMap[event.active] || event.active.toUpperCase();
       this.sortDirection = event.direction.toUpperCase() || 'DESC';
       this.loadData();
     }
@@ -497,20 +504,31 @@ export class TrainerCoursesListComponent implements OnInit {
     });
   }
 
+  /**
+   * Unassign a course from a trainer
+   * Uses DELETE /trainers/{trainerCourseId}
+   * The item.id is the trainer_course assignment ID
+   */
   unassignCourse(item: TrainerCourseVTO): void {
-    if (!item.id || !item.trainer?.id || !item.course?.id) return;
+    if (!item.id) {
+      this.notification.showError('بيانات غير مكتملة لإلغاء الإسناد');
+      return;
+    }
 
-    const confirmMessage = `هل أنت متأكد من إلغاء إسناد الدورة "${item.course?.title}" من المدرب "${item.trainer?.title}"؟`;
+    const trainerName = item.trainer?.title || 'المدرب';
+    const courseName = item.course?.title || 'الدورة';
+    const confirmMessage = `هل أنت متأكد من إلغاء إسناد الدورة "${courseName}" من المدرب "${trainerName}"؟`;
     
     if (confirm(confirmMessage)) {
-      this.employeeService.unassignCourseFromTrainer(item.trainer.id, item.course.id).subscribe({
+      // Use the assignment ID (item.id) - this is the trainer_course ID
+      this.employeeService.unassignCourseFromTrainer(item.id).subscribe({
         next: () => {
-          this.notification.showSuccess('تم إلغاء إسناد الدورة بنجاح');
+          this.notification.showSuccess(`تم إلغاء إسناد الدورة "${courseName}" بنجاح`);
           this.loadData();
         },
         error: (err) => {
           console.error('Error unassigning course:', err);
-          this.notification.showError('حدث خطأ في إلغاء إسناد الدورة');
+          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إلغاء إسناد الدورة');
         }
       });
     }

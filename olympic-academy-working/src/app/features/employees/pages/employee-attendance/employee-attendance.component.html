@@ -22,12 +22,60 @@
     <!-- Filters Section -->
     <div class="filters-card">
       <div class="filters-grid">
+        <!-- Barcode Search Row - TOP -->
+        <div class="filters-row barcode-row-top">
+          <div class="barcode-search-section">
+            <div class="barcode-toggle" (click)="toggleBarcodeMode()">
+              <button mat-icon-button 
+                      [color]="isBarcodeMode ? 'primary' : ''" 
+                      matTooltip="مسح الباركود">
+                <mat-icon>qr_code_scanner</mat-icon>
+              </button>
+              <span class="barcode-label">بحث بالباركود</span>
+              <span *ngIf="isBarcodeMode && employeeNationalId" class="barcode-active-filter">
+                ({{ employeeNationalId }})
+                <button mat-icon-button (click)="clearBarcodeFilter()" matTooltip="إزالة الفلتر" class="barcode-clear-filter-btn">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </span>
+            </div>
+            
+            <div class="barcode-input-wrapper" *ngIf="isBarcodeMode">
+              <mat-form-field appearance="outline" class="barcode-search-field">
+                <mat-label>أدخل رقم الباركود</mat-label>
+                <input #barcodeInput 
+                       matInput 
+                       [(ngModel)]="barcodeSearch" 
+                       (keydown)="onBarcodeKeydown($event)"
+                       placeholder="مسح الباركود أو إدخال رقم الهوية">
+                <mat-icon matSuffix>qr_code_scanner</mat-icon>
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="searchEmployeeByBarcode()" class="barcode-search-btn">
+                <mat-icon>search</mat-icon>
+                بحث
+              </button>
+              <button mat-icon-button (click)="clearBarcodeFilter()" matTooltip="إلغاء" class="barcode-close-btn">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Row 1 -->
         <div class="filters-row">
           <mat-form-field appearance="outline" class="date-field">
-            <mat-label>اختر التاريخ</mat-label>
-            <input matInput [matDatepicker]="datePicker" [(ngModel)]="selectedDate" (dateChange)="loadAttendances()">
-            <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-            <mat-datepicker #datePicker></mat-datepicker>
+            <mat-label>من تاريخ</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="attendanceDateFrom" (dateChange)="loadAttendances()">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+            <mat-icon matPrefix>event</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>إلى تاريخ</mat-label>
+            <input matInput [matDatepicker]="toPicker" [(ngModel)]="attendanceDateTo" (dateChange)="loadAttendances()">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
             <mat-icon matPrefix>event</mat-icon>
           </mat-form-field>
 
@@ -51,24 +99,27 @@
 
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput (keyup)="applyFilter($event)" placeholder="ابحث باسم الموظف...">
+            <input matInput [(ngModel)]="quickSearch" (ngModelChange)="loadAttendances()" placeholder="ابحث باسم الموظف...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
         </div>
 
-        <div class="filter-actions">
-          <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
-            <mat-icon>refresh</mat-icon>
-            مسح الكل
-          </button>
-          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
-            <mat-icon>grid_on</mat-icon>
-            تصدير Excel
-          </button>
-          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
-            <mat-icon>picture_as_pdf</mat-icon>
-            تصدير PDF
-          </button>
+        <!-- Filter Actions Row -->
+        <div class="filters-row filter-actions-row">
+          <div class="filter-actions">
+            <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+              <mat-icon>refresh</mat-icon>
+              مسح الكل
+            </button>
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+              <mat-icon>grid_on</mat-icon>
+              تصدير Excel
+            </button>
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
+              <mat-icon>picture_as_pdf</mat-icon>
+              تصدير PDF
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -130,7 +181,10 @@
       <div class="table-header" *ngIf="dataSource.data.length > 0">
         <div class="records-count">
           <mat-icon>info</mat-icon>
-          <span>عدد السجلات: {{ dataSource.data.length }} سجل</span>
+          <span>عدد السجلات: {{ totalItems }} سجل</span>
+          <span class="page-info" *ngIf="totalItems > 0">
+            | الصفحة {{ currentPage + 1 }} من {{ getTotalPages() }}
+          </span>
         </div>
         <div class="table-actions">
           <mat-chip-listbox>
@@ -156,31 +210,39 @@
 
       <div class="table-wrapper">
         <table mat-table [dataSource]="dataSource" matSort class="data-table">
-          <!-- Index Column -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
             <td mat-cell *matCellDef="let a; let i = index">
-              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+              {{ (currentPage * pageSize) + i + 1 }}
             </td>
           </ng-container>
 
-          <!-- Employee Column -->
           <ng-container matColumnDef="employee">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف</th>
             <td mat-cell *matCellDef="let a" class="clickable-cell">
               <div class="employee-info">
-                <div class="employee-avatar" *ngIf="a.employee?.imageUrl">
-                  <img [src]="a.employee?.imageUrl" alt="Avatar">
+                <div class="employee-avatar" *ngIf="getImageUrl(a.employee?.id)">
+                  <img [src]="getImageUrl(a.employee?.id)" alt="{{ a.employee?.fullName }}" (error)="imageUrls.set(a.employee?.id, '')">
                 </div>
-                <div class="employee-avatar default-avatar" *ngIf="!a.employee?.imageUrl">
+                <div class="employee-avatar default-avatar" *ngIf="!getImageUrl(a.employee?.id)">
                   <mat-icon>person</mat-icon>
                 </div>
-                <strong>{{ a.employee?.fullName || a.employee?.title || '-' }}</strong>
+                <strong>{{ a.employee?.fullName || '-' }}</strong>
               </div>
             </td>
           </ng-container>
 
-          <!-- Status Column -->
+          <!-- Date Column -->
+          <ng-container matColumnDef="attendanceDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>التاريخ</th>
+            <td mat-cell *matCellDef="let a">
+              <div class="date-info">
+                <mat-icon>event</mat-icon>
+                <span>{{ a.attendanceDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </td>
+          </ng-container>
+
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
             <td mat-cell *matCellDef="let a">
@@ -190,7 +252,6 @@
             </td>
           </ng-container>
 
-          <!-- Check In Time Column - UPDATED with 12-hour format -->
           <ng-container matColumnDef="checkInTime">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الدخول</th>
             <td mat-cell *matCellDef="let a">
@@ -201,7 +262,6 @@
             </td>
           </ng-container>
 
-          <!-- Check Out Time Column - UPDATED with 12-hour format -->
           <ng-container matColumnDef="checkOutTime">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الخروج</th>
             <td mat-cell *matCellDef="let a">
@@ -212,7 +272,6 @@
             </td>
           </ng-container>
 
-          <!-- Late Time Column -->
           <ng-container matColumnDef="lateTime">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت التأخير</th>
             <td mat-cell *matCellDef="let a">
@@ -225,7 +284,6 @@
             </td>
           </ng-container>
 
-          <!-- Note Column -->
           <ng-container matColumnDef="note">
             <th mat-header-cell *matHeaderCellDef>ملاحظات</th>
             <td mat-cell *matCellDef="let a">
@@ -238,7 +296,6 @@
             </td>
           </ng-container>
 
-          <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
             <td mat-cell *matCellDef="let a">
@@ -256,7 +313,6 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
-          <!-- No Data Row -->
           <tr class="mat-row no-data-row" *matNoDataRow>
             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
               <div class="no-data-message">
@@ -272,7 +328,16 @@
         </table>
       </div>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
+      <mat-paginator 
+        #paginator 
+        [length]="totalItems"
+        [pageSize]="pageSize" 
+        [pageSizeOptions]="pageSizeOptions" 
+        [pageIndex]="currentPage"
+        (page)="onPageChange($event)"
+        showFirstLastButtons 
+        class="custom-paginator">
+      </mat-paginator>
     </div>
   </mat-card>
 </div>

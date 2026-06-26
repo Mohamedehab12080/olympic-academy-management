@@ -237,6 +237,7 @@ export interface SalaryDeductionVTO {
 
 export interface FinancialTotalVTO {
   totalSalary: number;
+  totalAdvance: number;
   totalIncentives: number;
   totalPlacesRent: number;
   totalEnrollmentPayments: number;

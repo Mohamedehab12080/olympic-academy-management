@@ -61,6 +61,10 @@ public class TraineeServiceImpl implements TraineeService {
                 .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
         Trainee traineeToUpdate = traineeMapper.toTrainee(traineeDTO);
         traineeToUpdate.setId(traineeId);
+        traineeToUpdate.setCreatedBy(trainee.getCreatedBy());
+        traineeToUpdate.setCreatedOn(trainee.getCreatedOn());
+        traineeToUpdate.setIsActive(traineeDTO.getIsActive()!=null? traineeDTO.getIsActive():trainee.getIsActive());
+        traineeToUpdate.setIsDeleted(false);
         traineeRepository.update(traineeToUpdate);
         if(traineeDTO.getImageUrl()!=null){
             fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(traineeToUpdate.getId()), Collections.singletonList(traineeToUpdate.getImageUrl()));
@@ -91,27 +95,27 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public TraineeResultSet getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, AcademicYear academicYear,
+    public TraineeResultSet getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, String academicYear,
                                                    LocalDate createdOnFrom, LocalDate createdOnTo,
                                                    Integer pageNum, Integer pageSize,
                                                    OrderDirections orderDir, String orderBy) {
         TraineeSearchFilter filter = TraineeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .gender(gender)
-                .academicYear(academicYear!=null ?academicYear.getTitle():null)
+                .academicYear(academicYear)
                 .createdOnFrom(createdOnFrom)
                 .createdOnTo(createdOnTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(TraineeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
                 .build();
-
+        System.out.println("Sent page size  : "+pageSize);
         List<Trainee> trainees = traineeRepository.selectAllByFilters(filter);
         List<TraineeListItem> items = traineeMapper.toTraineeListItems(trainees);
 
         return TraineeResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(traineeRepository.countAllByFilters(filter))
                 .build();
     }
 
@@ -123,9 +127,12 @@ public class TraineeServiceImpl implements TraineeService {
                 .pagination(PaginationInfo.noPagination())
                 .build();
         List<Trainee> trainees = traineeRepository.selectAllByFilters(filter);
-        List<TraineeLookupVTO> traineeLookupVTOS=traineeMapper.toTraineeLookupVTOsFromTrainees(trainees);
-        TraineeLookupResultSet traineeLookupResultSet=TraineeLookupResultSet.builder()._list(traineeLookupVTOS).total(trainees.size()).build();
-        System.out.println("Trainee Lookup result set  : "+traineeLookupResultSet);
+        List<TraineeLookupVTO> traineeLookupVTOS = traineeMapper.toTraineeLookupVTOsFromTrainees(trainees);
+        TraineeLookupResultSet traineeLookupResultSet = TraineeLookupResultSet.builder()
+                ._list(traineeLookupVTOS)
+                .total(traineeRepository.countAllByFilters(filter))
+                .build();
+        System.out.println("Trainee Lookup result set  : " + traineeLookupResultSet);
         return traineeLookupResultSet;
     }
 }

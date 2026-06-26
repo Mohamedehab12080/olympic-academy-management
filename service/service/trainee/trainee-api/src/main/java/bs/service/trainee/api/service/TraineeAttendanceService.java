@@ -51,22 +51,7 @@ public interface TraineeAttendanceService {
 
     // ==================== Query Operations ====================
 
-    /**
-     * Get all trainee attendances with filters
-     *
-     * @param traineeId filter by trainee ID (optional)
-     * @param courseId filter by course ID (optional)
-     * @param courseSessionId filter by course session ID (optional)
-     * @param status filter by attendance status (optional)
-     * @param fromDate filter by attendance date from (optional)
-     * @param toDate filter by attendance date to (optional)
-     * @param pageNum page number for pagination
-     * @param pageSize page size for pagination
-     * @param orderDir sort direction (ASC/DESC)
-     * @param orderBy sort field name
-     * @return TraineeAttendanceResultSet containing paginated attendance records
-     */
-    TraineeAttendanceResultSet getAllTraineeAttendances(Integer traineeId, Integer courseId, Integer courseSessionId, TraineeAttendanceStatus status, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    TraineeAttendanceResultSet getAllTraineeAttendances(TraineeAttendanceStatus status,String sessionDay, String traineeNationalId, Integer traineeId, Integer courseId, Integer courseSessionId, String quickSearch, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
 
     /**
      * Get daily attendance report for a specific date

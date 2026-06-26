@@ -78,8 +78,6 @@ public interface TraineeContactController {
      *
      * @param traineeId
      *            (required)
-     * @param contactValue
-     *            (required)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
@@ -92,8 +90,7 @@ public interface TraineeContactController {
             "application/json" })
 
     ResponseEntity<TraineeContactResultSet> _getTraineeContacts(
-            @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId,
-            @NotNull @Parameter(name = "contactValue", description = "", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "contactValue", required = true) String contactValue);
+            @Parameter(name = "traineeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("traineeId") Integer traineeId);
 
     /**
      * PUT /trainees/{traineeId}/contacts/{contactId} : Update trainee contact

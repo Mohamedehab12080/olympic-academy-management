@@ -1,5 +1,6 @@
-// employee-details-modal.component.ts - COMPACT SINGLE-PAGE PRINT
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+// employee-details-modal.component.ts - UPDATED WITH SAME CARD PRINT AS TRAINEE
+
+import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +16,7 @@ import { EmployeeVTO, EmployeeContactVTO, CourseSessionVTO, TrainerDepartmentVTO
 import { FileService } from '../../../../core/services/file.service';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import * as JsBarcode from 'jsbarcode';
 
 @Component({
   selector: 'app-employee-details-modal',
@@ -40,8 +42,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
           <h2>ملف الموظف</h2>
         </div>
         <div class="header-actions">
-          <button mat-icon-button (click)="printEmployeeDocument()" matTooltip="طباعة الملف">
-            <mat-icon>print</mat-icon>
+          <button mat-icon-button (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+            <mat-icon>description</mat-icon>
+          </button>
+          <button mat-icon-button (click)="printEmployeeCard()" matTooltip="طباعة البطاقة">
+            <mat-icon>credit_card</mat-icon>
           </button>
           <button mat-icon-button mat-dialog-close class="close-btn">
             <mat-icon>close</mat-icon>
@@ -315,6 +320,26 @@ import { NotificationService } from '../../../../core/services/notification.serv
           </div>
         </mat-tab>
 
+        <!-- Barcode Tab -->
+        <mat-tab label="بطاقة هوية">
+          <div class="tab-content barcode-tab">
+            <div class="barcode-card">
+              <div class="barcode-header">
+                <mat-icon>qr_code_scanner</mat-icon>
+                <span>بطاقة هوية الموظف</span>
+              </div>
+              <div class="barcode-container">
+                <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
+                <div class="barcode-number">{{ employee?.nationalId }}</div>
+              </div>
+              <div class="barcode-info">
+                <span>رقم الهوية: {{ employee?.nationalId }}</span>
+                <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
         <!-- Creation Info Tab -->
         <mat-tab label="معلومات النظام">
           <div class="tab-content" *ngIf="employee">
@@ -356,9 +381,13 @@ import { NotificationService } from '../../../../core/services/notification.serv
       
       <!-- Modal Actions -->
       <div class="modal-actions">
-        <button mat-raised-button color="accent" (click)="printEmployeeDocument()" matTooltip="طباعة الملف">
-          <mat-icon>print</mat-icon>
+        <button mat-raised-button color="accent" (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+          <mat-icon>description</mat-icon>
           طباعة الملف
+        </button>
+        <button mat-raised-button color="primary" (click)="printEmployeeCard()" matTooltip="طباعة البطاقة">
+          <mat-icon>credit_card</mat-icon>
+          طباعة البطاقة
         </button>
         <button mat-raised-button color="primary" (click)="editEmployee()">
           <mat-icon>edit</mat-icon>
@@ -627,6 +656,73 @@ import { NotificationService } from '../../../../core/services/notification.serv
       color: #64748b;
     }
 
+    /* Barcode Tab */
+    .barcode-tab {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+    }
+
+    .barcode-card {
+      text-align: center;
+      background: #f8fafc;
+      padding: 30px 40px;
+      border-radius: 20px;
+      border: 1px solid rgba(226, 232, 240, 0.5);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .barcode-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .barcode-header mat-icon {
+      color: #f59e0b;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .barcode-header span {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .barcode-container {
+      margin: 16px 0;
+    }
+
+    .barcode-canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .barcode-number {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f59e0b;
+      font-family: monospace;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+
+    .barcode-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+    }
+
     .modal-actions {
       flex-shrink: 0;
       display: flex;
@@ -664,10 +760,18 @@ import { NotificationService } from '../../../../core/services/notification.serv
       .modal-actions {
         flex-wrap: wrap;
       }
+      .barcode-card {
+        padding: 20px;
+      }
+      .barcode-info {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+      }
     }
   `]
 })
-export class EmployeeDetailsModalComponent implements OnInit, OnDestroy {
+export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnDestroy {
   // Employee Data
   employee: EmployeeVTO;
   contacts: EmployeeContactVTO[] = [];
@@ -688,6 +792,11 @@ export class EmployeeDetailsModalComponent implements OnInit, OnDestroy {
   trainerCourses: TrainerCourseVTO[] = [];
   isLoadingCourses: boolean = false;
   private coursesLoaded: boolean = false;
+
+  // For card print
+  today = new Date();
+
+  @ViewChild('barcodeCanvas') barcodeCanvas!: ElementRef<HTMLCanvasElement>;
 
   constructor(
     private dialogRef: MatDialogRef<EmployeeDetailsModalComponent>,
@@ -713,6 +822,12 @@ export class EmployeeDetailsModalComponent implements OnInit, OnDestroy {
     } else {
       console.log('Employee is not a trainer, skipping departments and courses load');
     }
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.generateBarcode();
+    }, 300);
   }
 
   ngOnDestroy(): void {
@@ -849,6 +964,27 @@ export class EmployeeDetailsModalComponent implements OnInit, OnDestroy {
     return icons[contactType] || 'contact_phone';
   }
 
+  // ==================== Generate Barcode ====================
+  generateBarcode(): void {
+    if (this.barcodeCanvas?.nativeElement) {
+      try {
+        (JsBarcode as any)(this.barcodeCanvas.nativeElement, this.employee?.nationalId?.toString() || '000000', {
+          format: 'CODE128',
+          lineColor: '#000000',
+          width: 1.5,
+          height: 40,
+          displayValue: true,
+          fontSize: 10,
+          font: 'monospace',
+          textAlign: 'center',
+          margin: 5
+        });
+      } catch (error) {
+        console.error('Barcode error:', error);
+      }
+    }
+  }
+
   // ==================== Actions ====================
   editEmployee(): void {
     this.dialogRef.close();
@@ -858,549 +994,682 @@ export class EmployeeDetailsModalComponent implements OnInit, OnDestroy {
   deleteEmployee(): void {
     this.dialogRef.close({ action: 'delete', employee: this.employee });
   }
+  // ==================== Print Employee Card (بطاقة) - Optimized for Small Printer ====================
+  printEmployeeCard(): void {
+    this.generateBarcode();
+    setTimeout(() => {
+      const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open('', '_blank', 'width=350,height=500');
+      if (!printWindow) {
+        this.notification.showError('تعذر فتح نافذة الطباعة');
+        return;
+      }
 
-  printEmployeeDocument(): void {
-    this.generatePrintDocument(this.employee);
+      const t = this.employee;
+      const imagePreviewUrl = this.imageUrl || '';
+      const today = new Date().toLocaleDateString('ar-EG');
+      const genderDisplay = t.gender?.title || '-';
+      const employeeTypeDisplay = t.employeeType?.title || '-';
+      const departmentsText = this.trainerDepartments.map((d: any) => d.department?.title || d.title).join(', ') || '-';
+      const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>بطاقة هوية موظف</title>
+          <style>
+            @page { 
+              size: 58mm auto; 
+              margin: 0mm; 
+            }
+            
+            * { 
+              font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+            }
+            
+            body { 
+              width: 58mm; 
+              margin: 0; 
+              padding: 0; 
+              background: white;
+              display: flex;
+              justify-content: flex-start;
+              align-items: flex-start;
+              min-height: 100vh;
+            }
+            
+            .thermal-card {
+              width: 100%;
+              max-width: 58mm;
+              margin: 0;
+              padding: 2mm 2.5mm 3mm 2.5mm;
+              background: white;
+              position: relative;
+              overflow: hidden;
+              direction: rtl;
+            }
+            
+            /* ===== WATERMARK - Behind content ===== */
+            .card-watermark {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-25deg) scale(1.2);
+              opacity: 0.05;
+              pointer-events: none;
+              z-index: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 100%;
+              height: 100%;
+            }
+            
+            .card-watermark img {
+              width: 60px;
+              height: auto;
+              filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+              opacity: 0.8;
+            }
+            
+            .card-watermark-text {
+              position: absolute;
+              top: 55%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-25deg) scale(0.7);
+              font-size: 14px;
+              font-weight: 900;
+              color: #f59e0b;
+              letter-spacing: 3px;
+              text-transform: uppercase;
+              white-space: nowrap;
+              opacity: 0.03;
+              pointer-events: none;
+              z-index: 0;
+            }
+            
+            /* ===== CONTENT - Above watermark ===== */
+            .card-content {
+              position: relative;
+              z-index: 1;
+              width: 100%;
+            }
+            
+            /* Compact Header */
+            .thermal-header { 
+              text-align: center; 
+              margin-bottom: 1mm; 
+              padding-bottom: 1mm;
+              border-bottom: 2px solid #f59e0b;
+            }
+            .thermal-title { 
+              font-size: 11px; 
+              font-weight: 700; 
+              color: #1a1a2e;
+              letter-spacing: 1px;
+            }
+            .thermal-subtitle { 
+              font-size: 7px; 
+              color: #f59e0b; 
+              font-weight: 600;
+            }
+            
+            .thermal-divider { 
+              border-top: 1px dashed #e5e7eb; 
+              margin: 0.8mm 0; 
+            }
+            
+            /* Compact Photo */
+            .thermal-photo { 
+              text-align: center; 
+              margin-bottom: 0.8mm; 
+            }
+            .thermal-photo img { 
+              width: 32px; 
+              height: 32px; 
+              border-radius: 50%; 
+              object-fit: cover;
+              border: 1.5px solid #f59e0b;
+            }
+            .thermal-photo .placeholder-photo {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 16px;
+              color: white;
+              border: 1.5px solid #f59e0b;
+            }
+            
+            /* Compact Name & ID */
+            .thermal-name { 
+              font-size: 10px; 
+              font-weight: 700; 
+              text-align: center; 
+              margin-bottom: 0.3mm; 
+              color: #1a1a2e;
+              line-height: 1.2;
+            }
+            .thermal-id { 
+              font-size: 7px; 
+              color: #64748b; 
+              text-align: center; 
+              margin-bottom: 0.8mm; 
+              font-weight: 500;
+            }
+            
+            /* Compact Table */
+            .thermal-table { 
+              width: 100%; 
+              font-size: 7px; 
+              margin-bottom: 0.8mm; 
+              border-collapse: collapse; 
+            }
+            .thermal-table tr { 
+              line-height: 1.2; 
+            }
+            .thermal-label { 
+              text-align: right; 
+              padding: 0.3mm 0.5mm; 
+              color: #64748b; 
+              width: 38%;
+              font-weight: 500;
+              font-size: 6.5px;
+            }
+            .thermal-value { 
+              text-align: left; 
+              padding: 0.3mm 0.5mm; 
+              font-weight: 600; 
+              width: 62%;
+              color: #1e293b;
+              font-size: 6.5px;
+            }
+            .thermal-value.amount { 
+              color: #f59e0b; 
+              font-weight: 700; 
+            }
+            .thermal-value.status-active { 
+              color: #10b981; 
+            }
+            .thermal-value.status-inactive { 
+              color: #ef4444; 
+            }
+            
+            /* Compact Barcode */
+            .thermal-barcode { 
+              text-align: center; 
+              margin: 0.8mm 0; 
+            }
+            .thermal-barcode img { 
+              width: 100%; 
+              max-width: 140px; 
+            }
+            .thermal-barcode-number { 
+              font-size: 7px; 
+              font-family: monospace; 
+              text-align: center; 
+              margin-top: 0.3mm; 
+              color: #f59e0b;
+              font-weight: 600;
+              letter-spacing: 1px;
+            }
+            
+            /* Compact Footer */
+            .thermal-footer { 
+              display: flex; 
+              justify-content: space-between; 
+              gap: 1.5mm; 
+              margin-top: 1mm; 
+              padding-top: 1mm;
+              border-top: 2px solid #f59e0b;
+            }
+            .thermal-signature { 
+              flex: 1; 
+              text-align: center; 
+              font-size: 5px; 
+              color: #94a3b8;
+            }
+            .thermal-line { 
+              border-top: 0.5px solid #94a3b8; 
+              margin-bottom: 0.3mm; 
+              padding-top: 2.5mm; 
+            }
+            
+            .thermal-issue-date {
+              text-align: center;
+              font-size: 5.5px;
+              color: #94a3b8;
+              margin-top: 0.5mm;
+              padding-top: 0.3mm;
+              border-top: 1px dashed #e5e7eb;
+            }
+            
+            @media print {
+              body { 
+                margin: 0; 
+                padding: 0; 
+                background: white; 
+              }
+              .thermal-card {
+                padding: 1.5mm 2mm 2mm 2mm;
+                border: none !important;
+                box-shadow: none !important;
+              }
+              .card-watermark {
+                opacity: 0.06 !important;
+              }
+              .card-watermark img {
+                width: 50px !important;
+              }
+              .card-watermark-text {
+                font-size: 12px !important;
+                opacity: 0.04 !important;
+              }
+              .no-print { 
+                display: none !important; 
+              }
+            }
+            
+            @media screen {
+              .thermal-card {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                border: 1px solid #e5e7eb;
+                border-radius: 4px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="thermal-card">
+            <!-- Watermark -->
+            <div class="card-watermark">
+              <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية">
+            </div>
+            <div class="card-watermark-text">الأكاديمية الأولمبية</div>
+            
+            <!-- Content -->
+            <div class="card-content">
+              <div class="thermal-header">
+                <div class="thermal-title">🏛️ الأكاديمية الأولمبية</div>
+                <div class="thermal-subtitle">بطاقة هوية موظف</div>
+              </div>
+              
+              <div class="thermal-photo">
+                ${imagePreviewUrl ? `<img src="${imagePreviewUrl}" alt="${this.escapeHtml(t.fullName)}">` : '<div class="placeholder-photo">📷</div>'}
+              </div>
+              
+              <div class="thermal-name">${this.escapeHtml(t.fullName) || ''}</div>
+              <div class="thermal-id">🆔 ${t.nationalId || ''}</div>
+              
+              <div class="thermal-divider"></div>
+              
+              <table class="thermal-table">
+                <tr>
+                  <td class="thermal-label">🧑 النوع</td>
+                  <td class="thermal-value">${employeeTypeDisplay}</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">👤 الجنس</td>
+                  <td class="thermal-value">${genderDisplay}</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">📅 التوظيف</td>
+                  <td class="thermal-value">${t.hireDate ? new Date(t.hireDate).toLocaleDateString('ar-EG') : '-'}</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">🏢 الأقسام</td>
+                  <td class="thermal-value" style="font-size:6px;">${departmentsText}</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">💰 الراتب</td>
+                  <td class="thermal-value amount">${salaryDisplay} جم</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">✓ الحالة</td>
+                  <td class="thermal-value ${t.isActive ? 'status-active' : 'status-inactive'}">${t.isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
+                </tr>
+              </table>
+              
+              <div class="thermal-divider"></div>
+              
+              <div class="thermal-barcode">
+                <img src="${barcodeImage}" alt="Barcode">
+                <div class="thermal-barcode-number">${t.nationalId || ''}</div>
+              </div>
+              
+              <div class="thermal-footer">
+                <div class="thermal-signature">
+                  <div class="thermal-line"></div>
+                  <div>توقيع الموظف</div>
+                </div>
+                <div class="thermal-signature">
+                  <div class="thermal-line"></div>
+                  <div>ختم الأكاديمية</div>
+                </div>
+              </div>
+              
+              <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
+            </div>
+          </div>
+          
+          <script>
+            window.onload = function() { 
+              setTimeout(function() { 
+                window.print(); 
+                setTimeout(function() { 
+                  window.close(); 
+                }, 500); 
+              }, 300); 
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }, 300);
   }
 
-  // ==================== Compact Single-Page Print Function ====================
-  async generatePrintDocument(employee: EmployeeVTO): Promise<void> {
-    let imagePreviewUrl: string | null = null;
-    
-    if (employee.imageUrl && /^\d{15}(\d{3})?$/.test(employee.imageUrl)) {
-      try {
-        const blob = await this.fileService.downloadFile(employee.imageUrl).toPromise();
-        if (blob) {
-          imagePreviewUrl = URL.createObjectURL(blob);
-        }
-      } catch (error) {
-        console.error('Failed to load image for print:', error);
+  // ==================== Print Complete Profile (ملف) ====================
+  printProfileDocument(): void {
+    this.generateBarcode();
+    setTimeout(() => {
+      const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+      if (!printWindow) {
+        this.notification.showError('تعذر فتح نافذة الطباعة');
+        return;
       }
-    } else if (employee.imageUrl) {
-      imagePreviewUrl = employee.imageUrl;
-    }
-    
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '0';
-    printContainer.style.margin = '0';
-    printContainer.style.backgroundColor = 'white';
-    
-    const today = new Date().toLocaleDateString('ar-EG');
-    const applicationNumber = `EMP-${employee.id}-${new Date().getFullYear()}`;
-    
-    // Prepare departments HTML
-    const departmentsHtml = this.trainerDepartments.length > 0
-      ? this.trainerDepartments.map((dept: any) => 
-          `<span class="chip dept">${this.escapeHtml(dept.department?.title || dept.title)}</span>`
-        ).join('')
-      : '<span class="chip empty">لا يوجد</span>';
 
-    // Prepare courses HTML
-    const coursesHtml = this.trainerCourses.length > 0
-      ? this.trainerCourses.map((course: any) => 
-          `<span class="chip course">${this.escapeHtml(course.course?.title || course.title)}</span>`
-        ).join('')
-      : '<span class="chip empty">لا يوجد</span>';
+      const t = this.employee;
+      const imagePreviewUrl = this.imageUrl || '';
+      const today = new Date().toLocaleDateString('ar-EG');
+      const genderDisplay = t.gender?.title || '-';
+      const employeeTypeDisplay = t.employeeType?.title || '-';
+      const salaryTypeDisplay = t.salaryType?.title || '-';
+      const isTrainer = t.employeeType?.id === 1;
 
-    // Prepare contacts HTML
-    const contactsHtml = employee.contacts && employee.contacts.length > 0
-      ? employee.contacts.map((contact: any) => `
-          <div class="contact-item">
-            <span class="contact-type">${contact.contactType?.title}:</span>
-            <span>${this.escapeHtml(contact.contactValue)}</span>
-          </div>
-        `).join('')
-      : '<div class="contact-item"><span>لا توجد جهات اتصال</span></div>';
+      // Departments
+      const departmentsList = this.trainerDepartments.length > 0
+        ? this.trainerDepartments.map((d: any) => d.department?.title || d.title).join('، ')
+        : 'لا يوجد';
 
-    // Prepare sessions HTML - compact table
-    const sessionsHtml = this.sessions && this.sessions.length > 0
-      ? this.sessions.map((session: any) => {
-          const statusColor = session.status?.id === 1 ? '#2563eb' : 
-                              session.status?.id === 2 ? '#16a34a' : 
-                              session.status?.id === 3 ? '#16a34a' : '#dc2626';
-          return `
-            <tr>
-              <td>${this.escapeHtml(session.title) || '-'}</td>
-              <td>${session.course?.title || '-'}</td>
-              <td>${session.sessionDate ? new Date(session.sessionDate).toLocaleDateString('ar-EG') : '-'}</td>
-              <td><span style="color:${statusColor};font-weight:600;">${session.status?.title || '-'}</span></td>
-            </tr>
-          `;
-        }).join('')
-      : '';
+      // Courses
+      const coursesList = this.trainerCourses.length > 0
+        ? this.trainerCourses.map((c: any) => c.course?.title || c.title).join('، ')
+        : 'لا يوجد';
 
-    const sessionsTableHtml = this.sessions && this.sessions.length > 0 ? `
-      <div class="section">
-        <div class="section-title">📅 الجلسات</div>
-        <table class="sessions-table">
-          <thead>
-            <tr><th>العنوان</th><th>الدورة</th><th>التاريخ</th><th>الحالة</th></tr>
-          </thead>
-          <tbody>${sessionsHtml}</tbody>
-        </table>
-      </div>
-    ` : '';
+      // Contacts
+      const contactsList = this.contacts.length > 0
+        ? this.contacts.map((c: any) => `${c.contactType?.title}: ${c.contactValue}`).join(' | ')
+        : 'لا توجد جهات اتصال';
 
-    // Check if trainer to show courses section
-    const isTrainer = employee.employeeType?.id === 1;
+      // Sessions
+      let sessionsHtml = '';
+      if (this.sessions.length > 0) {
+        sessionsHtml = this.sessions.map((s: any) => `
+          <tr>
+            <td>${this.escapeHtml(s.title) || '-'}</td>
+            <td>${s.course?.title || '-'}</td>
+            <td>${s.place?.title || '-'}</td>
+            <td>${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : '-'}</td>
+            <td>${s.startTime || '-'}</td>
+            <td>${s.endTime || '-'}</td>
+            <td>${s.status?.title || '-'}</td>
+          </tr>
+        `).join('');
+      }
 
-    printContainer.innerHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <titleملف موظف- ${this.escapeHtml(employee.fullName)}</title>
-        <style>
-          /* Reset & Base */
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
-          }
-          
-          body {
-            background: white;
-            padding: 10px;
-            direction: rtl;
-            font-size: 11px;
-            line-height: 1.4;
-          }
-          
-          @media print {
-            body { padding: 8px; }
-            .no-print { display: none !important; }
-            .print-container { box-shadow: none !important; }
-            .sessions-table thead th {
-              background: #f1f5f9 !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>ملف موظف - ${this.escapeHtml(t.fullName)}</title>
+          <style>
+            * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+            @media print { body { margin: 0; padding: 15px; } .no-print { display: none; } }
+            body { max-width: 900px; margin: 0 auto; padding: 15px; background: white; direction: rtl; }
+            .header {
+              text-align: center;
+              margin-bottom: 15px;
+              padding: 15px;
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+              color: white;
+              border-radius: 8px;
             }
-          }
-          
-          .print-container {
-            max-width: 100%;
-            margin: 0 auto;
-            background: white;
-          }
-          
-          /* Header - Compact */
-          .print-header {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            padding: 8px 16px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 6px;
-            margin-bottom: 8px;
-          }
-          
-          .print-header h1 {
-            font-size: 16px;
-            font-weight: 700;
-            margin: 0;
-          }
-          
-          .print-header .subtitle {
-            font-size: 10px;
-            opacity: 0.85;
-          }
-          
-          .print-header .badge {
-            background: rgba(255,255,255,0.2);
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-          }
-          
-          /* Photo - Compact */
-          .photo-section {
-            text-align: center;
-            padding: 4px 0;
-            margin-bottom: 4px;
-          }
-          
-          .employee-photo {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #f59e0b;
-          }
-          
-          .placeholder-photo {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #f1f5f9;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #f59e0b;
-            font-size: 28px;
-            color: #94a3b8;
-          }
-          
-          /* Grid Layout - Compact */
-          .print-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px 16px;
-          }
-          
-          .section {
-            margin-bottom: 4px;
-          }
-          
-          .section-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0f172a;
-            border-bottom: 1.5px solid #f59e0b;
-            padding-bottom: 2px;
-            margin-bottom: 4px;
-          }
-          
-          /* Info Grid - Compact */
-          .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1px 12px;
-          }
-          
-          .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 1px 0;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 10px;
-          }
-          
-          .info-item .label {
-            font-weight: 600;
-            color: #475569;
-          }
-          
-          .info-item .value {
-            color: #0f172a;
-            font-weight: 500;
-          }
-          
-          .info-item .value.amount {
-            color: #f59e0b;
-            font-weight: 700;
-          }
-          
-          /* Chips - Compact */
-          .chip-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            margin-top: 2px;
-          }
-          
-          .chip {
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-size: 9px;
-            font-weight: 500;
-            display: inline-block;
-          }
-          
-          .chip.dept {
-            background: #f1f5f9;
-            color: #1e293b;
-          }
-          
-          .chip.course {
-            background: #dbeafe;
-            color: #1e40af;
-          }
-          
-          .chip.empty {
-            background: #f8fafc;
-            color: #94a3b8;
-          }
-          
-          /* Contacts - Compact */
-          .contacts-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-          }
-          
-          .contact-item {
-            display: flex;
-            gap: 6px;
-            padding: 1px 0;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 10px;
-          }
-          
-          .contact-type {
-            font-weight: 600;
-            color: #f59e0b;
-            min-width: 60px;
-          }
-          
-          /* Sessions Table - Compact */
-          .sessions-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 9px;
-          }
-          
-          .sessions-table thead th {
-            background: #f8fafc;
-            color: #1e293b;
-            padding: 3px 6px;
-            text-align: center;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          
-          .sessions-table tbody td {
-            padding: 2px 6px;
-            text-align: center;
-            border-bottom: 1px solid #f1f5f9;
-            color: #334155;
-          }
-          
-          /* Declaration - Compact */
-          .declaration {
-            background: #f8fafc;
-            padding: 4px 8px;
-            border-radius: 4px;
-            border-right: 2px solid #f59e0b;
-            font-size: 9px;
-            line-height: 1.5;
-            color: #334155;
-            margin: 4px 0;
-            grid-column: span 2;
-          }
-          
-          .declaration strong {
-            color: #0f172a;
-          }
-          
-          /* Signature - Compact */
-          .signature-section {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin-top: 4px;
-            padding-top: 4px;
-            border-top: 1px solid #e5e7eb;
-            grid-column: span 2;
-          }
-          
-          .signature-box {
-            flex: 1;
-            text-align: center;
-          }
-          
-          .signature-line {
-            border-top: 1px solid #1e293b;
-            margin-top: 16px;
-            padding-top: 2px;
-            font-size: 9px;
-            color: #475569;
-          }
-          
-          .signature-date {
-            font-size: 8px;
-            color: #94a3b8;
-            margin-top: 2px;
-          }
-          
-          /* Footer - Compact */
-          .print-footer {
-            text-align: center;
-            padding: 4px;
-            font-size: 8px;
-            color: #94a3b8;
-            border-top: 1px solid #e5e7eb;
-            margin-top: 6px;
-            grid-column: span 2;
-          }
-          
-          /* Print Button */
-          .print-btn {
-            display: inline-block;
-            padding: 6px 20px;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-          }
-          
-          .print-btn:hover {
-            opacity: 0.9;
-          }
-          
-          /* Responsive */
-          @media (max-width: 640px) {
-            .print-body {
-              grid-template-columns: 1fr;
-              gap: 4px;
+            .header h1 { margin: 0; font-size: 20px; }
+            .header p { margin: 5px 0 0; font-size: 11px; opacity: 0.85; }
+            .profile-details {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 12px;
+              padding: 8px 12px;
+              background: #f9fafb;
+              border-radius: 6px;
+              font-size: 11px;
+            }
+            .photo-section { text-align: center; margin-bottom: 12px; }
+            .photo-section img {
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 3px solid #f59e0b;
+            }
+            .photo-section .placeholder {
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              background: #f3f4f6;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              border: 3px solid #f59e0b;
+              font-size: 32px;
+            }
+            .badges { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+            .badge {
+              padding: 2px 10px;
+              border-radius: 12px;
+              font-size: 10px;
+              font-weight: 600;
+            }
+            .badge.active { background: #d1fae5; color: #065f46; }
+            .badge.inactive { background: #fee2e2; color: #991b1b; }
+            .badge.trainer { background: #dbeafe; color: #1e40af; }
+            .badge.manager { background: #fef3c7; color: #92400e; }
+            h2 {
+              color: #f59e0b;
+              border-bottom: 2px solid #f59e0b;
+              padding-bottom: 4px;
+              margin-top: 16px;
+              margin-bottom: 10px;
+              font-size: 14px;
             }
             .info-grid {
-              grid-template-columns: 1fr;
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 6px 16px;
+              margin-bottom: 10px;
             }
-            .signature-section {
-              flex-direction: column;
-              gap: 12px;
+            .info-item {
+              display: flex;
+              justify-content: space-between;
+              padding: 3px 0;
+              border-bottom: 1px solid #f1f5f9;
+              font-size: 11px;
             }
-            .print-header {
-              flex-direction: column;
+            .info-item .label { font-weight: 600; color: #475569; }
+            .info-item .value { color: #0f172a; font-weight: 500; }
+            .info-item .value.amount { color: #f59e0b; font-weight: 700; }
+            .full-width { grid-column: span 3; }
+            .session-table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 10px;
+              margin-bottom: 10px;
+            }
+            .session-table th {
+              background: #f8fafc;
+              color: #1e293b;
+              padding: 4px 6px;
+              border: 1px solid #e5e7eb;
               text-align: center;
-              gap: 4px;
-              padding: 6px 12px;
+              font-weight: 600;
             }
-            .declaration {
-              grid-column: span 1;
+            .session-table td {
+              padding: 3px 6px;
+              border: 1px solid #e5e7eb;
+              text-align: center;
+            }
+            .barcode-section {
+              text-align: center;
+              margin: 16px 0;
+              padding: 12px;
+              background: #f9fafb;
+              border-radius: 8px;
+            }
+            .barcode-section img {
+              max-width: 250px;
+            }
+            .barcode-number {
+              font-size: 12px;
+              font-weight: 600;
+              color: #f59e0b;
+              font-family: monospace;
+              margin-top: 4px;
+              letter-spacing: 1px;
             }
             .signature-section {
-              grid-column: span 1;
+              display: flex;
+              justify-content: space-between;
+              gap: 16px;
+              margin-top: 20px;
+              padding-top: 12px;
+              border-top: 1px solid #e5e7eb;
             }
-            .print-footer {
-              grid-column: span 1;
+            .signature-box { text-align: center; flex: 1; }
+            .signature-line {
+              width: 100%;
+              border-top: 1px solid #000;
+              margin-top: 30px;
+              padding-top: 4px;
+              font-size: 9px;
             }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="print-container">
-          <!-- Header -->
-          <div class="print-header">
-            <div>
-              <h1>ملف موظف</h1>
-              <div class="subtitle">الأكاديمية الأولمبية</div>
-            </div>
-            <div>
-              <span class="badge">${employee.isActive ? '✅ نشط' : '⛔ غير نشط'}</span>
-              <div style="font-size:9px;margin-top:2px;">#${applicationNumber}</div>
-            </div>
+            .footer {
+              text-align: center;
+              margin-top: 16px;
+              padding: 8px;
+              font-size: 9px;
+              color: #94a3b8;
+              border-top: 1px solid #e5e7eb;
+            }
+            @media (max-width: 600px) {
+              .info-grid { grid-template-columns: 1fr; }
+              .full-width { grid-column: span 1; }
+              .signature-section { flex-direction: column; align-items: center; gap: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>📋 ملف الموظف</h1>
+            <p>نظام إدارة الأكاديمية الأولمبية</p>
           </div>
           
-          <!-- Photo -->
+          <div class="profile-details">
+            <div><strong>رقم الملف:</strong> #${t.id}</div>
+            <div><strong>تاريخ الطباعة:</strong> ${today}</div>
+          </div>
+
           <div class="photo-section">
-            ${imagePreviewUrl 
-              ? `<img src="${imagePreviewUrl}" class="employee-photo" alt="صورة الموظف">`
-              : `<div class="placeholder-photo">👤</div>`
-            }
+            ${imagePreviewUrl ? `<img src="${imagePreviewUrl}" alt="${t.fullName}">` : '<div class="placeholder">👤</div>'}
+            <div style="margin-top:6px;font-size:14px;font-weight:700;">${this.escapeHtml(t.fullName)}</div>
+            <div class="badges">
+              <span class="badge ${t.isActive ? 'active' : 'inactive'}">${t.isActive ? '✅ نشط' : '⛔ غير نشط'}</span>
+              <span class="badge ${t.employeeType?.id === 1 ? 'trainer' : 'manager'}">${employeeTypeDisplay}</span>
+              <span class="badge" style="background:#f1f5f9;color:#475569;">${t.nationalId}</span>
+              <span class="badge" style="background:#fef3c7;color:#92400e;">${genderDisplay}</span>
+            </div>
           </div>
+
+          <h2>📋 المعلومات الشخصية</h2>
+          <div class="info-grid">
+            <div class="info-item"><span class="label">الاسم الكامل</span><span class="value">${this.escapeHtml(t.fullName) || '-'}</span></div>
+            <div class="info-item"><span class="label">رقم الهوية</span><span class="value">${t.nationalId || '-'}</span></div>
+            <div class="info-item"><span class="label">تاريخ الميلاد</span><span class="value">${t.birthDate ? new Date(t.birthDate).toLocaleDateString('ar-EG') : '-'}</span></div>
+            <div class="info-item"><span class="label">الجنس</span><span class="value">${genderDisplay}</span></div>
+            <div class="info-item"><span class="label">نوع الموظف</span><span class="value">${employeeTypeDisplay}</span></div>
+            <div class="info-item"><span class="label">تاريخ التوظيف</span><span class="value">${t.hireDate ? new Date(t.hireDate).toLocaleDateString('ar-EG') : '-'}</span></div>
+            <div class="info-item"><span class="label">تاريخ التسجيل</span><span class="value">${t.createdOn ? new Date(t.createdOn).toLocaleDateString('ar-EG') : '-'}</span></div>
+            <div class="info-item"><span class="label">تمت الإضافة بواسطة</span><span class="value">${t.createdBy?.fullName || '-'}</span></div>
+            ${t.lastModifiedOn ? `<div class="info-item"><span class="label">آخر تحديث</span><span class="value">${new Date(t.lastModifiedOn).toLocaleDateString('ar-EG')}</span></div>` : ''}
+          </div>
+
+          <h2>💰 المعلومات المالية</h2>
+          <div class="info-grid">
+            <div class="info-item"><span class="label">الراتب الأساسي</span><span class="value amount">${t.salary?.toLocaleString('ar-EG') || 0} جم</span></div>
+            <div class="info-item"><span class="label">الراتب المتبقي</span><span class="value">${t.remainedSalary?.toLocaleString('ar-EG') || 0} جم</span></div>
+            <div class="info-item"><span class="label">نوع الراتب</span><span class="value">${salaryTypeDisplay}</span></div>
+          </div>
+
+          <h2>🏢 الأقسام</h2>
+          <div class="info-grid">
+            <div class="info-item full-width"><span class="label">الأقسام المسندة</span><span class="value">${departmentsList}</span></div>
+          </div>
+
+          ${isTrainer ? `
+          <h2>📚 الدورات المسندة</h2>
+          <div class="info-grid">
+            <div class="info-item full-width"><span class="label">الدورات</span><span class="value">${coursesList}</span></div>
+          </div>
+          ` : ''}
+
+          <h2>📞 جهات الاتصال</h2>
+          <div class="info-grid">
+            <div class="info-item full-width"><span class="label">جهات الاتصال</span><span class="value">${contactsList}</span></div>
+          </div>
+
+          ${this.sessions.length > 0 ? `
+          <h2>📅 الجلسات</h2>
+          <table class="session-table">
+            <thead>
+              <tr><th>العنوان</th><th>الدورة</th><th>المكان</th><th>التاريخ</th><th>البدء</th><th>الانتهاء</th><th>الحالة</th></tr>
+            </thead>
+            <tbody>${sessionsHtml}</tbody>
+          </table>
+          ` : ''}
+
+          <h2>📱 الباركود</h2>
+          <div class="barcode-section">
+            <img src="${barcodeImage}" alt="Barcode">
+            <div class="barcode-number">${t.nationalId || ''}</div>
+          </div>
+
+          <div class="signature-section">
+            <div class="signature-box"><div class="signature-line"></div><div>توقيع الموظف</div></div>
+            <div class="signature-box"><div class="signature-line"></div><div>توقيع مدير الموارد البشرية</div></div>
+            <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
+          </div>
+
+          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
           
-          <!-- Body - Grid Layout -->
-          <div class="print-body">
-            <!-- Personal Info -->
-            <div class="section">
-              <div class="section-title">📋 المعلومات الشخصية</div>
-              <div class="info-grid">
-                <div class="info-item"><span class="label">الاسم</span><span class="value">${this.escapeHtml(employee.fullName) || '-'}</span></div>
-                <div class="info-item"><span class="label">الهوية</span><span class="value">${this.escapeHtml(employee.nationalId) || '-'}</span></div>
-                <div class="info-item"><span class="label">الميلاد</span><span class="value">${employee.birthDate ? new Date(employee.birthDate).toLocaleDateString('ar-EG') : '-'}</span></div>
-                <div class="info-item"><span class="label">الجنس</span><span class="value">${employee.gender?.title || '-'}</span></div>
-                <div class="info-item"><span class="label">النوع</span><span class="value">${employee.employeeType?.title || '-'}</span></div>
-                <div class="info-item"><span class="label">التوظيف</span><span class="value">${employee.hireDate ? new Date(employee.hireDate).toLocaleDateString('ar-EG') : '-'}</span></div>
-              </div>
-            </div>
-            
-            <!-- Financial Info -->
-            <div class="section">
-              <div class="section-title">💰 المالية</div>
-              <div class="info-grid">
-                <div class="info-item"><span class="label">الراتب</span><span class="value amount">${employee.salary?.toLocaleString('ar-EG') || 0} جم</span></div>
-                <div class="info-item"><span class="label">المتبقي</span><span class="value">${employee.remainedSalary?.toLocaleString('ar-EG') || 0} جم</span></div>
-                <div class="info-item"><span class="label">النوع</span><span class="value">${employee.salaryType?.title || '-'}</span></div>
-              </div>
-            </div>
-            
-            <!-- Departments -->
-            <div class="section">
-              <div class="section-title">🏢 الأقسام</div>
-              <div class="chip-container">${departmentsHtml}</div>
-            </div>
-            
-            <!-- Courses (Trainer only) -->
-            ${isTrainer ? `
-            <div class="section">
-              <div class="section-title">📚 الدورات</div>
-              <div class="chip-container">${coursesHtml}</div>
-            </div>
-            ` : ''}
-            
-            <!-- Sessions -->
-            ${sessionsTableHtml}
-            
-            <!-- Contacts -->
-            <div class="section" style="grid-column: span 2;">
-              <div class="section-title">📞 جهات الاتصال</div>
-              <div class="contacts-list">${contactsHtml}</div>
-            </div>
-            
-            <!-- Declaration -->
-            <div class="declaration">
-              <strong>إقرار:</strong> أقر أنا <strong>${this.escapeHtml(employee.fullName)}</strong> بأن جميع البيانات المذكورة صحيحة ودقيقة، وأتعهد بالالتزام بلوائح الأكاديمية الأولمبية.
-            </div>
-            
-            <!-- Signatures -->
-            <div class="signature-section">
-              <div class="signature-box">
-                <div class="signature-line">توقيع الموظف</div>
-                <div class="signature-date">التاريخ: ___ / ___ / _____</div>
-              </div>
-              <div class="signature-box">
-                <div class="signature-line">توقيع مدير الموارد البشرية</div>
-                <div class="signature-date">التاريخ: ___ / ___ / _____</div>
-              </div>
-              <div class="signature-box">
-                <div class="signature-line">ختم الأكاديمية</div>
-                <div class="signature-date">التاريخ: ___ / ___ / _____</div>
-              </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="print-footer">
-              تم التصدير من نظام إدارة الأكاديمية الأولمبية &bull; ${today}
-            </div>
+          <div class="no-print" style="text-align:center;margin-top:12px;">
+            <button onclick="window.print();" style="padding:8px 24px;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">🖨️ طباعة / حفظ كـ PDF</button>
           </div>
-        </div>
-        
-        <!-- Print Button -->
-        <div class="no-print" style="text-align: center; margin-top: 12px;">
-          <button class="print-btn" onclick="window.print();">
-            🖨️ طباعة / حفظ كـ PDF
-          </button>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    const printWindow = window.open('', '_blank', 'width=900,height=800,scrollbars=yes');
-    if (printWindow) {
-      printWindow.document.write(printContainer.innerHTML);
+        </body>
+        </html>
+      `);
       printWindow.document.close();
-    } else {
-      document.body.appendChild(printContainer);
-      window.print();
-      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
-    }
-    
-    if (imagePreviewUrl && imagePreviewUrl.startsWith('blob:')) {
-      setTimeout(() => {
-        if (imagePreviewUrl) {
-          URL.revokeObjectURL(imagePreviewUrl);
-        }
-      }, 1000);
-    }
+    }, 300);
   }
 
   // ==================== Utility Function ====================

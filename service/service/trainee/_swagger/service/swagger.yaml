@@ -153,7 +153,6 @@ paths:
       operationId: getTraineeContacts
       parameters:
         - $ref: '#/components/parameters/PPTraineeId'
-        - $ref: '#/components/parameters/QPContactValue'
       responses:
         '200':
           description: OK
@@ -408,29 +407,13 @@ paths:
       summary: Retrieve list of trainee attendances with filters
       operationId: getAllTraineeAttendances
       parameters:
-        - name: traineeId
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - name: courseId
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - name: courseSessionId
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - name: status
-          in: query
-          required: false
-          schema:
-            $ref: '#/components/schemas/TraineeAttendanceStatus'
+        - $ref: '#/components/parameters/QPTraineeAttendanceStatus'
+        - $ref: '#/components/parameters/QPSessionDay'
+        - $ref: '#/components/parameters/QPTraineeNationalId'
+        - $ref: '#/components/parameters/QPTraineeId'
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '#/components/parameters/QPCourseSessionId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckInFrom'
         - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckInTo'
         - $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/parameters/QPCheckOutFrom'
@@ -608,6 +591,31 @@ components:
       schema:
         type: integer
         format: int32
+    QPTraineeId:
+      name: traineeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+    QPSessionDay:
+      name: sessionDay
+      in: query
+      required: false
+      schema:
+        type: string
+    QPTraineeNationalId:
+      name: traineeNationalId
+      in: query
+      required: false
+      schema:
+        type: string
+    QPTraineeAttendanceStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+          $ref: '#/components/schemas/TraineeAttendanceStatus'
     QPContactValue:
       name: contactValue
       in: query
@@ -646,7 +654,14 @@ components:
       in: query
       required: false
       schema:
-        $ref: '#/components/schemas/AcademicYear'
+        type: string
+    QPCourseSessionId:
+      name: courseSessionId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
     QPCourseId:
       name: courseId
       in: query
@@ -692,15 +707,15 @@ components:
   schemas:
     # ==================== Enums ====================
 
-    AcademicYear:
-      type: object
-      properties:
-        id:
-          type: integer
-          enum: [1, 2, 3, 4]
-        title:
-          type: string
-          enum: ["1", "2", "3", "4"]
+#    AcademicYear:
+#      type: object
+#      properties:
+#        id:
+#          type: integer
+#          enum: [1, 2, 3, 4]
+#        title:
+#          type: string
+#          enum: ["1", "2", "3", "4"]
 
     TraineeAttendanceStatus:
       type: object
@@ -728,7 +743,7 @@ components:
         nationalId:
           type: string
         academicYear:
-          $ref: '#/components/schemas/AcademicYear'
+          type: string
         birthDate:
           type: string
           format: date
@@ -855,7 +870,7 @@ components:
         nationalId:
           type: string
         academicYear:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          type: string
         birthDate:
           type: string
           format: date
@@ -1004,7 +1019,7 @@ components:
         isActive:
           type: boolean
         academicYear:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          type: string
         gender:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
 
@@ -1069,8 +1084,8 @@ components:
         id:
           type: integer
           format: int32
-        traineeName:
-          type: string
+        trainee:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
         sessionTitle:
           type: string
         courseTitle:
@@ -1078,6 +1093,8 @@ components:
         sessionDate:
           type: string
           format: date
+        sessionDay:
+          type: string
         status:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         checkInTime:

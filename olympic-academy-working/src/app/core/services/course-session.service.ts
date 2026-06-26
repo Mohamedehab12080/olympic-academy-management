@@ -1,3 +1,5 @@
+// course-session.service.ts
+
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
@@ -10,7 +12,7 @@ import { NewRecordVTO } from '../models/common.model';
 export class CourseSessionService {
   constructor(private api: ApiService) {}
 
-  // Get all sessions by filter (across all courses)
+  // Get all sessions by filter
   getAllSessionsByFilter(params?: any): Observable<CourseSessionResultSet> {
     return this.api.get('/courses/sessions', params);
   }
@@ -20,23 +22,23 @@ export class CourseSessionService {
     return this.api.get(`/courses/${courseId}/sessions`, params);
   }
 
-  // Get session by ID
-  getCourseSessionById(courseId: number, sessionId: number): Observable<CourseSessionVTO> {
-    return this.api.get(`/courses/${courseId}/sessions/${sessionId}`);
+  // Get session by ID - FIXED: courseId is required in the path
+  getCourseSessionById(courseSessionId: number): Observable<CourseSessionVTO> {
+    return this.api.get(`/courses/${courseSessionId}/course-session`);
   }
 
   // Create new session
-  createCourseSession(courseId: number, data: CourseSessionDTO): Observable<NewRecordVTO> {
+  createCourseSession(courseId: number, data: CourseSessionDTO): Observable<NewRecordVTO[]> {
     return this.api.post(`/courses/${courseId}/sessions`, data);
   }
 
   // Update session
-  updateCourseSession(courseId: number, sessionId: number, data: CourseSessionDTO): Observable<NewRecordVTO> {
-    return this.api.put(`/courses/${courseId}/sessions/${sessionId}`, data);
+  updateCourseSession(courseSessionId: number, data: CourseSessionDTO): Observable<NewRecordVTO[]> {
+    return this.api.put(`/courses/${courseSessionId}/course-session`, data);
   }
 
-  // Delete session
-  deleteCourseSession(courseId: number, sessionId: number): Observable<void> {
-    return this.api.delete(`/courses/${courseId}/sessions/${sessionId}`);
+  // Delete session - FIXED: courseId and sessionId are in the path
+  deleteCourseSession(courseSessionId: number): Observable<void> {
+    return this.api.delete(`/courses/${courseSessionId}/course-session`);
   }
 }

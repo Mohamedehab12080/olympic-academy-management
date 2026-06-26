@@ -47,7 +47,7 @@ public class FinancialLookupControllerImpl implements LookupController {
 
         return ResponseEntity.ok(LookupResultSet.builder()
                 ._list(items)
-                .total(items.size())
+                .total(expenseTypeRepository.countAllByFilters(filter))
                 .build());
     }
 
@@ -61,7 +61,7 @@ public class FinancialLookupControllerImpl implements LookupController {
 
         return ResponseEntity.ok(LookupResultSet.builder()
                 ._list(items)
-                .total(items.size())
+                .total(paymentMethodRepository.countAllByFilters(filter))
                 .build());
     }
 

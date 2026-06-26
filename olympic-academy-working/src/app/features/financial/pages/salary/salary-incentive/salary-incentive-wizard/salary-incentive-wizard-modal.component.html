@@ -5,7 +5,7 @@
       <mat-icon class="header-icon">payments</mat-icon>
       <h2>{{ isEditMode ? 'تعديل معاملة' : 'معاملة جديدة' }}</h2>
     </div>
-    <button mat-icon-button class="close-btn" (click)="onCancel()">
+    <button mat-icon-button class="close-btn" (click)="onCancel()" aria-label="Close">
       <mat-icon>close</mat-icon>
     </button>
   </div>
@@ -20,8 +20,12 @@
   <!-- Wizard Steps -->
   <div class="wizard-steps" *ngIf="!isLoading">
     <div class="steps-container">
-      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
-        <div class="step-circle" (click)="goToStep(i)">
+      <div *ngFor="let step of steps; let i = index" 
+           class="step-item" 
+           [class.active]="currentStep === i" 
+           [class.completed]="step.completed"
+           [class.clickable]="i <= currentStep">
+        <div class="step-circle" (click)="i <= currentStep ? goToStep(i) : null">
           <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
           <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
         </div>
@@ -36,7 +40,7 @@
 
   <!-- Form Content -->
   <div class="wizard-content" *ngIf="!isLoading">
-    <form [formGroup]="transactionForm">
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()">
       
       <!-- Step 0: Select Transaction Type -->
       <div class="step-content" *ngIf="currentStep === 0">
@@ -55,7 +59,8 @@
             label="نوع المعاملة *"
             [options]="transactionTypeOptions"
             [required]="true"
-            class="full-width">
+            class="full-width"
+            placeholder="اختر نوع المعاملة">
           </app-searchable-select>
 
           <!-- Transaction Type Info Cards -->
@@ -104,13 +109,54 @@
         </div>
 
         <div class="form-section">
+          <!-- Barcode Search -->
+          <div class="barcode-search-section">
+            <div class="barcode-toggle">
+              <button type="button" mat-stroked-button (click)="toggleBarcodeMode()" class="barcode-toggle-btn">
+                <mat-icon>qr_code_scanner</mat-icon>
+                {{ isBarcodeMode ? 'إلغاء البحث بالباركود' : 'بحث بالباركود' }}
+              </button>
+            </div>
+
+            <div class="barcode-input-container" *ngIf="isBarcodeMode">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>رقم الباركود</mat-label>
+                <input matInput 
+                       #barcodeInput
+                       [(ngModel)]="barcodeSearch"
+                       [ngModelOptions]="{standalone: true}"
+                       (keydown)="onBarcodeKeydown($event)"
+                       placeholder="أدخل رقم الباركود">
+                <button mat-icon-button matSuffix (click)="searchEmployeeByBarcode()" type="button">
+                  <mat-icon>search</mat-icon>
+                </button>
+                <button mat-icon-button matSuffix (click)="clearBarcodeSearch()" type="button" *ngIf="barcodeSearch">
+                  <mat-icon>clear</mat-icon>
+                </button>
+              </mat-form-field>
+
+              <!-- Barcode Search Result -->
+              <div class="barcode-result" *ngIf="barcodeSearchResult">
+                <div class="barcode-result-content" [class.found]="barcodeSearchResult.found" [class.not-found]="!barcodeSearchResult.found">
+                  <mat-icon>{{ barcodeSearchResult.found ? 'check_circle' : 'error' }}</mat-icon>
+                  <span>{{ barcodeSearchResult.found ? 'تم العثور على: ' + barcodeSearchResult.employeeName : barcodeSearchResult.message }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <mat-divider *ngIf="isBarcodeMode" class="divider-with-text">
+            <span>أو</span>
+          </mat-divider>
+
           <app-searchable-select
             formControlName="employeeId"
-            label="الموظف"
+            label="اختر الموظف *"
             [options]="employeeOptions"
             [required]="true"
             class="full-width"
-            (ngModelChange)="onEmployeeSelect()">
+            placeholder="ابحث عن موظف..."
+            (selectionChange)="onEmployeeSelect()">
           </app-searchable-select>
 
           <!-- Employee Details Preview -->
@@ -125,6 +171,10 @@
                 <span class="value">{{ selectedEmployee.fullName }}</span>
               </div>
               <div class="preview-row">
+                <span class="label">الرقم القومي:</span>
+                <span class="value">{{ selectedEmployee.nationalId || 'غير محدد' }}</span>
+              </div>
+              <div class="preview-row">
                 <span class="label">الراتب الأساسي:</span>
                 <span class="value">{{ selectedEmployee.salary | number }} جم</span>
               </div>
@@ -136,7 +186,7 @@
               </div>
               <div class="preview-row" *ngIf="selectedEmployee.salaryType">
                 <span class="label">نوع الراتب:</span>
-                <span class="value">{{ selectedEmployee.salaryType?.title }}</span>
+                <span class="value">{{ selectedEmployee.salaryType?.title || selectedEmployee.salaryType }}</span>
               </div>
             </div>
           </div>
@@ -171,10 +221,22 @@
             </div>
           </div>
 
+          <div class="remained-info" *ngIf="isSalaryTransaction && getCurrentRemained() === 0">
+            <div class="info-card warning-card">
+              <mat-icon>warning</mat-icon>
+              <span>الراتب المتبقي: <strong>0 جم</strong> - لا يمكن صرف راتب</span>
+            </div>
+          </div>
+
           <div class="two-columns">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>المبلغ *</mat-label>
-              <input matInput type="number" formControlName="amountWithdrawn" placeholder="0" [max]="isSalaryTransaction ? getCurrentRemained() : null">
+              <input matInput 
+                     type="number" 
+                     formControlName="amountWithdrawn" 
+                     placeholder="0"
+                     [max]="isSalaryTransaction ? getCurrentRemained() : null"
+                     [min]="1">
               <span matTextSuffix>جم</span>
               <mat-error *ngIf="transactionForm.get('amountWithdrawn')?.hasError('required')">
                 المبلغ مطلوب
@@ -207,6 +269,15 @@
               <mat-label>الراتب المتبقي بعد الصرف</mat-label>
               <input matInput type="number" formControlName="newRemainedSalary" readonly>
               <span matTextSuffix>جم</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>نوع الراتب</mat-label>
+              <mat-select formControlName="salaryTypeObj" placeholder="اختر نوع الراتب">
+                <mat-option *ngFor="let option of salaryTypeOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
             </mat-form-field>
           </div>
 
@@ -265,7 +336,8 @@
               label="طريقة الدفع *"
               [options]="paymentMethodOptions"
               [required]="true"
-              class="full-width">
+              class="full-width"
+              placeholder="اختر طريقة الدفع">
             </app-searchable-select>
 
             <app-searchable-select
@@ -273,7 +345,8 @@
               label="نوع الراتب"
               [options]="salaryTypeOptions"
               [required]="false"
-              class="full-width">
+              class="full-width"
+              placeholder="اختر نوع الراتب (اختياري)">
             </app-searchable-select>
           </div>
 
@@ -362,7 +435,7 @@
               </div>
               <div class="info-item">
                 <span class="info-label">تاريخ الصرف:</span>
-                <span class="info-value">{{ transactionForm.get('withdrawDate')?.value | date }}</span>
+                <span class="info-value">{{ transactionForm.get('withdrawDate')?.value | date:'dd/MM/yyyy' }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">طريقة الدفع:</span>
@@ -374,7 +447,7 @@
               </div>
               <div class="info-item full-width" *ngIf="transactionForm.get('note')?.value">
                 <span class="info-label">الملاحظات:</span>
-                <span class="info-value">{{ transactionForm.get('note')?.value }}</span>
+                <span class="info-value note-value">{{ transactionForm.get('note')?.value }}</span>
               </div>
             </div>
           </div>
@@ -387,21 +460,21 @@
 
   <!-- Actions -->
   <div class="wizard-actions">
-    <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
+    <button type="button" mat-button (click)="onCancel()" [disabled]="isSubmitting">
       <mat-icon>close</mat-icon> إلغاء
     </button>
     
     <div class="action-buttons">
-      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+      <button type="button" mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
         <mat-icon>chevron_right</mat-icon> السابق
       </button>
       
-      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" 
+      <button type="button" mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" 
               [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0 && currentStep === 1)">
         التالي <mat-icon>chevron_left</mat-icon>
       </button>
       
-      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" 
+      <button type="submit" mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" 
               [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0)">
         <mat-icon *ngIf="!isSubmitting">check</mat-icon>
         <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>

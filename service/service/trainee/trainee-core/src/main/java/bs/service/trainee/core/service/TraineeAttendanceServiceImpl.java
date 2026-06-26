@@ -146,7 +146,7 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
     // ==================== Query Operations (All using selectAllByFilters) ====================
 
     @Override
-    public TraineeAttendanceResultSet getAllTraineeAttendances(Integer traineeId, Integer courseId, Integer courseSessionId, TraineeAttendanceStatus status, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public TraineeAttendanceResultSet getAllTraineeAttendances(TraineeAttendanceStatus status,String sessionDay, String traineeNationalId, Integer traineeId, Integer courseId, Integer courseSessionId, String quickSearch, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         log.info("Getting all trainee attendances with filters");
 
@@ -154,11 +154,14 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
                 .traineeId(traineeId)
                 .courseId(courseId)
                 .courseSessionId(courseSessionId)
+                .traineeNationalId(traineeNationalId)
+                .quickSearch(quickSearch)
+                .sessionDay(sessionDay)
                 .checkInFrom(checkInFrom!=null?LocalTime.parse(checkInFrom):null)
                 .checkInTo(checkInTo!=null?LocalTime.parse(checkInTo):null)
                 .checkOutFrom(checkOutFrom!=null ? LocalTime.parse(checkOutFrom):null)
                 .checkOutTo(checkOutTo!=null ? LocalTime.parse(checkOutTo):null)
-                .status(status != null ? status.name() : null)
+                .status(status != null ? status.getId() : null)
                 .attendanceDateFrom(fromDate)
                 .attendanceDateTo(toDate)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

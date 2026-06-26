@@ -9,7 +9,6 @@ import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
-import bs.service.trainee.model.enums.AcademicYear;
 import bs.service.trainee.model.generated.TraineeDTO;
 import bs.service.trainee.model.generated.TraineeResultSet;
 import bs.service.trainee.model.generated.TraineeVTO;
@@ -109,7 +108,7 @@ public interface TraineeController {
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
             @Parameter(name = "gender", description = "", in = ParameterIn.QUERY) @Valid Gender gender,
-            @Parameter(name = "academicYear", description = "", in = ParameterIn.QUERY) @Valid AcademicYear academicYear,
+            @Parameter(name = "academicYear", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "academicYear", required = false) String academicYear,
             @Parameter(name = "createdOnFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnFrom,
             @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,

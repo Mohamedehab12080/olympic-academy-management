@@ -134,7 +134,11 @@ public interface EmployeeAttendanceController {
     /**
      * GET /employees/attendances : Retrieve list of employees attendances
      *
+     * @param quickSearch
+     *            (optional)
      * @param employeeId
+     *            (optional)
+     * @param employeeNationalId
      *            (optional)
      * @param status
      *            (optional)
@@ -169,7 +173,9 @@ public interface EmployeeAttendanceController {
     @RequestMapping(method = RequestMethod.GET, value = "/employees/attendances", produces = { "application/json" })
 
     ResponseEntity<EmployeeAttendanceResultSet> _getAllEmployeesAttendances(
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "employeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeId", required = false) Integer employeeId,
+            @Parameter(name = "employeeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeNationalId", required = false) String employeeNationalId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid EmployeeAttendanceStatus status,
             @Parameter(name = "attendanceDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "attendanceDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate attendanceDateFrom,
             @Parameter(name = "attendanceDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "attendanceDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate attendanceDateTo,

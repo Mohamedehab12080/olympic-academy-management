@@ -38,8 +38,8 @@ public class TraineeQueryBuilder extends AbstractQueryBuilderV2<Trainee, Trainee
                     .condition("item.gender = :PH").build());
 
         if (filters.getAcademicYear() != null && !filters.getAcademicYear().trim().isEmpty())
-            qbConditions.add(QBCondition.builder().placeHolder("academicYear").value(filters.getAcademicYear())
-                    .condition("item.academicYear = :PH").build());
+            qbConditions.add(QBCondition.builder().placeHolder("academicYear").value("%"+filters.getAcademicYear()+"%")
+                    .condition("(LOWER(item.academicYear) LIKE LOWER(:PH))").build());
 
         if (filters.getCreatedOnFrom() != null)
             qbConditions.add(QBCondition.builder().placeHolder("createdOnFrom").value(filters.getCreatedOnFrom())

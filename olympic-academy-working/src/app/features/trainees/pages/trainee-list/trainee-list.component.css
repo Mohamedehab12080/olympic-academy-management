@@ -1,3 +1,5 @@
+/* trainee-list.component.css - COMPLETE WITH CUSTOM PAGINATION */
+
 /* Main Container */
 .trainees-container {
   padding: 24px;
@@ -284,16 +286,6 @@
   color: #9ca3af;
 }
 
-/* Year Badge */
-.year-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  background: #f1f5f9;
-  color: #475569;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
 /* Gender Info */
 .gender-info {
   display: flex;
@@ -361,11 +353,108 @@
   font-size: 16px;
 }
 
-/* Paginator */
-.custom-paginator {
-  margin-top: 20px;
+/* ==========================================================================
+   CUSTOM PAGINATION
+   ========================================================================== */
+
+.custom-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0 0 0;
   border-top: 1px solid #e5e7eb;
-  padding-top: 12px;
+  margin-top: 16px;
+  background: white;
+  border-radius: 0 0 12px 12px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: scale(1.05);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn:disabled:hover {
+  background: white;
+  color: #475569;
+  transform: none;
+}
+
+.pagination-btn mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.page-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 0 12px;
+  min-width: 100px;
+  text-align: center;
+}
+
+.page-size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.page-size-control label {
+  font-weight: 500;
+}
+
+.page-size-select {
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.page-size-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.records-info {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 /* Animations */
@@ -380,7 +469,10 @@
   }
 }
 
-/* Responsive Design */
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
 @media (max-width: 1024px) {
   .stats-grid {
     gap: 16px;
@@ -453,6 +545,27 @@
     align-items: flex-start;
     gap: 12px;
   }
+
+  /* Custom Pagination Responsive */
+  .custom-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 0 0 0;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .page-size-control {
+    justify-content: center;
+  }
+
+  .records-info {
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -472,5 +585,96 @@
   .data-table .mat-cell {
     padding: 8px;
     font-size: 12px;
+  }
+
+  .pagination-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .pagination-btn mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .page-info {
+    font-size: 12px;
+    min-width: 70px;
+    padding: 0 8px;
+  }
+
+  .page-size-control {
+    font-size: 12px;
+  }
+
+  .page-size-select {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .records-info {
+    font-size: 12px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .trainees-container {
+    padding: 0;
+    background: white;
+  }
+
+  .main-card {
+    box-shadow: none;
+    border: none;
+  }
+
+  .page-header {
+    background: #667eea !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .add-button,
+  .filter-actions,
+  .action-buttons,
+  .filters-card,
+  .custom-pagination,
+  .records-count {
+    display: none !important;
+  }
+
+  .stats-grid {
+    background: white !important;
+  }
+
+  .stat-card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  .table-section {
+    padding: 0 !important;
+  }
+
+  .table-wrapper {
+    border: none !important;
+  }
+
+  .data-table .mat-header-cell {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .status-badge {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-data-message {
+    display: none !important;
   }
 }

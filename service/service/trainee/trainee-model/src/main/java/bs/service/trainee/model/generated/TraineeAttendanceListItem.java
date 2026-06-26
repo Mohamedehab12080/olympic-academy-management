@@ -1,6 +1,7 @@
 package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -27,7 +28,7 @@ public class TraineeAttendanceListItem implements Serializable {
 
     private Integer id;
 
-    private String traineeName;
+    private LightUserVTO trainee;
 
     private String sessionTitle;
 
@@ -35,6 +36,8 @@ public class TraineeAttendanceListItem implements Serializable {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate sessionDate;
+
+    private String sessionDay;
 
     private LookupVTO status;
 
@@ -65,25 +68,25 @@ public class TraineeAttendanceListItem implements Serializable {
         this.id = id;
     }
 
-    public TraineeAttendanceListItem traineeName(String traineeName) {
-        this.traineeName = traineeName;
+    public TraineeAttendanceListItem trainee(LightUserVTO trainee) {
+        this.trainee = trainee;
         return this;
     }
 
     /**
-     * Get traineeName
+     * Get trainee
      *
-     * @return traineeName
+     * @return trainee
      */
-
-    @Schema(name = "traineeName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("traineeName")
-    public String getTraineeName() {
-        return traineeName;
+    @Valid
+    @Schema(name = "trainee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("trainee")
+    public LightUserVTO getTrainee() {
+        return trainee;
     }
 
-    public void setTraineeName(String traineeName) {
-        this.traineeName = traineeName;
+    public void setTrainee(LightUserVTO trainee) {
+        this.trainee = trainee;
     }
 
     public TraineeAttendanceListItem sessionTitle(String sessionTitle) {
@@ -147,6 +150,27 @@ public class TraineeAttendanceListItem implements Serializable {
 
     public void setSessionDate(LocalDate sessionDate) {
         this.sessionDate = sessionDate;
+    }
+
+    public TraineeAttendanceListItem sessionDay(String sessionDay) {
+        this.sessionDay = sessionDay;
+        return this;
+    }
+
+    /**
+     * Get sessionDay
+     *
+     * @return sessionDay
+     */
+
+    @Schema(name = "sessionDay", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("sessionDay")
+    public String getSessionDay() {
+        return sessionDay;
+    }
+
+    public void setSessionDay(String sessionDay) {
+        this.sessionDay = sessionDay;
     }
 
     public TraineeAttendanceListItem status(LookupVTO status) {
@@ -243,10 +267,11 @@ public class TraineeAttendanceListItem implements Serializable {
         }
         TraineeAttendanceListItem traineeAttendanceListItem = (TraineeAttendanceListItem) o;
         return Objects.equals(this.id, traineeAttendanceListItem.id)
-                && Objects.equals(this.traineeName, traineeAttendanceListItem.traineeName)
+                && Objects.equals(this.trainee, traineeAttendanceListItem.trainee)
                 && Objects.equals(this.sessionTitle, traineeAttendanceListItem.sessionTitle)
                 && Objects.equals(this.courseTitle, traineeAttendanceListItem.courseTitle)
                 && Objects.equals(this.sessionDate, traineeAttendanceListItem.sessionDate)
+                && Objects.equals(this.sessionDay, traineeAttendanceListItem.sessionDay)
                 && Objects.equals(this.status, traineeAttendanceListItem.status)
                 && Objects.equals(this.checkInTime, traineeAttendanceListItem.checkInTime)
                 && Objects.equals(this.checkOutTime, traineeAttendanceListItem.checkOutTime)
@@ -255,8 +280,8 @@ public class TraineeAttendanceListItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, traineeName, sessionTitle, courseTitle, sessionDate, status, checkInTime, checkOutTime,
-                lateTime);
+        return Objects.hash(id, trainee, sessionTitle, courseTitle, sessionDate, sessionDay, status, checkInTime,
+                checkOutTime, lateTime);
     }
 
     @Override
@@ -264,10 +289,11 @@ public class TraineeAttendanceListItem implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("class TraineeAttendanceListItem {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
-        sb.append("    traineeName: ").append(toIndentedString(traineeName)).append("\n");
+        sb.append("    trainee: ").append(toIndentedString(trainee)).append("\n");
         sb.append("    sessionTitle: ").append(toIndentedString(sessionTitle)).append("\n");
         sb.append("    courseTitle: ").append(toIndentedString(courseTitle)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
+        sb.append("    sessionDay: ").append(toIndentedString(sessionDay)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");
         sb.append("    checkInTime: ").append(toIndentedString(checkInTime)).append("\n");
         sb.append("    checkOutTime: ").append(toIndentedString(checkOutTime)).append("\n");

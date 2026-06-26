@@ -30,7 +30,7 @@
   margin: 0 0 6px 0;
   font-size: 26px;
   font-weight: 700;
-  color:white;
+  color: white;
 }
 
 .header-title p {
@@ -209,6 +209,39 @@
   background: #fee2e2 !important;
 }
 
+/* Barcode Active Filter */
+.barcode-active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #8b5cf6;
+  font-weight: 600;
+  background: #f3e8ff;
+  padding: 2px 8px 2px 4px;
+  border-radius: 12px;
+  margin-right: 8px;
+}
+
+.barcode-clear-filter-btn {
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  color: #6b7280 !important;
+}
+
+.barcode-clear-filter-btn:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+  border-radius: 50%;
+}
+
+.barcode-clear-filter-btn mat-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -220,7 +253,89 @@
   }
 }
 
-/* Statistics Cards */
+/* ==========================================================================
+   TRAINEE IMAGE STYLES
+   ========================================================================== */
+
+.trainee-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trainee-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  background: #f3f4f6;
+  transition: all 0.3s;
+}
+
+.trainee-avatar:hover {
+  transform: scale(1.1);
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.trainee-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid #e5e7eb;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.trainee-avatar-placeholder:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.trainee-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.national-id-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #4b5563;
+  direction: ltr;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   DAY INFO STYLES
+   ========================================================================== */
+
+.day-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   STATISTICS CARDS
+   ========================================================================== */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -305,12 +420,19 @@
   color: #6d28d9;
   font-weight: 500;
   font-size: 13px;
+  flex-wrap: wrap;
 }
 
 .records-count mat-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;
+}
+
+.page-info {
+  font-weight: 400;
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .table-wrapper {
@@ -322,7 +444,7 @@
 
 .data-table {
   width: 100%;
-  min-width: 1000px;
+  min-width: 1200px;
 }
 
 .data-table .mat-header-cell {
@@ -351,18 +473,20 @@
 
 .clickable-cell {
   font-weight: 600;
-  color: #8b5cf6;
+  color: #1f2937;
 }
 
 .date-info,
-.time-info {
+.time-info,
+.day-info {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .date-info mat-icon,
-.time-info mat-icon {
+.time-info mat-icon,
+.day-info mat-icon {
   font-size: 16px;
   width: 16px;
   height: 16px;
@@ -434,10 +558,20 @@
   font-size: 16px;
 }
 
+/* Paginator */
 .custom-paginator {
   margin-top: 20px;
   border-top: 1px solid #e5e7eb;
   padding-top: 12px;
+}
+
+.custom-paginator ::ng-deep .mat-paginator-container {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.custom-paginator ::ng-deep .mat-paginator-range-label {
+  margin: 0 16px;
 }
 
 @keyframes fadeIn {
@@ -451,7 +585,10 @@
   }
 }
 
-/* Responsive Design */
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
 @media (max-width: 1200px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -481,6 +618,10 @@
   .barcode-search-btn,
   .barcode-close-btn {
     flex: 1;
+  }
+
+  .data-table {
+    min-width: 1000px;
   }
 }
 
@@ -572,6 +713,30 @@
     align-items: flex-start;
     gap: 12px;
   }
+
+  .trainee-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .trainee-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .data-table {
+    min-width: 800px;
+  }
+
+  .custom-paginator ::ng-deep .mat-paginator-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .custom-paginator ::ng-deep .mat-paginator-range-label {
+    margin: 4px 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -585,5 +750,24 @@
   
   .barcode-search-field {
     min-width: 100%;
+  }
+
+  .data-table {
+    min-width: 600px;
+  }
+
+  .trainee-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .trainee-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .national-id-cell {
+    font-size: 11px;
   }
 }

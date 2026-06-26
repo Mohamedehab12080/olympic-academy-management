@@ -13,7 +13,7 @@ public interface TraineeService {
     NewRecordVTO updateTrainee(Integer traineeId, TraineeDTO traineeDTO);
     void deleteTraineeById(Integer traineeId);
     TraineeVTO getTraineeById(Integer traineeId);
-    TraineeResultSet getAllTraineesByFilter(String quickSearch,Boolean isActive, Gender gender, AcademicYear academicYear,
+    TraineeResultSet getAllTraineesByFilter(String quickSearch,Boolean isActive, Gender gender, String academicYear,
                                             LocalDate createdOnFrom, LocalDate createdOnTo,
                                             Integer pageNum, Integer pageSize,
                                             OrderDirections orderDir, String orderBy);

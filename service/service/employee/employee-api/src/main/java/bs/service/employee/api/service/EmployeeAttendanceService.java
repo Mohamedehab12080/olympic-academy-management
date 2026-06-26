@@ -14,6 +14,6 @@ public interface EmployeeAttendanceService {
     NewRecordVTO updateEmployeeAttendance(Integer employeeId, Integer attendanceId, EmployeeAttendanceDTO employeeAttendanceDTO);
     void deleteEmployeeAttendanceById(Integer employeeId, Integer attendanceId);
     EmployeeAttendanceVTO getEmployeeAttendanceById(Integer employeeId, Integer attendanceId);
-    EmployeeAttendanceResultSet getAllEmployeeAttendances(Integer employeeId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    EmployeeAttendanceResultSet getAllEmployeeAttendances(String quickSearch,Integer employeeId,String employeeNationalId, EmployeeAttendanceStatus status, LocalDate attendanceDateFrom, LocalDate attendanceDateTo, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
     DailyAttendanceReport getDailyAttendanceReport(LocalDate attendanceDate);
 }

@@ -36,15 +36,12 @@ public class SalaryIncentiveControllerImpl implements SalaryIncentiveController 
         return ResponseEntity.ok().build();
     }
 
+
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<SalaryIncentiveResultSet> _getAllSalaryIncentivesByFilter(
-            Integer employeeId, Integer paymentMethodId, SalaryTypes salaryType,
-            SalaryTransactionType type, LocalDate withdrawDateFrom, LocalDate withdrawDateTo,
-            Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
-
+    public ResponseEntity<SalaryIncentiveResultSet> _getAllSalaryIncentivesByFilter(Integer employeeId, String employeeNationalId, Integer paymentMethodId, SalaryTypes salaryType, SalaryTransactionType type, LocalDate withdrawDateFrom, LocalDate withdrawDateTo, String quickSearch, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
         SalaryIncentiveResultSet result = salaryIncentiveService.getAllSalaryIncentivesByFilter(
-                employeeId, paymentMethodId, type, withdrawDateFrom, withdrawDateTo,
+                employeeId,employeeNationalId, paymentMethodId, type, withdrawDateFrom, withdrawDateTo,quickSearch,
                 pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
     }

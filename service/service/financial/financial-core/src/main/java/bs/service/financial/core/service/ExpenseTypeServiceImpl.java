@@ -80,7 +80,7 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
 
         return ExpenseTypeResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(expenseTypeRepository.countAllByFilters(filter))
                 .build();
     }
 }

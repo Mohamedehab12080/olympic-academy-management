@@ -77,7 +77,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
         return PaymentMethodResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(paymentMethodRepository.countAllByFilters(filter))
                 .build();
     }
 }

@@ -6,12 +6,10 @@
         <h1>جلسات الدورات</h1>
         <p>إدارة ومتابعة جلسات الدورات التدريبية</p>
       </div>
-      <div class="add-button-container">
       <button mat-raised-button color="primary" (click)="openAddModal()" class="add-btn">
         <mat-icon>add</mat-icon>
         إضافة جلسة جديدة
       </button>
-    </div>
     </div>
 
     <!-- Filters Section -->
@@ -81,6 +79,19 @@
             </app-searchable-select>
           </div>
 
+          <!-- Session Day Filter -->
+          <div class="filter-group">
+            <label class="filter-label">اليوم</label>
+            <app-searchable-select
+              [ngModel]="filters.sessionDay"
+              (ngModelChange)="filters.sessionDay = $event; loadSessions()"
+              [label]="'اختر اليوم'"
+              [options]="dayOptions"
+              [required]="false"
+              [ngModelOptions]="{standalone: true}">
+            </app-searchable-select>
+          </div>
+
           <!-- Date From -->
           <div class="filter-group">
             <label class="filter-label">من تاريخ</label>
@@ -108,11 +119,11 @@
             <mat-icon>refresh</mat-icon>
             مسح الكل
           </button>
-          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allSessions.length === 0" class="export-btn">
             <mat-icon>grid_on</mat-icon>
             تصدير Excel
           </button>
-          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.data.length === 0" class="export-btn">
+          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allSessions.length === 0" class="export-btn">
             <mat-icon>picture_as_pdf</mat-icon>
             تصدير PDF
           </button>
@@ -121,11 +132,11 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid" *ngIf="!isLoading && dataSource.data.length > 0">
+    <div class="stats-grid" *ngIf="!isLoading && allSessions.length > 0">
       <div class="stat-card">
         <div class="stat-icon">📅</div>
         <div class="stat-info">
-          <h3>{{ dataSource.data.length }}</h3>
+          <h3>{{ totalItems }}</h3>
           <p>إجمالي الجلسات</p>
         </div>
       </div>
@@ -167,27 +178,27 @@
 
     <!-- Table Section -->
     <div class="table-section" *ngIf="!isLoading">
-      <div class="table-header" *ngIf="dataSource.data.length > 0">
+      <div class="table-header" *ngIf="allSessions.length > 0">
         <div class="records-count">
           <mat-icon>info</mat-icon>
-          <span>عدد الجلسات: {{ dataSource.data.length }} جلسة</span>
+          <span>عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} جلسة</span>
         </div>
       </div>
 
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table">
+        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="onSortChange($event)">
           <!-- Index Column -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
             <td mat-cell *matCellDef="let session; let i = index">
-              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+              {{ (currentPage * pageSize) + i + 1 }}
             </td>
           </ng-container>
 
           <!-- Title Column -->
           <ng-container matColumnDef="title">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>عنوان الجلسة</th>
-            <td mat-cell *matCellDef="let session" class="clickable-cell">
+            <td mat-cell *matCellDef="let session" class="clickable-cell" (click)="viewSessionDetails(session)">
               <strong>{{ session.title }}</strong>
             </td>
           </ng-container>
@@ -233,6 +244,17 @@
             </td>
           </ng-container>
 
+          <!-- Session Day Column -->
+          <ng-container matColumnDef="sessionDay">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>اليوم</th>
+            <td mat-cell *matCellDef="let session">
+              <div class="day-info">
+                <mat-icon>today</mat-icon>
+                <span class="day-badge">{{ getDayLabel(session.sessionDay) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
           <!-- Start Time Column -->
           <ng-container matColumnDef="startTime">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت البدء</th>
@@ -245,15 +267,15 @@
           </ng-container>
 
           <!-- End Time Column -->
-        <ng-container matColumnDef="endTime">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الانتهاء</th>
-          <td mat-cell *matCellDef="let session">
-            <div class="time-info">
-              <mat-icon>access_time</mat-icon>
-              <span>{{ formatTime(session.endTime) }}</span>
-            </div>
-          </td>
-        </ng-container>
+          <ng-container matColumnDef="endTime">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الانتهاء</th>
+            <td mat-cell *matCellDef="let session">
+              <div class="time-info">
+                <mat-icon>access_time</mat-icon>
+                <span>{{ formatTime(session.endTime) }}</span>
+              </div>
+            </td>
+          </ng-container>
         
           <!-- Status Column -->
           <ng-container matColumnDef="status">
@@ -284,7 +306,7 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewSessionDetails(row)"></tr>
 
           <!-- No Data Row -->
           <tr class="mat-row no-data-row" *matNoDataRow>
@@ -292,7 +314,7 @@
               <div class="no-data-message">
                 <mat-icon>event_busy</mat-icon>
                 <p>لا توجد جلسات</p>
-                <button mat-raised-button color="primary" routerLink="/sessions/new">
+                <button mat-raised-button color="primary" (click)="openAddModal()">
                   <mat-icon>add</mat-icon>
                   إضافة جلسة جديدة
                 </button>
@@ -302,7 +324,57 @@
         </table>
       </div>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
+      <!-- Custom Pagination Controls -->
+      <div class="custom-pagination" *ngIf="totalItems > 0">
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn" 
+            (click)="goToFirstPage()" 
+            [disabled]="currentPage === 0"
+            matTooltip="الصفحة الأولى">
+            <mat-icon>first_page</mat-icon>
+          </button>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToPreviousPage()" 
+            [disabled]="currentPage === 0"
+            matTooltip="الصفحة السابقة">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          
+          <span class="page-info">
+            صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}
+          </span>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToNextPage()" 
+            matTooltip="الصفحة التالية">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToLastPage()" 
+            [disabled]="currentPage >= getTotalPages() - 1"
+            matTooltip="الصفحة الأخيرة">
+            <mat-icon>last_page</mat-icon>
+          </button>
+        </div>
+        
+        <div class="page-size-control">
+          <label>عرض:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+          <span>نتيجة</span>
+        </div>
+        
+        <div class="records-info">
+          عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} جلسة
+        </div>
+      </div>
     </div>
   </mat-card>
 </div>

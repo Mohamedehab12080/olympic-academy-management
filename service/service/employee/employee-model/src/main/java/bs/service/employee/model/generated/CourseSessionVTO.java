@@ -40,6 +40,8 @@ public class CourseSessionVTO implements Serializable {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate sessionDate;
 
+    private String sessionDay;
+
     private String startTime;
 
     private String endTime;
@@ -182,6 +184,27 @@ public class CourseSessionVTO implements Serializable {
 
     public void setSessionDate(LocalDate sessionDate) {
         this.sessionDate = sessionDate;
+    }
+
+    public CourseSessionVTO sessionDay(String sessionDay) {
+        this.sessionDay = sessionDay;
+        return this;
+    }
+
+    /**
+     * Get sessionDay
+     *
+     * @return sessionDay
+     */
+
+    @Schema(name = "sessionDay", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("sessionDay")
+    public String getSessionDay() {
+        return sessionDay;
+    }
+
+    public void setSessionDay(String sessionDay) {
+        this.sessionDay = sessionDay;
     }
 
     public CourseSessionVTO startTime(String startTime) {
@@ -366,6 +389,7 @@ public class CourseSessionVTO implements Serializable {
                 && Objects.equals(this.trainer, courseSessionVTO.trainer)
                 && Objects.equals(this.place, courseSessionVTO.place)
                 && Objects.equals(this.sessionDate, courseSessionVTO.sessionDate)
+                && Objects.equals(this.sessionDay, courseSessionVTO.sessionDay)
                 && Objects.equals(this.startTime, courseSessionVTO.startTime)
                 && Objects.equals(this.endTime, courseSessionVTO.endTime)
                 && Objects.equals(this.status, courseSessionVTO.status)
@@ -378,8 +402,8 @@ public class CourseSessionVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, course, trainer, place, sessionDate, startTime, endTime, status, note, createdOn,
-                createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, title, course, trainer, place, sessionDate, sessionDay, startTime, endTime, status,
+                note, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -392,6 +416,7 @@ public class CourseSessionVTO implements Serializable {
         sb.append("    trainer: ").append(toIndentedString(trainer)).append("\n");
         sb.append("    place: ").append(toIndentedString(place)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
+        sb.append("    sessionDay: ").append(toIndentedString(sessionDay)).append("\n");
         sb.append("    startTime: ").append(toIndentedString(startTime)).append("\n");
         sb.append("    endTime: ").append(toIndentedString(endTime)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");

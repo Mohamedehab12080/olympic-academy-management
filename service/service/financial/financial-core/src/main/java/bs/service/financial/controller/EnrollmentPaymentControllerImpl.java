@@ -37,13 +37,13 @@ public class EnrollmentPaymentControllerImpl implements EnrollmentPaymentControl
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<EnrollmentPaymentResultSet> _getAllEnrollmentPaymentsByFilter(
+    public ResponseEntity<EnrollmentPaymentResultSet> _getAllEnrollmentPaymentsByFilter(String traineeNationalId,
             Integer enrollmentId,Integer courseId, Integer paymentMethodId, PaymentStatus status,
-            LocalDate paymentDateFrom, LocalDate paymentDateTo,
+            LocalDate paymentDateFrom, LocalDate paymentDateTo,String quickSearch,
             Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         EnrollmentPaymentResultSet result = enrollmentPaymentService.getAllEnrollmentPaymentsByFilter(
-                enrollmentId,courseId, paymentMethodId, status, paymentDateFrom, paymentDateTo,
+                traineeNationalId,enrollmentId,courseId, paymentMethodId, status, paymentDateFrom, paymentDateTo,quickSearch,
                 pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
     }

@@ -85,13 +85,15 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
     }
 
     @Override
-    public SalaryIncentiveResultSet getAllSalaryIncentivesByFilter(Integer employeeId, Integer paymentMethodId,
+    public SalaryIncentiveResultSet getAllSalaryIncentivesByFilter(Integer employeeId,String employeeNationalId, Integer paymentMethodId,
                                                                    SalaryTransactionType type, LocalDate withdrawDateFrom,
-                                                                   LocalDate withdrawDateTo, Integer pageNum,
+                                                                   LocalDate withdrawDateTo,String quickSearch, Integer pageNum,
                                                                    Integer pageSize, OrderDirections orderDir,
                                                                    String orderBy) {
         SalaryIncentiveSearchFilter filter = SalaryIncentiveSearchFilter.builder()
                 .employeeId(employeeId)
+                .employeeNationalId(employeeNationalId)
+                .quickSearch(quickSearch)
                 .paymentMethodId(paymentMethodId)
                 .salaryTransactionType(type!=null ?type.getId():null)
                 .withdrawDateFrom(withdrawDateFrom)
@@ -106,7 +108,7 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
 
         return SalaryIncentiveResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(salaryIncentiveRepository.countAllByFilters(filter))
                 .build();
     }
 }

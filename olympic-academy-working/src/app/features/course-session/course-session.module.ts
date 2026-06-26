@@ -22,12 +22,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { CourseSessionListComponent } from './pages/course-session-list/course-session-list.component';
-import { CourseSessionFormComponent } from './pages/course-session-form/course-session-form.component';
 
 const routes: Routes = [
   { path: '', component: CourseSessionListComponent },
-  { path: 'new', component: CourseSessionFormComponent },
-  { path: ':id/edit', component: CourseSessionFormComponent }
 ];
 
 @NgModule({
@@ -54,8 +51,7 @@ const routes: Routes = [
     MatChipsModule,
     MatTooltipModule,
     MatTabsModule,
-    CourseSessionListComponent,
-    CourseSessionFormComponent
-  ]
+    CourseSessionListComponent
+    ]
 })
 export class CourseSessionModule { }

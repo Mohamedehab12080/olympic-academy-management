@@ -1,4 +1,4 @@
-/* course-list.component.css */
+/* course-list.component.css - COMPLETE WITH CUSTOM PAGINATION */
 
 /* Main Container */
 .courses-container {
@@ -94,6 +94,22 @@
 .reset-btn:hover,
 .export-btn:hover {
   transform: translateY(-1px);
+}
+
+/* Cards Button */
+.cards-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+  color: white !important;
+}
+
+.cards-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a5f 100%) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.cards-btn:disabled {
+  background: #e5e7eb !important;
+  color: #9ca3af !important;
 }
 
 /* Statistics Cards */
@@ -346,11 +362,115 @@
   font-size: 16px;
 }
 
-/* Paginator */
-.custom-paginator {
-  margin-top: 20px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 12px;
+/* ========== CUSTOM PAGINATION ========== */
+
+.custom-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0 0 0;
+  border-top: 2px solid #e2e8f0;
+  margin-top: 16px;
+  background: white;
+  border-radius: 0 0 16px 16px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn:disabled:hover {
+  background: white;
+  color: #475569;
+  transform: none;
+  box-shadow: none;
+}
+
+.pagination-btn mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.page-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  padding: 0 16px;
+  min-width: 120px;
+  text-align: center;
+}
+
+.page-size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.page-size-control label {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.page-size-select {
+  padding: 6px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.page-size-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.page-size-select:hover {
+  border-color: #2563eb;
+}
+
+.records-info {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 /* Animations */
@@ -444,6 +564,26 @@
   .data-table {
     min-width: 900px;
   }
+
+  .custom-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 0 0 0;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .page-size-control {
+    justify-content: center;
+  }
+
+  .records-info {
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -467,6 +607,37 @@
     width: 100%;
     justify-content: center;
   }
+
+  .pagination-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pagination-btn mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .page-info {
+    font-size: 12px;
+    min-width: 80px;
+    padding: 0 8px;
+  }
+
+  .page-size-control {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .page-size-select {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .records-info {
+    font-size: 12px;
+  }
 }
 
 /* MatSelect Overrides for RTL */
@@ -479,16 +650,6 @@
   padding: 0 16px !important;
 }
 
-/* MatPaginator Overrides */
-::ng-deep .mat-paginator-container {
-  justify-content: space-between !important;
-  flex-wrap: wrap !important;
-}
-
-::ng-deep .mat-paginator-range-label {
-  margin: 0 12px !important;
-}
-
 /* Hover effect for mat-select options */
 ::ng-deep .mat-option:hover:not(.mat-option-disabled) {
   background: #eff6ff !important;
@@ -498,48 +659,6 @@
 ::ng-deep .mat-option.mat-selected:not(.mat-option-disabled) {
   background: #dbeafe !important;
   color: #1e40af !important;
-}
-
-/* Status chip transitions */
-.status-badge {
-  transition: all 0.3s ease;
-}
-
-/* Card hover effects */
-.stat-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth table row hover */
-.data-row {
-  transition: background-color 0.2s ease;
-}
-
-/* Button click ripple effect */
-.add-button,
-.reset-btn,
-.export-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Loading spinner container */
-.loading-container mat-spinner {
-  margin-bottom: 8px;
-}
-
-/* Empty state icon animation */
-.no-data-message mat-icon {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
 }
 
 /* Print styles */
@@ -594,7 +713,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  .custom-paginator {
+  .custom-pagination {
     display: none !important;
   }
 }

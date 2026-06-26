@@ -91,7 +91,6 @@ public class EmployeeDTO implements Serializable {
      * @return nationalId
      */
     @NotNull
-    @Size(min = 14, max = 14)
     @Schema(name = "nationalId", requiredMode = Schema.RequiredMode.REQUIRED)
     @JsonProperty("nationalId")
     public String getNationalId() {

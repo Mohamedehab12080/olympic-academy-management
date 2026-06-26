@@ -9,6 +9,8 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.hibernate.validator.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,12 +31,16 @@ public class CourseSessionDTO implements Serializable {
 
     private Integer courseId;
 
-    private Integer trainerId;
+    @Valid
+    private List<Integer> trainersId = new ArrayList<>();
 
     private Integer placeId;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate sessionDate;
+
+    @Valid
+    private List<String> sessionDays = new ArrayList<>();
 
     private String startTime;
 
@@ -86,25 +92,33 @@ public class CourseSessionDTO implements Serializable {
         this.courseId = courseId;
     }
 
-    public CourseSessionDTO trainerId(Integer trainerId) {
-        this.trainerId = trainerId;
+    public CourseSessionDTO trainersId(List<Integer> trainersId) {
+        this.trainersId = trainersId;
+        return this;
+    }
+
+    public CourseSessionDTO addTrainersIdItem(Integer trainersIdItem) {
+        if (this.trainersId == null) {
+            this.trainersId = new ArrayList<>();
+        }
+        this.trainersId.add(trainersIdItem);
         return this;
     }
 
     /**
-     * Get trainerId
+     * Get trainersId
      *
-     * @return trainerId
+     * @return trainersId
      */
     @NotNull
-    @Schema(name = "trainerId", requiredMode = Schema.RequiredMode.REQUIRED)
-    @JsonProperty("trainerId")
-    public Integer getTrainerId() {
-        return trainerId;
+    @Schema(name = "trainersId", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("trainersId")
+    public List<Integer> getTrainersId() {
+        return trainersId;
     }
 
-    public void setTrainerId(Integer trainerId) {
-        this.trainerId = trainerId;
+    public void setTrainersId(List<Integer> trainersId) {
+        this.trainersId = trainersId;
     }
 
     public CourseSessionDTO placeId(Integer placeId) {
@@ -138,9 +152,8 @@ public class CourseSessionDTO implements Serializable {
      *
      * @return sessionDate
      */
-    @NotNull
     @Valid
-    @Schema(name = "sessionDate", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(name = "sessionDate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("sessionDate")
     public LocalDate getSessionDate() {
         return sessionDate;
@@ -148,6 +161,35 @@ public class CourseSessionDTO implements Serializable {
 
     public void setSessionDate(LocalDate sessionDate) {
         this.sessionDate = sessionDate;
+    }
+
+    public CourseSessionDTO sessionDays(List<String> sessionDays) {
+        this.sessionDays = sessionDays;
+        return this;
+    }
+
+    public CourseSessionDTO addSessionDaysItem(String sessionDaysItem) {
+        if (this.sessionDays == null) {
+            this.sessionDays = new ArrayList<>();
+        }
+        this.sessionDays.add(sessionDaysItem);
+        return this;
+    }
+
+    /**
+     * Get sessionDays
+     *
+     * @return sessionDays
+     */
+    @NotNull
+    @Schema(name = "sessionDays", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("sessionDays")
+    public List<String> getSessionDays() {
+        return sessionDays;
+    }
+
+    public void setSessionDays(List<String> sessionDays) {
+        this.sessionDays = sessionDays;
     }
 
     public CourseSessionDTO startTime(String startTime) {
@@ -245,9 +287,10 @@ public class CourseSessionDTO implements Serializable {
         CourseSessionDTO courseSessionDTO = (CourseSessionDTO) o;
         return Objects.equals(this.title, courseSessionDTO.title)
                 && Objects.equals(this.courseId, courseSessionDTO.courseId)
-                && Objects.equals(this.trainerId, courseSessionDTO.trainerId)
+                && Objects.equals(this.trainersId, courseSessionDTO.trainersId)
                 && Objects.equals(this.placeId, courseSessionDTO.placeId)
                 && Objects.equals(this.sessionDate, courseSessionDTO.sessionDate)
+                && Objects.equals(this.sessionDays, courseSessionDTO.sessionDays)
                 && Objects.equals(this.startTime, courseSessionDTO.startTime)
                 && Objects.equals(this.endTime, courseSessionDTO.endTime)
                 && Objects.equals(this.status, courseSessionDTO.status)
@@ -256,7 +299,8 @@ public class CourseSessionDTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, courseId, trainerId, placeId, sessionDate, startTime, endTime, status, note);
+        return Objects.hash(title, courseId, trainersId, placeId, sessionDate, sessionDays, startTime, endTime, status,
+                note);
     }
 
     @Override
@@ -265,9 +309,10 @@ public class CourseSessionDTO implements Serializable {
         sb.append("class CourseSessionDTO {\n");
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    courseId: ").append(toIndentedString(courseId)).append("\n");
-        sb.append("    trainerId: ").append(toIndentedString(trainerId)).append("\n");
+        sb.append("    trainersId: ").append(toIndentedString(trainersId)).append("\n");
         sb.append("    placeId: ").append(toIndentedString(placeId)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
+        sb.append("    sessionDays: ").append(toIndentedString(sessionDays)).append("\n");
         sb.append("    startTime: ").append(toIndentedString(startTime)).append("\n");
         sb.append("    endTime: ").append(toIndentedString(endTime)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");

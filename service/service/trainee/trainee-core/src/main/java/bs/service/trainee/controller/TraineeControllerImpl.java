@@ -39,7 +39,7 @@ public class TraineeControllerImpl implements TraineeController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<TraineeResultSet> _getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, AcademicYear academicYear, LocalDate createdOnFrom, LocalDate createdOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public ResponseEntity<TraineeResultSet> _getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, String academicYear, LocalDate createdOnFrom, LocalDate createdOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         TraineeResultSet result = traineeService.getAllTraineesByFilter(
                 quickSearch, isActive, gender, academicYear,

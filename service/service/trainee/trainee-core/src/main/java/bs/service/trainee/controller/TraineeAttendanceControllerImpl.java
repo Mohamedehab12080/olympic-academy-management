@@ -54,28 +54,14 @@ public class TraineeAttendanceControllerImpl implements TraineeAttendanceControl
         return ResponseEntity.noContent().build();
     }
 
+
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<TraineeAttendanceResultSet> _getAllTraineeAttendances(Integer traineeId, Integer courseId, Integer courseSessionId, TraineeAttendanceStatus status, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public ResponseEntity<TraineeAttendanceResultSet> _getAllTraineeAttendances(TraineeAttendanceStatus status,String sessionDay, String traineeNationalId, Integer traineeId, Integer courseId, Integer courseSessionId, String quickSearch, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         log.info("GET /trainee-attendances - Getting all trainee attendances with filters");
 
-        TraineeAttendanceResultSet result = traineeAttendanceService.getAllTraineeAttendances(
-                traineeId,
-                courseId,
-                courseSessionId,
-                status,
-                checkInFrom,
-                checkInTo,
-                checkOutFrom,
-                checkOutTo,
-                fromDate,
-                toDate,
-                pageNum,
-                pageSize,
-                orderDir,
-                orderBy
-        );
+        TraineeAttendanceResultSet result = traineeAttendanceService.getAllTraineeAttendances(status,sessionDay,traineeNationalId,traineeId,courseId,courseSessionId,quickSearch,checkInFrom,checkInTo,checkOutFrom,checkOutTo, fromDate, toDate, pageNum,pageSize, orderDir, orderBy);
 
         return ResponseEntity.ok(result);
     }

@@ -14,9 +14,9 @@ public interface SalaryIncentiveService {
     NewRecordVTO updateSalaryIncentive(Integer transactionId, SalaryIncentiveDTO salaryIncentiveDTO);
     void deleteSalaryIncentive(Integer transactionId);
     SalaryIncentiveVTO getSalaryIncentiveById(Integer transactionId);
-    SalaryIncentiveResultSet getAllSalaryIncentivesByFilter(Integer employeeId, Integer paymentMethodId,
+    SalaryIncentiveResultSet getAllSalaryIncentivesByFilter(Integer employeeId,String employeeNationalId, Integer paymentMethodId,
                                                             SalaryTransactionType type, LocalDate withdrawDateFrom,
-                                                            LocalDate withdrawDateTo, Integer pageNum,
+                                                            LocalDate withdrawDateTo,String quickSearch, Integer pageNum,
                                                             Integer pageSize, OrderDirections orderDir,
                                                             String orderBy);
 }

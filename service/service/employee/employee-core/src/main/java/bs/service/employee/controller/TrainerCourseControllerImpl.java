@@ -36,8 +36,8 @@ public class TrainerCourseControllerImpl implements TrainerCourseController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<Void> _unassignCourseFromTrainer(Integer trainerId, Integer courseId) {
-        trainerCourseService.unassignCourseFromTrainer(trainerId, courseId);
+    public ResponseEntity<Void> _unassignCourseFromTrainer(Integer trainerCourseId) {
+        trainerCourseService.unassignCourseFromTrainer(trainerCourseId);
         return ResponseEntity.ok().build();
     }
 }

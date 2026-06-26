@@ -17,10 +17,9 @@ public interface TrainerCourseService {
 
     /**
      * Unassign a course from a trainer
-     * @param trainerId The employee ID
-     * @param courseId The course ID to unassign
+     * @param trainerCourseId
      */
-    void unassignCourseFromTrainer(Integer trainerId, Integer courseId);
+    void unassignCourseFromTrainer(Integer trainerCourseId);
 
     /**
      * Get all courses assigned to a specific trainer

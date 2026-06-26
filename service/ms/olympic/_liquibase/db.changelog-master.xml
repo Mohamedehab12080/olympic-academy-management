@@ -83,4 +83,10 @@
     <include file="../../../service/financial/_liquibase/changes/place/changeset-2026-05-26.xml"
              relativeToChangelogFile="true"/>
 
+    <include file="../../../service/employee/_liquibase/changes/changeset-2026-06-21.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="../../../service/employee/_liquibase/changes/changeset-2026-06-23.xml"
+             relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

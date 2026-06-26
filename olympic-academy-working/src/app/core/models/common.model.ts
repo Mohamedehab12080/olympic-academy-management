@@ -93,7 +93,7 @@ export interface LightUserVTO {
   id: number;
   nationalId:string;
   imageUrl:string;
-  fullName: string;
+  fullName: string; 
 }
 
 export interface RecordAttribute {

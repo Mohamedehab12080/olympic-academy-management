@@ -1,4 +1,4 @@
-import { LookupVTO } from '../../core/models/common.model';
+import { LightUserVTO, LookupVTO } from '../../core/models/common.model';
 import {CourseSessionVTO} from '../../core/models/employee.model';
 
 // ==================== Enum for DTOs (sent to backend) - Trainee specific ====================
@@ -49,10 +49,11 @@ export interface TraineeAttendanceVTO {
 
 export interface TraineeAttendanceListItem {
   id: number;
-  traineeName: string;
+  trainee: LightUserVTO;
   sessionTitle: string;
   courseTitle: string;
   sessionDate: string;
+  sessionDay: string;
   status: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
   checkInTime?: string;
   checkOutTime?: string;

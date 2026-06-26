@@ -246,6 +246,11 @@ getAllTotalsOfFinancials(totalDateFrom?: string, totalDateTo?: string): Observab
   if (totalDateTo) params.totalDateTo = totalDateTo;
   return this.api.get('/totals/financials', params);
 }
+getAllMainTotalsOfFinancials(mainTotalYear?: string): Observable<FinancialTotalVTO> {
+  const params: any = {};
+  if (mainTotalYear) params.mainTotalYear = mainTotalYear;
+  return this.api.get('/totals/financials/main', params);
+}
 
 
 }

@@ -1,3 +1,5 @@
+<!-- enrollment-payment-wizard-modal.component.html -->
+
 <div class="wizard-container">
   <!-- Header -->
   <div class="wizard-header">
@@ -248,91 +250,145 @@
         </div>
       </div>
 
-      <!-- Step 3: Confirmation -->
+      <!-- Step 3: Confirmation / Success -->
       <div class="step-content" *ngIf="currentStep === 3">
-        <div class="step-title">
-          <mat-icon>check_circle</mat-icon>
-          <h3>تأكيد الدفعة</h3>
-        </div>
-        
-        <div class="step-description">
-          راجع المعلومات أدناه قبل التأكيد
-        </div>
-
-        <div class="confirmation-card">
-          <!-- Enrollment Info -->
-          <div class="confirmation-section">
-            <div class="section-title">
-              <mat-icon>school</mat-icon>
-              <span>معلومات التسجيل</span>
+        <!-- Success State -->
+        <div *ngIf="showSuccess" class="success-container">
+          <div class="success-icon">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <h2>تمت عملية {{ isEditMode ? 'التحديث' : 'الإضافة' }} بنجاح ✅</h2>
+          <p>يمكنك طباعة الإيصال أو المتابعة</p>
+          
+          <div class="receipt-actions">
+            <button mat-raised-button color="primary" (click)="printReceiptFromSuccess()" class="receipt-btn">
+              <mat-icon>print</mat-icon> طباعة الإيصال
+            </button>
+            <button mat-raised-button (click)="closeAfterSuccess()" class="close-success-btn">
+              <mat-icon>check</mat-icon> إنهاء
+            </button>
+          </div>
+          
+          <!-- Quick Receipt Preview -->
+          <div class="quick-receipt-preview">
+            <div class="preview-title">
+              <mat-icon>receipt</mat-icon>
+              <span>ملخص الإيصال</span>
             </div>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">المتدرب:</span>
-                <span class="info-value">{{ selectedEnrollment?.trainee?.title }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">الدورة:</span>
-                <span class="info-value">{{ selectedEnrollment?.course?.title }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">تاريخ البداية:</span>
-                <span class="info-value">{{ selectedEnrollment?.startDate | date }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">قيمة التسجيل:</span>
-                <span class="info-value">{{ paymentForm.get('enrollmentValue')?.value }} جم</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">إجمالي المدفوع سابقاً:</span>
-                <span class="info-value">{{ paymentForm.get('totalPaidAmount')?.value || 0 }} جم</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">المتبقي قبل الدفعة:</span>
-                <span class="info-value">{{ getCurrentRemaining() }} جم</span>
-              </div>
+            <div class="preview-row">
+              <span>المبلغ المدفوع:</span>
+              <strong>{{ paymentResult?.paidAmount || 0 }} جم</strong>
+            </div>
+            <div class="preview-row">
+              <span>المبلغ المتبقي:</span>
+              <strong [class.zero]="paymentResult?.remainedValue === 0">{{ paymentResult?.remainedValue || 0 }} جم</strong>
+            </div>
+            <div class="preview-row">
+              <span>طريقة الدفع:</span>
+              <span>{{ paymentResult?.paymentMethodTitle || '-' }}</span>
+            </div>
+            <div class="preview-row">
+              <span>حالة الدفع:</span>
+              <span class="status-badge" 
+                    [class.paid]="paymentResult?.paymentStatus === 'PAID'" 
+                    [class.partial]="paymentResult?.paymentStatus === 'PARTIAL'"
+                    [class.pending]="paymentResult?.paymentStatus === 'PENDING'">
+                {{ paymentResult?.paymentStatusTitle || '-' }}
+              </span>
+            </div>
+            <div class="preview-row" *ngIf="paymentResult?.note">
+              <span>ملاحظات:</span>
+              <span class="note-text">{{ paymentResult?.note }}</span>
             </div>
           </div>
+        </div>
 
-          <mat-divider></mat-divider>
+        <!-- Normal Confirmation -->
+        <div *ngIf="!showSuccess">
+          <div class="step-title">
+            <mat-icon>check_circle</mat-icon>
+            <h3>تأكيد الدفعة</h3>
+          </div>
+          
+          <div class="step-description">
+            راجع المعلومات أدناه قبل التأكيد
+          </div>
 
-          <!-- Payment Info -->
-          <div class="confirmation-section">
-            <div class="section-title">
-              <mat-icon>payments</mat-icon>
-              <span>معلومات الدفعة</span>
+          <div class="confirmation-card">
+            <!-- Enrollment Info -->
+            <div class="confirmation-section">
+              <div class="section-title">
+                <mat-icon>school</mat-icon>
+                <span>معلومات التسجيل</span>
+              </div>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">المتدرب:</span>
+                  <span class="info-value">{{ selectedEnrollment?.trainee?.title }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">الدورة:</span>
+                  <span class="info-value">{{ selectedEnrollment?.course?.title }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">تاريخ البداية:</span>
+                  <span class="info-value">{{ selectedEnrollment?.startDate | date }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">قيمة التسجيل:</span>
+                  <span class="info-value">{{ paymentForm.get('enrollmentValue')?.value }} جم</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">إجمالي المدفوع سابقاً:</span>
+                  <span class="info-value">{{ paymentForm.get('totalPaidAmount')?.value || 0 }} جم</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">المتبقي قبل الدفعة:</span>
+                  <span class="info-value">{{ getCurrentRemaining() }} جم</span>
+                </div>
+              </div>
             </div>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">المبلغ المدفوع:</span>
-                <span class="info-value highlight">{{ getTotalAmount() }} جم</span>
+
+            <mat-divider></mat-divider>
+
+            <!-- Payment Info -->
+            <div class="confirmation-section">
+              <div class="section-title">
+                <mat-icon>payments</mat-icon>
+                <span>معلومات الدفعة</span>
               </div>
-              <div class="info-item">
-                <span class="info-label">المبلغ المتبقي بعد الدفعة:</span>
-                <span class="info-value" [class.success]="getNewRemaining() === 0">{{ getNewRemaining() }} جم</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">تاريخ الدفع:</span>
-                <span class="info-value">{{ paymentForm.get('paymentDate')?.value | date }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">طريقة الدفع:</span>
-                <span class="info-value">{{ getPaymentMethodLabel() }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">حالة الدفع:</span>
-                <span class="info-value">
-                  <span class="status-badge" 
-                        [class.paid]="getNewRemaining() === 0 && getTotalAmount() > 0" 
-                        [class.partial]="getNewRemaining() > 0 && getTotalAmount() > 0"
-                        [class.pending]="getTotalAmount() === 0">
-                    {{ getPaymentStatusLabel() }}
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">المبلغ المدفوع:</span>
+                  <span class="info-value highlight">{{ getTotalAmount() }} جم</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">المبلغ المتبقي بعد الدفعة:</span>
+                  <span class="info-value" [class.success]="getNewRemaining() === 0">{{ getNewRemaining() }} جم</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">تاريخ الدفع:</span>
+                  <span class="info-value">{{ paymentForm.get('paymentDate')?.value | date }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">طريقة الدفع:</span>
+                  <span class="info-value">{{ getPaymentMethodLabel() }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">حالة الدفع:</span>
+                  <span class="info-value">
+                    <span class="status-badge" 
+                          [class.paid]="getNewRemaining() === 0 && getTotalAmount() > 0" 
+                          [class.partial]="getNewRemaining() > 0 && getTotalAmount() > 0"
+                          [class.pending]="getTotalAmount() === 0">
+                      {{ getPaymentStatusLabel() }}
+                    </span>
                   </span>
-                </span>
-              </div>
-              <div class="info-item full-width" *ngIf="paymentForm.get('note')?.value">
-                <span class="info-label">الملاحظات:</span>
-                <span class="info-value">{{ paymentForm.get('note')?.value }}</span>
+                </div>
+                <div class="info-item full-width" *ngIf="paymentForm.get('note')?.value">
+                  <span class="info-label">الملاحظات:</span>
+                  <span class="info-value">{{ paymentForm.get('note')?.value }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -344,7 +400,7 @@
   <mat-divider></mat-divider>
 
   <!-- Actions -->
-  <div class="wizard-actions">
+  <div class="wizard-actions" *ngIf="!showSuccess">
     <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
       <mat-icon>close</mat-icon> إلغاء
     </button>
@@ -362,6 +418,18 @@
         <mat-icon *ngIf="!isSubmitting">check</mat-icon>
         <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
         {{ isEditMode ? 'تحديث' : 'إضافة' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Actions -->
+  <div class="wizard-actions success-actions" *ngIf="showSuccess">
+    <div class="action-buttons full-width">
+      <button mat-raised-button color="primary" (click)="printReceiptFromSuccess()" class="receipt-btn">
+        <mat-icon>print</mat-icon> طباعة الإيصال
+      </button>
+      <button mat-raised-button (click)="closeAfterSuccess()" class="close-success-btn">
+        <mat-icon>check</mat-icon> إنهاء
       </button>
     </div>
   </div>

@@ -1,4 +1,8 @@
-/* Wizard Container */
+/* enrollment-payment-wizard-modal.component.css */
+
+/* ==========================================================================
+   WIZARD CONTAINER
+   ========================================================================== */
 .wizard-container {
   background: white;
   border-radius: 24px;
@@ -8,7 +12,9 @@
   flex-direction: column;
 }
 
-/* Header Styles */
+/* ==========================================================================
+   HEADER STYLES
+   ========================================================================== */
 .wizard-header {
   display: flex;
   justify-content: space-between;
@@ -16,6 +22,7 @@
   padding: 20px 24px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -46,7 +53,9 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Loading Overlay */
+/* ==========================================================================
+   LOADING OVERLAY
+   ========================================================================== */
 .loading-overlay {
   display: flex;
   justify-content: center;
@@ -54,10 +63,13 @@
   padding: 60px;
 }
 
-/* Wizard Steps */
+/* ==========================================================================
+   WIZARD STEPS
+   ========================================================================== */
 .wizard-steps {
   padding: 24px 24px 0;
   background: #f8fafc;
+  flex-shrink: 0;
 }
 
 .steps-container {
@@ -109,6 +121,7 @@
   margin-top: 8px;
   font-size: 12px;
   color: #64748b;
+  white-space: nowrap;
 }
 
 .step-item.active .step-label {
@@ -140,7 +153,9 @@
   background: #10b981;
 }
 
-/* Wizard Content */
+/* ==========================================================================
+   WIZARD CONTENT
+   ========================================================================== */
 .wizard-content {
   flex: 1;
   overflow-y: auto;
@@ -167,7 +182,9 @@
   background: #94a3b8;
 }
 
-/* Step Content */
+/* ==========================================================================
+   STEP CONTENT
+   ========================================================================== */
 .step-content {
   animation: fadeIn 0.3s ease;
 }
@@ -211,7 +228,9 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-/* Form Section */
+/* ==========================================================================
+   FORM SECTION
+   ========================================================================== */
 .form-section {
   margin-top: 16px;
 }
@@ -228,13 +247,21 @@
   margin-bottom: 16px;
 }
 
-/* Enrollment Preview */
+/* ==========================================================================
+   ENROLLMENT PREVIEW
+   ========================================================================== */
 .enrollment-preview {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border-radius: 16px;
   padding: 16px;
   margin-top: 16px;
   border: 1px solid #bae6fd;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.enrollment-preview:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .preview-header {
@@ -285,7 +312,9 @@
   font-weight: 600;
 }
 
-/* Payment Status Info Card */
+/* ==========================================================================
+   PAYMENT STATUS INFO CARD
+   ========================================================================== */
 .payment-status-info {
   margin-bottom: 20px;
 }
@@ -327,13 +356,21 @@
   color: #0369a1;
 }
 
-/* Payment Summary */
+/* ==========================================================================
+   PAYMENT SUMMARY
+   ========================================================================== */
 .payment-summary {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   border-radius: 16px;
   padding: 16px;
   margin-top: 16px;
   border: 1px solid #fcd34d;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payment-summary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .summary-header {
@@ -392,12 +429,20 @@
   margin: 8px 0;
 }
 
-/* Confirmation Card */
+/* ==========================================================================
+   CONFIRMATION CARD
+   ========================================================================== */
 .confirmation-card {
   background: #f8fafc;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.confirmation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .confirmation-section {
@@ -456,7 +501,9 @@
   color: #059669;
 }
 
-/* Status Badge */
+/* ==========================================================================
+   STATUS BADGE
+   ========================================================================== */
 .status-badge {
   padding: 4px 12px;
   border-radius: 20px;
@@ -480,7 +527,135 @@
   color: #3730a3;
 }
 
-/* Wizard Actions */
+/* ==========================================================================
+   SUCCESS CONTAINER
+   ========================================================================== */
+.success-container {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.success-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #10b981;
+  margin: 0 auto 16px;
+  animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-container h2 {
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.success-container p {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+/* ==========================================================================
+   RECEIPT ACTIONS
+   ========================================================================== */
+.receipt-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.receipt-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0 24px;
+  height: 48px;
+}
+
+.receipt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.close-success-btn {
+  height: 48px;
+  padding: 0 24px;
+}
+
+/* ==========================================================================
+   QUICK RECEIPT PREVIEW
+   ========================================================================== */
+.quick-receipt-preview {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 350px;
+  margin: 0 auto;
+  text-align: right;
+  border: 1px solid #e2e8f0;
+}
+
+.preview-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #eef2f6;
+}
+
+.preview-title mat-icon {
+  color: #667eea;
+}
+
+.quick-receipt-preview .preview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 14px;
+}
+
+.quick-receipt-preview .preview-row:last-child {
+  border-bottom: none;
+}
+
+.quick-receipt-preview .preview-row strong.zero {
+  color: #059669;
+}
+
+.quick-receipt-preview .preview-row .note-text {
+  color: #4b5563;
+  font-size: 13px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   WIZARD ACTIONS
+   ========================================================================== */
 .wizard-actions {
   display: flex;
   justify-content: space-between;
@@ -488,6 +663,7 @@
   padding: 16px 24px;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .action-buttons {
@@ -495,7 +671,20 @@
   gap: 12px;
 }
 
-/* Responsive Design */
+.action-buttons.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+.wizard-actions.success-actions {
+  justify-content: center;
+  background: #f0fdf4;
+  border-top-color: #bbf7d0;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
 @media (max-width: 768px) {
   .wizard-container {
     border-radius: 16px;
@@ -554,6 +743,7 @@
   .action-buttons {
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
   }
   
   .step-title h3 {
@@ -563,66 +753,216 @@
   .confirmation-section {
     padding: 16px;
   }
+  
+  .receipt-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .receipt-btn,
+  .close-success-btn {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .quick-receipt-preview {
+    max-width: 100%;
+  }
+
+  .wizard-steps {
+    padding: 16px 12px 0;
+  }
 }
 
-/* Input number spinner removal */
+@media (max-width: 480px) {
+  .wizard-header h2 {
+    font-size: 14px;
+  }
+  
+  .header-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+  
+  .step-label .step-icon {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+  }
+  
+  .step-line {
+    top: 14px;
+  }
+  
+  .wizard-content {
+    padding: 12px;
+    max-height: calc(95vh - 160px);
+  }
+  
+  .wizard-actions {
+    padding: 10px 12px;
+  }
+  
+  .action-buttons button {
+    font-size: 12px;
+    padding: 0 12px;
+    height: 36px;
+  }
+  
+  .success-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .success-container h2 {
+    font-size: 18px;
+  }
+  
+  .confirmation-section {
+    padding: 12px;
+  }
+}
+
+/* ==========================================================================
+   INPUT NUMBER SPINNER REMOVAL
+   ========================================================================== */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   opacity: 0.5;
 }
 
-/* Disabled input styles */
+/* ==========================================================================
+   DISABLED INPUT STYLES
+   ========================================================================== */
 input:read-only {
   background-color: #f1f5f9;
   cursor: not-allowed;
 }
 
-/* Animation for step transitions */
-.step-content {
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Hover effects for cards */
-.enrollment-preview:hover,
-.payment-summary:hover,
-.confirmation-card:hover {
-  transform: translateY(-2px);
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Print styles */
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
 @media print {
   .wizard-header,
   .wizard-steps,
   .wizard-actions,
   .close-btn,
-  .step-line {
-    display: none;
+  .step-line,
+  .receipt-actions {
+    display: none !important;
   }
   
   .wizard-container {
-    max-height: none;
-    padding: 20px;
+    max-height: none !important;
+    padding: 20px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
   
   .wizard-content {
-    max-height: none;
-    overflow: visible;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
   }
   
-  .confirmation-card {
-    break-inside: avoid;
+  .confirmation-card,
+  .enrollment-preview,
+  .payment-summary,
+  .quick-receipt-preview {
+    break-inside: avoid !important;
+    box-shadow: none !important;
+    transform: none !important;
   }
+  
+  .success-container {
+    padding: 0 !important;
+  }
+  
+  .success-icon {
+    animation: none !important;
+  }
+  
+  .status-badge {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .enrollment-preview,
+  .payment-summary,
+  .confirmation-card {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* ==========================================================================
+   MATERIAL OVERRIDES
+   ========================================================================== */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+  color: #d1d5db !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
+  color: #667eea !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #667eea !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-label {
+  color: #6b7280 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-label {
+  color: #667eea !important;
+}
+
+::ng-deep .mat-select-value-text {
+  color: #1e293b !important;
+}
+
+::ng-deep .mat-option {
+  direction: rtl !important;
+  font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif !important;
+}
+
+::ng-deep .mat-option.mat-active {
+  background: #eef2ff !important;
+}
+
+::ng-deep .mat-option:hover {
+  background: #f5f3ff !important;
+}
+
+::ng-deep .mat-form-field-infix {
+  direction: rtl !important;
+}
+
+::ng-deep .mat-input-element {
+  direction: rtl !important;
+}
+
+::ng-deep .mat-datepicker-toggle {
+  color: #6b7280 !important;
+}
+
+::ng-deep .mat-datepicker-toggle:hover {
+  color: #667eea !important;
+}
+
+::ng-deep .mat-form-field-suffix {
+  color: #94a3b8 !important;
+}
+
+::ng-deep .mat-form-field-suffix:hover {
+  color: #667eea !important;
 }

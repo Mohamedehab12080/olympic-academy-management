@@ -44,6 +44,15 @@
             [required]="false"
             class="filter-select">
           </app-searchable-select>
+
+          <app-searchable-select
+            [ngModel]="selectedDay"
+            (ngModelChange)="selectedDay = $event; loadAttendances()"
+            label="اليوم"
+            [options]="dayOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
         </div>
 
         <div class="filters-row">
@@ -78,6 +87,12 @@
                 <mat-icon>qr_code_scanner</mat-icon>
               </button>
               <span class="barcode-label">بحث بالباركود</span>
+              <span *ngIf="isBarcodeMode && barcodeSearch" class="barcode-active-filter">
+                ({{ barcodeSearch }})
+                <button mat-icon-button (click)="clearBarcodeFilter()" matTooltip="إزالة الفلتر" class="barcode-clear-filter-btn">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </span>
             </div>
             
             <div class="barcode-input-wrapper" *ngIf="isBarcodeMode">
@@ -88,13 +103,13 @@
                        [(ngModel)]="barcodeSearch" 
                        (keydown)="onBarcodeKeydown($event)"
                        placeholder="مسح الباركود أو إدخال رقم الهوية">
-                <mat-icon matSuffix>search</mat-icon>
+                <mat-icon matSuffix>qr_code_scanner</mat-icon>
               </mat-form-field>
               <button mat-raised-button color="primary" (click)="searchTraineeByBarcode()" class="barcode-search-btn">
                 <mat-icon>search</mat-icon>
                 بحث
               </button>
-              <button mat-icon-button (click)="toggleBarcodeMode()" matTooltip="إغلاق" class="barcode-close-btn">
+              <button mat-icon-button (click)="clearBarcodeFilter()" matTooltip="إلغاء" class="barcode-close-btn">
                 <mat-icon>close</mat-icon>
               </button>
             </div>
@@ -175,56 +190,100 @@
       <div class="table-header" *ngIf="dataSource.data.length > 0">
         <div class="records-count">
           <mat-icon>info</mat-icon>
-          <span>عدد السجلات: {{ dataSource.data.length }} سجل</span>
+          <span>عدد السجلات: {{ totalItems }} سجل</span>
+          <span class="page-info" *ngIf="totalItems > 0">
+            | الصفحة {{ currentPage + 1 }} من {{ getTotalPages() }}
+          </span>
         </div>
       </div>
 
       <div class="table-wrapper">
         <table mat-table [dataSource]="dataSource" matSort class="data-table">
+          <!-- Index Column -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
             <td mat-cell *matCellDef="let a; let i = index">
-              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+              {{ (currentPage * pageSize) + i + 1 }}
             </td>
           </ng-container>
 
+          <!-- Trainee Image Column -->
+          <ng-container matColumnDef="traineeImage">
+            <th mat-header-cell *matHeaderCellDef>الصورة</th>
+            <td mat-cell *matCellDef="let a">
+              <div class="trainee-image-container">
+                <ng-container *ngIf="getTraineeImage(a.trainee) as imageUrl">
+                  <img 
+                    [src]="imageUrl" 
+                    [alt]="getTraineeDisplayName(a.trainee)"
+                    class="trainee-avatar"
+                    (error)="onImageError(a.trainee)"
+                    loading="lazy"
+                  />
+                </ng-container>
+                <div *ngIf="!getTraineeImage(a.trainee)" class="trainee-avatar-placeholder">
+                  {{ getInitials(getTraineeDisplayName(a.trainee)) }}
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Trainee National ID Column -->
+          <ng-container matColumnDef="traineeNationalId">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>رقم الهوية</th>
+            <td mat-cell *matCellDef="let a" class="national-id-cell">
+              {{ getTraineeNationalId(a.trainee) }}
+            </td>
+          </ng-container>
+
+          <!-- Trainee Name Column -->
           <ng-container matColumnDef="traineeName">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>المتدرب</th>
             <td mat-cell *matCellDef="let a" class="clickable-cell">
-              <strong>{{ a.traineeName || '-' }}</strong>
+              <div class="trainee-info">
+                <span>{{ getTraineeDisplayName(a.trainee) }}</span>
+              </div>
             </td>
           </ng-container>
 
+          <!-- Course Title Column -->
           <ng-container matColumnDef="courseTitle">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الدورة</th>
             <td mat-cell *matCellDef="let a">{{ a.courseTitle || '-' }}</td>
           </ng-container>
 
+          <!-- Session Title Column -->
           <ng-container matColumnDef="sessionTitle">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الجلسة</th>
             <td mat-cell *matCellDef="let a">{{ a.sessionTitle || '-' }}</td>
           </ng-container>
 
-          <ng-container matColumnDef="sessionDate">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الجلسة</th>
+          <!-- Session Day Column - NEW: displays sessionDay instead of sessionDate -->
+          <ng-container matColumnDef="sessionDay">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>اليوم</th>
             <td mat-cell *matCellDef="let a">
-              <div class="date-info">
-                <mat-icon>event</mat-icon>
-                <span>{{ a.sessionDate | date:'dd/MM/yyyy' }}</span>
+              <div class="day-info">
+                <mat-icon>today</mat-icon>
+                <span>{{ getDayDisplay(a.sessionDay) }}</span>
               </div>
             </td>
           </ng-container>
 
+          <!-- Status Column -->
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
             <td mat-cell *matCellDef="let a">
-              <span class="status-badge" [class.present]="a.status?.id===1" [class.absent]="a.status?.id===2" [class.late]="a.status?.id===3" [class.excused]="a.status?.id===4">
+              <span class="status-badge" 
+                    [class.present]="a.status?.title === 'حاضر'" 
+                    [class.absent]="a.status?.title === 'غائب'" 
+                    [class.late]="a.status?.title === 'متأخر'" 
+                    [class.excused]="a.status?.title === 'معتذر'">
                 {{ a.status?.title || '-' }}
               </span>
             </td>
           </ng-container>
 
-          <!-- UPDATED: Check In Time with 12-hour format -->
+          <!-- Check In Time Column -->
           <ng-container matColumnDef="checkInTime">
             <th mat-header-cell *matHeaderCellDef>وقت الدخول</th>
             <td mat-cell *matCellDef="let a">
@@ -235,7 +294,7 @@
             </td>
           </ng-container>
 
-          <!-- UPDATED: Check Out Time with 12-hour format -->
+          <!-- Check Out Time Column -->
           <ng-container matColumnDef="checkOutTime">
             <th mat-header-cell *matHeaderCellDef>وقت الخروج</th>
             <td mat-cell *matCellDef="let a">
@@ -246,6 +305,7 @@
             </td>
           </ng-container>
 
+          <!-- Late Time Column -->
           <ng-container matColumnDef="lateTime">
             <th mat-header-cell *matHeaderCellDef>وقت التأخير</th>
             <td mat-cell *matCellDef="let a">
@@ -258,6 +318,7 @@
             </td>
           </ng-container>
 
+          <!-- Actions Column -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
             <td mat-cell *matCellDef="let a">
@@ -278,6 +339,7 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
+          <!-- No Data Row -->
           <tr class="mat-row no-data-row" *matNoDataRow>
             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
               <div class="no-data-message">
@@ -293,7 +355,17 @@
         </table>
       </div>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
+      <!-- Paginator -->
+      <mat-paginator 
+        #paginator 
+        [length]="totalItems"
+        [pageSize]="pageSize" 
+        [pageSizeOptions]="pageSizeOptions" 
+        [pageIndex]="currentPage"
+        (page)="onPageChange($event)"
+        showFirstLastButtons 
+        class="custom-paginator">
+      </mat-paginator>
     </div>
   </mat-card>
 </div>

@@ -33,7 +33,7 @@ public class TraineeListItem implements Serializable {
 
     private Boolean isActive;
 
-    private LookupVTO academicYear;
+    private String academicYear;
 
     private LookupVTO gender;
 
@@ -142,7 +142,7 @@ public class TraineeListItem implements Serializable {
         this.isActive = isActive;
     }
 
-    public TraineeListItem academicYear(LookupVTO academicYear) {
+    public TraineeListItem academicYear(String academicYear) {
         this.academicYear = academicYear;
         return this;
     }
@@ -152,14 +152,14 @@ public class TraineeListItem implements Serializable {
      *
      * @return academicYear
      */
-    @Valid
+
     @Schema(name = "academicYear", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("academicYear")
-    public LookupVTO getAcademicYear() {
+    public String getAcademicYear() {
         return academicYear;
     }
 
-    public void setAcademicYear(LookupVTO academicYear) {
+    public void setAcademicYear(String academicYear) {
         this.academicYear = academicYear;
     }
 

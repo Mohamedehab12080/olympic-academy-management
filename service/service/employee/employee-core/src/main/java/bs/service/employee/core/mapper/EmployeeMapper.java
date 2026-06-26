@@ -159,7 +159,6 @@ public abstract class EmployeeMapper {
     public abstract LookupVTO toLookupVTO(SessionStatus sessionStatus);
 
     @Mapping(target = "course.id", source = "courseId")
-    @Mapping(target = "trainer.id", source = "trainerId")
     @Mapping(target = "place.id", source = "placeId")
     @Mapping(target = "status", source = "status.id")
     public abstract CourseSession toCourseSession(CourseSessionDTO courseSessionDTO);

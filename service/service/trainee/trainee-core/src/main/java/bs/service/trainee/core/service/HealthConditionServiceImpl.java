@@ -93,7 +93,7 @@ public class HealthConditionServiceImpl implements HealthConditionService {
 
         return HealthConditionResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(healthConditionRepository.countAllByFilters(filter))
                 .build();
     }
 }

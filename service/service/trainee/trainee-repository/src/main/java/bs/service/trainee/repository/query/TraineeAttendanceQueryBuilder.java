@@ -25,7 +25,6 @@ public class TraineeAttendanceQueryBuilder extends AbstractQueryBuilderV2<Traine
             return qbConditions;
         }
 
-        // شرط الحذف (isDeleted = false)
         qbConditions.add(QBCondition.builder()
                 .placeHolder("isDeleted")
                 .value(false)
@@ -38,6 +37,27 @@ public class TraineeAttendanceQueryBuilder extends AbstractQueryBuilderV2<Traine
                     .placeHolder("traineeId")
                     .value(filters.getTraineeId())
                     .condition("item.trainee.id = :PH")
+                    .build());
+        }
+
+        if (filters.getQuickSearch() != null && !filters.getQuickSearch().trim().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("fullName").value("%" + filters.getQuickSearch() + "%")
+                    .condition("(LOWER(item.trainee.fullName) LIKE LOWER(:PH))").build());
+
+
+        if (filters.getTraineeNationalId() != null) {
+            qbConditions.add(QBCondition.builder()
+                    .placeHolder("traineeNationalId")
+                    .value(filters.getTraineeNationalId())
+                    .condition("item.trainee.nationalId = :PH")
+                    .build());
+        }
+
+        if (filters.getSessionDay() != null) {
+            qbConditions.add(QBCondition.builder()
+                    .placeHolder("sessionDay")
+                    .value(filters.getSessionDay())
+                    .condition("item.courseSession.sessionDay = :PH")
                     .build());
         }
 
@@ -60,7 +80,7 @@ public class TraineeAttendanceQueryBuilder extends AbstractQueryBuilderV2<Traine
         }
 
         // فلترة حسب status
-        if (filters.getStatus() != null && !filters.getStatus().trim().isEmpty()) {
+        if (filters.getStatus() != null) {
             qbConditions.add(QBCondition.builder()
                     .placeHolder("status")
                     .value(filters.getStatus())

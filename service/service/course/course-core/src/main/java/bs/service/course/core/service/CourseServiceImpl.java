@@ -57,6 +57,11 @@ public class CourseServiceImpl implements CourseService {
     public NewRecordVTO updateCourse(Integer courseId, CourseDTO courseDTO) {
         Course course =courseRepository.selectById(courseId).orElseThrow(()-> new BusinessException(COURSE_NOT_FOUND,courseId));
         Course courseToUpdate=courseMapper.toCourse(courseDTO);
+        courseToUpdate.setId(courseId);
+        courseToUpdate.setIsDeleted(false);
+        courseToUpdate.setIsActive(course.getIsActive());
+        courseToUpdate.setCreatedOn(course.getCreatedOn());
+        courseToUpdate.setCreatedBy(course.getCreatedBy());
         courseRepository.update(courseToUpdate);
         return NewRecordVTO.builder().id(courseId).build();
     }

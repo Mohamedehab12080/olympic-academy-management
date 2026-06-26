@@ -108,7 +108,7 @@ public class EnrollmentRefundServiceImpl implements EnrollmentRefundService {
 
         return EnrollmentRefundResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(enrollmentRefundRepository.countAllByFilters(filter))
                 .build();
     }
 }

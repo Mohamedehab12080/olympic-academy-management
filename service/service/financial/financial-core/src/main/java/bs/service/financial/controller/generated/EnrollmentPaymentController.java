@@ -75,6 +75,8 @@ public interface EnrollmentPaymentController {
     /**
      * GET /enrollment-payments : Retrieve list of enrollment payments
      *
+     * @param traineeNationalId
+     *            (optional)
      * @param enrollmentId
      *            (optional)
      * @param courseId
@@ -86,6 +88,8 @@ public interface EnrollmentPaymentController {
      * @param paymentDateFrom
      *            (optional)
      * @param paymentDateTo
+     *            (optional)
+     * @param quickSearch
      *            (optional)
      * @param pageNum
      *            (optional, default to 0)
@@ -106,12 +110,14 @@ public interface EnrollmentPaymentController {
     @RequestMapping(method = RequestMethod.GET, value = "/enrollment-payments", produces = { "application/json" })
 
     ResponseEntity<EnrollmentPaymentResultSet> _getAllEnrollmentPaymentsByFilter(
+            @Parameter(name = "traineeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeNationalId", required = false) String traineeNationalId,
             @Parameter(name = "enrollmentId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enrollmentId", required = false) Integer enrollmentId,
             @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
             @Parameter(name = "paymentMethodId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentMethodId", required = false) Integer paymentMethodId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid PaymentStatus status,
             @Parameter(name = "paymentDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate paymentDateFrom,
             @Parameter(name = "paymentDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate paymentDateTo,
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
             @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,

@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 public interface TrainerCourseController {
 
     /**
-     * POST /trainers/courses : Assign a course to a trainer
+     * POST /trainers/{trainerId}/courses : Assign a course to a trainer
      *
      * @param trainerId
      *            (required)
@@ -46,7 +46,7 @@ public interface TrainerCourseController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = NewRecordVTO.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.POST, value = "/trainers/courses", produces = {
+    @RequestMapping(method = RequestMethod.POST, value = "/trainers/{trainerId}/courses", produces = {
             "application/json" }, consumes = { "application/json" })
 
     ResponseEntity<NewRecordVTO> _assignCourseToTrainer(
@@ -90,11 +90,9 @@ public interface TrainerCourseController {
             @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
-     * DELETE /trainers/{trainerId}/courses/{courseId} : Unassign a course from a trainer
+     * DELETE /trainers/{trainerCourseId}/course : Unassign a course from a trainer
      *
-     * @param trainerId
-     *            (required)
-     * @param courseId
+     * @param trainerCourseId
      *            (required)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
@@ -103,11 +101,10 @@ public interface TrainerCourseController {
             "TrainerCourse" }, responses = { @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.DELETE, value = "/trainers/{trainerId}/courses/{courseId}", produces = {
+    @RequestMapping(method = RequestMethod.DELETE, value = "/trainers/{trainerCourseId}/course", produces = {
             "application/json" })
 
     ResponseEntity<Void> _unassignCourseFromTrainer(
-            @Parameter(name = "trainerId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("trainerId") Integer trainerId,
-            @Parameter(name = "courseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseId") Integer courseId);
+            @Parameter(name = "trainerCourseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("trainerCourseId") Integer trainerCourseId);
 
 }

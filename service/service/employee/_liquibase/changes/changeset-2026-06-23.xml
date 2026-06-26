@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <dropUniqueConstraint
+                constraintName="uq_employee_course"
+                tableName="oa_course_session"/>
+
+        <addUniqueConstraint
+                constraintName="uq_employee_course_session_day"
+                tableName="oa_course_session"
+                columnNames="employee_id, course_id, session_day, start_time, end_time"/>
+    </changeSet>
+</databaseChangeLog>

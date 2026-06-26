@@ -23,16 +23,6 @@
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
-          <!-- Gender Filter -->
-          <mat-form-field appearance="outline" class="filter-select">
-            <mat-label>الجنس</mat-label>
-            <mat-select [(ngModel)]="genderFilter" (selectionChange)="onGenderChange($event.value)">
-              <mat-option *ngFor="let option of genderOptions" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
           <!-- Status Filter -->
           <mat-form-field appearance="outline" class="filter-select">
             <mat-label>الحالة</mat-label>
@@ -43,14 +33,12 @@
             </mat-select>
           </mat-form-field>
 
-          <!-- Academic Year Filter -->
-          <mat-form-field appearance="outline" class="filter-select">
+          <!-- Academic Year Filter - Text input -->
+          <mat-form-field appearance="outline" class="search-field">
             <mat-label>السنة الدراسية</mat-label>
-            <mat-select [(ngModel)]="academicYearFilter" (selectionChange)="onAcademicYearChange($event.value)">
-              <mat-option *ngFor="let option of academicYearOptions" [value]="option.value">
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
+            <input matInput [(ngModel)]="academicYearFilter" (ngModelChange)="onAcademicYearChange($event)" placeholder="أدخل السنة الدراسية...">
+            <mat-icon matSuffix>school</mat-icon>
+            <mat-hint>مثال: 1, 2, 3, 4</mat-hint>
           </mat-form-field>
         </div>
 
@@ -60,16 +48,16 @@
               <mat-icon>refresh</mat-icon>
               مسح الكل
             </button>
-            <!-- NEW: Print Cards Button -->
-            <button mat-stroked-button color="primary" (click)="printTraineeCards()" [disabled]="dataSource.filteredData.length === 0" class="export-btn cards-btn">
+            <!-- Print Cards Button -->
+            <button mat-stroked-button color="primary" (click)="printTraineeCards()" [disabled]="allTrainees.length === 0" class="export-btn cards-btn">
               <mat-icon>credit_card</mat-icon>
               طباعة البطاقات
             </button>
-            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.filteredData.length === 0" class="export-btn">
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allTrainees.length === 0" class="export-btn">
               <mat-icon>grid_on</mat-icon>
               تصدير Excel
             </button>
-            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="dataSource.filteredData.length === 0" class="export-btn">
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allTrainees.length === 0" class="export-btn">
               <mat-icon>picture_as_pdf</mat-icon>
               تصدير PDF
             </button>
@@ -83,7 +71,7 @@
       <div class="stat-card">
         <div class="stat-icon">👥</div>
         <div class="stat-info">
-          <h3>{{ allTrainees.length }}</h3>
+          <h3>{{ totalItems }}</h3>
           <p>إجمالي المتدربين</p>
         </div>
       </div>
@@ -111,20 +99,20 @@
 
     <!-- Table -->
     <div class="table-section" *ngIf="!isLoading">
-      <div class="table-header" *ngIf="dataSource.filteredData.length > 0">
+      <div class="table-header" *ngIf="allTrainees.length > 0">
         <div class="records-count">
           <mat-icon>info</mat-icon>
-          <span>عدد المتدربين: {{ dataSource.filteredData.length }} متدرب</span>
+          <span>عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} متدرب</span>
         </div>
       </div>
 
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="loadTrainees()">
+        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="onSortChange($event)">
           <!-- Index -->
           <ng-container matColumnDef="index">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
             <td mat-cell *matCellDef="let trainee; let i = index">
-              {{ (paginator?.pageIndex || 0) * (paginator?.pageSize || 10) + i + 1 }}
+              {{ (currentPage * pageSize) + i + 1 }}
             </td>
           </ng-container>
 
@@ -162,7 +150,7 @@
           <ng-container matColumnDef="academicYear">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>السنة الدراسية</th>
             <td mat-cell *matCellDef="let trainee">
-              <mat-chip>{{ trainee.academicYear?.title || '-' }}</mat-chip>
+              <mat-chip>{{ getAcademicYearDisplay(trainee.academicYear) }}</mat-chip>
             </td>
           </ng-container>
 
@@ -224,7 +212,57 @@
         </table>
       </div>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons class="custom-paginator"></mat-paginator>
+      <!-- Custom Pagination Controls -->
+      <div class="custom-pagination" *ngIf="totalItems > 0">
+        <div class="pagination-controls">
+          <button 
+            class="pagination-btn" 
+            (click)="goToFirstPage()" 
+            [disabled]="currentPage === 0"
+            matTooltip="الصفحة الأولى">
+            <mat-icon>first_page</mat-icon>
+          </button>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToPreviousPage()" 
+            [disabled]="currentPage === 0"
+            matTooltip="الصفحة السابقة">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          
+          <span class="page-info">
+            صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}
+          </span>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToNextPage()" 
+            matTooltip="الصفحة التالية">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="goToLastPage()" 
+            [disabled]="currentPage >= getTotalPages() - 1"
+            matTooltip="الصفحة الأخيرة">
+            <mat-icon>last_page</mat-icon>
+          </button>
+        </div>
+        
+        <div class="page-size-control">
+          <label>عرض:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+          <span>نتيجة</span>
+        </div>
+        
+        <div class="records-info">
+          عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} متدرب
+        </div>
+      </div>
     </div>
   </mat-card>
 </div>

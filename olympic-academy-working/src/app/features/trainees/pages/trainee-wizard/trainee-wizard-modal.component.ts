@@ -1,6 +1,6 @@
-// trainee-wizard-modal.component.ts
+// trainee-wizard-modal.component.ts - Updated with academic year as string
 
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -17,6 +17,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { Subject, takeUntil, forkJoin, finalize } from 'rxjs';
 
 import { TraineeService } from '../../../../core/services/trainee.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -24,11 +25,18 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { FileService } from '../../../../core/services/file.service';
 import { FileDomain } from '../../../../core/models/file.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
-import { TraineeContactDTO } from '../../../../core/models/trainee.model';
+import { 
+  TraineeContactDTO, 
+  TraineeContactVTO,
+  TraineeVTO 
+} from '../../../../core/models/trainee.model';
 import { EnrollmentWizardModalComponent } from '../../../enrollments/pages/enrollment-wizard/enrollment-wizard-modal.component';
 
 // ============ HELPER FUNCTIONS ============
 
+/**
+ * Map gender from any format to enum value
+ */
 function mapGenderToEnum(gender: any): string | null {
   if (!gender) return null;
   
@@ -36,7 +44,7 @@ function mapGenderToEnum(gender: any): string | null {
     const normalized = gender.trim();
     if (normalized === 'انثي' || normalized === 'أنثى' || 
         normalized === 'FEMALE' || normalized === 'female' ||
-        normalized === 'FEMALE' || normalized === '2') {
+        normalized === '2') {
       return 'FEMALE';
     }
     if (normalized === 'ذكر' || normalized === 'MALE' || normalized === 'male' || normalized === '1') {
@@ -74,51 +82,40 @@ function mapGenderToEnum(gender: any): string | null {
   return null;
 }
 
-function mapAcademicYearToEnum(academicYear: any): string | null {
-  if (!academicYear) return null;
-  
-  if (typeof academicYear === 'string') {
-    const normalized = academicYear.trim();
-    if (normalized === '1' || normalized === '_1') return '_1';
-    if (normalized === '2' || normalized === '_2') return '_2';
-    if (normalized === '3' || normalized === '_3') return '_3';
-    if (normalized === '4' || normalized === '_4') return '_4';
-    return null;
-  }
-  
-  if (typeof academicYear === 'object' && academicYear.title) {
-    const title = academicYear.title.trim();
-    if (title === '1' || title === '_1') return '_1';
-    if (title === '2' || title === '_2') return '_2';
-    if (title === '3' || title === '_3') return '_3';
-    if (title === '4' || title === '_4') return '_4';
-    return null;
-  }
-  
-  return null;
-}
-
+/**
+ * Map contact type from any format to enum value
+ */
 function mapContactTypeToEnum(contactType: any): string | null {
   if (!contactType) return null;
   
   if (typeof contactType === 'string') {
     const normalized = contactType.trim().toLowerCase();
-    if (normalized === 'email' || normalized === 'بريد إلكتروني') return 'EMAIL';
+    if (normalized === 'email' || normalized === 'بريد إلكتروني' || normalized === 'ايميل') return 'EMAIL';
     if (normalized === 'phone' || normalized === 'جوال' || normalized === 'هاتف') return 'PHONE';
     return null;
   }
   
-  if (typeof contactType === 'object' && contactType.title) {
-    const title = contactType.title.trim().toLowerCase();
-    if (title === 'email' || title === 'بريد إلكتروني') return 'EMAIL';
-    if (title === 'phone' || title === 'جوال' || title === 'هاتف') return 'PHONE';
-    return null;
+  if (typeof contactType === 'object') {
+    if (contactType.title) {
+      const title = contactType.title.trim().toLowerCase();
+      if (title === 'email' || title === 'بريد إلكتروني' || title === 'ايميل') return 'EMAIL';
+      if (title === 'phone' || title === 'جوال' || title === 'هاتف') return 'PHONE';
+    }
+    if (contactType.value) {
+      const value = contactType.value.trim().toUpperCase();
+      if (value === 'EMAIL') return 'EMAIL';
+      if (value === 'PHONE') return 'PHONE';
+    }
+    if (contactType.id !== undefined) {
+      if (contactType.id === 1) return 'EMAIL';
+      if (contactType.id === 2) return 'PHONE';
+    }
   }
   
   return null;
 }
 
-// ============ COMPONENT ============
+// ============ INTERFACES ============
 
 interface EnumMapping {
   id: number;
@@ -130,6 +127,16 @@ export interface TraineeWizardData {
   traineeId?: number;
   traineeData?: any;
 }
+
+interface ContactFormGroup {
+  id: number | null;
+  contactType: string | null;
+  contactValue: string;
+  isNew: boolean;
+  isDeleted: boolean;
+}
+
+// ============ COMPONENT ============
 
 @Component({
   selector: 'app-trainee-wizard-modal',
@@ -188,7 +195,7 @@ export interface TraineeWizardData {
             </ng-template>
             <div class="step-content">
               <form [formGroup]="basicInfoForm">
-                <!-- Image Upload using FileUploadComponent -->
+                <!-- Image Upload -->
                 <div class="image-upload-section">
                   <label class="upload-label">صورة المتدرب</label>
                   <app-file-upload
@@ -204,29 +211,28 @@ export interface TraineeWizardData {
                 <div class="form-grid">
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>الاسم الكامل *</mat-label>
-                    <input matInput formControlName="fullName">
+                    <input matInput formControlName="fullName" placeholder="أدخل الاسم الكامل">
                     <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('required')">الاسم مطلوب</mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('minlength')">الاسم يجب أن يكون على الأقل 3 أحرف</mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>رقم الهوية *</mat-label>
-                    <input matInput formControlName="nationalId" maxlength="14">
+                    <input matInput formControlName="nationalId" placeholder="أدخل رقم الهوية">
                     <mat-error *ngIf="basicInfoForm.get('nationalId')?.hasError('required')">رقم الهوية مطلوب</mat-error>
+                    <mat-error *ngIf="basicInfoForm.get('nationalId')?.hasError('pattern')">رقم الهوية يجب أن يحتوي على أرقام فقط</mat-error>
                   </mat-form-field>
 
+                  <!-- Academic Year as Text Input -->
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>السنة الدراسية</mat-label>
-                    <mat-select formControlName="academicYear">
-                      <mat-option [value]="null">لا يوجد</mat-option>
-                      <mat-option *ngFor="let year of academicYearOptions" [value]="year.enumName">
-                        {{ year.title }}
-                      </mat-option>
-                    </mat-select>
+                    <input matInput formControlName="academicYear" placeholder="مثال: 1, 2, 3, 4">
+                    <mat-hint>أدخل السنة الدراسية (1-4)</mat-hint>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>تاريخ الميلاد</mat-label>
-                    <input matInput [matDatepicker]="birthPicker" formControlName="birthDate">
+                    <input matInput [matDatepicker]="birthPicker" formControlName="birthDate" placeholder="اختر تاريخ الميلاد">
                     <mat-datepicker-toggle matSuffix [for]="birthPicker"></mat-datepicker-toggle>
                     <mat-datepicker #birthPicker></mat-datepicker>
                   </mat-form-field>
@@ -243,7 +249,7 @@ export interface TraineeWizardData {
 
                   <mat-form-field appearance="outline" class="full-width">
                     <mat-label>العنوان</mat-label>
-                    <input matInput formControlName="address">
+                    <input matInput formControlName="address" placeholder="أدخل العنوان">
                   </mat-form-field>
 
                   <!-- Status Toggle - Only visible in Edit Mode -->
@@ -272,7 +278,7 @@ export interface TraineeWizardData {
           </mat-step>
 
           <!-- Step 2: Contacts -->
-          <mat-step>
+          <mat-step [stepControl]="contactsForm">
             <ng-template matStepLabel>
               <div class="step-label">
                 <mat-icon>contact_phone</mat-icon>
@@ -286,6 +292,7 @@ export interface TraineeWizardData {
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>نوع جهة الاتصال</mat-label>
                       <mat-select formControlName="contactType">
+                        <mat-option [value]="null">اختر النوع</mat-option>
                         <mat-option *ngFor="let type of contactTypeOptions" [value]="type.enumName">
                           {{ type.title }}
                         </mat-option>
@@ -295,13 +302,27 @@ export interface TraineeWizardData {
 
                     <mat-form-field appearance="outline" class="contact-value">
                       <mat-label>القيمة</mat-label>
-                      <input matInput formControlName="contactValue" placeholder="مثال: 05xxxxxxxx">
+                      <input matInput formControlName="contactValue" placeholder="مثال: 05xxxxxxxx أو example@email.com">
                       <mat-error *ngIf="contact.get('contactValue')?.hasError('required')">القيمة مطلوبة</mat-error>
                     </mat-form-field>
 
-                    <button mat-icon-button color="warn" (click)="removeContact(i)" type="button" matTooltip="حذف" *ngIf="contactsArray.length > 1">
-                      <mat-icon>delete</mat-icon>
-                    </button>
+                    <div class="contact-actions">
+                      <button 
+                        mat-icon-button 
+                        color="warn" 
+                        (click)="removeContact(i)" 
+                        type="button" 
+                        matTooltip="حذف" 
+                        *ngIf="contactsArray.length > 1">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                      <span class="contact-status" *ngIf="isEditMode && contact.get('id')?.value">
+                        <mat-icon class="status-icon existing">check_circle</mat-icon>
+                      </span>
+                      <span class="contact-status" *ngIf="isEditMode && !contact.get('id')?.value">
+                        <mat-icon class="status-icon new">add_circle</mat-icon>
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <button mat-stroked-button type="button" (click)="addContact()" class="add-contact-btn">
@@ -333,12 +354,12 @@ export interface TraineeWizardData {
                   <div *ngFor="let cert of certificatesArray.controls; let i=index" [formGroupName]="i" class="certificate-row">
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>اسم الشهادة</mat-label>
-                      <input matInput formControlName="certificateName">
+                      <input matInput formControlName="certificateName" placeholder="أدخل اسم الشهادة">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>رقم الشهادة</mat-label>
-                      <input matInput formControlName="certificateNumber">
+                      <input matInput formControlName="certificateNumber" placeholder="أدخل رقم الشهادة">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
@@ -353,14 +374,14 @@ export interface TraineeWizardData {
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>تاريخ الإصدار</mat-label>
-                      <input matInput [matDatepicker]="issuePicker" formControlName="issueDate">
+                      <input matInput [matDatepicker]="issuePicker" formControlName="issueDate" placeholder="اختر التاريخ">
                       <mat-datepicker-toggle matSuffix [for]="issuePicker"></mat-datepicker-toggle>
                       <mat-datepicker #issuePicker></mat-datepicker>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>الدرجة</mat-label>
-                      <input matInput formControlName="grade">
+                      <input matInput formControlName="grade" placeholder="أدخل الدرجة">
                     </mat-form-field>
 
                     <button mat-icon-button color="warn" (click)="removeCertificate(i)" type="button" matTooltip="حذف">
@@ -397,22 +418,22 @@ export interface TraineeWizardData {
                   <div *ngFor="let condition of healthConditionsArray.controls; let i=index" [formGroupName]="i" class="condition-row">
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>العنوان</mat-label>
-                      <input matInput formControlName="title">
+                      <input matInput formControlName="title" placeholder="أدخل عنوان الحالة الصحية">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>الوصف</mat-label>
-                      <input matInput formControlName="description">
+                      <input matInput formControlName="description" placeholder="أدخل وصف الحالة">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>العلاج</mat-label>
-                      <input matInput formControlName="medication">
+                      <input matInput formControlName="medication" placeholder="أدخل العلاج المستخدم">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
                       <mat-label>ملاحظات</mat-label>
-                      <input matInput formControlName="note">
+                      <input matInput formControlName="note" placeholder="أي ملاحظات إضافية">
                     </mat-form-field>
 
                     <button mat-icon-button color="warn" (click)="removeHealthCondition(i)" type="button" matTooltip="حذف">
@@ -452,7 +473,7 @@ export interface TraineeWizardData {
                   <div class="summary-grid">
                     <div><strong>الاسم:</strong> {{ basicInfoForm.get('fullName')?.value }}</div>
                     <div><strong>رقم الهوية:</strong> {{ basicInfoForm.get('nationalId')?.value }}</div>
-                    <div><strong>السنة الدراسية:</strong> {{ getAcademicYearTitle(basicInfoForm.get('academicYear')?.value) || '-' }}</div>
+                    <div><strong>السنة الدراسية:</strong> {{ basicInfoForm.get('academicYear')?.value || '-' }}</div>
                     <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
                     <div><strong>الجنس:</strong> {{ getGenderTitle(basicInfoForm.get('gender')?.value) || '-' }}</div>
                     <div><strong>العنوان:</strong> {{ basicInfoForm.get('address')?.value || '-' }}</div>
@@ -465,6 +486,22 @@ export interface TraineeWizardData {
                   <div class="contacts-summary">
                     <div *ngFor="let contact of getContactsList()" class="summary-item">
                       <strong>{{ getContactTypeTitle(contact.contactType) }}:</strong> {{ contact.contactValue }}
+                      <span class="contact-action-badge" *ngIf="isEditMode && contact.id">
+                        <mat-icon class="existing-badge">check_circle</mat-icon>
+                      </span>
+                      <span class="contact-action-badge" *ngIf="isEditMode && !contact.id">
+                        <mat-icon class="new-badge">add_circle</mat-icon>
+                      </span>
+                    </div>
+                  </div>
+                </mat-card>
+
+                <mat-card class="summary-card" *ngIf="getDeletedContacts().length > 0 && isEditMode">
+                  <mat-card-title class="deleted-title">جهات اتصال سيتم حذفها</mat-card-title>
+                  <div class="contacts-summary">
+                    <div *ngFor="let contact of getDeletedContacts()" class="summary-item deleted-item">
+                      <strong>{{ getContactTypeTitle(contact.contactType) }}:</strong> {{ contact.contactValue }}
+                      <mat-icon class="deleted-badge">delete_forever</mat-icon>
                     </div>
                   </div>
                 </mat-card>
@@ -685,10 +722,37 @@ export interface TraineeWizardData {
       gap: 16px;
       align-items: center;
       margin-bottom: 16px;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
     }
 
     .contact-value {
       width: 100%;
+    }
+
+    .contact-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contact-status {
+      display: flex;
+      align-items: center;
+    }
+
+    .status-icon {
+      font-size: 20px;
+    }
+
+    .status-icon.existing {
+      color: #10b981;
+    }
+
+    .status-icon.new {
+      color: #3b82f6;
     }
 
     .add-contact-btn, .add-cert-btn, .add-condition-btn {
@@ -701,6 +765,10 @@ export interface TraineeWizardData {
       gap: 12px;
       align-items: center;
       margin-bottom: 16px;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
     }
 
     .summary-section {
@@ -720,6 +788,10 @@ export interface TraineeWizardData {
       margin-bottom: 12px;
     }
 
+    .summary-card .deleted-title {
+      color: #ef4444;
+    }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -729,6 +801,34 @@ export interface TraineeWizardData {
     .summary-item {
       padding: 4px 0;
       border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-item.deleted-item {
+      color: #ef4444;
+      text-decoration: line-through;
+    }
+
+    .contact-action-badge {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .existing-badge {
+      color: #10b981;
+      font-size: 16px;
+    }
+
+    .new-badge {
+      color: #3b82f6;
+      font-size: 16px;
+    }
+
+    .deleted-badge {
+      color: #ef4444;
+      font-size: 16px;
     }
 
     .loading-overlay {
@@ -747,7 +847,6 @@ export interface TraineeWizardData {
       z-index: 1000;
     }
 
-    /* Fix for mat-select dropdown in dialog */
     ::ng-deep .mat-select-panel {
       background: white !important;
       max-height: 300px !important;
@@ -768,7 +867,6 @@ export interface TraineeWizardData {
       color: #1e40af !important;
     }
 
-    /* Fix for datepicker in dialog */
     ::ng-deep .mat-datepicker-popup {
       z-index: 10000 !important;
     }
@@ -794,19 +892,21 @@ export interface TraineeWizardData {
     }
   `]
 })
-export class TraineeWizardModalComponent implements OnInit {
+export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   @ViewChild('stepper') stepper!: MatStepper;
   
+  // Form Groups
   basicInfoForm: FormGroup;
   contactsForm: FormGroup;
   certificatesForm: FormGroup;
   healthConditionsForm: FormGroup;
   
+  // Options
   genderOptions: EnumMapping[] = [];
   contactTypeOptions: EnumMapping[] = [];
-  academicYearOptions: EnumMapping[] = [];
   courseOptions: { value: number; label: string }[] = [];
   
+  // State
   traineeImageFid: string | null = null;
   createdTraineeId: number | null = null;
   
@@ -816,8 +916,15 @@ export class TraineeWizardModalComponent implements OnInit {
   traineeId: number | null = null;
   traineeData: any = null;
   
+  // Track deleted contacts for edit mode
+  private deletedContactIds: number[] = [];
+  
   FileDomain = FileDomain;
   
+  // Cleanup
+  private destroy$ = new Subject<void>();
+  
+  // Getters
   get contactsArray() { return this.contactsForm.get('contacts') as FormArray; }
   get certificatesArray() { return this.certificatesForm.get('certificates') as FormArray; }
   get healthConditionsArray() { return this.healthConditionsForm.get('healthConditions') as FormArray; }
@@ -836,15 +943,11 @@ export class TraineeWizardModalComponent implements OnInit {
     this.traineeId = data?.traineeId || null;
     this.traineeData = data?.traineeData || null;
     
-    console.log('🔍 TraineeWizardModal - Constructor:');
-    console.log('  isEditMode:', this.isEditMode);
-    console.log('  traineeId:', this.traineeId);
-    console.log('  traineeData:', this.traineeData ? '✅ Has data' : '❌ No data');
-    
+    // Initialize forms
     this.basicInfoForm = this.fb.group({
-      fullName: ['', Validators.required],
-      nationalId: ['', Validators.required],
-      academicYear: [null],
+      fullName: ['', [Validators.required, Validators.minLength(3)]],
+      nationalId: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+      academicYear: [''],
       birthDate: [''],
       gender: [null],
       address: [''],
@@ -867,13 +970,23 @@ export class TraineeWizardModalComponent implements OnInit {
   ngOnInit(): void {
     this.loadSelectOptions();
     this.loadCourses();
-    this.addContact();
     
-    // If edit mode, load the trainee data
     if (this.isEditMode) {
       this.loadTraineeData();
+    } else {
+      // Add one empty contact for new trainee
+      this.addContact();
     }
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ============================================================
+  // LOADING METHODS
+  // ============================================================
 
   loadSelectOptions(): void {
     this.genderOptions = [
@@ -884,13 +997,6 @@ export class TraineeWizardModalComponent implements OnInit {
     this.contactTypeOptions = [
       { id: 1, title: 'بريد إلكتروني', enumName: 'EMAIL' },
       { id: 2, title: 'جوال', enumName: 'PHONE' }
-    ];
-
-    this.academicYearOptions = [
-      { id: 1, title: '1', enumName: '_1' },
-      { id: 2, title: '2', enumName: '_2' },
-      { id: 3, title: '3', enumName: '_3' },
-      { id: 4, title: '4', enumName: '_4' }
     ];
   }
 
@@ -905,10 +1011,13 @@ export class TraineeWizardModalComponent implements OnInit {
     });
   }
 
+  // ============================================================
+  // TRAINEE DATA LOADING WITH CONTACTS
+  // ============================================================
+
   loadTraineeData(): void {
     this.isLoading = true;
     
-    // If we have trainee data passed directly, use it
     if (this.traineeData) {
       console.log('✅ Using passed trainee data');
       this.patchTraineeData(this.traineeData);
@@ -916,7 +1025,6 @@ export class TraineeWizardModalComponent implements OnInit {
       return;
     }
     
-    // Fallback: Load from API if no data passed
     console.log('🔄 Loading trainee from API');
     this.traineeService.getTraineeById(this.traineeId!).subscribe({
       next: (t: any) => {
@@ -932,113 +1040,223 @@ export class TraineeWizardModalComponent implements OnInit {
     });
   }
 
-  private patchTraineeData(t: any): void {
-    console.log('📋 Patching trainee data:', t);
+  private patchTraineeData(t: TraineeVTO): void {
+    console.log('📋 Patching trainee data');
     
+    // Map gender enum
     const genderEnum = mapGenderToEnum(t.gender);
-    const academicYearEnum = mapAcademicYearToEnum(t.academicYear);
     
     console.log('  Gender mapped to:', genderEnum);
-    console.log('  Academic Year mapped to:', academicYearEnum);
+    console.log('  Academic Year:', t.academicYear);
     
-    // Patch the form
+    // Patch basic info - academicYear is now a string
     this.basicInfoForm.patchValue({
       fullName: t.fullName || '',
       nationalId: t.nationalId || '',
-      academicYear: academicYearEnum,
+      academicYear: t.academicYear || '',
       birthDate: t.birthDate || null,
       gender: genderEnum,
       address: t.address || '',
       isActive: t.isActive !== undefined ? t.isActive : true
     });
     
-    console.log('📝 Form values after patch:', this.basicInfoForm.value);
-    
+    // Set image
     if (t.imageUrl) {
       this.traineeImageFid = t.imageUrl;
     }
     
-    // Load contacts
-    if (t.contacts && t.contacts.length > 0) {
-      while (this.contactsArray.length) this.contactsArray.removeAt(0);
-      t.contacts.forEach((c: any) => {
-        const contactTypeEnum = mapContactTypeToEnum(c.contactType);
-        this.contactsArray.push(this.fb.group({
-          contactType: [contactTypeEnum, Validators.required],
-          contactValue: [c.contactValue, Validators.required]
-        }));
-      });
-    }
+    // Load contacts from API
+    this.loadContactsFromAPI(t.id);
     
     // Load certificates
-    if (t.certificates && t.certificates.length > 0) {
-      while (this.certificatesArray.length) this.certificatesArray.removeAt(0);
-      t.certificates.forEach((c: any) => {
-        this.certificatesArray.push(this.fb.group({
-          certificateName: [c.certificateName],
-          certificateNumber: [c.certificateNumber],
-          courseId: [c.course?.id],
-          issueDate: [c.issueDate],
-          grade: [c.grade]
-        }));
-      });
-    }
+    this.loadCertificates(t.certificates);
     
     // Load health conditions
-    if (t.healthConditions && t.healthConditions.length > 0) {
-      while (this.healthConditionsArray.length) this.healthConditionsArray.removeAt(0);
-      t.healthConditions.forEach((h: any) => {
-        this.healthConditionsArray.push(this.fb.group({
-          title: [h.title],
-          description: [h.description],
-          medication: [h.medication],
-          note: [h.note]
+    this.loadHealthConditions(t.healthConditions);
+  }
+
+  // ============================================================
+  // CONTACTS HANDLING - FULL CRUD OPERATIONS
+  // ============================================================
+
+  private loadContactsFromAPI(traineeId: number): void {
+    console.log('🔄 Loading contacts from API for trainee:', traineeId);
+    
+    this.traineeService.getTraineeContacts(traineeId).subscribe({
+      next: (response) => {
+        console.log('✅ Contacts loaded from API:', response);
+        const contacts = response.items || [];
+        this.loadContactsToForm(contacts);
+      },
+      error: (err) => {
+        console.error('❌ Error loading contacts:', err);
+        this.notification.showWarning('حدث خطأ في تحميل جهات الاتصال');
+        this.addContact();
+      }
+    });
+  }
+
+  private loadContactsToForm(contacts: TraineeContactVTO[]): void {
+    while (this.contactsArray.length) {
+      this.contactsArray.removeAt(0);
+    }
+    
+    if (contacts && contacts.length > 0) {
+      console.log('📋 Loading contacts to form:', contacts);
+      
+      contacts.forEach((c: TraineeContactVTO) => {
+        const contactTypeEnum = mapContactTypeToEnum(c.contactType);
+        console.log('  Contact type mapped:', contactTypeEnum, 'for value:', c.contactValue);
+        
+        this.contactsArray.push(this.fb.group({
+          id: [c.id],
+          contactType: [contactTypeEnum, Validators.required],
+          contactValue: [c.contactValue || '', Validators.required],
+          isNew: [false],
+          isDeleted: [false]
         }));
       });
+      
+      console.log('✅ Contacts loaded successfully. Total:', this.contactsArray.length);
+    } else {
+      console.log('ℹ️ No contacts found, adding empty contact');
+      this.addContact();
     }
-  }
-
-  getGenderTitle(enumName: string | null): string | null {
-    if (!enumName) return null;
-    const found = this.genderOptions.find(g => g.enumName === enumName);
-    return found ? found.title : null;
-  }
-
-  getAcademicYearTitle(enumName: string | null): string | null {
-    if (!enumName) return null;
-    const found = this.academicYearOptions.find(y => y.enumName === enumName);
-    return found ? found.title : null;
-  }
-
-  getContactTypeTitle(enumName: string | null): string | null {
-    if (!enumName) return null;
-    const found = this.contactTypeOptions.find(c => c.enumName === enumName);
-    return found ? found.title : null;
-  }
-
-  onImageUploaded(fid: string): void {
-    this.traineeImageFid = fid;
-    this.notification.showSuccess('تم رفع الصورة بنجاح');
-  }
-
-  onImageRemoved(): void {
-    this.traineeImageFid = null;
-    this.notification.showSuccess('تم حذف الصورة');
   }
 
   addContact(): void {
-    this.contactsArray.push(this.fb.group({
+    const contactGroup = this.fb.group({
+      id: [null],
       contactType: [null, Validators.required],
-      contactValue: ['', Validators.required]
-    }));
+      contactValue: ['', Validators.required],
+      isNew: [true],
+      isDeleted: [false]
+    });
+    
+    this.contactsArray.push(contactGroup);
   }
 
   removeContact(index: number): void {
-    this.contactsArray.removeAt(index);
+    const contactGroup = this.contactsArray.at(index);
+    const contactId = contactGroup.get('id')?.value;
+    
+    if (contactId) {
+      contactGroup.patchValue({ isDeleted: true });
+      this.deletedContactIds.push(contactId);
+      this.contactsArray.removeAt(index);
+    } else {
+      this.contactsArray.removeAt(index);
+    }
+  }
+
+  getContactsList(): any[] {
+    const contacts = this.contactsArray.value;
+    return contacts.filter((c: any) => 
+      c.contactType && 
+      c.contactValue && 
+      c.contactValue.trim() !== '' &&
+      !c.isDeleted
+    );
+  }
+
+  getDeletedContacts(): any[] {
+    if (!this.isEditMode) return [];
+    return this.deletedContactIds.map(id => {
+      return { id, contactType: 'محذوف', contactValue: 'سيتم حذف جهة الاتصال' };
+    });
+  }
+
+  private processContacts(traineeId: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const contacts = this.contactsArray.value;
+      const newContacts = contacts.filter((c: any) => 
+        c.contactType && 
+        c.contactValue && 
+        c.contactValue.trim() !== '' &&
+        !c.isDeleted &&
+        !c.id
+      );
+      
+      const existingContacts = contacts.filter((c: any) => 
+        c.contactType && 
+        c.contactValue && 
+        c.contactValue.trim() !== '' &&
+        !c.isDeleted &&
+        c.id
+      );
+      
+      const deletedContacts = this.deletedContactIds;
+      
+      console.log('📋 Contact processing summary:');
+      console.log('  New contacts to create:', newContacts.length);
+      console.log('  Existing contacts to update:', existingContacts.length);
+      console.log('  Contacts to delete:', deletedContacts.length);
+      
+      const createOperations = newContacts.map((contact: any) => {
+        const contactDTO: TraineeContactDTO = {
+          contactType: contact.contactType,
+          contactValue: contact.contactValue
+        };
+        return this.traineeService.createTraineeContact(traineeId, contactDTO).toPromise();
+      });
+      
+      const updateOperations = existingContacts.map((contact: any) => {
+        const contactDTO: TraineeContactDTO = {
+          contactType: contact.contactType,
+          contactValue: contact.contactValue
+        };
+        return this.traineeService.updateTraineeContact(traineeId, contact.id, contactDTO).toPromise();
+      });
+      
+      const deleteOperations = deletedContacts.map((contactId: number) => {
+        return this.traineeService.deleteTraineeContact(traineeId, contactId).toPromise();
+      });
+      
+      const allOperations = [...createOperations, ...updateOperations, ...deleteOperations];
+      
+      if (allOperations.length === 0) {
+        resolve();
+        return;
+      }
+      
+      Promise.all(allOperations)
+        .then(() => {
+          console.log('✅ All contact operations completed successfully');
+          resolve();
+        })
+        .catch((error) => {
+          console.error('❌ Error processing contacts:', error);
+          reject(error);
+        });
+    });
+  }
+
+  // ============================================================
+  // CERTIFICATES HANDLING
+  // ============================================================
+
+  private loadCertificates(certificates: any[]): void {
+    while (this.certificatesArray.length) {
+      this.certificatesArray.removeAt(0);
+    }
+    
+    if (certificates && certificates.length > 0) {
+      certificates.forEach((c: any) => {
+        this.certificatesArray.push(this.fb.group({
+          id: [c.id || null],
+          certificateName: [c.certificateName || ''],
+          certificateNumber: [c.certificateNumber || ''],
+          courseId: [c.course?.id || null],
+          issueDate: [c.issueDate || ''],
+          grade: [c.grade || '']
+        }));
+      });
+    }
   }
 
   addCertificate(): void {
     this.certificatesArray.push(this.fb.group({
+      id: [null],
       certificateName: [''],
       certificateNumber: [''],
       courseId: [null],
@@ -1051,8 +1269,35 @@ export class TraineeWizardModalComponent implements OnInit {
     this.certificatesArray.removeAt(index);
   }
 
+  getCertificatesList(): any[] {
+    return this.certificatesArray.value.filter((c: any) => c.certificateName && c.certificateName.trim() !== '');
+  }
+
+  // ============================================================
+  // HEALTH CONDITIONS HANDLING
+  // ============================================================
+
+  private loadHealthConditions(conditions: any[]): void {
+    while (this.healthConditionsArray.length) {
+      this.healthConditionsArray.removeAt(0);
+    }
+    
+    if (conditions && conditions.length > 0) {
+      conditions.forEach((h: any) => {
+        this.healthConditionsArray.push(this.fb.group({
+          id: [h.id || null],
+          title: [h.title || ''],
+          description: [h.description || ''],
+          medication: [h.medication || ''],
+          note: [h.note || '']
+        }));
+      });
+    }
+  }
+
   addHealthCondition(): void {
     this.healthConditionsArray.push(this.fb.group({
+      id: [null],
       title: [''],
       description: [''],
       medication: [''],
@@ -1064,18 +1309,43 @@ export class TraineeWizardModalComponent implements OnInit {
     this.healthConditionsArray.removeAt(index);
   }
 
-  getContactsList(): any[] {
-    const contacts = this.contactsArray.value;
-    return contacts.filter((c: any) => c.contactType && c.contactValue && c.contactValue.trim() !== '');
-  }
-
-  getCertificatesList(): any[] {
-    return this.certificatesArray.value.filter((c: any) => c.certificateName && c.certificateName.trim() !== '');
-  }
-
   getHealthConditionsList(): any[] {
     return this.healthConditionsArray.value.filter((h: any) => h.title && h.title.trim() !== '');
   }
+
+  // ============================================================
+  // IMAGE HANDLING
+  // ============================================================
+
+  onImageUploaded(fid: string): void {
+    this.traineeImageFid = fid;
+    this.notification.showSuccess('تم رفع الصورة بنجاح');
+  }
+
+  onImageRemoved(): void {
+    this.traineeImageFid = null;
+    this.notification.showSuccess('تم حذف الصورة');
+  }
+
+  // ============================================================
+  // DISPLAY HELPERS
+  // ============================================================
+
+  getGenderTitle(enumName: string | null): string | null {
+    if (!enumName) return null;
+    const found = this.genderOptions.find(g => g.enumName === enumName);
+    return found ? found.title : null;
+  }
+
+  getContactTypeTitle(enumName: string | null): string | null {
+    if (!enumName) return null;
+    const found = this.contactTypeOptions.find(c => c.enumName === enumName);
+    return found ? found.title : null;
+  }
+
+  // ============================================================
+  // PRINT PREVIEW
+  // ============================================================
 
   async printPreview(): Promise<void> {
     let imagePreviewUrl: string | null = null;
@@ -1095,7 +1365,7 @@ export class TraineeWizardModalComponent implements OnInit {
     const previewData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
       nationalId: this.basicInfoForm.get('nationalId')?.value,
-      academicYear: this.getAcademicYearTitle(this.basicInfoForm.get('academicYear')?.value),
+      academicYear: this.basicInfoForm.get('academicYear')?.value,
       birthDate: this.basicInfoForm.get('birthDate')?.value,
       gender: this.getGenderTitle(this.basicInfoForm.get('gender')?.value),
       address: this.basicInfoForm.get('address')?.value,
@@ -1119,7 +1389,7 @@ export class TraineeWizardModalComponent implements OnInit {
     }
   }
 
-  generatePrintDocument(data: any): void {
+  private generatePrintDocument(data: any): void {
     const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
     if (!printWindow) {
       this.notification.showError('تعذر فتح نافذة الطباعة');
@@ -1210,6 +1480,134 @@ export class TraineeWizardModalComponent implements OnInit {
       .replace(/'/g, '&#39;');
   }
 
+  // ============================================================
+  // SUBMIT - WITH FULL CONTACT CRUD
+  // ============================================================
+
+  submitTrainee(): void {
+    if (this.basicInfoForm.invalid) {
+      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح');
+      this.basicInfoForm.markAllAsTouched();
+      return;
+    }
+    
+    this.isSubmitting = true;
+    
+    const genderValue = this.basicInfoForm.get('gender')?.value;
+    const academicYearValue = this.basicInfoForm.get('academicYear')?.value;
+    
+    const formData = {
+      fullName: this.basicInfoForm.get('fullName')?.value,
+      nationalId: this.basicInfoForm.get('nationalId')?.value,
+      academicYear: academicYearValue || '',
+      birthDate: this.basicInfoForm.get('birthDate')?.value,
+      gender: genderValue,
+      address: this.basicInfoForm.get('address')?.value,
+      isActive: this.basicInfoForm.get('isActive')?.value,
+      certificates: this.getCertificatesList().map(cert => ({
+        certificateName: cert.certificateName,
+        certificateNumber: cert.certificateNumber,
+        courseId: cert.courseId,
+        issueDate: cert.issueDate,
+        grade: cert.grade
+      })),
+      healthConditions: this.getHealthConditionsList(),
+      imageUrl: this.traineeImageFid
+    };
+    
+    console.log('Submitting trainee data:', formData);
+    
+    if (this.isEditMode && this.traineeId) {
+      // UPDATE MODE
+      this.traineeService.updateTrainee(this.traineeId, formData as any)
+        .pipe(finalize(() => {
+          this.isSubmitting = false;
+        }))
+        .subscribe({
+          next: () => {
+            this.processContacts(this.traineeId!)
+              .then(() => {
+                this.notification.showSuccess('تم تحديث المتدرب وجميع جهات الاتصال بنجاح');
+                this.dialogRef.close(true);
+              })
+              .catch((error) => {
+                console.error('Error processing contacts:', error);
+                this.notification.showError('حدث خطأ في تحديث جهات الاتصال');
+              });
+          },
+          error: (err) => {
+            console.error('Update error:', err);
+            this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المتدرب');
+          }
+        });
+    } else {
+      // CREATE MODE
+      this.traineeService.createTrainee(formData as any)
+        .pipe(finalize(() => {
+          this.isSubmitting = false;
+        }))
+        .subscribe({
+          next: (res: any) => {
+            this.createdTraineeId = res.id;
+            
+            if (!this.createdTraineeId) {
+              this.notification.showError('حدث خطأ في إضافة المتدرب');
+              this.dialogRef.close(false);
+              return;
+            }
+            
+            this.processContactsForNewTrainee(this.createdTraineeId)
+              .then(() => {
+                this.notification.showSuccess('تم إضافة المتدرب وجميع جهات الاتصال بنجاح');
+                this.openEnrollmentWizard(this.createdTraineeId!);
+              })
+              .catch((error) => {
+                console.error('Error creating contacts:', error);
+                this.notification.showError('حدث خطأ في إضافة جهات الاتصال');
+                this.openEnrollmentWizard(this.createdTraineeId!);
+              });
+          },
+          error: (err) => {
+            console.error('Create error:', err);
+            this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المتدرب');
+          }
+        });
+    }
+  }
+
+  private processContactsForNewTrainee(traineeId: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const contacts = this.getContactsList();
+      
+      if (contacts.length === 0) {
+        resolve();
+        return;
+      }
+      
+      const createOperations = contacts.map((contact: any) => {
+        const contactDTO: TraineeContactDTO = {
+          contactType: contact.contactType,
+          contactValue: contact.contactValue
+        };
+        return this.traineeService.createTraineeContact(traineeId, contactDTO).toPromise();
+      });
+      
+      Promise.all(createOperations)
+        .then(() => {
+          console.log('✅ All contacts created successfully');
+          resolve();
+        })
+        .catch((error) => {
+          console.error('❌ Error creating contacts:', error);
+          reject(error);
+        });
+    });
+  }
+
+  // ============================================================
+  // OPEN ENROLLMENT WIZARD
+  // ============================================================
+
   private openEnrollmentWizard(traineeId: number): void {
     this.dialogRef.close(true);
     setTimeout(() => {
@@ -1224,114 +1622,5 @@ export class TraineeWizardModalComponent implements OnInit {
         }
       });
     }, 300);
-  }
-
-  submitTrainee(): void {
-    if (this.basicInfoForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
-      return;
-    }
-    
-    this.isSubmitting = true;
-    
-    const genderValue = this.basicInfoForm.get('gender')?.value;
-    const academicYearValue = this.basicInfoForm.get('academicYear')?.value;
-    
-    const contactsList = this.getContactsList().map(contact => ({
-      contactType: contact.contactType,
-      contactValue: contact.contactValue
-    }));
-    
-    const formData = {
-      fullName: this.basicInfoForm.get('fullName')?.value,
-      nationalId: this.basicInfoForm.get('nationalId')?.value,
-      academicYear: academicYearValue,
-      birthDate: this.basicInfoForm.get('birthDate')?.value,
-      gender: genderValue,
-      address: this.basicInfoForm.get('address')?.value,
-      isActive: this.basicInfoForm.get('isActive')?.value,
-      contacts: contactsList,
-      certificates: this.getCertificatesList().map(cert => ({
-        certificateName: cert.certificateName,
-        certificateNumber: cert.certificateNumber,
-        courseId: cert.courseId,
-        issueDate: cert.issueDate,
-        grade: cert.grade
-      })),
-      healthConditions: this.getHealthConditionsList(),
-      imageUrl: this.traineeImageFid
-    };
-    
-    if (this.isEditMode && this.traineeId) {
-      this.traineeService.updateTrainee(this.traineeId, formData as any).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم تحديث المتدرب بنجاح');
-          this.dialogRef.close(true);
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Update error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المتدرب');
-          this.isSubmitting = false;
-        }
-      });
-    } else {
-      this.traineeService.createTrainee(formData as any).subscribe({
-        next: (res: any) => {
-          this.createdTraineeId = res.id;
-          
-          if (contactsList.length > 0 && this.createdTraineeId) {
-            this.addContactsSequentially(this.createdTraineeId, contactsList);
-          } else {
-            this.isSubmitting = false;
-            this.notification.showSuccess('تم إضافة المتدرب بنجاح');
-            if (this.createdTraineeId) {
-              this.openEnrollmentWizard(this.createdTraineeId);
-            } else {
-              this.dialogRef.close(true);
-            }
-          }
-        },
-        error: (err) => {
-          console.error('Create error:', err);
-          this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المتدرب');
-          this.isSubmitting = false;
-        }
-      });
-    }
-  }
-
-  private addContactsSequentially(traineeId: number, contacts: any[]): void {
-    let completed = 0;
-    const total = contacts.length;
-    let hasError = false;
-
-    contacts.forEach((contact, index) => {
-      const contactDTO: TraineeContactDTO = {
-        contactType: contact.contactType as any,
-        contactValue: contact.contactValue
-      };
-
-      this.traineeService.createTraineeContact(traineeId, contactDTO).subscribe({
-        next: () => {
-          completed++;
-          if (completed === total && !hasError) {
-            this.isSubmitting = false;
-            this.notification.showSuccess(`تم إضافة المتدرب و ${total} جهة اتصال بنجاح`);
-            if (traineeId) {
-              this.openEnrollmentWizard(traineeId);
-            } else {
-              this.dialogRef.close(true);
-            }
-          }
-        },
-        error: (err) => {
-          console.error(`Error adding contact ${index + 1}:`, err);
-          hasError = true;
-          this.notification.showError(`حدث خطأ في إضافة جهة الاتصال ${index + 1}`);
-          this.isSubmitting = false;
-        }
-      });
-    });
   }
 }

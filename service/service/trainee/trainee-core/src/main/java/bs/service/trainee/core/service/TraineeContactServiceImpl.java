@@ -72,10 +72,10 @@ public class TraineeContactServiceImpl implements TraineeContactService {
     }
 
     @Override
-    public TraineeContactResultSet getTraineeContacts(Integer traineeId,String contactValue) {
+    public TraineeContactResultSet getTraineeContacts(Integer traineeId) {
         TraineeContactSearchFilter filter = TraineeContactSearchFilter.builder()
                 .traineeId(traineeId)
-                .contactValue(contactValue).pagination(PaginationInfo.noPagination())
+                .pagination(PaginationInfo.noPagination())
                 .build();
 
         List<TraineeContact> contacts = traineeContactRepository.selectAllByFilters(filter);
@@ -83,7 +83,7 @@ public class TraineeContactServiceImpl implements TraineeContactService {
 
         return TraineeContactResultSet.builder()
                 .items(items)
-                .total(items.size())
+                .total(traineeContactRepository.countAllByFilters(filter))
                 .build();
     }
 }

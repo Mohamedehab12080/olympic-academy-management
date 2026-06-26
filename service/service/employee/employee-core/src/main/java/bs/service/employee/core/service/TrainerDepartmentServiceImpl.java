@@ -59,6 +59,9 @@ public class TrainerDepartmentServiceImpl implements TrainerDepartmentService {
     @Transactional
     public void updateTrainerDepartment(Integer trainerDepartmentId, AssignDepartmentDTO assignDepartmentDTO) {
        EmployeeDepartment trainerDepartment=trainerDepartmentRepository.selectById(trainerDepartmentId).orElseThrow(()-> new BusinessException(EMPLOYEE_DEPARTMENT_NOT_FOUND,trainerDepartmentId));
+       if(assignDepartmentDTO.getDepartmentId().stream().findFirst().isPresent()){
+           trainerDepartment.setDepartment(Department.builder().id(assignDepartmentDTO.getDepartmentId().stream().findFirst().get()).build());
+       }
        trainerDepartmentRepository.update(trainerDepartment);
     }
 

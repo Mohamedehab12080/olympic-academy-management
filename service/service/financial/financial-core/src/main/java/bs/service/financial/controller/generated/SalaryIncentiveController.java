@@ -78,6 +78,8 @@ public interface SalaryIncentiveController {
      *
      * @param employeeId
      *            (optional)
+     * @param employeeNationalId
+     *            (optional)
      * @param paymentMethodId
      *            (optional)
      * @param salaryType
@@ -87,6 +89,8 @@ public interface SalaryIncentiveController {
      * @param withdrawDateFrom
      *            (optional)
      * @param withdrawDateTo
+     *            (optional)
+     * @param quickSearch
      *            (optional)
      * @param pageNum
      *            (optional, default to 0)
@@ -108,11 +112,13 @@ public interface SalaryIncentiveController {
 
     ResponseEntity<SalaryIncentiveResultSet> _getAllSalaryIncentivesByFilter(
             @Parameter(name = "employeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeId", required = false) Integer employeeId,
+            @Parameter(name = "employeeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "employeeNationalId", required = false) String employeeNationalId,
             @Parameter(name = "paymentMethodId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentMethodId", required = false) Integer paymentMethodId,
             @Parameter(name = "salaryType", description = "", in = ParameterIn.QUERY) @Valid SalaryTypes salaryType,
             @Parameter(name = "type", description = "", in = ParameterIn.QUERY) @Valid SalaryTransactionType type,
             @Parameter(name = "withdrawDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "withdrawDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate withdrawDateFrom,
             @Parameter(name = "withdrawDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "withdrawDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate withdrawDateTo,
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
             @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,

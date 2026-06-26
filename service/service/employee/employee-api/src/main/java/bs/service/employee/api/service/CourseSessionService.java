@@ -9,18 +9,18 @@ import bs.service.employee.model.generated.CourseSessionVTO;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public interface CourseSessionService {
 
-    NewRecordVTO createCourseSession(Integer courseId, CourseSessionDTO courseSessionDTO);
+    List<NewRecordVTO> createCourseSession(Integer courseId, CourseSessionDTO courseSessionDTO);
 
-    NewRecordVTO updateCourseSession(Integer courseId, Integer sessionId, CourseSessionDTO courseSessionDTO);
+    List<NewRecordVTO> updateCourseSession(Integer courseSessionId, CourseSessionDTO courseSessionDTO);
 
-    void deleteCourseSession(Integer courseId, Integer sessionId);
+    void deleteCourseSession(Integer courseSessionId);
 
-    CourseSessionVTO getCourseSessionById(Integer courseId, Integer sessionId);
+    CourseSessionVTO getCourseSessionById(Integer courseSessionId);
 
-    CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
-
-        CourseSessionResultSet getAllSessionsByFilter(Integer courseId, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    CourseSessionResultSet getAllSessionsByFilter(Integer courseId,String sessionDay, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
 }

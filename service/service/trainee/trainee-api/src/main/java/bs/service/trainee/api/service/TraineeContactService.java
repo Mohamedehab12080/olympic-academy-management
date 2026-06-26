@@ -9,5 +9,5 @@ public interface TraineeContactService {
     NewRecordVTO createTraineeContact(Integer traineeId, TraineeContactDTO traineeContactDTO);
     NewRecordVTO updateTraineeContact(Integer traineeId, Integer contactId, TraineeContactDTO traineeContactDTO);
     void deleteTraineeContact(Integer traineeId, Integer contactId);
-    TraineeContactResultSet getTraineeContacts(Integer traineeId,String contactValue);
+    TraineeContactResultSet getTraineeContacts(Integer traineeId);
 }

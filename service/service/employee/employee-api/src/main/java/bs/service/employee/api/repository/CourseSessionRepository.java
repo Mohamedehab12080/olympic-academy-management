@@ -12,4 +12,5 @@ public interface CourseSessionRepository {
     Optional<CourseSession> selectById(Integer id);
     List<CourseSession> selectAllByFilters(CourseSessionSearchFilter filters);
     Integer countAllByFilters(CourseSessionSearchFilter filters);
+    void delete(Integer id);
 }

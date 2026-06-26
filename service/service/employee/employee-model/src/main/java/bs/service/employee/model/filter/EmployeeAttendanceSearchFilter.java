@@ -17,8 +17,10 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class EmployeeAttendanceSearchFilter extends SearchFilter<EmployeeAttendanceSearchFilter.OrderByAttributes> {
 
+    private String quickSearch;
     private Integer employeeId;
-    private String status;
+    private String employeeNationalId;
+    private Integer status;
     private Boolean isDeleted;
     private LocalDate attendanceDateFrom;
     private LocalDate attendanceDateTo;

@@ -72,9 +72,10 @@ export interface EmployeeAttendanceDTO {
 export interface CourseSessionDTO {
   title: string;
   courseId: number;
-  trainerId: number;
+  trainersId: number[];
   placeId: number;
   sessionDate: string;
+  sessionDays: string[];
   startTime: string;
   endTime: string;
   status?: SessionStatus;  // { id: number; title: string }
@@ -145,6 +146,7 @@ export interface CourseSessionVTO {
   trainer: LookupVTO;
   place: LookupVTO;
   sessionDate: string;
+  sessionDay: string;
   startTime: string;
   endTime: string;
   status: LookupVTO;  // SessionStatus as LookupVTO

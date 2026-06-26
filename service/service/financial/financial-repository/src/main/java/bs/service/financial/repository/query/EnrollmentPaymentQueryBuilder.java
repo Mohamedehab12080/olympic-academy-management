@@ -21,6 +21,14 @@ public class EnrollmentPaymentQueryBuilder extends AbstractQueryBuilderV2<Enroll
     public List<QBCondition> evaluateWhereConditions(EnrollmentPaymentSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getQuickSearch() != null && !filters.getQuickSearch().trim().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("quickSearch").value("%" + filters.getQuickSearch() + "%")
+                    .condition("LOWER(item.enrollment.trainee.fullName) LIKE LOWER(:PH)").build());
+
+        if (filters.getTraineeNationalId() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("traineeNationalId").value(filters.getTraineeNationalId())
+                    .condition("item.enrollment.trainee.nationalId = :PH").build());
+
         if (filters.getEnrollmentId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("enrollmentId").value(filters.getEnrollmentId())
                     .condition("item.enrollment.id = :PH").build());

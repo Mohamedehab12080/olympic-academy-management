@@ -46,6 +46,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
+    public List<Employee> selectAllById(List<Integer> ids) {
+        return employeeJPARepository.findAllById(ids);
+    }
+
+    @Override
     public List<Employee> selectAllByFilters(EmployeeSearchFilter filters) {
         return queryBuilder.selectAllByFilters(filters);
     }

@@ -32,8 +32,8 @@ public class TraineeContactControllerImpl implements TraineeContactController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<TraineeContactResultSet> _getTraineeContacts(Integer traineeId,String contactValue) {
-        TraineeContactResultSet result = traineeContactService.getTraineeContacts(traineeId,contactValue);
+    public ResponseEntity<TraineeContactResultSet> _getTraineeContacts(Integer traineeId) {
+        TraineeContactResultSet result = traineeContactService.getTraineeContacts(traineeId);
         return ResponseEntity.ok(result);
     }
 

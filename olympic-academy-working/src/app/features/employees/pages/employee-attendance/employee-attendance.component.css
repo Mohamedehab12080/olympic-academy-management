@@ -1,6 +1,5 @@
-/* employee-attendance.component.css */
+/* employee-attendance.component.css - COMPLETE */
 
-/* Main Container */
 .attendance-container {
   padding: 24px;
   max-width: 1400px;
@@ -16,7 +15,6 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Header Section */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -65,7 +63,10 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Filters Section */
+/* ==========================================================================
+   FILTERS SECTION
+   ========================================================================== */
+
 .filters-card {
   padding: 20px 24px;
   background: white;
@@ -75,7 +76,7 @@
 .filters-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .filters-row {
@@ -84,6 +85,175 @@
   gap: 16px;
   align-items: center;
 }
+
+/* ==========================================================================
+   BARCODE SEARCH - TOP POSITION
+   ========================================================================== */
+
+.barcode-row-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 4px;
+}
+
+.barcode-row-top .barcode-search-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 250px;
+}
+
+.barcode-row-top .barcode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.barcode-row-top .barcode-toggle:hover {
+  background: #ecfeff;
+  border-color: #a5f3fc;
+}
+
+.barcode-row-top .barcode-toggle .barcode-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.barcode-row-top .barcode-toggle button {
+  color: #6b7280;
+  transition: all 0.3s;
+}
+
+.barcode-row-top .barcode-toggle button.mat-primary {
+  color: #06b6d4 !important;
+}
+
+.barcode-row-top .barcode-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  animation: slideIn 0.3s ease-out;
+  background: #f9fafb;
+  padding: 4px 8px 4px 4px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.barcode-row-top .barcode-input-wrapper:focus-within {
+  border-color: #06b6d4;
+  background: white;
+}
+
+.barcode-row-top .barcode-search-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.barcode-row-top .barcode-search-field .mat-form-field-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+.barcode-row-top .barcode-search-field .mat-form-field-outline {
+  background: transparent !important;
+}
+
+.barcode-row-top .barcode-search-field .mat-form-field-flex {
+  padding: 0 12px !important;
+}
+
+.barcode-row-top .barcode-search-field .mat-form-field-infix {
+  padding: 8px 0 !important;
+  border-top: 0 !important;
+}
+
+.barcode-row-top .barcode-search-btn {
+  flex-shrink: 0;
+  height: 40px;
+  min-width: 80px;
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  color: white !important;
+  border-radius: 8px !important;
+}
+
+.barcode-row-top .barcode-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.barcode-row-top .barcode-close-btn {
+  flex-shrink: 0;
+  color: #6b7280 !important;
+}
+
+.barcode-row-top .barcode-close-btn:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+  border-radius: 50%;
+}
+
+.barcode-row-top .barcode-active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #06b6d4;
+  font-weight: 600;
+  background: #ecfeff;
+  padding: 2px 10px 2px 6px;
+  border-radius: 12px;
+  margin-right: 8px;
+}
+
+.barcode-row-top .barcode-clear-filter-btn {
+  width: 20px !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  color: #6b7280 !important;
+}
+
+.barcode-row-top .barcode-clear-filter-btn:hover {
+  color: #ef4444 !important;
+  background: #fee2e2 !important;
+  border-radius: 50%;
+}
+
+.barcode-row-top .barcode-clear-filter-btn mat-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* ==========================================================================
+   FILTER FIELDS
+   ========================================================================== */
 
 .date-field,
 .filter-select,
@@ -96,10 +266,21 @@
   flex: 1.5;
 }
 
+/* ==========================================================================
+   FILTER ACTIONS ROW
+   ========================================================================== */
+
+.filter-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
 .filter-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
   flex-wrap: wrap;
 }
 
@@ -119,7 +300,10 @@
   color: #6b7280;
 }
 
-/* Statistics Cards */
+/* ==========================================================================
+   STATISTICS CARDS
+   ========================================================================== */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -168,7 +352,10 @@
 .stat-card.excused .stat-info h3 { color: #3b82f6; }
 .stat-card.rate .stat-info h3 { color: #8b5cf6; }
 
-/* Loading State */
+/* ==========================================================================
+   LOADING STATE
+   ========================================================================== */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -183,7 +370,10 @@
   font-size: 14px;
 }
 
-/* Table Section */
+/* ==========================================================================
+   TABLE SECTION
+   ========================================================================== */
+
 .table-section {
   padding: 0 24px 24px 24px;
 }
@@ -207,6 +397,7 @@
   color: #0891b2;
   font-weight: 500;
   font-size: 13px;
+  flex-wrap: wrap;
 }
 
 .records-count mat-icon {
@@ -215,9 +406,16 @@
   height: 18px;
 }
 
+.page-info {
+  font-weight: 400;
+  color: #6b7280;
+  font-size: 12px;
+}
+
 .table-actions mat-chip-listbox {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .table-actions mat-chip-option {
@@ -238,6 +436,10 @@
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
+
+/* ==========================================================================
+   DATA TABLE
+   ========================================================================== */
 
 .data-table {
   width: 100%;
@@ -268,7 +470,10 @@
   background-color: #f8fafc;
 }
 
-/* Employee Info */
+/* ==========================================================================
+   EMPLOYEE INFO
+   ========================================================================== */
+
 .employee-info {
   display: flex;
   align-items: center;
@@ -303,7 +508,27 @@
   color: #6366f1;
 }
 
-/* Status Badges */
+/* ==========================================================================
+   DATE INFO
+   ========================================================================== */
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   STATUS BADGES
+   ========================================================================== */
+
 .status-badge {
   display: inline-block;
   padding: 4px 14px;
@@ -332,7 +557,10 @@
   color: #1e40af;
 }
 
-/* Time Info */
+/* ==========================================================================
+   TIME INFO
+   ========================================================================== */
+
 .time-info {
   display: flex;
   align-items: center;
@@ -346,7 +574,10 @@
   color: #94a3b8;
 }
 
-/* Late Badge */
+/* ==========================================================================
+   LATE BADGE
+   ========================================================================== */
+
 .late-badge {
   color: #f59e0b;
   font-weight: 500;
@@ -356,7 +587,10 @@
   color: #9ca3af;
 }
 
-/* Note */
+/* ==========================================================================
+   NOTE
+   ========================================================================== */
+
 .note-text {
   color: #4b5563;
   font-size: 12px;
@@ -366,7 +600,10 @@
   color: #d1d5db;
 }
 
-/* Action Buttons */
+/* ==========================================================================
+   ACTION BUTTONS
+   ========================================================================== */
+
 .action-buttons {
   display: flex;
   gap: 4px;
@@ -384,7 +621,10 @@
   font-size: 20px;
 }
 
-/* No Data Message */
+/* ==========================================================================
+   NO DATA MESSAGE
+   ========================================================================== */
+
 .no-data-message {
   text-align: center;
   padding: 60px;
@@ -408,14 +648,29 @@
   font-weight: 600;
 }
 
-/* Paginator */
+/* ==========================================================================
+   PAGINATOR
+   ========================================================================== */
+
 .custom-paginator {
   margin-top: 20px;
   border-top: 1px solid #e5e7eb;
   padding-top: 12px;
 }
 
-/* Animations */
+.custom-paginator ::ng-deep .mat-paginator-container {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.custom-paginator ::ng-deep .mat-paginator-range-label {
+  margin: 0 16px;
+}
+
+/* ==========================================================================
+   KEYFRAMES
+   ========================================================================== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -427,7 +682,10 @@
   }
 }
 
-/* Responsive Design */
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
 @media (max-width: 1200px) {
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -444,6 +702,29 @@
 
   .header-actions {
     width: 100%;
+    justify-content: center;
+  }
+
+  .barcode-row-top .barcode-search-section {
+    flex-wrap: wrap;
+    min-width: 100%;
+  }
+  
+  .barcode-row-top .barcode-input-wrapper {
+    flex-wrap: wrap;
+    padding: 8px;
+  }
+  
+  .barcode-row-top .barcode-search-field {
+    min-width: 100%;
+  }
+  
+  .barcode-row-top .barcode-search-btn,
+  .barcode-row-top .barcode-close-btn {
+    flex: 1;
+  }
+
+  .filter-actions-row {
     justify-content: center;
   }
 }
@@ -479,6 +760,27 @@
     min-width: 100%;
   }
 
+  .barcode-row-top .barcode-search-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .barcode-row-top .barcode-toggle {
+    justify-content: center;
+    padding: 8px;
+    width: 100%;
+  }
+  
+  .barcode-row-top .barcode-input-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+  
+  .barcode-row-top .barcode-search-btn {
+    width: 100%;
+  }
+
   .filter-actions {
     flex-direction: column;
     width: 100%;
@@ -487,6 +789,10 @@
   .reset-btn,
   .export-btn {
     width: 100%;
+  }
+
+  .filter-actions-row {
+    justify-content: stretch;
   }
 
   .stats-grid {
@@ -525,6 +831,15 @@
     font-size: 11px;
     padding: 2px 8px;
   }
+
+  .custom-paginator ::ng-deep .mat-paginator-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .custom-paginator ::ng-deep .mat-paginator-range-label {
+    margin: 4px 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -549,6 +864,14 @@
     align-self: center;
   }
 
+  .barcode-row-top .barcode-toggle .barcode-label {
+    font-size: 12px;
+  }
+  
+  .barcode-row-top .barcode-search-field {
+    min-width: 100%;
+  }
+
   .data-table .mat-header-cell,
   .data-table .mat-cell {
     padding: 8px 8px;
@@ -556,7 +879,10 @@
   }
 }
 
-/* Print Styles */
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
 @media print {
   .attendance-container {
     padding: 0;
@@ -609,9 +935,16 @@
   .filter-actions button {
     display: none;
   }
+
+  .barcode-row-top {
+    display: none;
+  }
 }
 
-/* Scrollbar Styling for Table */
+/* ==========================================================================
+   SCROLLBAR STYLING
+   ========================================================================== */
+
 .table-wrapper::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -631,7 +964,10 @@
   background: #0891b2;
 }
 
-/* Searchable Select Overrides */
+/* ==========================================================================
+   SEARCHABLE SELECT OVERRIDES
+   ========================================================================== */
+
 ::ng-deep .searchable-select .mat-form-field-wrapper {
   margin: 0 !important;
   padding: 0 !important;
@@ -641,14 +977,10 @@
   background: white !important;
 }
 
-/* Dialog Overrides */
-::ng-deep .mat-dialog-container {
-  padding: 0 !important;
-  border-radius: 24px !important;
-  overflow: hidden !important;
-}
+/* ==========================================================================
+   CHIP COLOR OVERRIDES
+   ========================================================================== */
 
-/* Chip Color Overrides */
 .mat-chip-option.mat-primary.mat-selected {
   background: #d1fae5 !important;
   color: #065f46 !important;
@@ -662,4 +994,147 @@
 .mat-chip-option.mat-accent.mat-selected {
   background: #fef3c7 !important;
   color: #92400e !important;
+}
+
+/* ==========================================================================
+   MATERIAL FORM FIELD OVERRIDES
+   ========================================================================== */
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
+  margin: 0 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-flex {
+  background: white !important;
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  border: 1px solid #e5e7eb !important;
+  transition: all 0.3s !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-flex:hover {
+  border-color: #06b6d4 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-flex {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1) !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+  display: none !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+  padding: 10px 0 !important;
+  border-top: 0 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-label-wrapper {
+  padding: 0 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-suffix {
+  color: #94a3b8 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-suffix:hover {
+  color: #06b6d4 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-input-element {
+  color: #1e293b !important;
+  font-size: 14px !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-label {
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-label {
+  color: #06b6d4 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-select-value-text {
+  color: #1e293b !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-select-arrow {
+  color: #94a3b8 !important;
+}
+
+/* ==========================================================================
+   DATE PICKER OVERRIDES
+   ========================================================================== */
+
+::ng-deep .mat-datepicker-toggle {
+  color: #94a3b8 !important;
+}
+
+::ng-deep .mat-datepicker-toggle:hover {
+  color: #06b6d4 !important;
+}
+
+::ng-deep .mat-datepicker-content {
+  border-radius: 16px !important;
+}
+
+::ng-deep .mat-calendar {
+  border-radius: 16px !important;
+}
+
+::ng-deep .mat-calendar-body-cell-content.mat-calendar-body-selected {
+  background: #06b6d4 !important;
+}
+
+/* ==========================================================================
+   TIME INPUT OVERRIDES
+   ========================================================================== */
+
+::ng-deep input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+  padding: 4px;
+}
+
+::ng-deep input[type="time"]:hover::-webkit-calendar-picker-indicator {
+  filter: invert(0.3);
+}
+
+::ng-deep input[type="time"]::-webkit-datetime-edit {
+  direction: ltr !important;
+  text-align: center !important;
+  color: #1e293b !important;
+}
+
+/* ==========================================================================
+   ERROR STATES
+   ========================================================================== */
+
+::ng-deep .mat-form-field.ng-invalid.ng-touched .mat-form-field-flex {
+  border-color: #ef4444 !important;
+}
+
+::ng-deep .mat-form-field.ng-invalid.ng-touched .mat-form-field-flex.mat-focused {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+::ng-deep .mat-form-field.ng-invalid.ng-touched .mat-form-field-label {
+  color: #ef4444 !important;
+}
+
+::ng-deep .mat-error {
+  color: #ef4444 !important;
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}
+
+/* ==========================================================================
+   DIVIDER
+   ========================================================================== */
+
+.mat-divider {
+  border-top-color: #e5e7eb !important;
 }
