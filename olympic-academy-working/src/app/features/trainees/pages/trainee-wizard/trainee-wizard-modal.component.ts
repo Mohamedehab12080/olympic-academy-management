@@ -92,6 +92,7 @@ function mapContactTypeToEnum(contactType: any): string | null {
     const normalized = contactType.trim().toLowerCase();
     if (normalized === 'email' || normalized === 'بريد إلكتروني' || normalized === 'ايميل') return 'EMAIL';
     if (normalized === 'phone' || normalized === 'جوال' || normalized === 'هاتف') return 'PHONE';
+    if (normalized === 'whatsapp' || normalized === 'واتساب' || normalized === 'واتس') return 'WHATSAPP';
     return null;
   }
   
@@ -100,15 +101,18 @@ function mapContactTypeToEnum(contactType: any): string | null {
       const title = contactType.title.trim().toLowerCase();
       if (title === 'email' || title === 'بريد إلكتروني' || title === 'ايميل') return 'EMAIL';
       if (title === 'phone' || title === 'جوال' || title === 'هاتف') return 'PHONE';
+      if (title === 'whatsapp' || title === 'واتساب' || title === 'واتس') return 'WHATSAPP';
     }
     if (contactType.value) {
       const value = contactType.value.trim().toUpperCase();
       if (value === 'EMAIL') return 'EMAIL';
       if (value === 'PHONE') return 'PHONE';
+      if (value === 'WHATSAPP') return 'WHATSAPP';
     }
     if (contactType.id !== undefined) {
       if (contactType.id === 1) return 'EMAIL';
       if (contactType.id === 2) return 'PHONE';
+      if (contactType.id === 3) return 'WHATSAPP';
     }
   }
   
@@ -988,17 +992,18 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   // LOADING METHODS
   // ============================================================
 
-  loadSelectOptions(): void {
-    this.genderOptions = [
-      { id: 1, title: 'ذكر', enumName: 'MALE' },
-      { id: 2, title: 'انثي', enumName: 'FEMALE' }
-    ];
+loadSelectOptions(): void {
+  this.genderOptions = [
+    { id: 1, title: 'ذكر', enumName: 'MALE' },
+    { id: 2, title: 'انثي', enumName: 'FEMALE' }
+  ];
 
-    this.contactTypeOptions = [
-      { id: 1, title: 'بريد إلكتروني', enumName: 'EMAIL' },
-      { id: 2, title: 'جوال', enumName: 'PHONE' }
-    ];
-  }
+  this.contactTypeOptions = [
+    { id: 1, title: 'بريد إلكتروني', enumName: 'EMAIL' },
+    { id: 2, title: 'جوال', enumName: 'PHONE' },
+    { id: 3, title: 'واتساب', enumName: 'WHATSAPP' }
+  ];
+}
 
   loadCourses(): void {
     this.courseService.getAllCoursesLookup().subscribe({

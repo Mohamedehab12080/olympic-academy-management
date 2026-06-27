@@ -998,7 +998,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
     this.generateBarcode();
     setTimeout(() => {
       const barcodeImage = this.barcodeCanvas.nativeElement.toDataURL('image/png');
-      const printWindow = window.open('', '_blank', 'width=400,height=600');
+      const printWindow = window.open('', '_blank', 'width=350,height=500,scrollbars=no,menubar=no,toolbar=no,status=no');
       if (!printWindow) {
         this.notification.showError('تعذر فتح نافذة الطباعة');
         return;
@@ -1006,57 +1006,464 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
 
       const e = this.enrollment;
       const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
+      const logoPath = 'assets/images/mainLogo.jpeg';
       
       printWindow.document.write(`
-        <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
-        <title>بطاقة تسجيل متدرب</title>
-        <style>
-          @page { size: 57mm auto; margin: 0mm; }
-          body { font-family: 'Cairo', sans-serif; width: 57mm; margin: 0; padding: 2mm; background: white; }
-          .thermal-card { width: 55mm; margin: 0 auto; direction: rtl; }
-          .thermal-header { text-align: center; margin-bottom: 3mm; }
-          .thermal-title { font-size: 14px; font-weight: bold; }
-          .thermal-subtitle { font-size: 10px; color: #666; }
-          .thermal-divider { border-top: 1px dashed #ccc; margin: 2mm 0; }
-          .thermal-photo { text-align: center; margin-bottom: 2mm; }
-          .thermal-photo img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
-          .thermal-name { font-size: 12px; font-weight: bold; text-align: center; margin-bottom: 1mm; }
-          .thermal-id { font-size: 9px; color: #666; text-align: center; margin-bottom: 2mm; }
-          .thermal-table { width: 100%; font-size: 9px; margin-bottom: 2mm; border-collapse: collapse; }
-          .thermal-table tr { line-height: 1.4; }
-          .thermal-label { text-align: right; padding: 1mm; color: #666; width: 40%; }
-          .thermal-value { text-align: left; padding: 1mm; font-weight: 500; width: 60%; }
-          .thermal-barcode { text-align: center; margin: 2mm 0; }
-          .thermal-barcode img { width: 100%; max-width: 180px; }
-          .thermal-barcode-number { font-size: 9px; font-family: monospace; text-align: center; margin-top: 1mm; }
-          .thermal-footer { display: flex; justify-content: space-between; gap: 3mm; margin-top: 3mm; }
-          .thermal-signature { flex: 1; text-align: center; font-size: 7px; }
-          .thermal-line { border-top: 0.5px solid #000; margin-bottom: 1mm; padding-top: 4mm; }
-        </style>
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>بطاقة تسجيل متدرب</title>
+          <style>
+            @page { 
+              size: 58mm auto; 
+              margin: 0mm; 
+            }
+            
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            html, body { 
+              margin: 0;
+              padding: 0;
+              background: white;
+              width: 58mm;
+              min-width: 58mm;
+              max-width: 58mm;
+              display: flex;
+              justify-content: flex-start;
+              align-items: flex-start;
+              min-height: 100vh;
+            }
+            
+            .thermal-card { 
+              width: 100%;
+              max-width: 58mm;
+              margin: 0;
+              padding: 1.5mm 2mm 2mm 2mm;
+              background: white;
+              position: relative;
+              overflow: hidden;
+              direction: rtl;
+              border: 0.5px solid #e5e7eb;
+              border-radius: 4px;
+            }
+            
+            /* ===== WATERMARK - Transparent background ===== */
+            .watermark-wrapper {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 55%;
+              height: 55%;
+              pointer-events: none;
+              z-index: 0;
+              overflow: hidden;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            
+            .watermark-container {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 100%;
+              height: 100%;
+              opacity: 0.07;
+              transform: rotate(-25deg);
+            }
+            
+            .watermark-container img {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+              filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+            }
+            
+            .watermark-text {
+              position: absolute;
+              top: 58%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-25deg);
+              font-size: 16px;
+              font-weight: 900;
+              color: #0f3460;
+              letter-spacing: 4px;
+              text-transform: uppercase;
+              white-space: nowrap;
+              opacity: 0.04;
+              pointer-events: none;
+              z-index: 0;
+            }
+            
+            /* ===== CONTENT - Above watermark ===== */
+            .card-content {
+              position: relative;
+              z-index: 1;
+            }
+            
+            /* ===== LOGO AT TOP - Colored and visible ===== */
+            .card-logo-section {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 4px 0;
+              margin-bottom: 4px;
+              border-bottom: 2px solid #0f3460;
+            }
+            
+            .card-logo-image {
+              width: 36px;
+              height: 36px;
+              object-fit: contain;
+              border-radius: 6px;
+              flex-shrink: 0;
+              background: white;
+              padding: 2px;
+            }
+            
+            .card-logo-text {
+              display: flex;
+              flex-direction: column;
+              flex: 1;
+            }
+            
+            .card-logo-text .academy-name {
+              font-size: 11px;
+              font-weight: 700;
+              color: #0f3460;
+              line-height: 1.2;
+            }
+            
+            .card-logo-text .card-title {
+              font-size: 7px;
+              color: #64748b;
+              font-weight: 500;
+            }
+            
+            .thermal-divider { 
+              border-top: 1px dashed #d1d5db; 
+              margin: 0.5mm 0; 
+            }
+            
+            .thermal-photo { 
+              text-align: center; 
+              margin-bottom: 0.5mm; 
+            }
+            .thermal-photo img { 
+              width: 30px; 
+              height: 30px; 
+              border-radius: 50%; 
+              object-fit: cover;
+              border: 1.5px solid #0f3460;
+            }
+            .thermal-photo .placeholder-photo {
+              width: 30px;
+              height: 30px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              color: white;
+              border: 1.5px solid #0f3460;
+            }
+            
+            .thermal-name { 
+              font-size: 10px; 
+              font-weight: 700; 
+              text-align: center; 
+              margin-bottom: 0.2mm; 
+              color: #1a1a2e;
+            }
+            .thermal-id { 
+              font-size: 7px; 
+              color: #6b7280; 
+              text-align: center; 
+              margin-bottom: 0.5mm; 
+              font-weight: 500;
+            }
+            
+            .thermal-table { 
+              width: 100%; 
+              font-size: 6.5px; 
+              margin-bottom: 0.5mm; 
+              border-collapse: collapse; 
+            }
+            .thermal-table tr { 
+              line-height: 1.2; 
+            }
+            .thermal-label { 
+              text-align: right; 
+              padding: 0.2mm 0.5mm; 
+              color: #6b7280; 
+              width: 35%;
+              font-weight: 500;
+              font-size: 6px;
+            }
+            .thermal-value { 
+              text-align: left; 
+              padding: 0.2mm 0.5mm; 
+              font-weight: 600; 
+              width: 65%;
+              color: #1e293b;
+              font-size: 6px;
+            }
+            .thermal-value.amount { 
+              color: #0f3460; 
+              font-weight: 700; 
+            }
+            .thermal-value.remaining { 
+              color: #d97706; 
+              font-weight: 700; 
+            }
+            .thermal-value.remaining-zero { 
+              color: #10b981; 
+              font-weight: 700; 
+            }
+            
+            /* Payment Details Section - Transparent background */
+            .payment-details-section {
+              background: transparent;
+              border-radius: 4px;
+              padding: 0.5mm 1.5mm;
+              margin: 0.3mm 0;
+              border: 1px solid rgba(15, 52, 96, 0.15);
+            }
+            .payment-details-section .payment-title {
+              font-size: 6px;
+              font-weight: 700;
+              color: #0f3460;
+              text-align: center;
+              margin-bottom: 0.3mm;
+            }
+            .payment-details-section .thermal-table {
+              margin-bottom: 0;
+            }
+            .payment-details-section .thermal-table tr:last-child .thermal-value,
+            .payment-details-section .thermal-table tr:last-child .thermal-label {
+              border-bottom: none;
+            }
+            .payment-details-section .thermal-table .thermal-label {
+              color: #475569;
+            }
+            
+            .thermal-barcode { 
+              text-align: center; 
+              margin: 0.5mm 0; 
+            }
+            .thermal-barcode img { 
+              width: 100%; 
+              max-width: 130px; 
+            }
+            .thermal-barcode-number { 
+              font-size: 6px; 
+              font-family: monospace; 
+              text-align: center; 
+              margin-top: 0.2mm; 
+              color: #0f3460;
+              font-weight: 600;
+              letter-spacing: 1px;
+            }
+            
+            .thermal-footer { 
+              display: flex; 
+              justify-content: space-between; 
+              gap: 1.5mm; 
+              margin-top: 0.6mm; 
+              padding-top: 0.6mm;
+              border-top: 2px solid #0f3460;
+            }
+            .thermal-signature { 
+              flex: 1; 
+              text-align: center; 
+              font-size: 4.5px; 
+              color: #94a3b8;
+            }
+            .thermal-line { 
+              border-top: 0.5px solid #94a3b8; 
+              margin-bottom: 0.2mm; 
+              padding-top: 2mm; 
+            }
+            
+            .thermal-issue-date {
+              text-align: center;
+              font-size: 5px;
+              color: #94a3b8;
+              margin-top: 0.3mm;
+              padding-top: 0.3mm;
+              border-top: 1px dashed #e5e7eb;
+            }
+            
+            @media print {
+              html, body {
+                width: 58mm !important;
+                min-width: 58mm !important;
+                max-width: 58mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              .thermal-card {
+                padding: 1mm 1.5mm 1.5mm 1.5mm;
+                border: none !important;
+                box-shadow: none !important;
+              }
+              .watermark-container {
+                opacity: 0.08 !important;
+              }
+              .watermark-container img {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .watermark-text {
+                opacity: 0.05 !important;
+              }
+              .no-print { 
+                display: none !important; 
+              }
+              .card-logo-image {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .card-logo-section {
+                padding: 2px 0 !important;
+                margin-bottom: 2px !important;
+              }
+              .card-logo-image {
+                width: 30px !important;
+                height: 30px !important;
+              }
+              .card-logo-text .academy-name {
+                font-size: 9px !important;
+              }
+              .card-logo-text .card-title {
+                font-size: 6px !important;
+              }
+              .thermal-photo img {
+                width: 25px !important;
+                height: 25px !important;
+              }
+              .payment-details-section {
+                padding: 0.3mm 1mm !important;
+                border-color: rgba(15, 52, 96, 0.1) !important;
+              }
+            }
+          </style>
         </head>
         <body>
-        <div class="thermal-card">
-          <div class="thermal-header"><div class="thermal-title">الأكاديمية الأولمبية</div><div class="thermal-subtitle">بطاقة تسجيل متدرب</div></div>
-          <div class="thermal-photo"><img src="${this.traineeImageUrl || ''}" onerror="this.style.display='none'"></div>
-          <div class="thermal-name">${e.trainee?.fullName || ''}</div>
-          <div class="thermal-id">رقم التسجيل: ${e?.id || ''}</div>
-          <div class="thermal-divider"></div>
-          <table class="thermal-table">
-            <tr><td class="thermal-label">📚 الدورة</td><td class="thermal-value">${(e.course?.title || '').substring(0, 25)}</td></tr>
-            <tr><td class="thermal-label">👨‍🏫 المدرب</td><td class="thermal-value">${(e.trainer?.title || '').substring(0, 25)}</td></tr>
-            <tr><td class="thermal-label">📅 التسجيل</td><td class="thermal-value">${new Date(e.startDate).toLocaleDateString('ar-EG')}</td></tr>
-            ${e.endDate ? `<tr><td class="thermal-label">📅 الانتهاء</td><td class="thermal-value">${new Date(e.endDate).toLocaleDateString('ar-EG')}</td></tr>` : ''}
-            <tr><td class="thermal-label">💰 القيمة</td><td class="thermal-value">${e.finalSubscriptionValue?.toLocaleString()} جم</td></tr>
-            ${e.remainedSubscriptionValue ? `<tr><td class="thermal-label">💳 المتبقي</td><td class="thermal-value">${e.remainedSubscriptionValue?.toLocaleString()} جم</td></tr>` : ''}
-            <tr><td class="thermal-label">✓ الحالة</td><td class="thermal-value">${e.enrollmentStatus?.title || ''}</td></tr>
-            <tr><td class="thermal-label">💵 الدفع</td><td class="thermal-value">${e.paymentStatus?.title || ''}</td></tr>
-          </table>
-          <div class="thermal-divider"></div>
-          <div class="thermal-barcode"><img src="${barcodeImage}"></div>
-          <div class="thermal-footer"><div class="thermal-signature"><div class="thermal-line"></div><div>توقيع المتدرب</div></div><div class="thermal-signature"><div class="thermal-line"></div><div>ختم الأكاديمية</div></div></div>
-        </div>
-        <script>window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 300); };<\/script>
-        </body></html>
+          <div class="thermal-card">
+            <!-- WATERMARK - Transparent background -->
+            <div class="watermark-wrapper">
+              <div class="watermark-container">
+                <img src="${logoPath}" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+              </div>
+              <div class="watermark-text">الأكاديمية الأولمبية</div>
+            </div>
+            
+            <!-- CONTENT -->
+            <div class="card-content">
+              <!-- LOGO AT TOP - Colored and visible -->
+              <div class="card-logo-section">
+                <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image" onerror="this.style.display='none'">
+                <div class="card-logo-text">
+                  <span class="academy-name">الأكاديمية الأولمبية</span>
+                  <span class="card-title">بطاقة تسجيل متدرب</span>
+                </div>
+              </div>
+              
+              <div class="thermal-photo">
+                ${this.traineeImageUrl ? `<img src="${this.traineeImageUrl}" alt="${e.trainee?.fullName}" onerror="this.style.display='none'">` : '<div class="placeholder-photo">📷</div>'}
+              </div>
+              
+              <div class="thermal-name">${e.trainee?.fullName || ''}</div>
+              <div class="thermal-id">رقم التسجيل: ${e?.id || ''}</div>
+              
+              <div class="thermal-divider"></div>
+              
+              <!-- Course & Trainer Info -->
+              <table class="thermal-table">
+                <tr>
+                  <td class="thermal-label">📚 الدورة</td>
+                  <td class="thermal-value">${(e.course?.title || '').substring(0, 20)}</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">👨‍🏫 المدرب</td>
+                  <td class="thermal-value">${(e.trainer?.title || '').substring(0, 20)}</td>
+                </tr>
+                <tr>
+                  <td class="thermal-label">📅 التسجيل</td>
+                  <td class="thermal-value">${new Date(e.startDate).toLocaleDateString('ar-EG')}</td>
+                </tr>
+                ${e.endDate ? `<tr><td class="thermal-label">📅 الانتهاء</td><td class="thermal-value">${new Date(e.endDate).toLocaleDateString('ar-EG')}</td></tr>` : ''}
+              </table>
+              
+              <div class="thermal-divider"></div>
+              
+              <!-- Payment Details Section - Transparent -->
+              <div class="payment-details-section">
+                <div class="payment-title">💳 تفاصيل الدفعة</div>
+                <table class="thermal-table">
+                  <tr>
+                    <td class="thermal-label">💰 القيمة</td>
+                    <td class="thermal-value amount">${e.finalSubscriptionValue?.toLocaleString() || 0} جم</td>
+                  </tr>
+                  ${e.remainedSubscriptionValue !== undefined && e.remainedSubscriptionValue !== null ? `
+                  <tr>
+                    <td class="thermal-label">💳 المتبقي</td>
+                    <td class="thermal-value ${e.remainedSubscriptionValue > 0 ? 'remaining' : 'remaining-zero'}">${e.remainedSubscriptionValue.toLocaleString()} جم</td>
+                  </tr>
+                  ` : ''}
+                  <tr>
+                    <td class="thermal-label">✓ الحالة</td>
+                    <td class="thermal-value">${e.enrollmentStatus?.title || ''}</td>
+                  </tr>
+                  <tr>
+                    <td class="thermal-label">💵 الدفع</td>
+                    <td class="thermal-value">${e.paymentStatus?.title || ''}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              <div class="thermal-divider"></div>
+              
+              <div class="thermal-barcode">
+                <img src="${barcodeImage}" alt="Barcode">
+                <div class="thermal-barcode-number">${e.trainee?.nationalId || e.trainee?.id || ''}</div>
+              </div>
+              
+              <div class="thermal-footer">
+                <div class="thermal-signature">
+                  <div class="thermal-line"></div>
+                  <div>توقيع المتدرب</div>
+                </div>
+                <div class="thermal-signature">
+                  <div class="thermal-line"></div>
+                  <div>ختم الأكاديمية</div>
+                </div>
+              </div>
+              
+              <div class="thermal-issue-date">📅 تاريخ الإصدار: ${this.today.toLocaleDateString('ar-EG')}</div>
+            </div>
+          </div>
+          
+          <script>
+            window.onload = function() { 
+              setTimeout(function() { 
+                window.print(); 
+                setTimeout(function() { 
+                  window.close(); 
+                }, 500); 
+              }, 300); 
+            };
+          <\/script>
+        </body>
+        </html>
       `);
       printWindow.document.close();
     }, 300);

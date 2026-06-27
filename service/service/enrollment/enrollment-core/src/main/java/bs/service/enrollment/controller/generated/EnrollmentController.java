@@ -82,6 +82,8 @@ public interface EnrollmentController {
      *            (optional)
      * @param traineeId
      *            (optional)
+     * @param traineeNationalId
+     *            (optional)
      * @param courseId
      *            (optional)
      * @param trainerId
@@ -126,6 +128,7 @@ public interface EnrollmentController {
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
             @Parameter(name = "traineeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeId", required = false) Integer traineeId,
+            @Parameter(name = "traineeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeNationalId", required = false) String traineeNationalId,
             @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
             @Parameter(name = "trainerId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainerId", required = false) Integer trainerId,
             @Parameter(name = "enrollmentTypeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enrollmentTypeId", required = false) Integer enrollmentTypeId,

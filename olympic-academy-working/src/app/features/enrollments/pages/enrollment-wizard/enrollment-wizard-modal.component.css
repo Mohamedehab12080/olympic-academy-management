@@ -1,0 +1,870 @@
+/* ===== CONTAINER ===== */
+.wizard-container {
+  min-width: 700px;
+  max-width: 900px;
+  max-height: 90vh;
+  direction: rtl;
+  background: #f0f4f8;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(226, 232, 240, 0.4);
+}
+
+/* ===== HEADER ===== */
+.wizard-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.header-title p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-actions button {
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease;
+}
+
+.header-actions button:hover {
+  color: white;
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.close-btn {
+  color: white !important;
+  transition: transform 0.2s;
+}
+
+.close-btn:hover {
+  transform: scale(1.1) rotate(90deg);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== STEPPER CONTAINER ===== */
+.stepper-container {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+  padding: 0 24px;
+}
+
+.stepper-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stepper-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.stepper-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #0f3460, #1a1a2e);
+  border-radius: 10px;
+}
+
+.stepper-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+}
+
+.custom-stepper {
+  background: transparent;
+  padding: 24px 0;
+}
+
+/* ===== STEP LABEL ===== */
+.step-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-label mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.step-content {
+  padding: 24px 0;
+  min-height: 320px;
+}
+
+/* ===== STEP HEADER ===== */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.step-header-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.step-header-text h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.step-header-text p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ===== STEP ACTIONS ===== */
+.step-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding: 16px 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 16px;
+  background: #f8fafc;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  border-radius: 0 0 16px 16px;
+}
+
+.step-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+}
+
+.step-actions button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* ===== TRAINEE SEARCH SECTION ===== */
+.trainee-search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.barcode-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 16px;
+  border: 2px dashed #bae6fd;
+}
+
+.barcode-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barcode-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: white;
+}
+
+.barcode-input-wrapper {
+  flex: 1;
+}
+
+.barcode-input {
+  width: 100%;
+}
+
+.barcode-input ::ng-deep .mat-form-field-outline {
+  background: white !important;
+  border-radius: 10px !important;
+}
+
+.barcode-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #0284c7;
+  margin-top: 4px;
+}
+
+.barcode-hint mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.divider-text {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  position: relative;
+  padding: 0 20px;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.divider-text::before {
+  right: 0;
+}
+
+.divider-text::after {
+  left: 0;
+}
+
+/* ===== FORM FIELDS ===== */
+.form-field {
+  flex: 1;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* ===== TRAINEE PREVIEW CARD ===== */
+.trainee-preview-card {
+  margin-top: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.trainee-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.trainee-preview-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.trainee-preview-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trainee-preview-avatar mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: white;
+}
+
+.trainee-preview-info {
+  flex: 1;
+}
+
+.trainee-preview-info h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.trainee-preview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ===== COURSE INFO ===== */
+.course-date-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.course-date-info mat-icon {
+  color: #2563eb;
+}
+
+.date-range {
+  flex: 1;
+}
+
+.range-label {
+  font-weight: 600;
+  color: #1e40af;
+  margin-left: 8px;
+}
+
+.range-value {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.course-info-card {
+  margin-top: 24px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.course-info-card mat-card-header {
+  padding: 16px 16px 0 16px;
+}
+
+.course-info-card mat-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.course-info-card mat-card-content {
+  padding: 16px;
+}
+
+.course-info-card .info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.course-info-card .info-item {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.course-info-card .info-item.full-width {
+  flex: 100%;
+}
+
+.course-info-card .info-label {
+  font-weight: 600;
+  color: #475569;
+  font-size: 13px;
+}
+
+.course-info-card .info-value {
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.course-info-card .info-value.price {
+  font-weight: 700;
+  color: #0f3460;
+  font-size: 16px;
+}
+
+/* ===== FORM ROWS ===== */
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.discount-row {
+  background: #fffbeb;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 16px 0;
+  border: 1px solid rgba(217, 119, 6, 0.15);
+}
+
+/* ===== PAYMENT STATUS ===== */
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ===== STATUS TOGGLE ===== */
+.status-toggle {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.toggle-label mat-icon {
+  color: #667eea;
+}
+
+.toggle-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.toggle-status.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* ===== PAYMENT OPTION ===== */
+.payment-option {
+  background: #f8fafc;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border: 1px solid #e2e8f0;
+}
+
+.payment-checkbox-label {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.payment-info-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #2563eb;
+}
+
+.payment-info-hint mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== LOADING OVERLAY ===== */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border-radius: 24px;
+  z-index: 1000;
+}
+
+.loading-overlay p {
+  color: #0f3460;
+  font-weight: 500;
+}
+
+/* ===== MATERIAL OVERRIDES ===== */
+::ng-deep .mat-form-field-outline {
+  background: white !important;
+  border-radius: 10px !important;
+}
+
+::ng-deep .mat-form-field.mat-focused .mat-form-field-outline {
+  color: #0f3460 !important;
+}
+
+::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
+  color: #0f3460 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #0f3460 !important;
+}
+
+::ng-deep .mat-step-header .mat-step-icon-selected {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+}
+
+::ng-deep .mat-step-header .mat-step-icon-state-done {
+  background: #0f3460 !important;
+}
+
+::ng-deep .mat-step-header .mat-step-label.mat-step-label-active {
+  color: #0f3460 !important;
+  font-weight: 600 !important;
+}
+
+::ng-deep .mat-horizontal-stepper-header-container {
+  background: white;
+  padding: 8px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .wizard-container {
+    min-width: 90vw;
+    max-width: 90vw;
+    max-height: 95vh;
+  }
+  
+  .stepper-container {
+    max-height: calc(95vh - 80px);
+    padding: 0 12px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .step-actions {
+    flex-direction: column;
+  }
+  
+  .step-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .info-grid {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .course-date-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .payment-option {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .barcode-section {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .barcode-input-wrapper {
+    width: 100%;
+  }
+  
+  .trainee-preview-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .trainee-preview-meta {
+    justify-content: center;
+  }
+  
+  .step-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .wizard-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    padding: 16px 20px;
+  }
+  
+  .header-title {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .status-toggle {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .wizard-container {
+    min-width: 95vw;
+    max-width: 95vw;
+    border-radius: 16px;
+  }
+  
+  .wizard-header {
+    padding: 12px 16px;
+  }
+  
+  .header-title h2 {
+    font-size: 18px;
+  }
+  
+  .header-title p {
+    font-size: 11px;
+  }
+  
+  .step-content {
+    padding: 16px 0;
+    min-height: 240px;
+  }
+  
+  .step-header {
+    padding: 12px 16px;
+  }
+  
+  .step-header-icon {
+    font-size: 28px;
+  }
+  
+  .step-header-text h3 {
+    font-size: 16px;
+  }
+  
+  .barcode-section {
+    padding: 16px;
+  }
+  
+  .barcode-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+  
+  .barcode-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  .trainee-preview-card {
+    padding: 12px;
+  }
+  
+  .trainee-preview-avatar {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .trainee-preview-avatar mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+  
+  .course-info-card mat-card-content {
+    padding: 12px;
+  }
+  
+  .course-info-card .info-item {
+    min-width: 100%;
+  }
+  
+  .discount-row {
+    padding: 12px;
+  }
+  
+  .payment-option {
+    padding: 12px 16px;
+  }
+  
+  .step-actions button {
+    padding: 6px 16px;
+    font-size: 13px;
+  }
+  
+  ::ng-deep .mat-horizontal-stepper-header-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  ::ng-deep .mat-step-header {
+    padding: 4px 8px !important;
+  }
+  
+  ::ng-deep .mat-step-label {
+    font-size: 11px !important;
+  }
+  
+  ::ng-deep .mat-step-icon {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  
+  ::ng-deep .mat-step-icon .mat-icon {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .wizard-container {
+    min-width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    background: white;
+  }
+  
+  .wizard-header {
+    background: #0f3460 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .header-actions button,
+  .step-actions button,
+  .close-btn {
+    display: none !important;
+  }
+  
+  .stepper-container {
+    max-height: 100%;
+    overflow: visible;
+    padding: 0;
+  }
+  
+  .step-content {
+    min-height: auto;
+    padding: 16px 0;
+  }
+  
+  .step-actions {
+    display: none !important;
+  }
+  
+  .barcode-section {
+    background: #f0f9ff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .course-info-card {
+    background: #eff6ff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .discount-row {
+    background: #fffbeb !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .payment-option {
+    background: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .status-toggle {
+    background: #f9fafb !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .loading-overlay {
+    display: none !important;
+  }
+  
+  ::ng-deep .mat-step-header .mat-step-icon-selected {
+    background: #0f3460 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

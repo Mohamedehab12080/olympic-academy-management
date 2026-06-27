@@ -33,6 +33,10 @@ public class EnrollmentQueryBuilder extends AbstractQueryBuilderV2<Enrollment, E
             qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
                     .condition("item.isDeleted = :PH").build());
 
+        if (filters.getTraineeNationalId() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("traineeNationalId").value(filters.getTraineeNationalId())
+                    .condition("item.trainee.nationalId = :PH").build());
+
         if (filters.getTraineeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("traineeId").value(filters.getTraineeId())
                     .condition("item.trainee.id = :PH").build());

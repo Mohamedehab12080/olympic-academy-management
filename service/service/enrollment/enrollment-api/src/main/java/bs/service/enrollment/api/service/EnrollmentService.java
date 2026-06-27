@@ -16,7 +16,7 @@ public interface EnrollmentService {
     void deleteEnrollment(Integer enrollmentId);
     EnrollmentVTO getEnrollmentById(Integer enrollmentId);
     EnrollmentResultSet getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,
-                                                  Integer traineeId, Integer courseId, Integer trainerId,
+                                                  Integer traineeId,String traineeNationalId, Integer courseId,Integer trainerId,
                                                   Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus,
                                                   PaymentStatus paymentStatus, LocalDate startDateFrom,
                                                   LocalDate startDateTo, LocalDate endDateFrom,

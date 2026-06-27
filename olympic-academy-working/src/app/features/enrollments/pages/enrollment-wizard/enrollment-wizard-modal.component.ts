@@ -1,5 +1,3 @@
-// enrollment-wizard-modal.component.ts - COMPLETE WORKING VERSION
-
 import { Component, OnInit, Inject, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
@@ -70,954 +68,8 @@ export interface EnrollmentWizardData {
     MatSlideToggleModule,
     SearchableSelectComponent
   ],
-  template: `
-    <div class="wizard-container" dir="rtl">
-      <!-- Header -->
-      <div class="wizard-header">
-        <div class="header-title">
-          <mat-icon>{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
-          <div>
-            <h2>{{ isEditMode ? 'تعديل التسجيل' : 'تسجيل جديد' }}</h2>
-            <p>{{ isEditMode ? 'قم بتحديث بيانات التسجيل' : 'أضف تسجيل جديد لمتدرب' }}</p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button mat-icon-button (click)="printPreview()" matTooltip="معاينة الطباعة">
-            <mat-icon>print</mat-icon>
-          </button>
-          <button mat-icon-button mat-dialog-close class="close-btn">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-      </div>
-      
-      <mat-divider></mat-divider>
-      
-      <!-- Scrollable Stepper Container -->
-      <div class="stepper-container">
-        <mat-stepper [linear]="true" #stepper class="custom-stepper">
-          
-          <!-- Step 1: Select Trainee -->
-          <mat-step [stepControl]="step1Form">
-            <ng-template matStepLabel>
-              <div class="step-label">
-                <mat-icon>person</mat-icon>
-                <span>المتدرب</span>
-              </div>
-            </ng-template>
-            <div class="step-content">
-              <div class="step-header">
-                <div class="step-header-icon">👤</div>
-                <div class="step-header-text">
-                  <h3>اختر المتدرب</h3>
-                  <p>يمكنك البحث عن المتدرب باستخدام الاسم أو رقم الهوية</p>
-                </div>
-              </div>
-
-              <div class="trainee-search-section">
-                <!-- Barcode Scanner Input -->
-                <div class="barcode-section">
-                  <div class="barcode-icon-wrapper">
-                    <mat-icon class="barcode-icon">qr_code_scanner</mat-icon>
-                  </div>
-                  <div class="barcode-input-wrapper">
-                    <mat-form-field appearance="outline" class="barcode-input">
-                      <mat-label>مسح الباركود (رقم الهوية)</mat-label>
-                      <input matInput 
-                             #barcodeInput
-                             (keyup.enter)="searchByNationalId(barcodeInput.value)"
-                             placeholder="أدخل رقم الهوية أو امسح الباركود...">
-                      <button mat-icon-button matSuffix (click)="searchByNationalId(barcodeInput.value)" matTooltip="بحث">
-                        <mat-icon>search</mat-icon>
-                      </button>
-                    </mat-form-field>
-                    <div class="barcode-hint">
-                      <mat-icon>info</mat-icon>
-                      <span>يمكنك مسح الباركود من بطاقة المتدرب أو إدخال رقم الهوية يدوياً</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="divider-text">أو اختر من القائمة</div>
-
-                <div class="form-field full-width">
-                  <app-searchable-select
-                    [ngModel]="step1Form.get('traineeId')?.value"
-                    (ngModelChange)="step1Form.get('traineeId')?.setValue($event); onTraineeSelect()"
-                    label="المتدرب *"
-                    [options]="traineeOptions"
-                    [required]="true"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
-                </div>
-
-                <!-- Selected Trainee Info Card -->
-                <div class="trainee-preview-card" *ngIf="selectedTrainee">
-                  <div class="trainee-preview-header">
-                    <div class="trainee-preview-avatar">
-                      <img *ngIf="selectedTrainee.imagePreviewUrl" [src]="selectedTrainee.imagePreviewUrl" [alt]="selectedTrainee.title">
-                      <mat-icon *ngIf="!selectedTrainee.imagePreviewUrl">person</mat-icon>
-                    </div>
-                    <div class="trainee-preview-info">
-                      <h4>{{ selectedTrainee.title }}</h4>
-                      <div class="trainee-preview-meta">
-                        <mat-chip size="small">
-                          <mat-icon>badge</mat-icon>
-                          {{ selectedTrainee.nationalId || 'رقم الهوية غير متوفر' }}
-                        </mat-chip>
-                        <mat-chip size="small" *ngIf="selectedTrainee.academicYear">
-                          <mat-icon>school</mat-icon>
-                          السنة {{ selectedTrainee.academicYear }}
-                        </mat-chip>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="step-actions">
-              <button mat-raised-button color="primary" matStepperNext [disabled]="step1Form.invalid">
-                التالي <mat-icon>arrow_back</mat-icon>
-              </button>
-            </div>
-          </mat-step>
-
-          <!-- Step 2: Select Course -->
-          <mat-step [stepControl]="step2Form">
-            <ng-template matStepLabel>
-              <div class="step-label">
-                <mat-icon>school</mat-icon>
-                <span>الدورة</span>
-              </div>
-            </ng-template>
-            <div class="step-content">
-              <div class="step-header">
-                <div class="step-header-icon">📚</div>
-                <div class="step-header-text">
-                  <h3>اختر الدورة</h3>
-                  <p>اختر الدورة التي سيسجل فيها المتدرب</p>
-                </div>
-              </div>
-
-              <form [formGroup]="step2Form">
-                <div class="form-field full-width">
-                  <app-searchable-select
-                    [ngModel]="step2Form.get('courseId')?.value"
-                    (ngModelChange)="step2Form.get('courseId')?.setValue($event); onCourseSelect()"
-                    label="الدورة *"
-                    [options]="courseOptions"
-                    [required]="true"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
-                </div>
-                
-                <!-- Course Information Card -->
-                <mat-card class="course-info-card" *ngIf="selectedCourse">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar>info</mat-icon>
-                    <mat-card-title>معلومات الدورة</mat-card-title>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <div class="info-grid">
-                      <div class="info-item">
-                        <span class="info-label">المدة:</span>
-                        <span class="info-value">{{ selectedCourse.duration }} ساعة</span>
-                      </div>
-                      <div class="info-item">
-                        <span class="info-label">السعر:</span>
-                        <span class="info-value price">{{ selectedCourse.price | currency:'EGP' }}</span>
-                      </div>
-                      <div class="info-item">
-                        <span class="info-label">تاريخ البدء:</span>
-                        <span class="info-value">{{ selectedCourse.startDate | date:'dd/MM/yyyy' }}</span>
-                      </div>
-                      <div class="info-item">
-                        <span class="info-label">تاريخ الانتهاء:</span>
-                        <span class="info-value">{{ selectedCourse.endDate | date:'dd/MM/yyyy' }}</span>
-                      </div>
-                      <div class="info-item full-width" *ngIf="selectedCourse.description">
-                        <span class="info-label">الوصف:</span>
-                        <span class="info-value">{{ selectedCourse.description }}</span>
-                      </div>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              </form>
-            </div>
-            <div class="step-actions">
-              <button mat-stroked-button matStepperPrevious>
-                <mat-icon>arrow_forward</mat-icon> السابق
-              </button>
-              <button mat-raised-button color="primary" matStepperNext [disabled]="step2Form.invalid">
-                التالي <mat-icon>arrow_back</mat-icon>
-              </button>
-            </div>
-          </mat-step>
-
-          <!-- Step 3: Select Trainer -->
-          <mat-step [stepControl]="step3Form">
-            <ng-template matStepLabel>
-              <div class="step-label">
-                <mat-icon>badge</mat-icon>
-                <span>المدرب</span>
-              </div>
-            </ng-template>
-            <div class="step-content">
-              <div class="step-header">
-                <div class="step-header-icon">👨‍🏫</div>
-                <div class="step-header-text">
-                  <h3>اختر المدرب</h3>
-                  <p>اختر المدرب المسؤول عن هذه الدورة</p>
-                </div>
-              </div>
-
-              <form [formGroup]="step3Form">
-                <div class="form-field full-width">
-                  <app-searchable-select
-                    [ngModel]="step3Form.get('trainerId')?.value"
-                    (ngModelChange)="step3Form.get('trainerId')?.setValue($event)"
-                    label="المدرب *"
-                    [options]="trainerOptions"
-                    [required]="true"
-                    [ngModelOptions]="{standalone: true}">
-                  </app-searchable-select>
-                </div>
-              </form>
-            </div>
-            <div class="step-actions">
-              <button mat-stroked-button matStepperPrevious>
-                <mat-icon>arrow_forward</mat-icon> السابق
-              </button>
-              <button mat-raised-button color="primary" matStepperNext [disabled]="step3Form.invalid">
-                التالي <mat-icon>arrow_back</mat-icon>
-              </button>
-            </div>
-          </mat-step>
-
-          <!-- Step 4: Enrollment Details -->
-          <mat-step [stepControl]="enrollmentForm">
-            <ng-template matStepLabel>
-              <div class="step-label">
-                <mat-icon>receipt</mat-icon>
-                <span>تفاصيل التسجيل</span>
-              </div>
-            </ng-template>
-            <div class="step-content">
-              <div class="step-header">
-                <div class="step-header-icon">📝</div>
-                <div class="step-header-text">
-                  <h3>تفاصيل التسجيل</h3>
-                  <p>أدخل تفاصيل التسجيل والتكاليف وحالة الدفع</p>
-                </div>
-              </div>
-
-              <!-- Course Date Range Info -->
-              <div class="course-date-info" *ngIf="selectedCourse">
-                <mat-icon>event_range</mat-icon>
-                <div class="date-range">
-                  <span class="range-label">فترة الدورة:</span>
-                  <span class="range-value">{{ selectedCourse.startDate | date:'dd/MM/yyyy' }} - {{ selectedCourse.endDate | date:'dd/MM/yyyy' }}</span>
-                </div>
-              </div>
-
-              <form [formGroup]="enrollmentForm">
-                <!-- First Row -->
-                <div class="form-row">
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>نوع التسجيل</mat-label>
-                      <mat-select formControlName="enrollmentTypeId">
-                        <mat-option [value]="null">-- اختر --</mat-option>
-                        <mat-option *ngFor="let type of enrollmentTypes" [value]="type.id">{{ type.title }}</mat-option>
-                        <mat-option [value]="'new'">
-                          <div style="display: flex; align-items: center; gap: 8px; color: #2563eb;">
-                            <mat-icon>add_circle</mat-icon>
-                            <span>إضافة نوع تسجيل جديد</span>
-                          </div>
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>تاريخ البدء *</mat-label>
-                      <input matInput [matDatepicker]="startPicker" formControlName="startDate" (dateChange)="validateDates()">
-                      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-                      <mat-datepicker #startPicker></mat-datepicker>
-                      <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('required')">تاريخ البدء مطلوب</mat-error>
-                      <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('beforeCourseStart')">تاريخ البدء يجب أن يكون بعد تاريخ بدء الدورة ({{ selectedCourse?.startDate | date:'dd/MM/yyyy' }})</mat-error>
-                      <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('afterCourseEnd')">تاريخ البدء يجب أن يكون قبل تاريخ انتهاء الدورة ({{ selectedCourse?.endDate | date:'dd/MM/yyyy' }})</mat-error>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Second Row -->
-                <div class="form-row">
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>تاريخ الانتهاء</mat-label>
-                      <input matInput [matDatepicker]="endPicker" formControlName="endDate" (dateChange)="validateDates()">
-                      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-                      <mat-datepicker #endPicker></mat-datepicker>
-                      <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('afterCourseEnd')">تاريخ الانتهاء يجب أن يكون قبل تاريخ انتهاء الدورة ({{ selectedCourse?.endDate | date:'dd/MM/yyyy' }})</mat-error>
-                      <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('beforeStartDate')">تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء</mat-error>
-                    </mat-form-field>
-                  </div>
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>حالة التسجيل</mat-label>
-                      <mat-select formControlName="enrollmentStatus">
-                        <mat-option *ngFor="let status of enrollmentStatuses" [value]="status">{{ status.title }}</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Third Row -->
-                <div class="form-row">
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>قيمة الاشتراك</mat-label>
-                      <input matInput type="number" formControlName="subscriptionValue" (input)="calculateFinalValue()">
-                      <span matSuffix>جم</span>
-                    </mat-form-field>
-                  </div>
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>نسبة الخصم</mat-label>
-                      <input matInput type="number" formControlName="discountPercentage" (input)="onDiscountPercentageChange()">
-                      <span matSuffix>%</span>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Fourth Row - Discount with Auto Calculation -->
-                <div class="form-row discount-row">
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>قيمة الخصم</mat-label>
-                      <input matInput type="number" formControlName="discountAmount" (input)="onDiscountAmountChange()">
-                      <span matSuffix>جم</span>
-                    </mat-form-field>
-                  </div>
-                  <div class="form-field">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>المبلغ النهائي</mat-label>
-                      <input matInput type="number" formControlName="finalSubscriptionValue" readonly>
-                      <span matSuffix>جم</span>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Payment Status - NEW -->
-                <div class="form-row">
-                  <div class="form-field full-width">
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>حالة الدفع *</mat-label>
-                      <mat-select formControlName="paymentStatus" required>
-                        <mat-option [value]="null">-- اختر حالة الدفع --</mat-option>
-                        <mat-option *ngFor="let status of paymentStatuses" [value]="status">
-                          <div class="status-option">
-                            <span class="status-dot" [style.background-color]="getPaymentStatusColor(status.id)"></span>
-                            {{ status.title }}
-                          </div>
-                        </mat-option>
-                      </mat-select>
-                      <mat-error *ngIf="enrollmentForm.get('paymentStatus')?.hasError('required')">حالة الدفع مطلوبة</mat-error>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <!-- Status Toggle - Only visible in Edit Mode -->
-                <div class="full-width status-toggle" *ngIf="isEditMode">
-                  <mat-slide-toggle 
-                    [color]="'primary'"
-                    [checked]="enrollmentForm.get('isActive')?.value"
-                    (change)="enrollmentForm.get('isActive')?.setValue($event.checked)">
-                    <div class="toggle-label">
-                      <mat-icon>account_circle</mat-icon>
-                      <span>حالة التسجيل</span>
-                    </div>
-                    <div class="toggle-status" [class.active]="enrollmentForm.get('isActive')?.value">
-                      {{ enrollmentForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
-                    </div>
-                  </mat-slide-toggle>
-                </div>
-
-                <!-- Payment Option -->
-                <div class="payment-option">
-                  <mat-checkbox color="primary" (change)="onPaymentOptionChange($event)">
-                    <span class="payment-checkbox-label">إجراء دفعة مباشرة</span>
-                  </mat-checkbox>
-                  <div class="payment-info-hint" *ngIf="showPaymentSection">
-                    <mat-icon>info</mat-icon>
-                    <span>سيتم نقلك إلى صفحة الدفع بعد حفظ التسجيل</span>
-                  </div>
-                </div>
-
-                <!-- Notes -->
-                <div class="form-field full-width">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>ملاحظات</mat-label>
-                    <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
-                  </mat-form-field>
-                </div>
-              </form>
-            </div>
-            <div class="step-actions">
-              <button mat-stroked-button matStepperPrevious>
-                <mat-icon>arrow_forward</mat-icon> السابق
-              </button>
-              <button mat-raised-button color="primary" (click)="submitEnrollment()" [disabled]="isSubmitting || enrollmentForm.invalid">
-                <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
-                <span *ngIf="!isSubmitting">{{ isEditMode ? 'تحديث' : 'تأكيد التسجيل' }}</span>
-              </button>
-              <button mat-stroked-button color="accent" (click)="printPreview()" [disabled]="isSubmitting">
-                <mat-icon>print</mat-icon>
-                معاينة الطباعة
-              </button>
-            </div>
-          </mat-step>
-        </mat-stepper>
-      </div>
-      
-      <!-- Loading Overlay -->
-      <div class="loading-overlay" *ngIf="isLoading">
-        <mat-spinner diameter="50"></mat-spinner>
-        <p>جاري التحميل...</p>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .wizard-container {
-      min-width: 700px;
-      max-width: 900px;
-      max-height: 90vh;
-      direction: rtl;
-      background: #f0f4f8;
-      border-radius: 24px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(226, 232, 240, 0.4);
-    }
-
-    /* Header */
-    .wizard-header {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      color: white;
-    }
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .header-title mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-    .header-title h2 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
-    }
-    .header-title p {
-      margin: 4px 0 0;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .close-btn {
-      color: white;
-      transition: transform 0.2s;
-    }
-    .close-btn:hover {
-      transform: scale(1.1);
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    .stepper-container {
-      flex: 1;
-      overflow-y: auto;
-      max-height: calc(90vh - 80px);
-      padding: 0 24px;
-    }
-
-    .custom-stepper {
-      background: transparent;
-      padding: 24px 0;
-    }
-    .step-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .step-label mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    .step-content {
-      padding: 24px 0;
-      min-height: 320px;
-    }
-
-    /* Step Header */
-    .step-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 16px 20px;
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-    }
-    .step-header-icon {
-      font-size: 36px;
-      line-height: 1;
-    }
-    .step-header-text h3 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .step-header-text p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      color: #64748b;
-    }
-
-    .step-actions {
-      display: flex;
-      gap: 16px;
-      justify-content: flex-end;
-      padding: 16px 0;
-      border-top: 1px solid #e2e8f0;
-      margin-top: 16px;
-      background: #f8fafc;
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-      border-radius: 0 0 16px 16px;
-    }
-    .step-actions button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 24px;
-    }
-
-    /* Trainee Search Section */
-    .trainee-search-section {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .barcode-section {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-      border-radius: 16px;
-      border: 2px dashed #bae6fd;
-    }
-    .barcode-icon-wrapper {
-      width: 56px;
-      height: 56px;
-      min-width: 56px;
-      background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .barcode-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-      color: white;
-    }
-    .barcode-input-wrapper {
-      flex: 1;
-    }
-    .barcode-input {
-      width: 100%;
-    }
-    .barcode-input ::ng-deep .mat-form-field-outline {
-      background: white !important;
-    }
-    .barcode-hint {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #0284c7;
-      margin-top: 4px;
-    }
-    .barcode-hint mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-    }
-
-    .divider-text {
-      text-align: center;
-      color: #94a3b8;
-      font-size: 13px;
-      position: relative;
-      padding: 0 20px;
-    }
-    .divider-text::before,
-    .divider-text::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 30%;
-      height: 1px;
-      background: #e2e8f0;
-    }
-    .divider-text::before {
-      right: 0;
-    }
-    .divider-text::after {
-      left: 0;
-    }
-
-    .form-field {
-      flex: 1;
-    }
-    .full-width {
-      width: 100%;
-    }
-
-    /* Trainee Preview Card */
-    .trainee-preview-card {
-      margin-top: 16px;
-      padding: 16px;
-      background: white;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-    .trainee-preview-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .trainee-preview-avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .trainee-preview-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .trainee-preview-avatar mat-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-      color: white;
-    }
-    .trainee-preview-info {
-      flex: 1;
-    }
-    .trainee-preview-info h4 {
-      margin: 0 0 6px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .trainee-preview-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    /* Course Info Card */
-    .course-date-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      border-radius: 12px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(37, 99, 235, 0.1);
-    }
-    .course-date-info mat-icon {
-      color: #2563eb;
-    }
-    .date-range {
-      flex: 1;
-    }
-    .range-label {
-      font-weight: 600;
-      color: #1e40af;
-      margin-left: 8px;
-    }
-    .range-value {
-      color: #1e293b;
-      font-weight: 500;
-    }
-
-    .course-info-card {
-      margin-top: 24px;
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      border-radius: 16px;
-      border: 1px solid rgba(37, 99, 235, 0.1);
-    }
-    .course-info-card mat-card-header {
-      padding: 16px 16px 0 16px;
-    }
-    .course-info-card mat-card-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #1e40af;
-    }
-    .course-info-card mat-card-content {
-      padding: 16px;
-    }
-    .info-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .info-item {
-      flex: 1;
-      min-width: 150px;
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-    }
-    .info-item.full-width {
-      flex: 100%;
-    }
-    .info-label {
-      font-weight: 600;
-      color: #475569;
-      font-size: 13px;
-    }
-    .info-value {
-      color: #1e293b;
-      font-size: 13px;
-    }
-    .info-value.price {
-      font-weight: 700;
-      color: #0f3460;
-      font-size: 16px;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .discount-row {
-      background: #fffbeb;
-      padding: 16px;
-      border-radius: 12px;
-      margin: 16px 0;
-      border: 1px solid rgba(217, 119, 6, 0.15);
-    }
-
-    /* Payment Status Option Styles */
-    .status-option {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    .status-toggle {
-      margin-top: 16px;
-      padding: 16px;
-      background: #f9fafb;
-      border-radius: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-      color: #374151;
-    }
-
-    .toggle-label mat-icon {
-      color: #667eea;
-    }
-
-    .toggle-status {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .toggle-status.active {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .payment-option {
-      background: #f8fafc;
-      padding: 16px 20px;
-      border-radius: 12px;
-      margin: 20px 0;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      border: 1px solid #e2e8f0;
-    }
-    .payment-checkbox-label {
-      font-weight: 500;
-      color: #0f172a;
-    }
-    .payment-info-hint {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #2563eb;
-    }
-    .payment-info-hint mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-    }
-
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      border-radius: 24px;
-      z-index: 1000;
-    }
-    .loading-overlay p {
-      color: #0f3460;
-      font-weight: 500;
-    }
-
-    /* Input Field Enhancements */
-    ::ng-deep .mat-form-field-outline {
-      background: white !important;
-      border-radius: 10px !important;
-    }
-    ::ng-deep .mat-form-field.mat-focused .mat-form-field-outline {
-      color: #0f3460 !important;
-    }
-    ::ng-deep .mat-form-field.mat-focused .mat-form-field-label {
-      color: #0f3460 !important;
-    }
-    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-      color: #0f3460 !important;
-    }
-
-    ::ng-deep .mat-step-header .mat-step-icon-selected {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
-    }
-    ::ng-deep .mat-step-header .mat-step-icon-state-done {
-      background: #0f3460 !important;
-    }
-
-    @media (max-width: 768px) {
-      .wizard-container {
-        min-width: 90vw;
-        max-width: 90vw;
-        max-height: 95vh;
-      }
-      .stepper-container {
-        max-height: calc(95vh - 80px);
-      }
-      .form-row {
-        flex-direction: column;
-        gap: 12px;
-      }
-      .step-actions {
-        flex-direction: column;
-      }
-      .step-actions button {
-        width: 100%;
-        justify-content: center;
-      }
-      .info-grid {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .info-item {
-        flex-direction: column;
-        gap: 4px;
-      }
-      .course-date-info {
-        flex-direction: column;
-        text-align: center;
-      }
-      .payment-option {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .barcode-section {
-        flex-direction: column;
-        text-align: center;
-      }
-      .barcode-input-wrapper {
-        width: 100%;
-      }
-      .trainee-preview-header {
-        flex-direction: column;
-        text-align: center;
-      }
-      .trainee-preview-meta {
-        justify-content: center;
-      }
-      .step-header {
-        flex-direction: column;
-        text-align: center;
-      }
-    }
-  `]
+  templateUrl: './enrollment-wizard-modal.component.html',
+  styleUrls: ['./enrollment-wizard-modal.component.css']
 })
 export class EnrollmentWizardModalComponent implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
@@ -1259,10 +311,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
     });
   }
 
-  // ==========================================================================
-  // LOAD ENROLLMENT DATA - COMPLETE WITH ALL FIELDS FIXED
-  // ==========================================================================
-
   loadEnrollmentData(): void {
     this.isLoading = true;
     this.enrollmentService.getEnrollmentById(this.enrollmentId!).subscribe({
@@ -1296,8 +344,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
         }
         
         // ---- STEP 4: Enrollment Details ----
-        
-        // Map Enrollment Status
         let enrollmentStatusObj = null;
         if (enrollment.enrollmentStatus) {
           const statusValue = typeof enrollment.enrollmentStatus === 'string' 
@@ -1322,7 +368,6 @@ export class EnrollmentWizardModalComponent implements OnInit {
           }
         }
         
-        // Map Payment Status - FIXED
         let paymentStatusObj = null;
         if (enrollment.paymentStatus) {
           const statusValue = typeof enrollment.paymentStatus === 'string' 
@@ -1349,13 +394,11 @@ export class EnrollmentWizardModalComponent implements OnInit {
           }
         }
         
-        // Map Enrollment Type
         let enrollmentTypeId = null;
         if (enrollment.enrollmentType?.id) {
           enrollmentTypeId = enrollment.enrollmentType.id;
         }
         
-        // Patch ALL form values
         this.enrollmentForm.patchValue({
           enrollmentTypeId: enrollmentTypeId,
           startDate: enrollment.startDate ? new Date(enrollment.startDate) : null,
@@ -1369,12 +412,9 @@ export class EnrollmentWizardModalComponent implements OnInit {
           note: enrollment.note || ''
         });
         
-        // Calculate final value after patching
         this.calculateFinalValue();
         
         console.log('✅ Enrollment data loaded successfully');
-        console.log('📊 Form values:', this.enrollmentForm.value);
-        
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -1482,15 +522,19 @@ export class EnrollmentWizardModalComponent implements OnInit {
 
   getPaymentStatusColor(statusId: number): string {
     const colors: { [key: number]: string } = {
-      1: '#f59e0b',  // PENDING - Yellow
-      2: '#10b981',  // PAID - Green
-      3: '#ef4444',  // FAILED - Red
-      4: '#8b5cf6',  // REFUNDED - Purple
-      5: '#6b7280',  // CANCELLED - Gray
-      6: '#3b82f6'   // PARTIAL - Blue
+      1: '#f59e0b',
+      2: '#10b981',
+      3: '#ef4444',
+      4: '#8b5cf6',
+      5: '#6b7280',
+      6: '#3b82f6'
     };
     return colors[statusId] || '#6b7280';
   }
+
+  // ==========================================================================
+  // PRINT PREVIEW WITH WATERMARK AND LOGO
+  // ==========================================================================
 
   printPreview(): void {
     const traineeId = this.step1Form.get('traineeId')?.value;
@@ -1517,89 +561,449 @@ export class EnrollmentWizardModalComponent implements OnInit {
       note: this.enrollmentForm.get('note')?.value,
       isNewEnrollment: !this.isEditMode
     };
+    
     this.generatePrintDocument(previewData);
   }
 
-  generatePrintDocument(data: any): void {
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '20px';
-    printContainer.style.backgroundColor = 'white';
-    printContainer.style.maxWidth = '800px';
-    printContainer.style.margin = '0 auto';
-    
+  private generatePrintDocument(data: any): void {
+    const logoPath = 'assets/images/mainLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const applicationNumber = data.isNewEnrollment ? `NEW-${Date.now()}` : `ENR-${data.id}`;
     
     const paymentStatusDisplay = data.paymentStatus?.title || '-';
     const enrollmentStatusDisplay = data.enrollmentStatus?.title || '-';
     
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.position = 'relative';
+    printContainer.style.width = '100%';
+    
     printContainer.innerHTML = `
       <!DOCTYPE html>
       <html>
-      <head><meta charset="UTF-8"><title>طلب تسجيل - ${data.trainee?.title || 'جديد'}</title>
-      <style>
-        * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
-        @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border-radius: 12px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .header p { margin: 8px 0 0; font-size: 13px; opacity: 0.85; }
-        .section-title { color: #0f3460; border-bottom: 2px solid #0f3460; padding-bottom: 8px; margin-top: 24px; margin-bottom: 16px; font-size: 18px; font-weight: 600; }
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-        .info-item { border-bottom: 1px solid #e5e7eb; padding: 8px 0; }
-        .info-label { font-weight: 600; color: #374151; }
-        .info-value { color: #1f2937; }
-        .amount { font-weight: 700; color: #0f3460; font-size: 18px; }
-        .footer { text-align: center; margin-top: 30px; padding: 16px; font-size: 10px; color: #9ca3af; }
-        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.05; font-size: 60px; white-space: nowrap; pointer-events: none; }
-        @media print { .watermark { display: none; } }
-        .payment-status-badge { display: inline-block; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-      </style>
+      <head>
+        <meta charset="UTF-8">
+        <title>طلب تسجيل - ${data.trainee?.title || 'جديد'}</title>
+        <style>
+          * { 
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+          }
+          
+          html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: white;
+            margin: 0;
+            padding: 0;
+          }
+          
+          @page { 
+            size: A4 portrait; 
+            margin: 10mm;
+          }
+          
+          .page-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            background: white;
+            overflow: hidden;
+          }
+          
+          .watermark-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .watermark-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            transform: rotate(-25deg);
+          }
+          
+          .watermark-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+          }
+          
+          .watermark-text {
+            position: absolute;
+            top: 58%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 40px;
+            font-weight: 900;
+            color: #0f3460;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+          }
+          
+          .content {
+            position: relative;
+            z-index: 1;
+            padding: 30px 40px;
+            background: transparent;
+            min-height: 100vh;
+          }
+          
+          @media print {
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            .no-print { display: none !important; }
+            .watermark-container {
+              opacity: 0.10 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .watermark-container img {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .watermark-text {
+              opacity: 0.05 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .logo-section {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .header {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .status-badge {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+          }
+          
+          .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #0f3460;
+          }
+          
+          .logo-section img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 8px;
+          }
+          
+          .logo-section .logo-text {
+            display: flex;
+            flex-direction: column;
+          }
+          
+          .logo-section .logo-text .academy-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f3460;
+            letter-spacing: 1px;
+          }
+          
+          .logo-section .logo-text .academy-sub {
+            font-size: 12px;
+            color: #64748b;
+          }
+          
+          .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            border-radius: 12px;
+          }
+          .header h1 { 
+            margin: 0; 
+            font-size: 22px; 
+            font-weight: 700;
+            letter-spacing: 1px;
+          }
+          .header p { 
+            margin: 6px 0 0 0; 
+            font-size: 13px; 
+            opacity: 0.85;
+          }
+          
+          .section-title {
+            color: #0f3460;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 8px;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .section-title .title-icon {
+            font-size: 20px;
+          }
+          
+          .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 24px;
+            margin-bottom: 16px;
+          }
+          .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+          }
+          .info-label {
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+          }
+          .info-value {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 500;
+          }
+          .info-value.amount {
+            color: #0f3460;
+            font-weight: 700;
+            font-size: 16px;
+          }
+          .info-value.remaining {
+            color: #d97706;
+            font-weight: 600;
+          }
+          .info-value.remaining-zero {
+            color: #10b981;
+            font-weight: 600;
+          }
+          
+          .full-width {
+            grid-column: span 2;
+          }
+          
+          .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+          }
+          .status-badge.paid {
+            background: #d1fae5;
+            color: #065f46;
+          }
+          .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+          }
+          .status-badge.failed {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+          .status-badge.partial {
+            background: #dbeafe;
+            color: #1e40af;
+          }
+          
+          .note-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: #fffbeb;
+            border-radius: 8px;
+            border: 1px solid rgba(217, 119, 6, 0.15);
+          }
+          .note-section .note-label {
+            font-weight: 600;
+            color: #92400e;
+          }
+          .note-section .note-value {
+            color: #78350f;
+            margin-top: 4px;
+          }
+          
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 16px;
+            font-size: 10px;
+            color: #94a3b8;
+            border-top: 1px solid #e5e7eb;
+          }
+          
+          .draft-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 80px;
+            font-weight: 900;
+            color: #ef4444;
+            opacity: 0.06;
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 10px;
+          }
+          
+          @media (max-width: 600px) {
+            .content { padding: 16px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .logo-section img { width: 40px; height: 40px; }
+            .logo-section .logo-text .academy-name { font-size: 16px; }
+            .header h1 { font-size: 18px; }
+          }
+        </style>
       </head>
       <body>
-        ${data.isNewEnrollment ? '<div class="watermark">مسودة - غير معتمد</div>' : ''}
-        <div class="container">
-          <div class="header">
-            <h1>طلب تسجيل في دورة تدريبية</h1>
-            <p>${applicationNumber} - ${today}</p>
+        <div class="page-container">
+          <!-- Watermark -->
+          <div class="watermark-wrapper">
+            <div class="watermark-container">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+            </div>
+            <div class="watermark-text">الأكاديمية الأولمبية</div>
           </div>
-          <div class="section-title">معلومات المتدرب</div>
-          <div class="info-grid">
-            <div class="info-item"><div class="info-label">الاسم:</div><div class="info-value">${data.trainee?.title || '-'}</div></div>
+          
+          ${data.isNewEnrollment ? '<div class="draft-watermark">مسودة</div>' : ''}
+          
+          <div class="content">
+            <!-- Logo Section -->
+            <div class="logo-section">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+              <div class="logo-text">
+                <span class="academy-name">الأكاديمية الأولمبية</span>
+                <span class="academy-sub">نظام إدارة الأكاديمية الأولمبية</span>
+              </div>
+            </div>
+            
+            <!-- Header -->
+            <div class="header">
+              <h1>📋 طلب تسجيل في دورة تدريبية</h1>
+              <p>${applicationNumber} | تاريخ الإصدار: ${today}</p>
+            </div>
+            
+            <!-- Trainee Info -->
+            <div class="section-title">
+              <span class="title-icon">👤</span>
+              معلومات المتدرب
+            </div>
+            <div class="info-grid">
+              <div class="info-item"><span class="info-label">الاسم الكامل</span><span class="info-value">${data.trainee?.title || '-'}</span></div>
+              <div class="info-item"><span class="info-label">رقم الهوية</span><span class="info-value">${data.trainee?.nationalId || '-'}</span></div>
+              ${data.trainee?.academicYear ? `<div class="info-item"><span class="info-label">السنة الدراسية</span><span class="info-value">${data.trainee.academicYear}</span></div>` : ''}
+            </div>
+            
+            <!-- Course Info -->
+            <div class="section-title">
+              <span class="title-icon">📚</span>
+              معلومات الدورة
+            </div>
+            <div class="info-grid">
+              <div class="info-item"><span class="info-label">الدورة</span><span class="info-value">${data.course?.title || '-'}</span></div>
+              <div class="info-item"><span class="info-label">المدرب</span><span class="info-value">${data.trainer?.title || '-'}</span></div>
+              <div class="info-item"><span class="info-label">تاريخ البدء</span><span class="info-value">${data.startDate ? new Date(data.startDate).toLocaleDateString('ar-EG') : '-'}</span></div>
+              <div class="info-item"><span class="info-label">تاريخ الانتهاء</span><span class="info-value">${data.endDate ? new Date(data.endDate).toLocaleDateString('ar-EG') : '-'}</span></div>
+              ${data.enrollmentType?.title ? `<div class="info-item"><span class="info-label">نوع التسجيل</span><span class="info-value">${data.enrollmentType.title}</span></div>` : ''}
+            </div>
+            
+            <!-- Payment Details -->
+            <div class="section-title">
+              <span class="title-icon">💰</span>
+              تفاصيل الدفع
+            </div>
+            <div class="info-grid">
+              <div class="info-item"><span class="info-label">قيمة الاشتراك</span><span class="info-value amount">${(data.subscriptionValue || 0).toLocaleString('ar-EG')} جم</span></div>
+              ${data.discountAmount ? `<div class="info-item"><span class="info-label">قيمة الخصم</span><span class="info-value">${data.discountAmount.toLocaleString('ar-EG')} جم</span></div>` : ''}
+              ${data.discountPercentage ? `<div class="info-item"><span class="info-label">نسبة الخصم</span><span class="info-value">${data.discountPercentage}%</span></div>` : ''}
+              <div class="info-item"><span class="info-label">المبلغ النهائي</span><span class="info-value amount">${(data.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</span></div>
+              <div class="info-item"><span class="info-label">حالة الدفع</span>
+                <span class="info-value">
+                  <span class="status-badge ${data.paymentStatus?.id === 2 ? 'paid' : data.paymentStatus?.id === 1 ? 'pending' : data.paymentStatus?.id === 3 ? 'failed' : data.paymentStatus?.id === 6 ? 'partial' : ''}">
+                    ${paymentStatusDisplay}
+                  </span>
+                </span>
+              </div>
+              <div class="info-item"><span class="info-label">حالة التسجيل</span><span class="info-value">${enrollmentStatusDisplay}</span></div>
+              <div class="info-item"><span class="info-label">حالة النشاط</span>
+                <span class="info-value" style="color: ${data.isActive !== undefined ? (data.isActive ? '#10b981' : '#ef4444') : '#10b981'}; font-weight: 600;">
+                  ${data.isActive !== undefined ? (data.isActive ? '✅ نشط' : '⛔ غير نشط') : '✅ نشط'}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Notes -->
+            ${data.note ? `
+              <div class="section-title">
+                <span class="title-icon">📝</span>
+                ملاحظات
+              </div>
+              <div class="note-section">
+                <div class="note-label">ملاحظات إضافية</div>
+                <div class="note-value">${data.note}</div>
+              </div>
+            ` : ''}
+            
+            <!-- Footer -->
+            <div class="footer">
+              <strong>🏛️ الأكاديمية الأولمبية</strong><br>
+              تم التصدير بواسطة النظام الآلي للأكاديمية الأولمبية
+            </div>
           </div>
-          <div class="section-title">معلومات الدورة</div>
-          <div class="info-grid">
-            <div class="info-item"><div class="info-label">الدورة:</div><div class="info-value">${data.course?.title || '-'}</div></div>
-            <div class="info-item"><div class="info-label">المدرب:</div><div class="info-value">${data.trainer?.title || '-'}</div></div>
-            <div class="info-item"><div class="info-label">تاريخ البدء:</div><div class="info-value">${data.startDate ? new Date(data.startDate).toLocaleDateString('ar-EG') : '-'}</div></div>
-            <div class="info-item"><div class="info-label">تاريخ الانتهاء:</div><div class="info-value">${data.endDate ? new Date(data.endDate).toLocaleDateString('ar-EG') : '-'}</div></div>
-          </div>
-          <div class="section-title">تفاصيل الدفع</div>
-          <div class="info-grid">
-            <div class="info-item"><div class="info-label">قيمة الاشتراك:</div><div class="info-value amount">${(data.subscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
-            ${data.discountAmount ? `<div class="info-item"><div class="info-label">الخصم:</div><div class="info-value">${data.discountAmount.toLocaleString('ar-EG')} جم</div></div>` : ''}
-            <div class="info-item"><div class="info-label">المبلغ النهائي:</div><div class="info-value amount">${(data.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</div></div>
-            <div class="info-item"><div class="info-label">حالة الدفع:</div><div class="info-value">${paymentStatusDisplay}</div></div>
-            <div class="info-item"><div class="info-label">حالة التسجيل:</div><div class="info-value">${enrollmentStatusDisplay}</div></div>
-            <div class="info-item"><div class="info-label">حالة التسجيل:</div><div class="info-value">${data.isActive !== undefined ? (data.isActive ? 'نشط' : 'غير نشط') : 'نشط'}</div></div>
-          </div>
-          ${data.note ? `<div class="section-title">ملاحظات</div><p>${data.note}</p>` : ''}
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
         </div>
-        <div class="no-print" style="text-align: center; margin-top: 20px;">
-          <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
+        
+        <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+          <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(15, 52, 96, 0.3);">
+            🖨️ طباعة / PDF
+          </button>
+          <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+            ✖ إغلاق
+          </button>
         </div>
       </body>
       </html>
     `;
     
-    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    const printWindow = window.open('', '_blank', 'width=900,height=850,scrollbars=yes');
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
       printWindow.document.close();
-      this.notification.showSuccess('تم فتح نموذج الطلب');
+      this.notification.showSuccess('تم فتح نموذج الطلب للطباعة');
     }
   }
 

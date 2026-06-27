@@ -144,6 +144,7 @@ paths:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
         - $ref: '#/components/parameters/QPTraineeId'
+        - $ref: '#/components/parameters/QPTraineeNationalId'
         - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPTrainerId'
         - $ref: '#/components/parameters/QPEnrollmentTypeId'
@@ -239,6 +240,12 @@ components:
       schema:
         type: integer
         format: int32
+    QPTraineeNationalId:
+      name: traineeNationalId
+      in: query
+      required: false
+      schema:
+        type: string
     QPTraineeId:
       name: traineeId
       in: query
@@ -484,7 +491,7 @@ components:
           type: integer
           format: int32
         trainee:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         trainer:

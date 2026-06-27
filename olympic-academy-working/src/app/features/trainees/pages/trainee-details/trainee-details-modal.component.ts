@@ -898,21 +898,22 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  getContactIcon(contactType: any): string {
-    const type = typeof contactType === 'string' ? contactType : contactType?.title || '';
-    const icons: { [key: string]: string } = {
-      'جوال': 'phone_android',
-      'هاتف': 'phone',
-      'بريد إلكتروني': 'email',
-      'EMAIL': 'email',
-      'PHONE': 'phone_android',
-      'واتساب': 'chat',
-      'فيسبوك': 'facebook',
-      'تويتر': 'twitter',
-      'انستجرام': 'instagram'
-    };
-    return icons[type] || 'contact_phone';
-  }
+getContactIcon(contactType: any): string {
+  const type = typeof contactType === 'string' ? contactType : contactType?.title || '';
+  const icons: { [key: string]: string } = {
+    'جوال': 'phone_android',
+    'هاتف': 'phone',
+    'بريد إلكتروني': 'email',
+    'EMAIL': 'email',
+    'PHONE': 'phone_android',
+    'واتس': 'chat',
+    'WHATSAPP': 'chat',
+    'فيسبوك': 'facebook',
+    'تويتر': 'twitter',
+    'انستجرام': 'instagram'
+  };
+  return icons[type] || 'contact_phone';
+}
 
   editTrainee(): void {
     this.dialogRef.close();
@@ -1236,7 +1237,7 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
           <div class="thermal-card">
             <!-- Watermark -->
             <div class="card-watermark">
-              <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+              <img src="assets/images/mainLogo.jpeg" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
             </div>
             <div class="card-watermark-text">الأكاديمية الأولمبية</div>
             

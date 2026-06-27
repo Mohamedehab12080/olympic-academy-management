@@ -80,7 +80,7 @@ export interface EnrollmentResultSet {
 
 export interface EnrollmentListItem {
   id: number;
-  trainee: LookupVTO;
+  trainee: LightUserVTO;
   course: LookupVTO;
   trainer: LookupVTO;
   startDate: string;

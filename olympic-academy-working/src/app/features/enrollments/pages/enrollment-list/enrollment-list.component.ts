@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -34,7 +34,7 @@ import { EnrollmentDetailsModalComponent } from './../enrollment-details/enrollm
 import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollment-wizard-modal.component';
 
 // ============================================================================
-// PAGE SELECTION DIALOG COMPONENT
+// PAGE SELECTION DIALOG COMPONENT - ENHANCED FOR CARD PRINTING
 // ============================================================================
 
 @Component({
@@ -53,13 +53,13 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
   ],
   template: `
     <div class="dialog-container" dir="rtl">
-      <div class="dialog-header">
-        <div class="header-icon">
-          <mat-icon>description</mat-icon>
+      <div class="dialog-header" [class.card-print]="isCardPrint">
+        <div class="header-icon" [class.card-print]="isCardPrint">
+          <mat-icon>{{ isCardPrint ? 'credit_card' : 'description' }}</mat-icon>
         </div>
         <div>
-          <h2>تصدير التقرير</h2>
-          <p>اختر الصفحات التي تريد تصديرها</p>
+          <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
+          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
         </div>
         <button mat-icon-button (click)="close()" class="close-btn">
           <mat-icon>close</mat-icon>
@@ -150,7 +150,7 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
             
             <div class="range-info">
               <mat-icon>info</mat-icon>
-              <span>سيتم تصدير {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
             </div>
           </div>
         </div>
@@ -166,8 +166,8 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
           (click)="confirm()"
           [disabled]="!isValid()"
           class="confirm-btn">
-          <mat-icon>check</mat-icon>
-          <span>تصدير</span>
+          <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
+          <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
         </button>
       </div>
     </div>
@@ -193,6 +193,10 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       position: relative;
     }
 
+    .dialog-header.card-print {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
     .header-icon {
       width: 48px;
       height: 48px;
@@ -203,6 +207,10 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       justify-content: center;
       flex-shrink: 0;
       backdrop-filter: blur(4px);
+    }
+
+    .header-icon.card-print {
+      background: rgba(255, 255, 255, 0.25);
     }
 
     .header-icon mat-icon {
@@ -276,6 +284,14 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       color: #1e293b;
     }
 
+    .info-value:last-child {
+      color: #0f3460;
+    }
+
+    .dialog-header.card-print .info-value:last-child {
+      color: #f59e0b;
+    }
+
     .selection-section {
       display: flex;
       flex-direction: column;
@@ -317,6 +333,16 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       color: #0f3460;
     }
 
+    .dialog-header.card-print .option-btn.selected {
+      border-color: #f59e0b;
+      background: #fffbeb !important;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    }
+
+    .dialog-header.card-print .option-btn.selected mat-icon {
+      color: #f59e0b;
+    }
+
     .option-btn:hover:not(.selected) {
       border-color: #cbd5e1;
       background: #f8fafc;
@@ -328,6 +354,10 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       color: #0f3460;
       font-weight: 700;
       font-size: 18px;
+    }
+
+    .dialog-header.card-print .check-icon {
+      color: #f59e0b;
     }
 
     .range-section {
@@ -348,6 +378,11 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       width: 100%;
     }
 
+    .range-field ::ng-deep .mat-form-field-outline {
+      background: #fafbfc !important;
+      border-radius: 8px !important;
+    }
+
     .range-info {
       display: flex;
       align-items: center;
@@ -365,6 +400,10 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       width: 18px;
       height: 18px;
       color: #0f3460;
+    }
+
+    .dialog-header.card-print .range-info mat-icon {
+      color: #f59e0b;
     }
 
     .dialog-actions {
@@ -407,6 +446,15 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
       cursor: not-allowed;
       transform: none !important;
       box-shadow: none !important;
+    }
+
+    .dialog-header.card-print .confirm-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+    }
+
+    .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
     }
 
     @media (max-width: 600px) {
@@ -480,12 +528,38 @@ import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollmen
         transform: rotate(90deg);
       }
     }
+
+    @media (max-width: 400px) {
+      .dialog-container {
+        min-width: 280px;
+      }
+
+      .info-section {
+        grid-template-columns: 1fr;
+      }
+
+      .info-row:last-child {
+        grid-column: span 1;
+      }
+
+      .option-btn {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+
+      .option-btn mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
   `]
 })
 export class ExportPageSelectDialogComponent {
   selectedOption: 'all' | 'current' | 'range' = 'all';
   startPage: number = 1;
   endPage: number = 1;
+  isCardPrint: boolean = false;
   
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
@@ -494,9 +568,11 @@ export class ExportPageSelectDialogComponent {
       totalItems: number; 
       pageSize: number; 
       currentPage: number;
+      isCardPrint?: boolean;
     }
   ) {
     this.endPage = data.totalPages;
+    this.isCardPrint = data.isCardPrint || false;
   }
 
   getRangeCount(): number {
@@ -524,7 +600,7 @@ export class ExportPageSelectDialogComponent {
     let result: any = { option: this.selectedOption };
     
     if (this.selectedOption === 'range') {
-      result.startPage = this.startPage - 1; // Convert to 0-based index
+      result.startPage = this.startPage - 1;
       result.endPage = this.endPage - 1;
     }
     
@@ -544,7 +620,7 @@ interface EnrollmentListItem {
   id: number;
   trainee?: {
     id: number;
-    title: string;
+    nationalId?: string;
     fullName?: string;
     imageUrl?: string;
   };
@@ -591,7 +667,8 @@ interface EnrollmentListItem {
 export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
   
-  displayedColumns: string[] = ['index', 'image', 'trainee', 'course', 'trainer', 'startDate', 'endDate', 'isActive', 'enrollmentStatus', 'paymentStatus', 'amount', 'actions'];
+  // Updated columns to include amount and remaining
+  displayedColumns: string[] = ['index', 'image', 'trainee', 'course', 'trainer', 'startDate', 'endDate', 'amount', 'remaining', 'isActive', 'enrollmentStatus', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<EnrollmentListItem>([]);
   allEnrollments: EnrollmentListItem[] = [];
   isLoading = false;
@@ -621,8 +698,14 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   enrollmentStatusOptions: SelectOption[] = [];
   paymentStatusOptions: SelectOption[] = [];
   
+  // ========== BARCODE SEARCH ==========
+  barcodeSearch: string = '';
+  isBarcodeMode: boolean = false;
+  @ViewChild('barcodeInput') barcodeInput!: ElementRef<HTMLInputElement>;
+  
   filters = {
     traineeId: null as number | null,
+    traineeNationalId: null as string | null,
     courseId: null as number | null,
     trainerId: null as number | null,
     enrollmentStatus: null as number | null,
@@ -641,6 +724,10 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   // Statistics
   get totalAmount(): number {
     return this.allEnrollments.reduce((sum, item) => sum + (item.finalSubscriptionValue || 0), 0);
+  }
+
+  get totalRemaining(): number {
+    return this.allEnrollments.reduce((sum, item) => sum + (item.remainedSubscriptionValue || 0), 0);
   }
 
   get activeEnrollments(): number {
@@ -794,6 +881,46 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ==========================================================================
+  // BARCODE SEARCH METHODS
+  // ==========================================================================
+
+  toggleBarcodeMode(): void {
+    this.isBarcodeMode = !this.isBarcodeMode;
+    if (this.isBarcodeMode) {
+      setTimeout(() => this.barcodeInput?.nativeElement.focus(), 100);
+    } else {
+      this.barcodeSearch = '';
+      this.filters.traineeNationalId = null;
+      this.loadEnrollments();
+    }
+  }
+
+  searchByBarcode(): void {
+    if (!this.barcodeSearch?.trim()) {
+      this.notification.showWarning('الرجاء إدخال رقم الباركود');
+      return;
+    }
+
+    this.filters.traineeNationalId = this.barcodeSearch.trim();
+    this.currentPage = 0;
+    this.loadEnrollments();
+    this.notification.showSuccess(`تم البحث عن: ${this.barcodeSearch}`);
+    this.clearBarcodeSearch();
+  }
+
+  clearBarcodeSearch(): void {
+    this.barcodeSearch = '';
+    this.isBarcodeMode = false;
+  }
+
+  onBarcodeKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.searchByBarcode();
+    }
+  }
+
+  // ==========================================================================
   // LOAD ENROLLMENTS
   // ==========================================================================
 
@@ -807,6 +934,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
     
     // ===== FILTERS =====
     if (this.filters.traineeId) params.traineeId = this.filters.traineeId;
+    if (this.filters.traineeNationalId) params.traineeNationalId = this.filters.traineeNationalId;
     if (this.filters.courseId) params.courseId = this.filters.courseId;
     if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
     if (this.filters.enrollmentStatus) params.enrollmentStatus = this.filters.enrollmentStatus;
@@ -883,7 +1011,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
 
   getTraineeName(trainee: any): string {
     if (!trainee) return '-';
-    return trainee.fullName || trainee.title || '-';
+    return trainee.fullName || '-';
   }
 
   toggleActiveFilter(event: any): void {
@@ -901,6 +1029,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   resetFilters() {
     this.filters = {
       traineeId: null,
+      traineeNationalId: null,
       courseId: null,
       trainerId: null,
       enrollmentStatus: null,
@@ -912,6 +1041,8 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
       isActive: null
     };
     this.quickSearch = '';
+    this.barcodeSearch = '';
+    this.isBarcodeMode = false;
     this.currentPage = 0;
     const toggle = document.querySelector('#activeToggle') as HTMLInputElement;
     if (toggle) {
@@ -948,7 +1079,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ==========================================================================
-  // TRAINEE OPERATIONS
+  // ENROLLMENT OPERATIONS
   // ==========================================================================
 
   viewEnrollment(id: number): void {
@@ -1021,10 +1152,619 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ==========================================================================
+  // PRINT CARDS WITH PAGE SELECTION
+  // ==========================================================================
+
+  async printEnrollmentCards(): Promise<void> {
+    const result = await this.showExportPageSelection(true);
+    
+    if (!result) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    let dataToPrint: EnrollmentListItem[] = [];
+
+    if (result.option === 'all') {
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToPrint = this.allEnrollments;
+    } else if (result.option === 'range') {
+      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+    }
+
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لطباعة البطاقات');
+      this.isLoading = false;
+      return;
+    }
+
+    // Load images for all trainees
+    const enrollmentImagePromises = dataToPrint.map((enrollment) => {
+      return new Promise<string>((resolve) => {
+        const trainee = enrollment.trainee;
+        if (trainee && trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
+          this.fileService.downloadFile(trainee.imageUrl).subscribe({
+            next: (blob) => {
+              const blobUrl = URL.createObjectURL(blob);
+              resolve(blobUrl);
+            },
+            error: () => {
+              resolve('');
+            }
+          });
+        } else {
+          resolve('');
+        }
+      });
+    });
+
+    const imageUrls = await Promise.all(enrollmentImagePromises);
+    this.generateEnrollmentCards(dataToPrint, imageUrls);
+    this.isLoading = false;
+    this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
+  }
+
+private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: string[]): void {
+  const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+  if (!printWindow) {
+    this.notification.showError('تعذر فتح نافذة الطباعة');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ar-EG');
+  let cardsHtml = '';
+  const logoPath = 'assets/images/mainLogo.jpeg';
+
+  enrollments.forEach((enrollment, index) => {
+    const imageUrl = imageUrls[index] || '';
+    const traineeName = this.getTraineeName(enrollment.trainee);
+    const courseTitle = enrollment.course?.title || '-';
+    const trainerTitle = enrollment.trainer?.title || '-';
+    const startDate = enrollment.startDate || '-';
+    const endDate = enrollment.endDate || '-';
+    const amount = enrollment.finalSubscriptionValue || 0;
+    const remaining = enrollment.remainedSubscriptionValue || 0;
+    const isActive = enrollment.isActive;
+    const enrollmentStatus = enrollment.enrollmentStatus?.title || '-';
+    const paymentStatus = enrollment.paymentStatus?.title || '-';
+
+    cardsHtml += `
+      <div class="card-wrapper">
+        <div class="card">
+          <!-- Watermark (transparent background) -->
+          <div class="card-watermark">
+            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+          </div>
+          <div class="card-watermark-text">الأكاديمية الأولمبية</div>
+          
+          <!-- Card Content -->
+          <div class="card-content">
+            <!-- Logo at top - Colored and visible -->
+            <div class="card-logo-section">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image">
+              <div class="card-logo-text">
+                <span class="academy-name">الأكاديمية الأولمبية</span>
+                <span class="card-title">بطاقة تسجيل متدرب</span>
+              </div>
+            </div>
+            
+            <div class="card-body">
+              <div class="card-photo">
+                ${imageUrl ? `<img src="${imageUrl}" alt="${traineeName}">` : '<div class="placeholder-photo">📷</div>'}
+              </div>
+              <div class="card-info">
+                <div class="card-name">${traineeName}</div>
+                <div class="card-id">رقم التسجيل: ${enrollment.id}</div>
+                <div class="card-details">
+                  <div class="detail-row">
+                    <span class="detail-label">الدورة:</span>
+                    <span class="detail-value">${courseTitle}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">المدرب:</span>
+                    <span class="detail-value">${trainerTitle}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">تاريخ البدء:</span>
+                    <span class="detail-value">${startDate}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">تاريخ الانتهاء:</span>
+                    <span class="detail-value">${endDate}</span>
+                  </div>
+                  <div class="detail-row amount-row">
+                    <span class="detail-label">💰 القيمة:</span>
+                    <span class="detail-value amount">${amount.toLocaleString()} جم</span>
+                  </div>
+                  <div class="detail-row remaining-row">
+                    <span class="detail-label">💳 المتبقي:</span>
+                    <span class="detail-value remaining ${remaining === 0 ? 'zero' : ''}">${remaining.toLocaleString()} جم</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">الحالة:</span>
+                    <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">حالة التسجيل:</span>
+                    <span class="detail-value">${enrollmentStatus}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">حالة الدفع:</span>
+                    <span class="detail-value">${paymentStatus}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-barcode">
+                <svg id="barcode-${index}" class="barcode-svg"></svg>
+              </div>
+              <div class="card-signature">
+                <div class="signature-line"></div>
+                <div class="signature-label">توقيع المتدرب</div>
+              </div>
+              <div class="card-signature">
+                <div class="signature-line"></div>
+                <div class="signature-label">ختم الأكاديمية</div>
+              </div>
+            </div>
+            <div class="card-issue-date">تاريخ الإصدار: ${today}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>بطاقات التسجيلات</title>
+      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+      <style>
+        * { 
+          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        
+        @media print {
+          body { 
+            margin: 0; 
+            padding: 4px; 
+            background: white; 
+          }
+          .no-print { display: none; }
+          .card-wrapper { 
+            page-break-after: avoid;
+            display: inline-block;
+            width: 50%;
+            padding: 3px;
+          }
+          .card {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+            border-radius: 4px !important;
+            min-height: 260px;
+            padding: 8px 10px;
+          }
+          .card-watermark {
+            opacity: 0.08 !important;
+          }
+          .card-watermark img {
+            width: 80px !important;
+          }
+          .card-watermark-text {
+            font-size: 16px !important;
+            opacity: 0.04 !important;
+          }
+          .card-logo-section {
+            padding: 4px 0 !important;
+            margin-bottom: 4px !important;
+          }
+          .card-logo-image {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .card-logo-text .academy-name {
+            font-size: 11px !important;
+          }
+          .card-logo-text .card-title {
+            font-size: 7px !important;
+          }
+          .card-header {
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+          }
+          .card-body {
+            gap: 6px;
+            margin-bottom: 4px;
+          }
+          .card-photo img, .placeholder-photo {
+            width: 45px !important;
+            height: 45px !important;
+          }
+          .card-name {
+            font-size: 10px !important;
+          }
+          .card-id {
+            font-size: 7px !important;
+          }
+          .card-details {
+            font-size: 7px !important;
+          }
+          .detail-row {
+            padding: 1px 0;
+          }
+          .card-footer {
+            padding-top: 4px;
+            margin-top: 2px;
+          }
+          .card-barcode svg {
+            height: 20px !important;
+          }
+          .card-signature {
+            width: 42%;
+          }
+          .signature-label {
+            font-size: 5px !important;
+          }
+          .signature-line {
+            margin: 2px 0;
+          }
+          .card-issue-date {
+            display: none;
+          }
+          .card-logo-image {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+        
+        @media screen {
+          body { 
+            margin: 0; 
+            padding: 20px; 
+            background: #f0f2f5; 
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+          }
+          .card-wrapper { 
+            flex: 0 0 auto;
+            margin: 0;
+          }
+          .card-issue-date {
+            text-align: center;
+            font-size: 8px;
+            color: #94a3b8;
+            margin-top: 6px;
+            padding-top: 4px;
+            border-top: 1px dashed #e2e8f0;
+          }
+        }
+        
+        .card-wrapper {
+          display: inline-block;
+        }
+        
+        .card {
+          width: 100%;
+          max-width: 280px;
+          min-width: 220px;
+          height: auto;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+          direction: rtl;
+          padding: 12px 14px;
+          position: relative;
+        }
+        
+        /* ===== WATERMARK - Transparent background ===== */
+        .card-watermark {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
+          opacity: 0.06;
+          pointer-events: none;
+          z-index: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+        
+        .card-watermark img {
+          width: 100px;
+          height: auto;
+          filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+          opacity: 0.8;
+        }
+        
+        .card-watermark-text {
+          position: absolute;
+          top: 56%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
+          font-size: 20px;
+          font-weight: 900;
+          color: #0f3460;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          opacity: 0.04;
+          pointer-events: none;
+          z-index: 0;
+          text-shadow: 0 2px 10px rgba(15, 52, 96, 0.1);
+        }
+        
+        /* ===== CARD CONTENT - Above watermark ===== */
+        .card-content {
+          position: relative;
+          z-index: 1;
+        }
+        
+        /* ===== LOGO AT TOP - Colored and visible ===== */
+        .card-logo-section {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 0;
+          margin-bottom: 6px;
+          border-bottom: 2px solid #0f3460;
+        }
+        
+        .card-logo-image {
+          width: 48px;
+          height: 48px;
+          object-fit: contain;
+          border-radius: 8px;
+          flex-shrink: 0;
+          background: white;
+          padding: 2px;
+        }
+        
+        .card-logo-text {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        
+        .card-logo-text .academy-name {
+          font-size: 13px;
+          font-weight: 700;
+          color: #0f3460;
+          line-height: 1.2;
+        }
+        
+        .card-logo-text .card-title {
+          font-size: 9px;
+          color: #64748b;
+          font-weight: 500;
+        }
+        
+        .card-body {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+        
+        .card-photo {
+          flex-shrink: 0;
+        }
+        
+        .card-photo img {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid #0f3460;
+        }
+        
+        .placeholder-photo {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          color: white;
+        }
+        
+        .card-info {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .card-name {
+          font-size: 13px;
+          font-weight: 700;
+          color: #1a1a2e;
+          margin-bottom: 2px;
+        }
+        
+        .card-id {
+          font-size: 8px;
+          color: #64748b;
+          margin-bottom: 2px;
+        }
+        
+        .card-details {
+          font-size: 9px;
+        }
+        
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 2px 0;
+          border-bottom: 1px dashed #f1f5f9;
+        }
+        
+        .detail-label {
+          color: #64748b;
+        }
+        
+        .detail-value {
+          color: #1e293b;
+          font-weight: 500;
+        }
+        
+        .detail-value.amount {
+          color: #0f3460;
+          font-weight: 700;
+        }
+        
+        .detail-value.remaining {
+          color: #d97706;
+          font-weight: 600;
+        }
+        
+        .detail-value.remaining.zero {
+          color: #10b981;
+        }
+        
+        .detail-value.status.active {
+          color: #10b981;
+        }
+        
+        .detail-value.status.inactive {
+          color: #ef4444;
+        }
+        
+        .amount-row {
+          background: #f0f4f8;
+          border-radius: 4px;
+          padding: 2px 4px;
+        }
+        
+        .remaining-row {
+          background: #fffbeb;
+          border-radius: 4px;
+          padding: 2px 4px;
+        }
+        
+        .card-footer {
+          border-top: 2px solid #0f3460;
+          padding-top: 6px;
+          margin-top: 4px;
+        }
+        
+        .card-barcode {
+          text-align: center;
+          margin-bottom: 6px;
+        }
+        
+        .card-barcode svg {
+          max-width: 100%;
+          height: 30px;
+        }
+        
+        .card-signature {
+          display: inline-block;
+          width: 44%;
+          text-align: center;
+          vertical-align: top;
+        }
+        
+        .card-signature:last-child {
+          margin-right: 5%;
+        }
+        
+        .signature-line {
+          border-top: 1px solid #94a3b8;
+          margin: 3px 0 2px;
+        }
+        
+        .signature-label {
+          font-size: 7px;
+          color: #94a3b8;
+        }
+        
+        .card-issue-date {
+          text-align: center;
+          font-size: 8px;
+          color: #94a3b8;
+          margin-top: 6px;
+          padding-top: 4px;
+          border-top: 1px dashed #e2e8f0;
+        }
+        
+        @media (max-width: 600px) {
+          .card {
+            max-width: 100%;
+          }
+          .card-watermark img {
+            width: 80px !important;
+          }
+          .card-watermark-text {
+            font-size: 16px !important;
+          }
+          .card-logo-image {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          .card-logo-text .academy-name {
+            font-size: 11px !important;
+          }
+          .card-photo img, .placeholder-photo {
+            width: 50px !important;
+            height: 50px !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      ${cardsHtml}
+      <div class="no-print" style="text-align: center; margin-top: 20px; width: 100%;">
+        <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🖨️ طباعة / حفظ كـ PDF</button>
+      </div>
+      <script>
+        window.onload = function() {
+          setTimeout(function() {
+            const enrollments = ${JSON.stringify(enrollments.map(e => e.trainee?.nationalId || e.id))};
+            enrollments.forEach(function(id, index) {
+              try {
+                JsBarcode('#barcode-' + index, id || '000000', {
+                  format: 'CODE128',
+                  lineColor: '#000000',
+                  width: 1,
+                  height: 25,
+                  displayValue: true,
+                  fontSize: 7,
+                  font: 'monospace',
+                  textAlign: 'center',
+                  margin: 1
+                });
+              } catch(e) {
+                console.error('Barcode error for index', index, e);
+              }
+            });
+          }, 300);
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+  // ==========================================================================
   // EXPORT FUNCTIONS WITH PAGE SELECTION
   // ==========================================================================
 
-  private showExportPageSelection(): Promise<any> {
+  private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
       
@@ -1041,7 +1781,8 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
           totalPages: totalPages,
           totalItems: this.totalItems,
           pageSize: this.pageSize,
-          currentPage: this.currentPage
+          currentPage: this.currentPage,
+          isCardPrint: isCardPrint
         }
       });
 
@@ -1059,6 +1800,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
       const params: any = {};
       
       if (this.filters.traineeId) params.traineeId = this.filters.traineeId;
+      if (this.filters.traineeNationalId) params.traineeNationalId = this.filters.traineeNationalId;
       if (this.filters.courseId) params.courseId = this.filters.courseId;
       if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
       if (this.filters.enrollmentStatus) params.enrollmentStatus = this.filters.enrollmentStatus;
@@ -1091,7 +1833,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   async exportToExcel(): Promise<void> {
-    const result = await this.showExportPageSelection();
+    const result = await this.showExportPageSelection(false);
     
     if (!result) {
       return;
@@ -1119,10 +1861,11 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
       'المدرب': item.trainer?.title,
       'تاريخ البدء': item.startDate,
       'تاريخ الانتهاء': item.endDate || '-',
+      'القيمة النهائية': item.finalSubscriptionValue,
+      'المتبقي': item.remainedSubscriptionValue,
       'الحالة': item.isActive ? 'نشط' : 'غير نشط',
       'حالة التسجيل': item.enrollmentStatus?.title,
-      'حالة الدفع': item.paymentStatus?.title,
-      'المبلغ': item.finalSubscriptionValue
+      'حالة الدفع': item.paymentStatus?.title
     }));
 
     this.reportService.exportToExcel(exportData, 'enrollments-list', 'التسجيلات');
@@ -1130,7 +1873,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   async exportToPDF(): Promise<void> {
-    const result = await this.showExportPageSelection();
+    const result = await this.showExportPageSelection(false);
     
     if (!result) {
       return;
@@ -1159,6 +1902,9 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
       const trainee = this.trainees.find(t => t.id === this.filters.traineeId);
       if (trainee) filterTexts.push(`المتدرب: ${trainee.title}`);
     }
+    if (this.filters.traineeNationalId) {
+      filterTexts.push(`رقم الهوية: ${this.filters.traineeNationalId}`);
+    }
     if (this.filters.courseId) {
       const course = this.courses.find(c => c.id === this.filters.courseId);
       if (course) filterTexts.push(`الدورة: ${course.title}`);
@@ -1184,70 +1930,173 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.filters.endDateTo) filterTexts.push(`إلى تاريخ الانتهاء: ${this.filters.endDateTo}`);
     if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
-    let tableRows = '';
-    dataToPrint.forEach((item: any, index: number) => {
-      const activeStyle = item.isActive 
-        ? 'background-color: #d1fae5; color: #065f46; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;'
-        : 'background-color: #fee2e2; color: #991b1b; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      
-      let enrollmentStatusStyle = '';
-      const statusId = item.enrollmentStatus?.id;
-      if (statusId === 1) {
-        enrollmentStatusStyle = 'background-color: #d1fae5; color: #065f46; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      } else if (statusId === 2) {
-        enrollmentStatusStyle = 'background-color: #dbeafe; color: #1e40af; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      } else if (statusId === 3) {
-        enrollmentStatusStyle = 'background-color: #fee2e2; color: #991b1b; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      } else {
-        enrollmentStatusStyle = 'background-color: #f3f4f6; color: #6b7280; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      }
-      
-      let paymentStatusStyle = '';
-      const paymentId = item.paymentStatus?.id;
-      if (paymentId === 1) {
-        paymentStatusStyle = 'background-color: #d1fae5; color: #065f46; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      } else if (paymentId === 2) {
-        paymentStatusStyle = 'background-color: #fef3c7; color: #92400e; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      } else if (paymentId === 3) {
-        paymentStatusStyle = 'background-color: #fee2e2; color: #991b1b; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      } else {
-        paymentStatusStyle = 'background-color: #f3f4f6; color: #6b7280; font-weight: 600; border-radius: 20px; padding: 4px 12px; display: inline-block;';
-      }
-      
-      const rowBgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
-      const traineeName = this.getTraineeName(item.trainee);
-      
-      tableRows += `
-        <tr style="background-color: ${rowBgColor};">
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #64748b;">${index + 1}</td>
-          <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f3460;">${traineeName}</td>
-          <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.course?.title || '-'}</td>
-          <td style="text-align: right; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.trainer?.title || '-'}</td>
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.startDate || '-'}</td>
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b;">${item.endDate || '-'}</td>
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0;">
-            <span style="${activeStyle}">${item.isActive ? 'نشط' : 'غير نشط'}</span>
-          </td>
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0;">
-            <span style="${enrollmentStatusStyle}">${item.enrollmentStatus?.title || '-'}</span>
-          </td>
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0;">
-            <span style="${paymentStatusStyle}">${item.paymentStatus?.title || '-'}</span>
-          </td>
-          <td style="text-align: center; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f3460; font-size: 15px;">
-            ${(item.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم
-          </td>
-        </tr>
+    // Calculate totals
+    const totalEnrollments = dataToPrint.length;
+    const totalAmount = dataToPrint.reduce((sum, item) => sum + (item.finalSubscriptionValue || 0), 0);
+    const totalPaid = dataToPrint.filter(item => item.paymentStatus?.id === 1).length;
+    const totalActive = dataToPrint.filter(item => item.isActive === true).length;
+    const totalInactive = dataToPrint.filter(item => item.isActive === false).length;
+    const totalRemaining = dataToPrint.reduce((sum, item) => sum + (item.remainedSubscriptionValue || 0), 0);
+
+    // Split data into pages
+    const rowsPerPage = 18;
+    const pages: EnrollmentListItem[][] = [];
+    for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
+      pages.push(dataToPrint.slice(i, i + rowsPerPage));
+    }
+
+    let allPagesHTML = '';
+
+    // Use mainLogo.jpeg for watermark
+    const logoPath = 'assets/images/mainLogo.jpeg';
+
+    pages.forEach((pageData: EnrollmentListItem[], pageIndex: number) => {
+      let tableRows = '';
+      pageData.forEach((item: any, index: number) => {
+        const globalIndex = (pageIndex * rowsPerPage) + index + 1;
+        const activeStyle = item.isActive 
+          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;' 
+          : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        
+        let enrollmentStatusStyle = '';
+        const statusId = item.enrollmentStatus?.id;
+        if (statusId === 1) {
+          enrollmentStatusStyle = 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else if (statusId === 2) {
+          enrollmentStatusStyle = 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else if (statusId === 3) {
+          enrollmentStatusStyle = 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else {
+          enrollmentStatusStyle = 'background: #f3f4f6; color: #6b7280; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        }
+        
+        let paymentStatusStyle = '';
+        const paymentId = item.paymentStatus?.id;
+        if (paymentId === 1) {
+          paymentStatusStyle = 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else if (paymentId === 2) {
+          paymentStatusStyle = 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else if (paymentId === 3) {
+          paymentStatusStyle = 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else {
+          paymentStatusStyle = 'background: #f3f4f6; color: #6b7280; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        }
+        
+        const traineeName = this.getTraineeName(item.trainee);
+        
+        tableRows += `
+          <tr>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
+            <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${traineeName}</td>
+            <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${item.course?.title || '-'}</td>
+            <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${item.trainer?.title || '-'}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${item.startDate || '-'}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${item.endDate || '-'}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 700; color: #0f3460;">${(item.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 600; color: ${item.remainedSubscriptionValue === 0 ? '#10b981' : '#d97706'};">${(item.remainedSubscriptionValue || 0).toLocaleString('ar-EG')} جم</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
+              <span style="${activeStyle}">${item.isActive ? 'نشط' : 'غير نشط'}</span>
+            </td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
+              <span style="${enrollmentStatusStyle}">${item.enrollmentStatus?.title || '-'}</span>
+            </td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
+              <span style="${paymentStatusStyle}">${item.paymentStatus?.title || '-'}</span>
+            </td>
+          </tr>
+        `;
+      });
+
+      allPagesHTML += `
+        <div class="page-container">
+          <!-- Watermark -->
+          <div class="watermark-wrapper">
+            <div class="watermark-container">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="watermark-logo">
+            </div>
+            <div class="watermark-text">الأكاديمية الأولمبية</div>
+          </div>
+          
+          <div class="content">
+            <div class="header">
+              <h1>📋 تقرير التسجيلات</h1>
+              <p>${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style="font-size: 10px; opacity: 0.8;">صفحة ${pageIndex + 1} من ${pages.length}</p>
+            </div>
+            
+            ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+            
+            ${pageIndex === 0 ? `
+            <div class="totals-grid">
+              <div class="total-card total-all">
+                <span class="total-icon">📋</span>
+                <span class="total-value">${totalEnrollments}</span>
+                <span class="total-label">إجمالي التسجيلات</span>
+              </div>
+              <div class="total-card total-amount">
+                <span class="total-icon">💰</span>
+                <span class="total-value">${totalAmount.toLocaleString('ar-EG')} جم</span>
+                <span class="total-label">إجمالي المبالغ</span>
+              </div>
+              <div class="total-card total-remaining">
+                <span class="total-icon">📊</span>
+                <span class="total-value">${totalRemaining.toLocaleString('ar-EG')} جم</span>
+                <span class="total-label">إجمالي المتبقي</span>
+              </div>
+              <div class="total-card total-paid">
+                <span class="total-icon">💳</span>
+                <span class="total-value">${totalPaid}</span>
+                <span class="total-label">مدفوع</span>
+              </div>
+              <div class="total-card total-active">
+                <span class="total-icon">🟢</span>
+                <span class="total-value">${totalActive}</span>
+                <span class="total-label">نشط</span>
+              </div>
+              <div class="total-card total-inactive">
+                <span class="total-icon">🔴</span>
+                <span class="total-value">${totalInactive}</span>
+                <span class="total-label">غير نشط</span>
+              </div>
+            </div>
+            ` : ''}
+            
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 4%;">#</th>
+                  <th style="width: 16%;">المتدرب</th>
+                  <th style="width: 14%;">الدورة</th>
+                  <th style="width: 12%;">المدرب</th>
+                  <th style="width: 10%;">تاريخ البدء</th>
+                  <th style="width: 10%;">تاريخ الانتهاء</th>
+                  <th style="width: 10%;">القيمة</th>
+                  <th style="width: 10%;">المتبقي</th>
+                  <th style="width: 8%;">الحالة</th>
+                  <th style="width: 10%;">حالة التسجيل</th>
+                  <th style="width: 10%;">حالة الدفع</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            
+            <div class="footer">
+              الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${dataToPrint.length} تسجيل
+            </div>
+          </div>
+        </div>
       `;
     });
 
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '20px';
-    printContainer.style.backgroundColor = '#f0f4f8';
-    printContainer.style.maxWidth = '1200px';
-    printContainer.style.margin = '0 auto';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.position = 'relative';
+    printContainer.style.width = '100%';
     
     printContainer.innerHTML = `
       <!DOCTYPE html>
@@ -1258,240 +2107,395 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
         <style>
           * { 
             font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
-            box-sizing: border-box;
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
           }
+          
+          html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: white;
+            margin: 0;
+            padding: 0;
+          }
+          
+          @page { 
+            size: A4 landscape; 
+            margin: 8mm;
+          }
+          
+          .page-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            page-break-after: always;
+            background: white;
+            overflow: hidden;
+            page-break-inside: avoid;
+          }
+          
+          .page-container:last-child {
+            page-break-after: auto;
+          }
+          
+          .watermark-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55%;
+            height: 55%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .watermark-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            opacity: 0.10;
+            transform: rotate(-25deg);
+          }
+          
+          .watermark-container .watermark-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+          }
+          
+          .watermark-text {
+            position: absolute;
+            top: 58%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 45px;
+            font-weight: 900;
+            color: #0f3460;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0.05;
+            text-shadow: 0 4px 20px rgba(15, 52, 96, 0.15);
+            pointer-events: none;
+            z-index: 0;
+          }
+          
+          .content {
+            position: relative;
+            z-index: 1;
+            padding: 12px;
+            background: transparent;
+            min-height: 100vh;
+          }
+          
           @media print {
-            body { 
-              margin: 0; 
-              padding: 20px; 
-              background: #f0f4f8;
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
             }
-            .no-print { display: none; }
-            .header { 
-              -webkit-print-color-adjust: exact; 
-              print-color-adjust: exact;
+            .no-print { display: none !important; }
+            .page-container {
+              min-height: 100vh !important;
+              page-break-after: always !important;
+              page-break-inside: avoid !important;
+            }
+            .page-container:last-child {
+              page-break-after: auto !important;
+            }
+            .watermark-wrapper {
+              width: 60% !important;
+              height: 60% !important;
+            }
+            .watermark-container {
+              opacity: 0.12 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .watermark-container .watermark-logo {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .watermark-text {
+              opacity: 0.06 !important;
+              font-size: 50px !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            td {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tr {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tbody {
+              background: transparent !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .header {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            th {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .totals-grid {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .total-card {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
           }
+          
           .header {
             text-align: center;
-            margin-bottom: 25px;
-            padding: 30px 20px;
+            margin-bottom: 10px;
+            padding: 10px 16px;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .header h1 { 
             margin: 0; 
-            font-size: 28px; 
-            font-weight: 800;
-            letter-spacing: -0.5px;
+            font-size: 18px; 
+            font-weight: 700;
+            letter-spacing: 1px;
           }
           .header p { 
-            margin: 8px 0 0; 
-            font-size: 14px; 
-            opacity: 0.85;
-            font-weight: 300;
+            margin: 2px 0 0 0; 
+            font-size: 11px; 
+            opacity: 0.9;
           }
+          
           .filters {
-            margin-bottom: 20px;
-            padding: 14px 20px;
-            background: #ffffff;
-            border-radius: 12px;
-            font-size: 13px;
-            color: #1e293b;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 6px;
+            font-size: 10px;
+            border: 1px solid rgba(229, 231, 235, 0.5);
           }
           .filters strong {
-            color: #0f3460;
-            margin-left: 8px;
+            color: #1e293b;
           }
-          .stats {
+          
+          .totals-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-bottom: 8px;
           }
-          .stat-item {
+          
+          .total-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 6px;
+            padding: 5px 8px;
             text-align: center;
-            padding: 16px 12px;
-            background: white;
-            border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 30px;
+            backdrop-filter: blur(4px);
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          .stat-value { 
-            font-size: 24px; 
-            font-weight: 800; 
-            color: #0f3460;
-            display: block;
+          
+          .total-card .total-icon {
+            font-size: 13px;
+            flex-shrink: 0;
           }
-          .stat-label { 
-            font-size: 13px; 
-            color: #64748b; 
-            margin-top: 4px;
+          
+          .total-card .total-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+          }
+          
+          .total-card .total-label {
+            font-size: 9px;
+            color: #64748b;
+            margin-right: 2px;
             font-weight: 500;
           }
-          .stat-item.green .stat-value { color: #059669; }
-          .stat-item.blue .stat-value { color: #2563eb; }
-          .stat-item.amber .stat-value { color: #d97706; }
-          .stat-item.purple .stat-value { color: #7c3aed; }
-          .stat-item.red .stat-value { color: #dc2626; }
+          
+          .total-card.total-all {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            border-color: #0f3460;
+          }
+          .total-card.total-all .total-value {
+            color: white;
+          }
+          .total-card.total-all .total-label {
+            color: rgba(255, 255, 255, 0.85);
+          }
+          
+          .total-card.total-amount {
+            background: rgba(219, 234, 254, 0.85);
+            border-color: rgba(147, 197, 253, 0.5);
+          }
+          .total-card.total-amount .total-value {
+            color: #2563eb;
+          }
+          
+          .total-card.total-remaining {
+            background: rgba(254, 243, 199, 0.85);
+            border-color: rgba(252, 211, 77, 0.5);
+          }
+          .total-card.total-remaining .total-value {
+            color: #d97706;
+          }
+          
+          .total-card.total-paid {
+            background: rgba(209, 250, 229, 0.85);
+            border-color: rgba(110, 231, 183, 0.5);
+          }
+          .total-card.total-paid .total-value {
+            color: #059669;
+          }
+          
+          .total-card.total-active {
+            background: rgba(167, 243, 208, 0.85);
+            border-color: rgba(52, 211, 153, 0.5);
+          }
+          .total-card.total-active .total-value {
+            color: #065f46;
+          }
+          
+          .total-card.total-inactive {
+            background: rgba(254, 226, 226, 0.85);
+            border-color: rgba(252, 165, 165, 0.5);
+          }
+          .total-card.total-inactive .total-value {
+            color: #dc2626;
+          }
           
           table {
             width: 100%;
             border-collapse: collapse;
             direction: rtl;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            margin-top: 4px;
+            font-size: 10px;
+            background: transparent !important;
           }
           th {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: white;
-            padding: 14px 12px;
-            border: none;
+            padding: 5px 4px;
+            border: 1px solid #0f3460;
             text-align: center;
             font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
+            font-size: 10px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          td {
-            padding: 10px 12px;
-            border: 1px solid #e2e8f0;
+          td { 
+            padding: 4px 4px; 
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            font-size: 10px;
+            background: transparent !important;
           }
+          tr {
+            background: transparent !important;
+          }
+          tbody {
+            background: transparent !important;
+          }
+          tr:nth-child(even) td {
+            background: rgba(250, 251, 252, 0.4) !important;
+          }
+          
           .footer {
             text-align: center;
-            margin-top: 25px;
-            padding: 16px;
-            font-size: 11px;
-            color: #94a3b8;
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            margin-top: 8px;
+            padding: 5px;
+            font-size: 8px;
+            color: rgba(148, 163, 184, 0.8);
+            border-top: 1px solid rgba(229, 231, 235, 0.3);
           }
-          .footer strong {
-            color: #0f3460;
-          }
-          .total-row td {
-            font-weight: 700;
-            background: #f8fafc;
-            border-top: 2px solid #0f3460;
-          }
-          .total-row .amount {
-            color: #0f3460;
-            font-size: 16px;
-          }
-          .no-print {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-          }
-          .no-print button {
-            padding: 12px 32px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-          }
-          .no-print button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(15, 52, 96, 0.3);
-          }
+          
           @media (max-width: 768px) {
-            .stats {
-              grid-template-columns: repeat(3, 1fr);
+            .watermark-wrapper {
+              width: 70% !important;
+              height: 70% !important;
             }
-            .header h1 { font-size: 22px; }
+            .watermark-text {
+              font-size: 30px !important;
+            }
+            .totals-grid {
+              grid-template-columns: repeat(3, 1fr);
+              gap: 4px;
+            }
+            .total-card {
+              padding: 4px 6px;
+              min-height: 26px;
+            }
+            .total-card .total-value {
+              font-size: 12px;
+            }
+            table { 
+              font-size: 9px; 
+            }
+            th, td { 
+              padding: 3px 2px; 
+            }
+            .header h1 {
+              font-size: 15px;
+            }
           }
+          
           @media (max-width: 480px) {
-            .stats {
+            .totals-grid {
               grid-template-columns: repeat(2, 1fr);
+            }
+            .watermark-wrapper {
+              width: 80% !important;
+              height: 80% !important;
+            }
+            .watermark-text {
+              font-size: 20px !important;
             }
           }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>📋 تقرير التسجيلات</h1>
-          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-          <p style="opacity: 0.7; font-size: 13px;">عدد السجلات: ${dataToPrint.length} تسجيل</p>
-        </div>
+        ${allPagesHTML}
         
-        ${filterTexts.length > 0 ? `<div class="filters"><strong>🔍 الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
-        
-        <div class="stats">
-          <div class="stat-item purple">
-            <span class="stat-value">${dataToPrint.length}</span>
-            <span class="stat-label">📋 إجمالي التسجيلات</span>
-          </div>
-          <div class="stat-item blue">
-            <span class="stat-value">${dataToPrint.reduce((sum, item) => sum + (item.finalSubscriptionValue || 0), 0).toLocaleString('ar-EG')} جم</span>
-            <span class="stat-label">💰 إجمالي المبالغ</span>
-          </div>
-          <div class="stat-item amber">
-            <span class="stat-value">${dataToPrint.filter(item => item.paymentStatus?.id === 1).length}</span>
-            <span class="stat-label">💳 مدفوع</span>
-          </div>
-          <div class="stat-item green">
-            <span class="stat-value">${dataToPrint.filter(item => item.isActive === true).length}</span>
-            <span class="stat-label">🟢 نشط</span>
-          </div>
-          <div class="stat-item red">
-            <span class="stat-value">${dataToPrint.filter(item => item.isActive === false).length}</span>
-            <span class="stat-label">🔴 غير نشط</span>
-          </div>
-        </div>
-        
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>المتدرب</th>
-              <th>الدورة</th>
-              <th>المدرب</th>
-              <th>تاريخ البدء</th>
-              <th>تاريخ الانتهاء</th>
-              <th>الحالة</th>
-              <th>حالة التسجيل</th>
-              <th>حالة الدفع</th>
-              <th>المبلغ</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-            <tr class="total-row">
-              <td colspan="9" style="text-align: left; font-weight: 700; color: #0f3460; font-size: 14px;">
-                الإجمالي الكلي
-              </td>
-              <td style="text-align: center; font-weight: 700; color: #0f3460; font-size: 16px;">
-                ${dataToPrint.reduce((sum, item) => sum + (item.finalSubscriptionValue || 0), 0).toLocaleString('ar-EG')} جم
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div class="footer">
-          <strong>🏛️ نظام إدارة الأكاديمية الأولمبية</strong><br>
-          تم التصدير بواسطة النظام الآلي للأكاديمية الأولمبية
-        </div>
-        
-        <div class="no-print">
-          <button onclick="window.print();">
-            🖨️ طباعة / حفظ كـ PDF
+        <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+          <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(15, 52, 96, 0.3);">
+            🖨️ طباعة / PDF
+          </button>
+          <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+            ✖ إغلاق
           </button>
         </div>
       </body>
       </html>
     `;
 
-    const printWindow = window.open('', '_blank', 'width=1200,height=900,scrollbars=yes');
+    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
       printWindow.document.close();
@@ -1501,7 +2505,9 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
       document.body.appendChild(printContainer);
       window.print();
       setTimeout(() => {
-        document.body.removeChild(printContainer);
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer);
+        }
       }, 500);
       this.isLoading = false;
       this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);

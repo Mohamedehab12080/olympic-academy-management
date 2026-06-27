@@ -1,6 +1,7 @@
 package bs.service.enrollment.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -27,7 +28,7 @@ public class EnrollmentListItem implements Serializable {
 
     private Integer id;
 
-    private LookupVTO trainee;
+    private LightUserVTO trainee;
 
     private LookupVTO course;
 
@@ -70,7 +71,7 @@ public class EnrollmentListItem implements Serializable {
         this.id = id;
     }
 
-    public EnrollmentListItem trainee(LookupVTO trainee) {
+    public EnrollmentListItem trainee(LightUserVTO trainee) {
         this.trainee = trainee;
         return this;
     }
@@ -83,11 +84,11 @@ public class EnrollmentListItem implements Serializable {
     @Valid
     @Schema(name = "trainee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("trainee")
-    public LookupVTO getTrainee() {
+    public LightUserVTO getTrainee() {
         return trainee;
     }
 
-    public void setTrainee(LookupVTO trainee) {
+    public void setTrainee(LightUserVTO trainee) {
         this.trainee = trainee;
     }
 

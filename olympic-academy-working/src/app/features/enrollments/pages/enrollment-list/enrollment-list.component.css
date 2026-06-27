@@ -1313,3 +1313,202 @@
     display: none !important;
   }
 }
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Print Cards Button */
+.print-cards-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: white !important;
+  font-weight: 700;
+  padding: 0 24px;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.print-cards-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+}
+
+.print-cards-btn mat-icon {
+  margin-left: 8px;
+}
+
+.print-cards-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Barcode Search */
+.barcode-search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.barcode-search-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  height: 46px;
+}
+
+.barcode-search-header:hover {
+  border-color: #0f3460;
+  background: #f1f5f9;
+}
+
+.barcode-icon {
+  color: #0f3460;
+}
+
+.barcode-label {
+  font-weight: 500;
+  color: #475569;
+}
+
+.barcode-arrow {
+  margin-right: auto;
+  transition: transform 0.3s;
+}
+
+.barcode-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.barcode-search-body {
+  margin-top: 12px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.barcode-input-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.barcode-field {
+  flex: 1;
+}
+
+.barcode-search-btn {
+  white-space: nowrap;
+}
+
+.barcode-clear-btn {
+  color: #64748b;
+}
+
+.barcode-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.barcode-hint mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #0f3460;
+}
+
+.barcode-hint-action {
+  margin-right: auto;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Table Stats */
+.table-stats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stat-badge.total-amount {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.stat-badge.total-remaining {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+/* Remaining Value Styles */
+.remaining-value {
+  font-weight: 600;
+  color: #d97706;
+}
+
+.remaining-value.zero {
+  color: #10b981;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .print-cards-btn,
+  .add-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .barcode-search {
+    width: 100%;
+  }
+  
+  .barcode-input-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .barcode-search-btn {
+    width: 100%;
+  }
+  
+  .table-stats {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .stat-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+}

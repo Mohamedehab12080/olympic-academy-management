@@ -17,7 +17,8 @@ export interface ContactType {
 
 export const CONTACT_TYPES: ContactType[] = [
   { id: 1, title: 'ايميل' },
-  { id: 2, title: 'هاتف' }
+  { id: 2, title: 'هاتف' },
+  { id: 3, title: 'واتس' }  
 ];
 
 export interface PaymentStatus {

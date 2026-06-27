@@ -35,6 +35,7 @@ import { TRAINEE_ATTENDANCE_STATUSES, TraineeAttendanceListItem, TraineeAttendan
 import { TraineeAttendanceDetailsModalComponent } from './trainee-attendance-details/trainee-attendance-details-modal.component';
 import { EnrollmentListItem } from '../../../../core/models/enrollment.model';
 import { LightUserVTO } from '../../../../core/models/common.model';
+import { FastAttendanceDialogComponent } from './dialog/fast-attendance-dialog.component';
 
 // ============================================================================
 // CONSTANTS
@@ -93,7 +94,7 @@ export function convertTo12HourFormat(timeStr: string | undefined | null): strin
     MatInputModule,
     MatSelectModule,
     MatDividerModule
-  ],
+    ],
   template: `
     <div class="dialog-container" dir="rtl">
       <div class="dialog-header" [class.card-print]="isCardPrint">
@@ -1978,7 +1979,8 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     SearchableSelectComponent,
     TraineeAttendanceDetailsModalComponent,
     TraineeSelectionDialogComponent,
-    AttendanceExportPageSelectDialogComponent
+    AttendanceExportPageSelectDialogComponent,
+    FastAttendanceDialogComponent
   ],
   templateUrl: './trainee-attendance.component.html',
   styleUrls: ['./trainee-attendance.component.css']
@@ -2125,6 +2127,44 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   // ==========================================================================
   // TIME CONVERSION HELPER
   // ==========================================================================
+
+  openFastAttendanceDialog(): void {
+  // Get all sessions
+  this.courseSessionService.getAllSessionsByFilter().subscribe({
+    next: (res: any) => {
+      const sessions = res.items || [];
+      const sessionOptions = sessions.map((s: any) => ({
+        value: s.id,
+        label: `${s.title} - ${s.sessionDay || ''} ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
+      }));
+
+      const dialogRef = this.dialog.open(FastAttendanceDialogComponent, {
+        width: '700px',
+        maxWidth: '95vw',
+        disableClose: true,
+        data: {
+          sessions: sessions,
+          sessionOptions: sessionOptions
+        }
+      });
+
+      dialogRef.afterClosed().subscribe((result: any) => {
+        if (result) {
+          this.loadAttendances();
+          if (result.success > 0) {
+            this.notification.showSuccess(`تم تسجيل ${result.success} حضور بنجاح`);
+          }
+          if (result.failed > 0) {
+            this.notification.showWarning(`فشل تسجيل ${result.failed} حضور`);
+          }
+        }
+      });
+    },
+    error: () => {
+      this.notification.showError('حدث خطأ في تحميل الجلسات');
+    }
+  });
+}
 
   convertTo12HourFormat(timeStr: string | undefined | null): string {
     return convertTo12HourFormat(timeStr);

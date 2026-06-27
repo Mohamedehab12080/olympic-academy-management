@@ -19,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class EnrollmentSearchFilter extends SearchFilter<EnrollmentSearchFilter.OrderByAttributes> {
 
+    private String traineeNationalId;
     private String quickSearchQuery;
     private Boolean isActive;
     private Boolean isDeleted;

@@ -1,6 +1,9 @@
 /* trainee-attendance.component.css */
 
-/* Main Container */
+/* ==========================================================================
+   MAIN CONTAINER
+   ========================================================================== */
+
 .attendance-container {
   padding: 24px;
   max-width: 1400px;
@@ -16,7 +19,10 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Header Section */
+/* ==========================================================================
+   HEADER SECTION
+   ========================================================================== */
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -39,12 +45,43 @@
   opacity: 0.9;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+.fast-attendance-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  padding: 0 24px !important;
+  transition: all 0.3s !important;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3) !important;
+  height: 48px !important;
+}
+
+.fast-attendance-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4) !important;
+}
+
+.fast-attendance-btn mat-icon {
+  margin-left: 8px;
+}
+
 .add-button {
   background: white !important;
   color: #6d28d9 !important;
   font-weight: 600;
-  padding: 0 24px;
-  transition: all 0.3s;
+  padding: 0 24px !important;
+  height: 48px !important;
+  transition: all 0.3s !important;
 }
 
 .add-button:hover {
@@ -52,7 +89,10 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Filters Section */
+/* ==========================================================================
+   FILTERS SECTION
+   ========================================================================== */
+
 .filters-card {
   padding: 20px 24px;
   background: white;
@@ -106,7 +146,10 @@
   transform: translateY(-1px);
 }
 
-/* Barcode Search Section */
+/* ==========================================================================
+   BARCODE SEARCH
+   ========================================================================== */
+
 .barcode-search-section {
   display: flex;
   align-items: center;
@@ -209,7 +252,6 @@
   background: #fee2e2 !important;
 }
 
-/* Barcode Active Filter */
 .barcode-active-filter {
   display: inline-flex;
   align-items: center;
@@ -383,7 +425,10 @@
 .stat-card.excused .stat-info h3 { color: #3b82f6; }
 .stat-card.rate .stat-info h3 { color: #8b5cf6; }
 
-/* Loading State */
+/* ==========================================================================
+   LOADING STATE
+   ========================================================================== */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -398,7 +443,10 @@
   font-size: 14px;
 }
 
-/* Table Section */
+/* ==========================================================================
+   TABLE SECTION
+   ========================================================================== */
+
 .table-section {
   padding: 0 24px 24px 24px;
 }
@@ -476,22 +524,9 @@
   color: #1f2937;
 }
 
-.date-info,
-.time-info,
-.day-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.date-info mat-icon,
-.time-info mat-icon,
-.day-info mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  color: #94a3b8;
-}
+/* ==========================================================================
+   STATUS BADGES
+   ========================================================================== */
 
 .status-badge {
   display: inline-block;
@@ -526,6 +561,10 @@
   font-weight: 500;
 }
 
+/* ==========================================================================
+   ACTION BUTTONS
+   ========================================================================== */
+
 .action-buttons {
   display: flex;
   gap: 4px;
@@ -538,6 +577,10 @@
 .action-buttons button:hover {
   transform: scale(1.1);
 }
+
+/* ==========================================================================
+   NO DATA MESSAGE
+   ========================================================================== */
 
 .no-data-message {
   text-align: center;
@@ -558,7 +601,23 @@
   font-size: 16px;
 }
 
-/* Paginator */
+.no-data-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.no-data-actions .fast-attendance-btn {
+  height: 44px !important;
+  padding: 0 20px !important;
+}
+
+/* ==========================================================================
+   PAGINATOR
+   ========================================================================== */
+
 .custom-paginator {
   margin-top: 20px;
   border-top: 1px solid #e5e7eb;
@@ -573,6 +632,10 @@
 .custom-paginator ::ng-deep .mat-paginator-range-label {
   margin: 0 16px;
 }
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
 
 @keyframes fadeIn {
   from {
@@ -639,6 +702,16 @@
 
   .header-title h1 {
     font-size: 22px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .header-actions button {
+    width: 100%;
+    justify-content: center;
   }
 
   .filters-card {
@@ -729,6 +802,17 @@
     min-width: 800px;
   }
 
+  .no-data-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .no-data-actions button {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+
   .custom-paginator ::ng-deep .mat-paginator-container {
     flex-direction: column;
     gap: 8px;
@@ -769,5 +853,21 @@
 
   .national-id-cell {
     font-size: 11px;
+  }
+
+  .fast-attendance-btn {
+    font-size: 13px !important;
+    padding: 0 16px !important;
+    height: 40px !important;
+  }
+
+  .add-button {
+    font-size: 13px !important;
+    padding: 0 16px !important;
+    height: 40px !important;
+  }
+
+  .no-data-actions button {
+    max-width: 100%;
   }
 }

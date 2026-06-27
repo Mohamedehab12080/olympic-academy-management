@@ -1,0 +1,416 @@
+<div class="wizard-container" dir="rtl">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-title">
+      <mat-icon>{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
+      <div>
+        <h2>{{ isEditMode ? 'تعديل التسجيل' : 'تسجيل جديد' }}</h2>
+        <p>{{ isEditMode ? 'قم بتحديث بيانات التسجيل' : 'أضف تسجيل جديد لمتدرب' }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="printPreview()" matTooltip="معاينة الطباعة">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button mat-icon-button mat-dialog-close class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+  
+  <mat-divider></mat-divider>
+  
+  <!-- Scrollable Stepper Container -->
+  <div class="stepper-container">
+    <mat-stepper [linear]="true" #stepper class="custom-stepper">
+      
+      <!-- Step 1: Select Trainee -->
+      <mat-step [stepControl]="step1Form">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>person</mat-icon>
+            <span>المتدرب</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-header-icon">👤</div>
+            <div class="step-header-text">
+              <h3>اختر المتدرب</h3>
+              <p>يمكنك البحث عن المتدرب باستخدام الاسم أو رقم الهوية</p>
+            </div>
+          </div>
+
+          <div class="trainee-search-section">
+            <!-- Barcode Scanner Input -->
+            <div class="barcode-section">
+              <div class="barcode-icon-wrapper">
+                <mat-icon class="barcode-icon">qr_code_scanner</mat-icon>
+              </div>
+              <div class="barcode-input-wrapper">
+                <mat-form-field appearance="outline" class="barcode-input">
+                  <mat-label>مسح الباركود (رقم الهوية)</mat-label>
+                  <input matInput 
+                         #barcodeInput
+                         (keyup.enter)="searchByNationalId(barcodeInput.value)"
+                         placeholder="أدخل رقم الهوية أو امسح الباركود...">
+                  <button mat-icon-button matSuffix (click)="searchByNationalId(barcodeInput.value)" matTooltip="بحث">
+                    <mat-icon>search</mat-icon>
+                  </button>
+                </mat-form-field>
+                <div class="barcode-hint">
+                  <mat-icon>info</mat-icon>
+                  <span>يمكنك مسح الباركود من بطاقة المتدرب أو إدخال رقم الهوية يدوياً</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider-text">أو اختر من القائمة</div>
+
+            <div class="form-field full-width">
+              <app-searchable-select
+                [ngModel]="step1Form.get('traineeId')?.value"
+                (ngModelChange)="step1Form.get('traineeId')?.setValue($event); onTraineeSelect()"
+                label="المتدرب *"
+                [options]="traineeOptions"
+                [required]="true"
+                [ngModelOptions]="{standalone: true}">
+              </app-searchable-select>
+            </div>
+
+            <!-- Selected Trainee Info Card -->
+            <div class="trainee-preview-card" *ngIf="selectedTrainee">
+              <div class="trainee-preview-header">
+                <div class="trainee-preview-avatar">
+                  <img *ngIf="selectedTrainee.imagePreviewUrl" [src]="selectedTrainee.imagePreviewUrl" [alt]="selectedTrainee.title">
+                  <mat-icon *ngIf="!selectedTrainee.imagePreviewUrl">person</mat-icon>
+                </div>
+                <div class="trainee-preview-info">
+                  <h4>{{ selectedTrainee.title }}</h4>
+                  <div class="trainee-preview-meta">
+                    <mat-chip size="small">
+                      <mat-icon>badge</mat-icon>
+                      {{ selectedTrainee.nationalId || 'رقم الهوية غير متوفر' }}
+                    </mat-chip>
+                    <mat-chip size="small" *ngIf="selectedTrainee.academicYear">
+                      <mat-icon>school</mat-icon>
+                      السنة {{ selectedTrainee.academicYear }}
+                    </mat-chip>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button mat-raised-button color="primary" matStepperNext [disabled]="step1Form.invalid">
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 2: Select Course -->
+      <mat-step [stepControl]="step2Form">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>school</mat-icon>
+            <span>الدورة</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-header-icon">📚</div>
+            <div class="step-header-text">
+              <h3>اختر الدورة</h3>
+              <p>اختر الدورة التي سيسجل فيها المتدرب</p>
+            </div>
+          </div>
+
+          <form [formGroup]="step2Form">
+            <div class="form-field full-width">
+              <app-searchable-select
+                [ngModel]="step2Form.get('courseId')?.value"
+                (ngModelChange)="step2Form.get('courseId')?.setValue($event); onCourseSelect()"
+                label="الدورة *"
+                [options]="courseOptions"
+                [required]="true"
+                [ngModelOptions]="{standalone: true}">
+              </app-searchable-select>
+            </div>
+            
+            <!-- Course Information Card -->
+            <mat-card class="course-info-card" *ngIf="selectedCourse">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>info</mat-icon>
+                <mat-card-title>معلومات الدورة</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">المدة:</span>
+                    <span class="info-value">{{ selectedCourse.duration }} ساعة</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">السعر:</span>
+                    <span class="info-value price">{{ selectedCourse.price | currency:'EGP' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">تاريخ البدء:</span>
+                    <span class="info-value">{{ selectedCourse.startDate | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">تاريخ الانتهاء:</span>
+                    <span class="info-value">{{ selectedCourse.endDate | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <div class="info-item full-width" *ngIf="selectedCourse.description">
+                    <span class="info-label">الوصف:</span>
+                    <span class="info-value">{{ selectedCourse.description }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" matStepperNext [disabled]="step2Form.invalid">
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 3: Select Trainer -->
+      <mat-step [stepControl]="step3Form">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>badge</mat-icon>
+            <span>المدرب</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-header-icon">👨‍🏫</div>
+            <div class="step-header-text">
+              <h3>اختر المدرب</h3>
+              <p>اختر المدرب المسؤول عن هذه الدورة</p>
+            </div>
+          </div>
+
+          <form [formGroup]="step3Form">
+            <div class="form-field full-width">
+              <app-searchable-select
+                [ngModel]="step3Form.get('trainerId')?.value"
+                (ngModelChange)="step3Form.get('trainerId')?.setValue($event)"
+                label="المدرب *"
+                [options]="trainerOptions"
+                [required]="true"
+                [ngModelOptions]="{standalone: true}">
+              </app-searchable-select>
+            </div>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" matStepperNext [disabled]="step3Form.invalid">
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 4: Enrollment Details -->
+      <mat-step [stepControl]="enrollmentForm">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>receipt</mat-icon>
+            <span>تفاصيل التسجيل</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-header-icon">📝</div>
+            <div class="step-header-text">
+              <h3>تفاصيل التسجيل</h3>
+              <p>أدخل تفاصيل التسجيل والتكاليف وحالة الدفع</p>
+            </div>
+          </div>
+
+          <!-- Course Date Range Info -->
+          <div class="course-date-info" *ngIf="selectedCourse">
+            <mat-icon>event_range</mat-icon>
+            <div class="date-range">
+              <span class="range-label">فترة الدورة:</span>
+              <span class="range-value">{{ selectedCourse.startDate | date:'dd/MM/yyyy' }} - {{ selectedCourse.endDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <form [formGroup]="enrollmentForm">
+            <!-- First Row -->
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>نوع التسجيل</mat-label>
+                  <mat-select formControlName="enrollmentTypeId">
+                    <mat-option [value]="null">-- اختر --</mat-option>
+                    <mat-option *ngFor="let type of enrollmentTypes" [value]="type.id">{{ type.title }}</mat-option>
+                    <mat-option [value]="'new'">
+                      <div style="display: flex; align-items: center; gap: 8px; color: #2563eb;">
+                        <mat-icon>add_circle</mat-icon>
+                        <span>إضافة نوع تسجيل جديد</span>
+                      </div>
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>تاريخ البدء *</mat-label>
+                  <input matInput [matDatepicker]="startPicker" formControlName="startDate" (dateChange)="validateDates()">
+                  <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                  <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('required')">تاريخ البدء مطلوب</mat-error>
+                  <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('beforeCourseStart')">تاريخ البدء يجب أن يكون بعد تاريخ بدء الدورة ({{ selectedCourse?.startDate | date:'dd/MM/yyyy' }})</mat-error>
+                  <mat-error *ngIf="enrollmentForm.get('startDate')?.hasError('afterCourseEnd')">تاريخ البدء يجب أن يكون قبل تاريخ انتهاء الدورة ({{ selectedCourse?.endDate | date:'dd/MM/yyyy' }})</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Second Row -->
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>تاريخ الانتهاء</mat-label>
+                  <input matInput [matDatepicker]="endPicker" formControlName="endDate" (dateChange)="validateDates()">
+                  <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                  <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('afterCourseEnd')">تاريخ الانتهاء يجب أن يكون قبل تاريخ انتهاء الدورة ({{ selectedCourse?.endDate | date:'dd/MM/yyyy' }})</mat-error>
+                  <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('beforeStartDate')">تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء</mat-error>
+                </mat-form-field>
+              </div>
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>حالة التسجيل</mat-label>
+                  <mat-select formControlName="enrollmentStatus">
+                    <mat-option *ngFor="let status of enrollmentStatuses" [value]="status">{{ status.title }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Third Row -->
+            <div class="form-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>قيمة الاشتراك</mat-label>
+                  <input matInput type="number" formControlName="subscriptionValue" (input)="calculateFinalValue()">
+                  <span matSuffix>جم</span>
+                </mat-form-field>
+              </div>
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>نسبة الخصم</mat-label>
+                  <input matInput type="number" formControlName="discountPercentage" (input)="onDiscountPercentageChange()">
+                  <span matSuffix>%</span>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Fourth Row - Discount with Auto Calculation -->
+            <div class="form-row discount-row">
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>قيمة الخصم</mat-label>
+                  <input matInput type="number" formControlName="discountAmount" (input)="onDiscountAmountChange()">
+                  <span matSuffix>جم</span>
+                </mat-form-field>
+              </div>
+              <div class="form-field">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>المبلغ النهائي</mat-label>
+                  <input matInput type="number" formControlName="finalSubscriptionValue" readonly>
+                  <span matSuffix>جم</span>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Payment Status -->
+            <div class="form-row">
+              <div class="form-field full-width">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>حالة الدفع *</mat-label>
+                  <mat-select formControlName="paymentStatus" required>
+                    <mat-option [value]="null">-- اختر حالة الدفع --</mat-option>
+                    <mat-option *ngFor="let status of paymentStatuses" [value]="status">
+                      <div class="status-option">
+                        <span class="status-dot" [style.background-color]="getPaymentStatusColor(status.id)"></span>
+                        {{ status.title }}
+                      </div>
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="enrollmentForm.get('paymentStatus')?.hasError('required')">حالة الدفع مطلوبة</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Status Toggle -->
+            <div class="full-width status-toggle" *ngIf="isEditMode">
+              <mat-slide-toggle 
+                [color]="'primary'"
+                [checked]="enrollmentForm.get('isActive')?.value"
+                (change)="enrollmentForm.get('isActive')?.setValue($event.checked)">
+                <div class="toggle-label">
+                  <mat-icon>account_circle</mat-icon>
+                  <span>حالة التسجيل</span>
+                </div>
+                <div class="toggle-status" [class.active]="enrollmentForm.get('isActive')?.value">
+                  {{ enrollmentForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
+                </div>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Payment Option -->
+            <div class="payment-option">
+              <mat-checkbox color="primary" (change)="onPaymentOptionChange($event)">
+                <span class="payment-checkbox-label">إجراء دفعة مباشرة</span>
+              </mat-checkbox>
+              <div class="payment-info-hint" *ngIf="showPaymentSection">
+                <mat-icon>info</mat-icon>
+                <span>سيتم نقلك إلى صفحة الدفع بعد حفظ التسجيل</span>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-field full-width">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>ملاحظات</mat-label>
+                <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+              </mat-form-field>
+            </div>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" (click)="submitEnrollment()" [disabled]="isSubmitting || enrollmentForm.invalid">
+            <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+            <span *ngIf="!isSubmitting">{{ isEditMode ? 'تحديث' : 'تأكيد التسجيل' }}</span>
+          </button>
+          <button mat-stroked-button color="accent" (click)="printPreview()" [disabled]="isSubmitting">
+            <mat-icon>print</mat-icon>
+            معاينة الطباعة
+          </button>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>جاري التحميل...</p>
+  </div>
+</div>

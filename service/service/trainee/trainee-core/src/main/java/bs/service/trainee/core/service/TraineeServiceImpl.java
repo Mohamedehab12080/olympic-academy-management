@@ -78,8 +78,10 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee trainee = traineeRepository.selectById(traineeId)
                 .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
         trainee.setIsDeleted(true);
+        if(trainee.getImageUrl()!=null){
+            fileService.deleteByFid(trainee.getImageUrl());
+        }
         traineeRepository.update(trainee);
-        fileService.deleteByFid(trainee.getImageUrl());
     }
 
     @Override

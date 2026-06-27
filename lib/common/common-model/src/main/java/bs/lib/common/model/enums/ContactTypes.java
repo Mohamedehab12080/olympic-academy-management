@@ -8,7 +8,9 @@ import lombok.Getter;
 @Getter
 public enum ContactTypes implements EnumWithIdAndTitle {
     EMAIL(1, "بريد إلكتروني"),
-    PHONE(2, "جوال");
+    PHONE(2, "جوال"),
+    WHATSAPP(3, "واتس");
+
 
     private final Integer id;
     private final String title;

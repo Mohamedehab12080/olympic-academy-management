@@ -109,7 +109,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public EnrollmentResultSet getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,
-                                                         Integer traineeId, Integer courseId, Integer trainerId,
+                                                         Integer traineeId,String traineeNationalId, Integer courseId, Integer trainerId,
                                                          Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus,
                                                          PaymentStatus paymentStatus, LocalDate startDateFrom,
                                                          LocalDate startDateTo, LocalDate endDateFrom,
@@ -121,6 +121,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .isActive(isActive)
                 .isDeleted(false)
                 .traineeId(traineeId)
+                .traineeNationalId(traineeNationalId)
                 .courseId(courseId)
                 .trainerId(trainerId)
                 .enrollmentTypeId(enrollmentTypeId)
