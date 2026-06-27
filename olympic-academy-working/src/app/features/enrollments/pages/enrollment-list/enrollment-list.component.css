@@ -58,7 +58,8 @@
   margin: 0 0 6px 0;
   font-size: 28px;
   font-weight: 800;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 4px rgb(255, 255, 255);
+  color: white;
   letter-spacing: -0.5px;
 }
 

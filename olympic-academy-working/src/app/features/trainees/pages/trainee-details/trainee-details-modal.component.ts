@@ -1284,7 +1284,6 @@ getContactIcon(contactType: any): string {
               
               <div class="thermal-barcode">
                 <img src="${barcodeImage}" alt="Barcode" onerror="this.style.display='none'">
-                <div class="thermal-barcode-number">${t.nationalId || ''}</div>
               </div>
               
               <div class="thermal-footer">

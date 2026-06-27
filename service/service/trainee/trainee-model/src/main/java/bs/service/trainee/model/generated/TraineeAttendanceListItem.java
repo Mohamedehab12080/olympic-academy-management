@@ -39,6 +39,8 @@ public class TraineeAttendanceListItem implements Serializable {
 
     private String sessionDay;
 
+    private String attendanceDate;
+
     private LookupVTO status;
 
     private String checkInTime;
@@ -173,6 +175,27 @@ public class TraineeAttendanceListItem implements Serializable {
         this.sessionDay = sessionDay;
     }
 
+    public TraineeAttendanceListItem attendanceDate(String attendanceDate) {
+        this.attendanceDate = attendanceDate;
+        return this;
+    }
+
+    /**
+     * Get attendanceDate
+     *
+     * @return attendanceDate
+     */
+
+    @Schema(name = "attendanceDate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("attendanceDate")
+    public String getAttendanceDate() {
+        return attendanceDate;
+    }
+
+    public void setAttendanceDate(String attendanceDate) {
+        this.attendanceDate = attendanceDate;
+    }
+
     public TraineeAttendanceListItem status(LookupVTO status) {
         this.status = status;
         return this;
@@ -272,6 +295,7 @@ public class TraineeAttendanceListItem implements Serializable {
                 && Objects.equals(this.courseTitle, traineeAttendanceListItem.courseTitle)
                 && Objects.equals(this.sessionDate, traineeAttendanceListItem.sessionDate)
                 && Objects.equals(this.sessionDay, traineeAttendanceListItem.sessionDay)
+                && Objects.equals(this.attendanceDate, traineeAttendanceListItem.attendanceDate)
                 && Objects.equals(this.status, traineeAttendanceListItem.status)
                 && Objects.equals(this.checkInTime, traineeAttendanceListItem.checkInTime)
                 && Objects.equals(this.checkOutTime, traineeAttendanceListItem.checkOutTime)
@@ -280,8 +304,8 @@ public class TraineeAttendanceListItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, trainee, sessionTitle, courseTitle, sessionDate, sessionDay, status, checkInTime,
-                checkOutTime, lateTime);
+        return Objects.hash(id, trainee, sessionTitle, courseTitle, sessionDate, sessionDay, attendanceDate, status,
+                checkInTime, checkOutTime, lateTime);
     }
 
     @Override
@@ -294,6 +318,7 @@ public class TraineeAttendanceListItem implements Serializable {
         sb.append("    courseTitle: ").append(toIndentedString(courseTitle)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
         sb.append("    sessionDay: ").append(toIndentedString(sessionDay)).append("\n");
+        sb.append("    attendanceDate: ").append(toIndentedString(attendanceDate)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");
         sb.append("    checkInTime: ").append(toIndentedString(checkInTime)).append("\n");
         sb.append("    checkOutTime: ").append(toIndentedString(checkOutTime)).append("\n");

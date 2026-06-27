@@ -1997,7 +1997,7 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   selectedDay: string | null = null;
   dayOptions: SelectOption[] = [];
   
-  displayedColumns: string[] = ['index', 'traineeImage', 'traineeNationalId', 'traineeName', 'courseTitle', 'sessionTitle', 'sessionDay', 'status', 'checkInTime', 'checkOutTime', 'lateTime', 'actions'];
+  displayedColumns: string[] = ['index', 'traineeImage', 'traineeNationalId', 'traineeName', 'courseTitle', 'sessionTitle', 'sessionDay','attendanceDate', 'status', 'checkInTime', 'checkOutTime', 'lateTime', 'actions'];
   dataSource = new MatTableDataSource<TraineeAttendanceListItem>([]);
   allAttendances: TraineeAttendanceListItem[] = [];
   isLoading = false;
@@ -2128,22 +2128,25 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   // TIME CONVERSION HELPER
   // ==========================================================================
 
-  openFastAttendanceDialog(): void {
-  // Get all sessions
+
+openFastAttendanceDialog(): void {
+  // Get all sessions with their details
   this.courseSessionService.getAllSessionsByFilter().subscribe({
     next: (res: any) => {
       const sessions = res.items || [];
       const sessionOptions = sessions.map((s: any) => ({
         value: s.id,
-        label: `${s.title} - ${s.sessionDay || ''} ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
+        label: `${s.title} - ${s.sessionDay || ''} ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`,
+        startTime: s.startTime || s.startTime,  // Make sure these are included
+        endTime: s.endTime || s.endTime,        // Make sure these are included
+        day: s.sessionDay || ''
       }));
 
       const dialogRef = this.dialog.open(FastAttendanceDialogComponent, {
-        width: '700px',
+        width: '750px',
         maxWidth: '95vw',
         disableClose: true,
         data: {
-          sessions: sessions,
           sessionOptions: sessionOptions
         }
       });
@@ -2160,7 +2163,8 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
         }
       });
     },
-    error: () => {
+    error: (error) => {
+      console.error('Error loading sessions:', error);
       this.notification.showError('حدث خطأ في تحميل الجلسات');
     }
   });
@@ -3043,6 +3047,7 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
       'الدورة': item.courseTitle || '-',
       'الجلسة': item.sessionTitle || '-',
       'اليوم': this.getDayDisplay(item.sessionDay),
+      'تاريخ الحضور': item.attendanceDate || '-',
       'حالة الحضور': item.status?.title || '-',
       'وقت الدخول': convertTo12HourFormat(item.checkInTime) || '-',
       'وقت الخروج': convertTo12HourFormat(item.checkOutTime) || '-',
@@ -3053,302 +3058,371 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
     this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
-  async exportToPDF(): Promise<void> {
-    const result = await this.showExportPageSelection(false);
-    
-    if (!result) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    let dataToPrint: TraineeAttendanceListItem[] = [];
-
-    if (result.option === 'all') {
-      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-    } else if (result.option === 'current') {
-      dataToPrint = this.allAttendances;
-    } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
-    }
-
-    if (dataToPrint.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      this.isLoading = false;
-      return;
-    }
-
-    const filterTexts: string[] = [];
-    
-    if (this.selectedCourseId) {
-      const course = this.courses.find(c => c.id === this.selectedCourseId);
-      if (course) filterTexts.push(`الدورة: ${course.title}`);
-    }
-    if (this.selectedSessionId) {
-      const session = this.sessions.find(s => s.id === this.selectedSessionId);
-      if (session) filterTexts.push(`الجلسة: ${session.title}`);
-    }
-    if (this.selectedStatus) {
-      const statusMap: { [key: string]: string } = {
-        'PRESENT': 'حاضر',
-        'ABSENT': 'غائب',
-        'LATE': 'متأخر',
-        'EXCUSED': 'معتذر'
-      };
-      const statusTitle = statusMap[this.selectedStatus];
-      if (statusTitle) {
-        filterTexts.push(`حالة الحضور: ${statusTitle}`);
-      }
-    }
-    if (this.selectedDay) {
-      const dayMap: { [key: string]: string } = {
-        'SATURDAY': 'السبت',
-        'SUNDAY': 'الأحد',
-        'MONDAY': 'الإثنين',
-        'TUESDAY': 'الثلاثاء',
-        'WEDNESDAY': 'الأربعاء',
-        'THURSDAY': 'الخميس',
-        'FRIDAY': 'الجمعة'
-      };
-      const dayTitle = dayMap[this.selectedDay];
-      if (dayTitle) {
-        filterTexts.push(`اليوم: ${dayTitle}`);
-      }
-    }
-    if (this.fromDate) {
-      filterTexts.push(`من تاريخ: ${this.fromDate}`);
-    }
-    if (this.toDate) {
-      filterTexts.push(`إلى تاريخ: ${this.toDate}`);
-    }
-
-    const total = dataToPrint.length;
-    const present = dataToPrint.filter(a => a.status?.id === 1).length;
-    const exportStats = {
-      total,
-      present,
-      absent: dataToPrint.filter(a => a.status?.id === 2).length,
-      late: dataToPrint.filter(a => a.status?.id === 3).length,
-      excused: dataToPrint.filter(a => a.status?.id === 4).length,
-      attendanceRate: total > 0 ? Math.round((present / total) * 100) : 0
-    };
-
-    let tableRows = '';
-    dataToPrint.forEach((item: TraineeAttendanceListItem, index: number) => {
-      const statusClass = this.getStatusClass(item.status?.id);
-      const statusStyles: { [key: string]: string } = {
-        present: 'background-color: #d1fae5; color: #065f46;',
-        absent: 'background-color: #fee2e2; color: #991b1b;',
-        late: 'background-color: #fef3c7; color: #92400e;',
-        excused: 'background-color: #dbeafe; color: #1e40af;'
-      };
-      const statusStyle = statusStyles[statusClass] || '';
-
-      const checkInFormatted = convertTo12HourFormat(item.checkInTime);
-      const checkOutFormatted = convertTo12HourFormat(item.checkOutTime);
-
-      tableRows += `
-        <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getTraineeNationalId(item.trainee)}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${this.getTraineeDisplayName(item.trainee)}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.courseTitle || '-'}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.sessionTitle || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getDayDisplay(item.sessionDay)}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
-            ${item.status?.title || '-'}
-          </td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkInFormatted}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkOutFormatted}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.lateTime ? item.lateTime + ' دقيقة' : '-'}</td>
-        </tr>
-      `;
-    });
-
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '20px';
-    printContainer.style.backgroundColor = 'white';
-    printContainer.style.maxWidth = '1200px';
-    printContainer.style.margin = '0 auto';
-
-    printContainer.innerHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>تقرير حضور المتدربين</title>
-        <style>
-          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
-          @media print {
-            body { margin: 0; padding: 20px; background: #f0f4f8; }
-            .no-print { display: none; }
-            .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-          }
-          .header h1 { margin: 0; font-size: 28px; font-weight: 800; }
-          .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.85; }
-          .filters {
-            margin-bottom: 20px;
-            padding: 14px 20px;
-            background: #ffffff;
-            border-radius: 12px;
-            font-size: 13px;
-            color: #1e293b;
-            border: 1px solid #e2e8f0;
-          }
-          .filters strong { color: #0f3460; margin-left: 8px; }
-          .stats {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-          }
-          .stat-item {
-            text-align: center;
-            padding: 16px 12px;
-            background: white;
-            border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-          }
-          .stat-value { font-size: 24px; font-weight: 800; color: #8b5cf6; display: block; }
-          .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500; }
-          .stat-value.present { color: #10b981; }
-          .stat-value.absent { color: #ef4444; }
-          .stat-value.late { color: #f59e0b; }
-          .stat-value.excused { color: #3b82f6; }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            direction: rtl;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-          }
-          th {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: white;
-            padding: 14px 12px;
-            border: none;
-            text-align: center;
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-          }
-          td { padding: 10px 12px; border: 1px solid #e2e8f0; }
-          .footer {
-            text-align: center;
-            margin-top: 25px;
-            padding: 16px;
-            font-size: 11px;
-            color: #94a3b8;
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-          }
-          .footer strong { color: #0f3460; }
-          .total-row td {
-            font-weight: 700;
-            background: #f8fafc;
-            border-top: 2px solid #8b5cf6;
-          }
-          .no-print {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-          }
-          .no-print button {
-            padding: 12px 32px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-          }
-          .no-print button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(139,92,246,0.3);
-          }
-          @media (max-width: 768px) {
-            .stats { grid-template-columns: repeat(3, 1fr); }
-          }
-          @media (max-width: 480px) {
-            .stats { grid-template-columns: repeat(2, 1fr); }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>📋 تقرير حضور المتدربين</h1>
-          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-          <p style="opacity:0.7; font-size:13px;">عدد السجلات: ${dataToPrint.length} سجل</p>
-        </div>
-        ${filterTexts.length ? `<div class="filters"><strong>🔍 الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
-        <div class="stats">
-          <div class="stat-item"><span class="stat-value">${exportStats.total}</span><span class="stat-label">📋 إجمالي السجلات</span></div>
-          <div class="stat-item"><span class="stat-value present">${exportStats.present}</span><span class="stat-label">✅ حاضر</span></div>
-          <div class="stat-item"><span class="stat-value absent">${exportStats.absent}</span><span class="stat-label">❌ غائب</span></div>
-          <div class="stat-item"><span class="stat-value late">${exportStats.late}</span><span class="stat-label">⏰ متأخر</span></div>
-          <div class="stat-item"><span class="stat-value excused">${exportStats.excused}</span><span class="stat-label">📝 معتذر</span></div>
-          <div class="stat-item"><span class="stat-value">${exportStats.attendanceRate}%</span><span class="stat-label">📊 نسبة الحضور</span></div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>رقم الهوية</th><th>المتدرب</th><th>الدورة</th><th>الجلسة</th>
-              <th>اليوم</th><th>الحالة</th><th>وقت الدخول</th>
-              <th>وقت الخروج</th><th>وقت التأخير</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tableRows}
-            <tr class="total-row">
-              <td colspan="10" style="text-align:center; font-weight:700; color:#8b5cf6; font-size:14px;">
-                إجمالي عدد السجلات: ${dataToPrint.length}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="footer">
-          <strong>🏛️ نظام إدارة الأكاديمية الأولمبية</strong><br>
-          تم التصدير بواسطة النظام الآلي للأكاديمية الأولمبية
-        </div>
-        <div class="no-print">
-          <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const printWindow = window.open('', '_blank', 'width=1200,height=900,scrollbars=yes');
-    if (printWindow) {
-      printWindow.document.write(printContainer.innerHTML);
-      printWindow.document.close();
-      this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
-    } else {
-      document.body.appendChild(printContainer);
-      window.print();
-      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
-      this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
-    }
+async exportToPDF(): Promise<void> {
+  const result = await this.showExportPageSelection(false);
+  
+  if (!result) {
+    return;
   }
 
+  this.isLoading = true;
+
+  let dataToPrint: TraineeAttendanceListItem[] = [];
+
+  if (result.option === 'all') {
+    dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+  } else if (result.option === 'current') {
+    dataToPrint = this.allAttendances;
+  } else if (result.option === 'range') {
+    dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+  }
+
+  if (dataToPrint.length === 0) {
+    this.notification.showWarning('لا توجد بيانات لتصديرها');
+    this.isLoading = false;
+    return;
+  }
+
+  const filterTexts: string[] = [];
+  
+  if (this.selectedCourseId) {
+    const course = this.courses.find(c => c.id === this.selectedCourseId);
+    if (course) filterTexts.push(`الدورة: ${course.title}`);
+  }
+  if (this.selectedSessionId) {
+    const session = this.sessions.find(s => s.id === this.selectedSessionId);
+    if (session) filterTexts.push(`الجلسة: ${session.title}`);
+  }
+  if (this.selectedStatus) {
+    const statusMap: { [key: string]: string } = {
+      'PRESENT': 'حاضر',
+      'ABSENT': 'غائب',
+      'LATE': 'متأخر',
+      'EXCUSED': 'معتذر'
+    };
+    const statusTitle = statusMap[this.selectedStatus];
+    if (statusTitle) {
+      filterTexts.push(`حالة الحضور: ${statusTitle}`);
+    }
+  }
+  if (this.selectedDay) {
+    const dayMap: { [key: string]: string } = {
+      'SATURDAY': 'السبت',
+      'SUNDAY': 'الأحد',
+      'MONDAY': 'الإثنين',
+      'TUESDAY': 'الثلاثاء',
+      'WEDNESDAY': 'الأربعاء',
+      'THURSDAY': 'الخميس',
+      'FRIDAY': 'الجمعة'
+    };
+    const dayTitle = dayMap[this.selectedDay];
+    if (dayTitle) {
+      filterTexts.push(`اليوم: ${dayTitle}`);
+    }
+  }
+  if (this.fromDate) {
+    filterTexts.push(`من تاريخ: ${this.fromDate}`);
+  }
+  if (this.toDate) {
+    filterTexts.push(`إلى تاريخ: ${this.toDate}`);
+  }
+
+  const total = dataToPrint.length;
+  const present = dataToPrint.filter(a => a.status?.id === 1).length;
+  const exportStats = {
+    total,
+    present,
+    absent: dataToPrint.filter(a => a.status?.id === 2).length,
+    late: dataToPrint.filter(a => a.status?.id === 3).length,
+    excused: dataToPrint.filter(a => a.status?.id === 4).length,
+    attendanceRate: total > 0 ? Math.round((present / total) * 100) : 0
+  };
+
+  let tableRows = '';
+  dataToPrint.forEach((item: TraineeAttendanceListItem, index: number) => {
+    const statusClass = this.getStatusClass(item.status?.id);
+    const statusStyles: { [key: string]: string } = {
+      present: 'background-color: #d1fae5; color: #065f46;',
+      absent: 'background-color: #fee2e2; color: #991b1b;',
+      late: 'background-color: #fef3c7; color: #92400e;',
+      excused: 'background-color: #dbeafe; color: #1e40af;'
+    };
+    const statusStyle = statusStyles[statusClass] || '';
+
+    const checkInFormatted = convertTo12HourFormat(item.checkInTime);
+    const checkOutFormatted = convertTo12HourFormat(item.checkOutTime);
+
+    tableRows += `
+      <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getTraineeNationalId(item.trainee)}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${this.getTraineeDisplayName(item.trainee)}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.courseTitle || '-'}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.sessionTitle || '-'}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getDayDisplay(item.sessionDay)}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
+          ${item.status?.title || '-'}
+        </td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkInFormatted}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkOutFormatted}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.lateTime ? item.lateTime + ' دقيقة' : '-'}</td>
+      </tr>
+    `;
+  });
+
+  const printContainer = document.createElement('div');
+  printContainer.style.direction = 'rtl';
+  printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+  printContainer.style.padding = '20px';
+  printContainer.style.backgroundColor = 'white';
+  printContainer.style.maxWidth = '1200px';
+  printContainer.style.margin = '0 auto';
+
+  printContainer.innerHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>تقرير حضور المتدربين</title>
+      <style>
+        * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
+        @media print {
+          body { margin: 0; padding: 20px; background: #f0f4f8; }
+          .no-print { display: none; }
+          .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 25px;
+          padding: 30px 20px;
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+          color: white;
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 800; }
+        .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.85; }
+        .filters {
+          margin-bottom: 20px;
+          padding: 14px 20px;
+          background: #ffffff;
+          border-radius: 12px;
+          font-size: 13px;
+          color: #1e293b;
+          border: 1px solid #e2e8f0;
+        }
+        .filters strong { color: #0f3460; margin-left: 8px; }
+        .stats {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .stat-item {
+          text-align: center;
+          padding: 16px 12px;
+          background: white;
+          border-radius: 14px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .stat-value { font-size: 24px; font-weight: 800; color: #8b5cf6; display: block; }
+        .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500; }
+        .stat-value.present { color: #10b981; }
+        .stat-value.absent { color: #ef4444; }
+        .stat-value.late { color: #f59e0b; }
+        .stat-value.excused { color: #3b82f6; }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          direction: rtl;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        th {
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+          color: white;
+          padding: 14px 12px;
+          border: none;
+          text-align: center;
+          font-weight: 700;
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+        td { padding: 10px 12px; border: 1px solid #e2e8f0; }
+        
+        /* ==========================================================================
+           FOOTER - Powered By
+           ========================================================================== */
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          padding: 24px 20px 20px;
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          color: white;
+          border-radius: 12px;
+          border: 1px solid #334155;
+        }
+        .footer .company-name {
+          font-size: 20px;
+          font-weight: 700;
+          color: #8b5cf6;
+          display: block;
+          margin-bottom: 4px;
+          letter-spacing: 0.5px;
+        }
+        .footer .company-details {
+          font-size: 13px;
+          color: #94a3b8;
+          display: block;
+          margin-bottom: 2px;
+        }
+        .footer .company-phone {
+          font-size: 13px;
+          color: #94a3b8;
+          display: block;
+          margin-bottom: 2px;
+        }
+        .footer .powered-by {
+          display: block;
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #334155;
+        }
+        .footer .powered-by .powered-label {
+          font-size: 12px;
+          color: #64748b;
+          display: block;
+          margin-bottom: 2px;
+        }
+        .footer .powered-by .software-company {
+          font-size: 16px;
+          font-weight: 700;
+          color: #a78bfa;
+          display: block;
+          letter-spacing: 0.5px;
+        }
+        .footer .powered-by .software-company .heart {
+          color: #ef4444;
+        }
+        .footer .copyright {
+          font-size: 11px;
+          color: #475569;
+          display: block;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid #1e293b;
+        }
+        .total-row td {
+          font-weight: 700;
+          background: #f8fafc;
+          border-top: 2px solid #8b5cf6;
+        }
+        .no-print {
+          text-align: center;
+          margin-top: 20px;
+          padding: 10px;
+        }
+        .no-print button {
+          padding: 12px 32px;
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+          color: white;
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 16px;
+          font-weight: 600;
+          transition: all 0.3s;
+        }
+        .no-print button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(139,92,246,0.3);
+        }
+        @media (max-width: 768px) {
+          .stats { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 480px) {
+          .stats { grid-template-columns: repeat(2, 1fr); }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>📋 تقرير حضور المتدربين</h1>
+        <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+        <p style="opacity:0.7; font-size:13px;">عدد السجلات: ${dataToPrint.length} سجل</p>
+      </div>
+      ${filterTexts.length ? `<div class="filters"><strong>🔍 الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+      <div class="stats">
+        <div class="stat-item"><span class="stat-value">${exportStats.total}</span><span class="stat-label">📋 إجمالي السجلات</span></div>
+        <div class="stat-item"><span class="stat-value present">${exportStats.present}</span><span class="stat-label">✅ حاضر</span></div>
+        <div class="stat-item"><span class="stat-value absent">${exportStats.absent}</span><span class="stat-label">❌ غائب</span></div>
+        <div class="stat-item"><span class="stat-value late">${exportStats.late}</span><span class="stat-label">⏰ متأخر</span></div>
+        <div class="stat-item"><span class="stat-value excused">${exportStats.excused}</span><span class="stat-label">📝 معتذر</span></div>
+        <div class="stat-item"><span class="stat-value">${exportStats.attendanceRate}%</span><span class="stat-label">📊 نسبة الحضور</span></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>رقم الهوية</th><th>المتدرب</th><th>الدورة</th><th>الجلسة</th>
+            <th>اليوم</th><th>الحالة</th><th>وقت الدخول</th>
+            <th>وقت الخروج</th><th>وقت التأخير</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          <tr class="total-row">
+            <td colspan="10" style="text-align:center; font-weight:700; color:#8b5cf6; font-size:14px;">
+              إجمالي عدد السجلات: ${dataToPrint.length}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- ============================================================
+           FOOTER - Powered By
+           ============================================================ -->
+      <div class="footer">
+        <span class="company-name">🏛️ الأكاديمية الأولمبية</span>
+        <span class="company-details">📍 الرياض - المملكة العربية السعودية</span>
+        <span class="company-phone">📞 966-12-345-6789+</span>
+        <span class="company-phone">📧 info@olympic-academy.com</span>
+        
+        <div class="powered-by">
+          <span class="powered-label">🚀 Powered by</span>
+          <span class="software-company">💻 <span class="heart">❤</span> TechSolutions <span class="heart">❤</span></span>
+          <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">
+            نظام إدارة الأكاديمية الأولمبية
+          </span>
+        </div>
+        
+        <span class="copyright">© ${new Date().getFullYear()} الأكاديمية الأولمبية. جميع الحقوق محفوظة</span>
+      </div>
+      
+      <div class="no-print">
+        <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const printWindow = window.open('', '_blank', 'width=1200,height=900,scrollbars=yes');
+  if (printWindow) {
+    printWindow.document.write(printContainer.innerHTML);
+    printWindow.document.close();
+    this.isLoading = false;
+    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+  } else {
+    document.body.appendChild(printContainer);
+    window.print();
+    setTimeout(() => { document.body.removeChild(printContainer); }, 500);
+    this.isLoading = false;
+    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+  }
+}
   // ==========================================================================
   // HELPER METHODS
   // ==========================================================================

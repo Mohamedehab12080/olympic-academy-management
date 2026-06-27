@@ -16,8 +16,8 @@ public interface TraineeAttendanceJPARepository extends JpaRepository<TraineeAtt
      * @return true false otherwise
      */
     @Query("""
-        SELECT COUNT(e) > 0 FROM Enrollment e 
-        WHERE e.trainee.id = :traineeId 
+        SELECT COUNT(e) > 0 FROM Enrollment e
+        WHERE e.trainee.id = :traineeId
         AND e.course.id = (SELECT cs.course.id FROM CourseSession cs WHERE cs.id = :sessionId)
         AND e.isActive = true
     """)

@@ -192,6 +192,7 @@ public abstract class TraineeMapper {
      */
 
     @Mapping(target = "trainee", source = "entity.trainee")
+    @Mapping(target = "attendanceDate", source = "entity.attendanceDate")
     @Mapping(target = "sessionTitle", source = "courseSession.title")
     @Mapping(target = "sessionDay", source = "courseSession.sessionDay")
     @Mapping(target = "courseTitle", source = "courseSession.course.title")

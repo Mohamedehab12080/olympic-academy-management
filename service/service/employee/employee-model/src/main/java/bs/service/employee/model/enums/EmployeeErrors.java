@@ -38,6 +38,8 @@ public enum EmployeeErrors implements Errors {
     DUPLICATE_TRAINER_DAY_COMBINATION(EmployeeDomains.COURSE_SESSION,"0006","يوجد تكرار في الجلسة وقتها{1} ومدربها{0}"),
     TRAINER_ALREADY_BOOKED(EmployeeDomains.COURSE_SESSION,"0007","المدرب {0} محجوز بالفعل في هذا الوقت"),
     PLACE_ALREADY_BOOKED(EmployeeDomains.COURSE_SESSION,"0008","المكان {0} محجوز بالفعل في هذا الوقت"),
+    COURSE_SESSION_NOT_SCHEDULED(EmployeeDomains.COURSE_SESSION, "0009", "جلسة الدورة غير مجدولة {0}"),
+
     EMPLOYEE_DEPARTMENT_NOT_FOUND(EmployeeDomains.EMPLOYEE_DEPARTMENT, "0001", "هذا القسم غير موجود{0}");
 
     private final Domains domain;

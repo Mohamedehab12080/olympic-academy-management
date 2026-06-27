@@ -1,6 +1,6 @@
-// dialog/fast-attendance-dialog.component.ts
+// dialog/fast-attendance-dialog.component.ts - COMPLETE FIXED VERSION
 
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -12,14 +12,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import { TraineeAttendanceService } from '../../../../../core/services/trainee-attendance.service';
 import { TraineeService } from '../../../../../core/services/trainee.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
 
 // ============================================================================
-// STATUS TYPE
+// TYPES & CONSTANTS
 // ============================================================================
 
 export type TraineeAttendanceStatusType = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
@@ -30,6 +34,14 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
   { value: 'LATE', label: 'متأخر' },
   { value: 'EXCUSED', label: 'معتذر' }
 ];
+
+export interface SessionOption {
+  value: number;
+  label: string;
+  startTime?: string;
+  endTime?: string;
+  day?: string;
+}
 
 // ============================================================================
 // COMPONENT
@@ -49,7 +61,9 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
     MatIconModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   animations: [
     trigger('slideInOut', [
@@ -59,6 +73,15 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
       ]),
       transition(':leave', [
         animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(-20px)' }))
+      ])
+    ]),
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-in', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-out', style({ opacity: 0 }))
       ])
     ])
   ],
@@ -92,17 +115,92 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
           </div>
 
           <div class="config-grid">
-            <!-- Course Session Selection -->
-            <div class="config-field">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>الجلسة *</mat-label>
-                <mat-select [(ngModel)]="selectedSessionId">
-                  <mat-option *ngFor="let session of sessionOptions" [value]="session.value">
-                    {{ session.label }}
-                  </mat-option>
-                </mat-select>
-                <mat-icon matSuffix>event</mat-icon>
-              </mat-form-field>
+            <!-- Searchable Session Dropdown -->
+            <div class="config-field session-field">
+              <div class="searchable-dropdown" [class.open]="isDropdownOpen" [class.disabled]="isLoadingSessions">
+                <mat-form-field appearance="outline" class="full-width dropdown-input">
+                  <mat-label>البحث عن جلسة *</mat-label>
+                  <input
+                    #sessionSearchInput
+                    matInput
+                    [(ngModel)]="searchTerm"
+                    (input)="onSearchInput()"
+                    (focus)="onInputFocus()"
+                    (blur)="onInputBlur()"
+                    placeholder="ابحث باسم الجلسة أو اختر من القائمة..."
+                    [disabled]="isLoadingSessions"
+                    autocomplete="off">
+                  <mat-icon matSuffix (mousedown)="toggleDropdown($event)" class="dropdown-icon">
+                    {{ isDropdownOpen ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
+                  <mat-spinner matSuffix diameter="20" *ngIf="isLoadingSessions"></mat-spinner>
+                </mat-form-field>
+
+                <!-- Dropdown Panel -->
+                <div class="dropdown-panel" *ngIf="isDropdownOpen" @fadeInOut>
+                  <!-- Loading State -->
+                  <div class="dropdown-loading" *ngIf="isLoadingSessions">
+                    <mat-spinner diameter="30"></mat-spinner>
+                    <span>جاري تحميل الجلسات...</span>
+                  </div>
+
+                  <!-- No Results -->
+                  <div class="dropdown-empty" *ngIf="!isLoadingSessions && filteredSessions.length === 0">
+                    <mat-icon>search_off</mat-icon>
+                    <span *ngIf="searchTerm">لا توجد جلسات مطابقة لـ "{{ searchTerm }}"</span>
+                    <span *ngIf="!searchTerm">لا توجد جلسات متاحة</span>
+                  </div>
+
+                  <!-- Session Options -->
+                  <div class="dropdown-options" *ngIf="!isLoadingSessions && filteredSessions.length > 0">
+                    <div
+                      *ngFor="let session of filteredSessions"
+                      class="dropdown-option"
+                      [class.selected]="selectedSessionId === session.value"
+                      (mousedown)="selectSession($event, session)">
+                      <div class="option-content">
+                        <div class="option-main">
+                          <span class="option-title">{{ session.label }}</span>
+                          <span class="option-id">#{{ session.value }}</span>
+                        </div>
+                        <div class="option-details" *ngIf="session.day || session.startTime">
+                          <span *ngIf="session.day" class="option-day">{{ session.day }}</span>
+                          <span *ngIf="session.startTime" class="option-time">
+                            <mat-icon>schedule</mat-icon>
+                            {{ formatTimeForDisplay(session.startTime) }}
+                            <span *ngIf="session.endTime"> - {{ formatTimeForDisplay(session.endTime) }}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <mat-icon *ngIf="selectedSessionId === session.value" class="check-icon">check_circle</mat-icon>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Session Display -->
+              <div class="selected-session-display" *ngIf="selectedSession">
+                <div class="selected-session-info">
+                  <mat-icon>event</mat-icon>
+                  <div class="selected-session-details">
+                    <span class="selected-session-title">{{ selectedSession.label }}</span>
+                    <span class="selected-session-meta" *ngIf="selectedSession.day || selectedSession.startTime">
+                      <span *ngIf="selectedSession.day">{{ selectedSession.day }}</span>
+                      <span *ngIf="selectedSession.startTime">
+                        {{ formatTimeForDisplay(selectedSession.startTime) }}
+                        <span *ngIf="selectedSession.endTime"> - {{ formatTimeForDisplay(selectedSession.endTime) }}</span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  mat-icon-button 
+                  (click)="clearSelectedSession($event)" 
+                  matTooltip="إلغاء تحديد الجلسة"
+                  class="clear-selection-btn">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             </div>
 
             <!-- Attendance Status Selection -->
@@ -117,6 +215,42 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
                 <mat-icon matSuffix>check_circle</mat-icon>
               </mat-form-field>
             </div>
+
+            <!-- Attendance Date -->
+            <div class="config-field full-width">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>تاريخ الحضور</mat-label>
+                <input matInput [matDatepicker]="datePicker" [(ngModel)]="attendanceDate" placeholder="اختر التاريخ">
+                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                <mat-datepicker #datePicker></mat-datepicker>
+                <mat-icon matPrefix>event</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <!-- Check In & Check Out -->
+            <div class="config-field time-fields">
+              <div class="time-field-group">
+                <mat-form-field appearance="outline" class="time-field">
+                  <mat-label>وقت الدخول</mat-label>
+                  <input matInput type="time" [(ngModel)]="checkInTime" placeholder="--:--">
+                  <mat-icon matPrefix>login</mat-icon>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="time-field">
+                  <mat-label>وقت الخروج</mat-label>
+                  <input matInput type="time" [(ngModel)]="checkOutTime" placeholder="--:--">
+                  <mat-icon matPrefix>logout</mat-icon>
+                </mat-form-field>
+              </div>
+              <div class="time-hint" *ngIf="selectedSession && (checkInTime || checkOutTime)">
+                <mat-icon>info</mat-icon>
+                <span>تم تعبئة الأوقات تلقائياً من الجلسة المحددة</span>
+              </div>
+              <div class="time-hint warning" *ngIf="selectedSession && !checkInTime && !checkOutTime">
+                <mat-icon>warning</mat-icon>
+                <span>لا توجد أوقات محددة لهذه الجلسة، يمكنك إدخالها يدوياً</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -128,6 +262,7 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
             <mat-icon>qr_code</mat-icon>
             <span>مسح الباركود</span>
             <span class="badge" *ngIf="isScannerActive">جاري المسح...</span>
+            <span class="badge success-badge" *ngIf="recentScans.length > 0">{{ recentScans.length }} مسح</span>
           </div>
 
           <div class="scanner-input-container">
@@ -140,7 +275,7 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
                   [(ngModel)]="barcodeSearch"
                   (keydown)="onBarcodeKeydown($event)"
                   placeholder="ادخل رقم الباركود أو امسحه..."
-                  [disabled]="!isConfigurationValid()"
+                  [disabled]="!isConfigurationValid() || isProcessing"
                   autofocus>
                 <mat-icon matPrefix>qr_code_scanner</mat-icon>
                 <mat-icon matSuffix *ngIf="barcodeSearch" (click)="clearBarcode()" class="clear-icon">clear</mat-icon>
@@ -156,6 +291,18 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
               <mat-icon *ngIf="!isProcessing">search</mat-icon>
               <mat-spinner diameter="20" *ngIf="isProcessing"></mat-spinner>
               <span>{{ isProcessing ? 'جاري التسجيل...' : 'تسجيل' }}</span>
+            </button>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions" *ngIf="isConfigurationValid()">
+            <button mat-stroked-button (click)="focusBarcodeInput()" class="quick-action-btn">
+              <mat-icon>keyboard</mat-icon>
+              <span>تركيز الإدخال</span>
+            </button>
+            <button mat-stroked-button (click)="clearBarcode()" class="quick-action-btn" [disabled]="!barcodeSearch">
+              <mat-icon>clear</mat-icon>
+              <span>مسح</span>
             </button>
           </div>
 
@@ -177,6 +324,9 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
             <mat-icon>history</mat-icon>
             <span>سجلات تم تسجيلها</span>
             <span class="badge count">{{ recentScans.length }}</span>
+            <button mat-icon-button (click)="clearRecentScans()" matTooltip="مسح القائمة" class="clear-scans-btn">
+              <mat-icon>delete_sweep</mat-icon>
+            </button>
           </div>
 
           <div class="recent-items">
@@ -234,8 +384,8 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
   `,
   styles: [`
     .dialog-container {
-      min-width: 580px;
-      max-width: 700px;
+      min-width: 620px;
+      max-width: 750px;
       background: #ffffff;
       border-radius: 24px;
       overflow: hidden;
@@ -298,7 +448,7 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
 
     .dialog-body {
       padding: 20px 24px;
-      max-height: 60vh;
+      max-height: 65vh;
       overflow-y: auto;
       background: #f8fafc;
     }
@@ -348,6 +498,11 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
       color: #7c3aed;
     }
 
+    .badge.success-badge {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
     .config-section {
       background: white;
       padding: 16px 20px;
@@ -364,6 +519,14 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
 
     .config-field {
       width: 100%;
+    }
+
+    .config-field.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .config-field.time-fields {
+      grid-column: 1 / -1;
     }
 
     .full-width {
@@ -398,6 +561,313 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
     .full-width ::ng-deep .mat-form-field-infix {
       padding: 10px 0 !important;
       border-top: 0 !important;
+    }
+
+    .session-field {
+      position: relative;
+      z-index: 10;
+    }
+
+    .searchable-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .searchable-dropdown.disabled {
+      opacity: 0.7;
+    }
+
+    .dropdown-icon {
+      cursor: pointer;
+      color: #94a3b8;
+      transition: transform 0.3s;
+      user-select: none;
+    }
+
+    .dropdown-icon:hover {
+      color: #7c3aed;
+    }
+
+    .dropdown-panel {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      max-height: 300px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+    }
+
+    .dropdown-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      gap: 12px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .dropdown-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      gap: 8px;
+      color: #94a3b8;
+    }
+
+    .dropdown-empty mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+
+    .dropdown-options {
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .dropdown-options::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .dropdown-options::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    .dropdown-options::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border-radius: 10px;
+    }
+
+    .dropdown-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .dropdown-option:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-option:hover {
+      background: #f5f3ff;
+    }
+
+    .dropdown-option.selected {
+      background: #ede9fe;
+    }
+
+    .dropdown-option .option-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dropdown-option .option-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .dropdown-option .option-title {
+      font-weight: 500;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .dropdown-option .option-id {
+      font-size: 11px;
+      color: #94a3b8;
+      background: #f1f5f9;
+      padding: 0 8px;
+      border-radius: 4px;
+    }
+
+    .dropdown-option .option-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 2px;
+      flex-wrap: wrap;
+    }
+
+    .dropdown-option .option-day {
+      font-size: 12px;
+      color: #7c3aed;
+      background: #ede9fe;
+      padding: 0 8px;
+      border-radius: 4px;
+    }
+
+    .dropdown-option .option-time {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .dropdown-option .option-time mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: #94a3b8;
+    }
+
+    .dropdown-option .check-icon {
+      color: #7c3aed;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .selected-session-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding: 10px 14px;
+      background: #f5f3ff;
+      border-radius: 10px;
+      border: 1px solid #e5d5ff;
+    }
+
+    .selected-session-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .selected-session-info mat-icon {
+      color: #7c3aed;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .selected-session-details {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .selected-session-title {
+      font-weight: 600;
+      color: #4c1d95;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .selected-session-meta {
+      font-size: 12px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .clear-selection-btn {
+      color: #6b7280 !important;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .clear-selection-btn:hover {
+      color: #ef4444 !important;
+      background: #fee2e2 !important;
+    }
+
+    .clear-selection-btn mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .time-field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .time-field {
+      width: 100%;
+    }
+
+    .time-field ::ng-deep .mat-form-field-wrapper {
+      margin: 0;
+    }
+
+    .time-field ::ng-deep .mat-form-field-flex {
+      background: #f8fafc !important;
+      border-radius: 10px !important;
+      padding: 0 12px !important;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s;
+    }
+
+    .time-field ::ng-deep .mat-form-field-flex:hover {
+      border-color: #7c3aed;
+    }
+
+    .time-field ::ng-deep .mat-form-field-flex.mat-focused {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .time-field ::ng-deep .mat-form-field-outline {
+      display: none;
+    }
+
+    .time-field ::ng-deep .mat-form-field-infix {
+      padding: 10px 0 !important;
+      border-top: 0 !important;
+    }
+
+    .time-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6b7280;
+      padding: 6px 12px;
+      background: #f3f4f6;
+      border-radius: 8px;
+    }
+
+    .time-hint mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #7c3aed;
+    }
+
+    .time-hint.warning {
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .time-hint.warning mat-icon {
+      color: #f59e0b;
     }
 
     .scanner-section {
@@ -501,6 +971,35 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
       stroke: white !important;
     }
 
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-action-btn {
+      border-radius: 8px !important;
+      border-color: #e2e8f0 !important;
+      color: #475569 !important;
+      font-size: 12px;
+      padding: 0 12px !important;
+      height: 32px !important;
+      line-height: 32px !important;
+    }
+
+    .quick-action-btn mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      margin-left: 4px;
+    }
+
+    .quick-action-btn:hover {
+      border-color: #7c3aed !important;
+      color: #7c3aed !important;
+      background: #f5f3ff !important;
+    }
+
     .scanner-status {
       margin-top: 14px;
     }
@@ -565,6 +1064,22 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
       border: 1px solid #e2e8f0;
     }
 
+    .clear-scans-btn {
+      color: #94a3b8 !important;
+      transition: all 0.3s;
+    }
+
+    .clear-scans-btn:hover {
+      color: #ef4444 !important;
+      background: #fee2e2 !important;
+    }
+
+    .clear-scans-btn mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
     .recent-items {
       display: flex;
       flex-direction: column;
@@ -580,7 +1095,6 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
 
     .recent-items::-webkit-scrollbar-track {
       background: #f1f5f9;
-      border-radius: 10px;
     }
 
     .recent-items::-webkit-scrollbar-thumb {
@@ -783,6 +1297,19 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
 
       .config-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .config-field.full-width {
+        grid-column: 1;
+      }
+
+      .config-field.time-fields {
+        grid-column: 1;
+      }
+
+      .time-field-group {
+        grid-template-columns: 1fr 1fr;
         gap: 8px;
       }
 
@@ -795,6 +1322,14 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
         justify-content: center;
         height: 48px;
         min-width: unset;
+      }
+
+      .dropdown-panel {
+        max-height: 250px;
+      }
+
+      .dropdown-options {
+        max-height: 210px;
       }
 
       .dialog-footer {
@@ -812,7 +1347,16 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
       }
 
       .recent-items {
-        max-height: 150px;
+        max-height: 130px;
+      }
+
+      .selected-session-display {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .selected-session-details {
+        min-width: 0;
       }
     }
 
@@ -860,6 +1404,10 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
         font-size: 13px;
       }
 
+      .time-field-group {
+        grid-template-columns: 1fr;
+      }
+
       .scan-btn {
         height: 42px;
         font-size: 13px;
@@ -871,18 +1419,98 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: TraineeAttendanceStatusTy
         padding: 0 12px !important;
         height: 40px;
       }
+
+      .dropdown-option {
+        padding: 8px 12px;
+      }
+
+      .dropdown-option .option-title {
+        font-size: 13px;
+      }
+
+      .dropdown-option .option-details {
+        gap: 8px;
+      }
+
+      .selected-session-title {
+        font-size: 13px;
+      }
+    }
+
+    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+      color: #d1d5db !important;
+    }
+
+    ::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
+      color: #7c3aed !important;
+    }
+
+    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+      color: #7c3aed !important;
+    }
+
+    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-label {
+      color: #64748b !important;
+    }
+
+    ::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-label {
+      color: #7c3aed !important;
+    }
+
+    ::ng-deep .mat-form-field-infix {
+      direction: rtl !important;
+    }
+
+    ::ng-deep .mat-input-element {
+      direction: rtl !important;
+    }
+
+    ::ng-deep .mat-form-field-prefix,
+    ::ng-deep .mat-form-field-suffix {
+      color: #94a3b8 !important;
+    }
+
+    ::ng-deep input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.5);
+      cursor: pointer;
+    }
+
+    ::ng-deep input[type="time"]:hover::-webkit-calendar-picker-indicator {
+      filter: invert(0.3);
+    }
+
+    ::ng-deep input[type="time"]::-webkit-datetime-edit {
+      direction: ltr !important;
+      text-align: center !important;
     }
   `]
 })
 export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('barcodeInput') barcodeInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('sessionSearchInput') sessionSearchInput!: ElementRef<HTMLInputElement>;
 
-  // Configuration
-  sessionOptions: Array<{ value: number; label: string }> = [];
+  // ==========================================================================
+  // PROPERTIES
+  // ==========================================================================
+
+  // Sessions
+  allSessions: SessionOption[] = [];
+  filteredSessions: SessionOption[] = [];
   selectedSessionId: number | null = null;
+  selectedSession: SessionOption | null = null;
+  searchTerm: string = '';
+  isDropdownOpen: boolean = false;
+  isLoadingSessions: boolean = false;
+
+  // Status
   selectedStatus: TraineeAttendanceStatusType | null = null;
   attendanceStatuses = ATTENDANCE_STATUS_OPTIONS;
+
+  // Date & Time
+  attendanceDate: Date = new Date();
+  checkInTime: string = '';
+  checkOutTime: string = '';
 
   // Barcode
   barcodeSearch: string = '';
@@ -901,30 +1529,236 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
 
   lastScanResult: { success: boolean; message: string; time: string } | null = null;
 
+  // Cleanup
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
+
+  // ==========================================================================
+  // CONSTRUCTOR
+  // ==========================================================================
+
   constructor(
     public dialogRef: MatDialogRef<FastAttendanceDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { sessionOptions: Array<{ value: number; label: string }> },
+    @Inject(MAT_DIALOG_DATA) public data: { sessionOptions: SessionOption[] },
     private traineeAttendanceService: TraineeAttendanceService,
     private traineeService: TraineeService,
     private notification: NotificationService,
     private cdr: ChangeDetectorRef
   ) {
-    this.sessionOptions = data.sessionOptions || [];
+    this.allSessions = data.sessionOptions || [];
+    this.filteredSessions = [...this.allSessions];
+    
+    // Debug: Log session data to verify times
+    console.log('Sessions received:', this.allSessions);
   }
+
+  // ==========================================================================
+  // LIFECYCLE
+  // ==========================================================================
 
   ngOnInit(): void {
     this.selectedStatus = 'PRESENT';
+    this.attendanceDate = new Date();
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(term => {
+      this.filterSessions(term);
+    });
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => this.focusBarcodeInput(), 300);
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ==========================================================================
+  // DROPDOWN METHODS
+  // ==========================================================================
+
+  openDropdown(): void {
+    if (!this.isDropdownOpen && !this.isLoadingSessions) {
+      this.isDropdownOpen = true;
+      this.filterSessions(this.searchTerm);
+      this.cdr.detectChanges();
+    }
+  }
+
+  closeDropdown(): void {
+    this.isDropdownOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  toggleDropdown(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.isDropdownOpen) {
+      this.closeDropdown();
+    } else {
+      this.openDropdown();
+    }
+  }
+
+  onInputFocus(): void {
+    this.openDropdown();
+  }
+
+  onInputBlur(): void {
+    setTimeout(() => {
+      if (!this.isDropdownOpen) {
+        // Keep dropdown open if user is still interacting
+      }
+    }, 150);
+  }
+
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchTerm);
+    if (!this.isDropdownOpen) {
+      this.openDropdown();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    const dropdown = target.closest('.searchable-dropdown');
+    if (!dropdown && this.isDropdownOpen) {
+      this.closeDropdown();
+    }
+  }
+
+  filterSessions(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredSessions = [...this.allSessions];
+      return;
+    }
+
+    const term = searchTerm.toLowerCase().trim();
+    this.filteredSessions = this.allSessions.filter(session =>
+      session.label.toLowerCase().includes(term) ||
+      session.value.toString().includes(term)
+    );
+  }
+
+  // FIXED: Select session and populate times
+  selectSession(event: Event, session: SessionOption): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.selectedSessionId = session.value;
+    this.selectedSession = session;
+    this.searchTerm = session.label;
+    this.closeDropdown();
+
+    // FIXED: Populate check-in and check-out times from session
+    console.log('Selected session:', session);
+    console.log('Start time:', session.startTime);
+    console.log('End time:', session.endTime);
+    
+    if (session.startTime) {
+      this.checkInTime = this.formatTimeForInput(session.startTime);
+    } else {
+      this.checkInTime = '';
+    }
+    
+    if (session.endTime) {
+      this.checkOutTime = this.formatTimeForInput(session.endTime);
+    } else {
+      this.checkOutTime = '';
+    }
+
+    console.log('Check-in time set to:', this.checkInTime);
+    console.log('Check-out time set to:', this.checkOutTime);
+
+    this.cdr.detectChanges();
+    setTimeout(() => this.focusBarcodeInput(), 100);
+  }
+
+  clearSelectedSession(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.selectedSessionId = null;
+    this.selectedSession = null;
+    this.searchTerm = '';
+    this.filteredSessions = [...this.allSessions];
+    this.checkInTime = '';
+    this.checkOutTime = '';
+    this.closeDropdown();
+    this.cdr.detectChanges();
+    setTimeout(() => this.focusBarcodeInput(), 100);
+  }
+
+  // ==========================================================================
+  // UTILITY METHODS
+  // ==========================================================================
+
+  formatTimeForInput(timeStr: string | undefined | null): string {
+    if (!timeStr) return '';
+    
+    // If it's already in HH:mm format
+    if (/^\d{2}:\d{2}$/.test(timeStr)) {
+      return timeStr;
+    }
+    
+    try {
+      // Try to extract time from various formats
+      let time = timeStr;
+      
+      // Remove AM/PM if present
+      time = time.replace(/\s*[AP]M\s*/i, '').trim();
+      
+      const parts = time.split(':');
+      if (parts.length >= 2) {
+        let hours = parseInt(parts[0], 10);
+        const minutes = parts[1].padStart(2, '0');
+        if (!isNaN(hours)) {
+          // If hours > 23, it might be in 12-hour format with AM/PM removed
+          if (hours > 23) {
+            hours = hours % 24;
+          }
+          return `${hours.toString().padStart(2, '0')}:${minutes}`;
+        }
+      }
+      
+      // Try to parse as date
+      const date = new Date(timeStr);
+      if (!isNaN(date.getTime())) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+      
+      return timeStr;
+    } catch (error) {
+      console.warn('Error formatting time:', timeStr, error);
+      return timeStr;
+    }
+  }
+
+  formatTimeForDisplay(timeStr: string | undefined | null): string {
+    if (!timeStr) return '';
+    const formatted = this.formatTimeForInput(timeStr);
+    if (formatted && formatted !== timeStr) {
+      return formatted;
+    }
+    return timeStr;
+  }
 
   isConfigurationValid(): boolean {
     return !!(this.selectedSessionId && this.selectedStatus);
   }
+
+  // ==========================================================================
+  // BARCODE SCANNING
+  // ==========================================================================
 
   onBarcodeKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
@@ -983,12 +1817,14 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
       traineeId: trainee.id,
       courseSessionId: this.selectedSessionId!,
       status: this.selectedStatus!,
-      attendanceDate: new Date().toISOString().split('T')[0],
-      checkInTime: this.getCheckInTime(),
-      checkOutTime: null,
+      attendanceDate: this.attendanceDate.toISOString().split('T')[0],
+      checkInTime: this.checkInTime || null,
+      checkOutTime: this.checkOutTime || null,
       lateTime: this.selectedStatus === 'LATE' ? 0 : null,
       note: 'تم التسجيل عبر المسح السريع'
     };
+
+    console.log('Creating attendance with data:', attendanceData);
 
     this.traineeAttendanceService.createAttendance(attendanceData as any).subscribe({
       next: () => {
@@ -996,25 +1832,20 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
         this.showStatusMessage(true, `تم تسجيل حضور ${traineeName} بنجاح`);
         this.addRecentScan(trainee, true, 'تم التسجيل بنجاح');
         this.notification.showSuccess(`تم تسجيل حضور ${traineeName}`);
+
         this.barcodeSearch = '';
         this.isProcessing = false;
         this.isScannerActive = false;
+
         setTimeout(() => this.focusBarcodeInput(), 100);
         this.cdr.detectChanges();
       },
       error: (err) => {
+        console.error('Error creating attendance:', err);
         this.handleScanError(err.error?.messageEn || 'حدث خطأ في تسجيل الحضور');
         this.addRecentScan(trainee, false, err.error?.messageEn || 'فشل التسجيل');
       }
     });
-  }
-
-  private getCheckInTime(): string | null {
-    if (this.selectedStatus === 'PRESENT' || this.selectedStatus === 'LATE') {
-      const now = new Date();
-      return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    }
-    return null;
   }
 
   private handleScanError(message: string): void {
@@ -1051,6 +1882,15 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     this.cdr.detectChanges();
   }
 
+  clearRecentScans(): void {
+    this.recentScans = [];
+    this.cdr.detectChanges();
+  }
+
+  // ==========================================================================
+  // FOCUS METHODS
+  // ==========================================================================
+
   focusBarcodeInput(): void {
     if (this.barcodeInput) {
       setTimeout(() => {
@@ -1066,6 +1906,10 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     this.focusBarcodeInput();
     this.cdr.detectChanges();
   }
+
+  // ==========================================================================
+  // DIALOG ACTIONS
+  // ==========================================================================
 
   close(): void {
     this.dialogRef.close(null);

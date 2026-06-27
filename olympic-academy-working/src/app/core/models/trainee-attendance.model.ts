@@ -53,6 +53,7 @@ export interface TraineeAttendanceListItem {
   sessionTitle: string;
   courseTitle: string;
   sessionDate: string;
+  attendanceDate:string;
   sessionDay: string;
   status: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
   checkInTime?: string;

@@ -7,6 +7,9 @@ import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.api.repository.CourseSessionRepository;
+import bs.service.employee.model.entity.CourseSession;
+import bs.service.employee.model.enums.SessionStatus;
 import bs.service.trainee.api.repository.TraineeAttendanceRepository;
 import bs.service.trainee.api.service.TraineeAttendanceService;
 import bs.service.trainee.core.mapper.TraineeMapper;
@@ -24,6 +27,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static bs.service.employee.model.enums.EmployeeErrors.COURSE_SESSION_NOT_FOUND;
+import static bs.service.employee.model.enums.EmployeeErrors.COURSE_SESSION_NOT_SCHEDULED;
 import static bs.service.trainee.model.enums.TraineeErrors.*;
 
 @Slf4j
@@ -33,7 +38,7 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
 
     private final TraineeAttendanceRepository traineeAttendanceRepository;
     private final TraineeMapper traineeMapper;
-
+    private final CourseSessionRepository courseSessionRepository;
     // ==================== Basic CRUD Operations ====================
 
     @Override
@@ -49,6 +54,10 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
             throw new BusinessException(TRAINEE_NOT_ENROLLED_IN_COURSE, traineeAttendanceDTO.getTraineeId());
         }
 
+        CourseSession courseSession=courseSessionRepository.selectById(traineeAttendanceDTO.getCourseSessionId()).orElseThrow(()-> new BusinessException(COURSE_SESSION_NOT_FOUND,traineeAttendanceDTO.getCourseSessionId()));
+        if(!courseSession.getStatus().equals(SessionStatus.SCHEDULED.getId())){
+            throw new BusinessException(COURSE_SESSION_NOT_SCHEDULED,courseSession.getIsDeleted());
+        }
         TraineeAttendanceSearchFilter checkFilter = TraineeAttendanceSearchFilter.builder()
                 .traineeId(traineeAttendanceDTO.getTraineeId())
                 .courseSessionId(traineeAttendanceDTO.getCourseSessionId())

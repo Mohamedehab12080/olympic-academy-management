@@ -1095,6 +1095,8 @@ components:
           format: date
         sessionDay:
           type: string
+        attendanceDate:
+          type: string
         status:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         checkInTime:
