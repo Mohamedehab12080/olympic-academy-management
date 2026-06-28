@@ -22,22 +22,22 @@ import org.springframework.web.bind.annotation.*;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.6.0")
 @Validated
 @Controller
-@Tag(name = "Lookup", description = "the Lookup API")
-public interface LookupController {
+@Tag(name = "ConstantLookup", description = "the ConstantLookup API")
+public interface ConstantLookupController {
 
     /**
-     * GET /lookup/places : Retrieve All Places for lookup (public)
+     * GET /lookup/constants : Retrieve All Constants for lookup (public)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
-    @Operation(operationId = "getAllPlacesLookup", summary = "Retrieve All Places for lookup (public)", tags = {
-            "Lookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+    @Operation(operationId = "getAllConstantsLookup", summary = "Retrieve All Constants for lookup (public)", tags = {
+            "ConstantLookup" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.GET, value = "/lookup/places", produces = { "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/lookup/constants", produces = { "application/json" })
 
-    ResponseEntity<LookupResultSet> _getAllPlacesLookup(
+    ResponseEntity<LookupResultSet> _getAllConstantsLookup(
 
     );
 

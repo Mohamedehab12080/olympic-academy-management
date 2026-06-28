@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum PlaceDomains implements Domains {
-    PLACE(7002);
+    PLACE(7002),
+    CONSTANT(7003);
 
     private final Integer id;
 

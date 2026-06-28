@@ -1,10 +1,9 @@
 package bs.service.place.core.mapper;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.place.model.entity.Constant;
 import bs.service.place.model.entity.Place;
-import bs.service.place.model.generated.PlaceDTO;
-import bs.service.place.model.generated.PlaceListItem;
-import bs.service.place.model.generated.PlaceVTO;
+import bs.service.place.model.generated.*;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.generated.LightUserVTO;
 import org.mapstruct.*;
@@ -40,4 +39,18 @@ public abstract class PlaceMapper {
     public abstract PlaceListItem toPlaceListItem(Place place);
 
     public abstract List<PlaceListItem> toPlaceListItems(List<Place> places);
+
+
+    // ==================== Place Mappings ====================
+
+    public abstract Constant toConstant(ConstantDTO constantDTO);
+
+    public abstract ConstantVTO toConstantVTO(Constant constant);
+
+    public abstract ConstantListItem toConstantListItem(Constant constant);
+
+    public abstract List<ConstantListItem> toConstantListItems(List<Constant> constants);
+
+    public abstract LookupVTO toConstantLookupVTO(Constant constant);
+    public abstract List<LookupVTO> toConstantLookupVTOs(List<Constant> constants);
 }
