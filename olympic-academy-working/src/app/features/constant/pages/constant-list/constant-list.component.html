@@ -1,0 +1,195 @@
+<!-- pages/constant-list/constant-list.component.html -->
+<div class="constants-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-title">
+      <mat-icon class="title-icon">settings_applications</mat-icon>
+      <h1>إدارة الثوابت</h1>
+      <span class="badge">{{ totalItems }} ثابت</span>
+    </div>
+    <button mat-raised-button color="primary" (click)="openCreateModal()" class="add-btn">
+      <mat-icon>add</mat-icon>
+      إضافة ثابت جديد
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <div class="filters-row">
+      <!-- Quick Search -->
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>بحث</mat-label>
+        <input matInput 
+               [(ngModel)]="searchTerm" 
+               (keyup.enter)="applySearch()" 
+               placeholder="بحث بالعنوان أو القيمة...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Value Filter -->
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>القيمة</mat-label>
+        <input matInput 
+               [(ngModel)]="valueFilter" 
+               (keyup)="onFilterKeydown($event)"
+               placeholder="تصفية حسب القيمة">
+        <mat-icon matSuffix>code</mat-icon>
+      </mat-form-field>
+
+      <!-- Location Filter -->
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>الموقع</mat-label>
+        <input matInput 
+               [(ngModel)]="filters.location" 
+               (keyup)="onFilterKeydown($event)"
+               placeholder="تصفية حسب الموقع">
+        <mat-icon matSuffix>location_on</mat-icon>
+      </mat-form-field>
+
+      <!-- Position Filter -->
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>الموضع</mat-label>
+        <input matInput 
+               [(ngModel)]="filters.position" 
+               (keyup)="onFilterKeydown($event)"
+               placeholder="تصفية حسب الموضع">
+        <mat-icon matSuffix>swap_vert</mat-icon>
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-button (click)="applyFilters()" color="primary" class="filter-btn">
+          <mat-icon>filter_list</mat-icon>
+          تطبيق
+        </button>
+        <button mat-button (click)="resetFilters()" class="reset-btn">
+          <mat-icon>refresh</mat-icon>
+          مسح
+        </button>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Stats -->
+  <div class="stats-row" *ngIf="constants.length > 0">
+    <div class="stat-item">
+      <span class="stat-value">{{ totalItems }}</span>
+      <span class="stat-label">إجمالي الثوابت</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ getLocationCount() }}</span>
+      <span class="stat-label">مواقع مختلفة</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{ getPositionCount() }}</span>
+      <span class="stat-label">مواضع مختلفة</span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <mat-card class="table-card">
+    <div class="table-container" *ngIf="!isLoading; else loading">
+      <table mat-table [dataSource]="dataSource" matSort class="constants-table">
+        
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
+          <td mat-cell *matCellDef="let constant">{{ constant.id }}</td>
+        </ng-container>
+
+        <!-- Title Column -->
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>العنوان</th>
+          <td mat-cell *matCellDef="let constant">
+            <span class="title-cell">{{ constant.title }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Value Column -->
+        <ng-container matColumnDef="value">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>القيمة</th>
+          <td mat-cell *matCellDef="let constant">
+            <mat-chip class="value-chip">{{ constant.value }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Location Column -->
+        <ng-container matColumnDef="location">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>الموقع</th>
+          <td mat-cell *matCellDef="let constant">
+            <span *ngIf="constant.location; else dash">
+              <mat-chip class="location-chip">{{ constant.location }}</mat-chip>
+            </span>
+            <ng-template #dash>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Position Column -->
+        <ng-container matColumnDef="position">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>الموضع</th>
+          <td mat-cell *matCellDef="let constant">
+            <span *ngIf="constant.position; else dash">
+              <mat-chip class="position-chip">{{ constant.position }}</mat-chip>
+            </span>
+            <ng-template #dash>-</ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
+          <td mat-cell *matCellDef="let constant">
+            <div class="action-buttons">
+              <button mat-icon-button 
+                      color="primary" 
+                      (click)="openEditModal(constant)"
+                      matTooltip="تعديل"
+                      class="action-btn edit-btn">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button 
+                      color="warn" 
+                      (click)="deleteConstant(constant.id)"
+                      matTooltip="حذف"
+                      class="action-btn delete-btn">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <!-- Empty State -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            <div class="empty-state">
+              <mat-icon class="empty-icon">inbox</mat-icon>
+              <p>لا توجد ثوابت</p>
+              <button mat-raised-button color="primary" (click)="openCreateModal()">
+                <mat-icon>add</mat-icon>
+                إضافة ثابت جديد
+              </button>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <mat-paginator 
+        [length]="totalItems"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 25, 50, 100]"
+        (page)="onPageChange($event)"
+        aria-label="اختر الصفحة">
+      </mat-paginator>
+    </div>
+
+    <!-- Loading -->
+    <ng-template #loading>
+      <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>جاري تحميل الثوابت...</p>
+      </div>
+    </ng-template>
+  </mat-card>
+</div>

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Configuration
 @ConfigurationProperties(prefix = "bs.lib.security")
-@PropertySource("classpath:config/library/security-adapter.properties")
+@PropertySource(value = "classpath:config/library/security-adapter.properties")
 public class SecurityAdapterConfig extends AbstractSecurityAdapterConfig {
 
 

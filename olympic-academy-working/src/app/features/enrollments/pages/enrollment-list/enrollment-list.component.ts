@@ -32,6 +32,7 @@ import { PAYMENT_STATUSES } from '../../../../core/models/common.model';
 import { ENROLLMENT_STATUSES } from '../../../../core/models/enrollment.model';
 import { EnrollmentDetailsModalComponent } from './../enrollment-details/enrollment-details-modal.component';
 import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollment-wizard-modal.component';
+import { ConstantService } from '../../../../core/services/constant.service';
 
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT - ENHANCED FOR CARD PRINTING
@@ -560,6 +561,7 @@ export class ExportPageSelectDialogComponent {
   startPage: number = 1;
   endPage: number = 1;
   isCardPrint: boolean = false;
+
   
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
@@ -667,6 +669,8 @@ interface EnrollmentListItem {
 export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
   
+  academyContactNumber: string = '01069911181';
+
   // Updated columns to include amount and remaining
   displayedColumns: string[] = ['index', 'image', 'trainee', 'course', 'trainer', 'startDate', 'endDate', 'amount', 'remaining', 'isActive', 'enrollmentStatus', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<EnrollmentListItem>([]);
@@ -759,6 +763,7 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
     private reportService: ReportService,
     private dialog: MatDialog,
     private fileService: FileService,
+    private constantService: ConstantService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -1154,57 +1159,69 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   // ==========================================================================
   // PRINT CARDS WITH PAGE SELECTION
   // ==========================================================================
-
-  async printEnrollmentCards(): Promise<void> {
-    const result = await this.showExportPageSelection(true);
-    
-    if (!result) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    let dataToPrint: EnrollmentListItem[] = [];
-
-    if (result.option === 'all') {
-      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-    } else if (result.option === 'current') {
-      dataToPrint = this.allEnrollments;
-    } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
-    }
-
-    if (dataToPrint.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لطباعة البطاقات');
-      this.isLoading = false;
-      return;
-    }
-
-    // Load images for all trainees
-    const enrollmentImagePromises = dataToPrint.map((enrollment) => {
-      return new Promise<string>((resolve) => {
-        const trainee = enrollment.trainee;
-        if (trainee && trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
-          this.fileService.downloadFile(trainee.imageUrl).subscribe({
-            next: (blob) => {
-              const blobUrl = URL.createObjectURL(blob);
-              resolve(blobUrl);
-            },
-            error: () => {
-              resolve('');
-            }
-          });
-        } else {
-          resolve('');
-        }
-      });
-    });
-
-    const imageUrls = await Promise.all(enrollmentImagePromises);
-    this.generateEnrollmentCards(dataToPrint, imageUrls);
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
+async printEnrollmentCards(): Promise<void> {
+  const result = await this.showExportPageSelection(true);
+  
+  if (!result) {
+    return;
   }
+
+  this.isLoading = true;
+
+  let dataToPrint: EnrollmentListItem[] = [];
+
+  if (result.option === 'all') {
+    dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+  } else if (result.option === 'current') {
+    dataToPrint = this.allEnrollments;
+  } else if (result.option === 'range') {
+    dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+  }
+
+  if (dataToPrint.length === 0) {
+    this.notification.showWarning('لا توجد بيانات لطباعة البطاقات');
+    this.isLoading = false;
+    return;
+  }
+
+  // Load images for all trainees
+  const enrollmentImagePromises = dataToPrint.map((enrollment) => {
+    return new Promise<string>((resolve) => {
+      const trainee = enrollment.trainee;
+      if (trainee && trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
+        this.fileService.downloadFile(trainee.imageUrl).subscribe({
+          next: (blob) => {
+            const blobUrl = URL.createObjectURL(blob);
+            resolve(blobUrl);
+          },
+          error: () => {
+            resolve('');
+          }
+        });
+      } else {
+        resolve('');
+      }
+    });
+  });
+
+  const imageUrls = await Promise.all(enrollmentImagePromises);
+  
+  // Fetch contact number from constant service (id = 1)
+  this.constantService.getConstantById(1).subscribe({
+    next: (constant) => {
+      this.academyContactNumber = constant?.value || '01069911181';
+      this.generateEnrollmentCards(dataToPrint, imageUrls);
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
+    },
+    error: () => {
+      this.academyContactNumber = '01069911181'; // Fallback
+      this.generateEnrollmentCards(dataToPrint, imageUrls);
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
+    }
+  });
+}
 
 private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: string[]): void {
   const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
@@ -1214,8 +1231,18 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
   }
 
   const today = new Date().toLocaleDateString('ar-EG');
+  const currentYear = new Date().getFullYear();
   let cardsHtml = '';
   const logoPath = 'assets/images/mainLogo.jpeg';
+  const academyName = 'الأكاديمية الأولمبية';
+  const academyAddress = 'الفيوم - حي الجامعة';
+
+  // Get contact number from constant service (id = 1)
+  let contactNumber = '01069911181'; // Default fallback
+  
+  // We'll use the constant from the service, but we need to fetch it first
+  // Since this is called from printEnrollmentCards, we'll pass it as a parameter
+  // For now, we'll use the value passed from the parent method
 
   enrollments.forEach((enrollment, index) => {
     const imageUrl = imageUrls[index] || '';
@@ -1235,17 +1262,17 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
         <div class="card">
           <!-- Watermark (transparent background) -->
           <div class="card-watermark">
-            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+            <img src="${logoPath}" alt="${academyName}">
           </div>
-          <div class="card-watermark-text">الأكاديمية الأولمبية</div>
+          <div class="card-watermark-text">${academyName}</div>
           
           <!-- Card Content -->
           <div class="card-content">
             <!-- Logo at top - Colored and visible -->
             <div class="card-logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image">
+              <img src="${logoPath}" alt="${academyName}" class="card-logo-image">
               <div class="card-logo-text">
-                <span class="academy-name">الأكاديمية الأولمبية</span>
+                <span class="academy-name">${academyName}</span>
                 <span class="card-title">بطاقة تسجيل متدرب</span>
               </div>
             </div>
@@ -1310,7 +1337,27 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
                 <div class="signature-label">ختم الأكاديمية</div>
               </div>
             </div>
-            <div class="card-issue-date">تاريخ الإصدار: ${today}</div>
+            
+            <!-- ===== ACADEMY INFO - Smallest size ===== -->
+            <div class="card-academy-info">
+              <span class="academy-name-small">🏛️ ${academyName}</span>
+              <span class="separator-dot">•</span>
+              <span class="academy-address">📍 ${academyAddress}</span>
+              <span class="separator-dot">•</span>
+              <span class="academy-phone">📞 ${this.academyContactNumber || '01069911181'}</span>
+            </div>
+            
+            <!-- ===== ISSUE DATE ===== -->
+            <div class="card-issue-date">📅 تاريخ الإصدار: ${today}</div>
+            
+            <!-- ===== POWERED BY - Bottom Left ===== -->
+            <div class="card-powered-by">
+              <span class="company-name">⚡ CoreStack Solutions</span>
+              <span class="separator">|</span>
+              <span class="company-phone">📱 01069911181</span>
+              <span class="separator">|</span>
+              <span class="copyright">© ${currentYear}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1376,10 +1423,6 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
           .card-logo-text .card-title {
             font-size: 7px !important;
           }
-          .card-header {
-            margin-bottom: 4px;
-            padding-bottom: 4px;
-          }
           .card-body {
             gap: 6px;
             margin-bottom: 4px;
@@ -1416,8 +1459,17 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
           .signature-line {
             margin: 2px 0;
           }
+          .card-academy-info {
+            font-size: 5px !important;
+          }
           .card-issue-date {
-            display: none;
+            font-size: 5px !important;
+          }
+          .card-powered-by {
+            font-size: 4px !important;
+          }
+          .card-powered-by .company-name {
+            font-size: 4.5px !important;
           }
           .card-logo-image {
             -webkit-print-color-adjust: exact !important;
@@ -1438,14 +1490,6 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
           .card-wrapper { 
             flex: 0 0 auto;
             margin: 0;
-          }
-          .card-issue-date {
-            text-align: center;
-            font-size: 8px;
-            color: #94a3b8;
-            margin-top: 6px;
-            padding-top: 4px;
-            border-top: 1px dashed #e2e8f0;
           }
         }
         
@@ -1692,13 +1736,111 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
           color: #94a3b8;
         }
         
+        /* ===== ACADEMY INFO - Smallest size ===== */
+        .card-academy-info {
+          text-align: center;
+          font-size: 6px;
+          color: #94a3b8;
+          margin-top: 4px;
+          padding-top: 3px;
+          border-top: 1px solid #f1f5f9;
+        }
+        
+        .card-academy-info .academy-name-small {
+          color: #0f3460;
+          font-weight: 600;
+        }
+        
+        .card-academy-info .academy-address {
+          color: #64748b;
+        }
+        
+        .card-academy-info .academy-phone {
+          color: #0f3460;
+          font-weight: 500;
+        }
+        
+        .card-academy-info .separator-dot {
+          color: #d1d5db;
+          margin: 0 3px;
+          font-weight: 700;
+        }
+        
         .card-issue-date {
           text-align: center;
-          font-size: 8px;
+          font-size: 6px;
           color: #94a3b8;
-          margin-top: 6px;
-          padding-top: 4px;
+          margin-top: 2px;
+          padding-top: 2px;
           border-top: 1px dashed #e2e8f0;
+        }
+        
+        /* ===== POWERED BY - Bottom Left ===== */
+        .card-powered-by {
+          text-align: left;
+          font-size: 5px;
+          color: #94a3b8;
+          margin-top: 2px;
+          padding-top: 2px;
+          border-top: 1px solid #f1f5f9;
+          direction: ltr;
+        }
+        
+        .card-powered-by .company-name {
+          color: #8b5cf6;
+          font-weight: 700;
+          font-size: 5.5px;
+        }
+        
+        .card-powered-by .company-phone {
+          color: #94a3b8;
+          font-weight: 500;
+        }
+        
+        .card-powered-by .separator {
+          color: #e5e7eb;
+          margin: 0 2px;
+        }
+        
+        .card-powered-by .copyright {
+          color: #d1d5db;
+        }
+        
+        @media print {
+          .card-academy-info {
+            font-size: 5px !important;
+          }
+          .card-academy-info .academy-name-small {
+            font-size: 5px !important;
+          }
+          .card-academy-info .academy-address {
+            font-size: 5px !important;
+          }
+          .card-academy-info .academy-phone {
+            font-size: 5px !important;
+          }
+          .card-academy-info .separator-dot {
+            margin: 0 2px !important;
+          }
+          .card-issue-date {
+            font-size: 5px !important;
+          }
+          .card-powered-by {
+            font-size: 4px !important;
+            text-align: left !important;
+          }
+          .card-powered-by .company-name {
+            font-size: 4.5px !important;
+          }
+          .card-powered-by .company-phone {
+            font-size: 4px !important;
+          }
+          .card-powered-by .separator {
+            margin: 0 1.5px !important;
+          }
+          .card-powered-by .copyright {
+            font-size: 4px !important;
+          }
         }
         
         @media (max-width: 600px) {
@@ -1721,6 +1863,15 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
           .card-photo img, .placeholder-photo {
             width: 50px !important;
             height: 50px !important;
+          }
+          .card-academy-info {
+            font-size: 5px !important;
+          }
+          .card-powered-by {
+            font-size: 4.5px !important;
+          }
+          .card-powered-by .company-name {
+            font-size: 5px !important;
           }
         }
       </style>

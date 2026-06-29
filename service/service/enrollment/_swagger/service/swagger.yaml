@@ -12,6 +12,7 @@ servers:
 tags:
   - name: Enrollment
   - name: EnrollmentType
+  - name: EnrollmentLookup
 
 paths:
   # ==================== Enrollment Type Endpoints ====================

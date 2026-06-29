@@ -62,6 +62,7 @@ export interface LookupResultSet {
 
 export interface NewRecordVTO {
   id: number;
+  message?: string;
 }
 
 export interface CommonEnrollmentVTO {
@@ -92,10 +93,12 @@ export interface ErrorVTO {
 
 export interface LightUserVTO {
   id: number;
-  nationalId:string;
-  imageUrl:string;
-  fullName: string; 
+  fullName?: string;
+  nationalId?: string;
+  title?: string;
+  imageUrl?: string;
 }
+
 
 export interface RecordAttribute {
   attributeKey: string;

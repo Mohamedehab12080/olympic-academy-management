@@ -1,0 +1,83 @@
+<!-- components/constant-modal/constant-modal.component.html -->
+<div class="modal-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">settings</mat-icon>
+      <h2>{{ data.mode === 'edit' ? 'تعديل ثابت' : 'إضافة ثابت جديد' }}</h2>
+    </div>
+    <button mat-icon-button (click)="close()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <form [formGroup]="constantForm" class="constant-form">
+      <!-- Title -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>العنوان *</mat-label>
+        <input matInput formControlName="title" placeholder="أدخل عنوان الثابت">
+        <mat-icon matPrefix>title</mat-icon>
+        <mat-error *ngIf="constantForm.get('title')?.hasError('required')">
+          العنوان مطلوب
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Value -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>القيمة *</mat-label>
+        <input matInput formControlName="value" placeholder="أدخل قيمة الثابت">
+        <mat-icon matPrefix>code</mat-icon>
+        <mat-error *ngIf="constantForm.get('value')?.hasError('required')">
+          القيمة مطلوبة
+        </mat-error>
+        <mat-error *ngIf="constantForm.get('value')?.hasError('pattern')">
+          يجب أن تحتوي القيمة على أحرف إنجليزية وأرقام فقط
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Location -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>الموقع</mat-label>
+        <input matInput formControlName="location" placeholder="أدخل الموقع (اختياري)">
+        <mat-icon matPrefix>location_on</mat-icon>
+      </mat-form-field>
+
+      <!-- Position -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>الموضع</mat-label>
+        <input matInput formControlName="position" placeholder="أدخل الموضع (اختياري)">
+        <mat-icon matPrefix>swap_vert</mat-icon>
+      </mat-form-field>
+
+      <!-- Info note -->
+      <div class="info-note" *ngIf="data.mode === 'create'">
+        <mat-icon>info</mat-icon>
+        <span>القيمة تستخدم كمفتاح للوصول إلى الثابت في الكود</span>
+      </div>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Actions -->
+  <div class="modal-actions">
+    <button mat-button (click)="close()" class="cancel-btn">
+      <mat-icon>close</mat-icon>
+      إلغاء
+    </button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="save()"
+      [disabled]="!constantForm.valid || isLoading"
+      class="save-btn">
+      <mat-icon *ngIf="!isLoading">save</mat-icon>
+      <mat-spinner diameter="20" *ngIf="isLoading" class="spinner"></mat-spinner>
+      <span *ngIf="!isLoading">{{ data.mode === 'edit' ? 'تحديث' : 'حفظ' }}</span>
+    </button>
+  </div>
+</div>

@@ -8,12 +8,19 @@ import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.enrollment.api.repository.EnrollmentRepository;
+import bs.service.enrollment.model.entity.Enrollment;
 import bs.service.enrollment.model.filter.EnrollmentSearchFilter;
 import bs.service.file.api.service.FileService;
+import bs.service.trainee.api.repository.HealthConditionRepository;
+import bs.service.trainee.api.repository.TraineeCertificateRepository;
+import bs.service.trainee.api.repository.TraineeContactRepository;
 import bs.service.trainee.api.repository.TraineeRepository;
 import bs.service.trainee.api.service.TraineeService;
 import bs.service.trainee.core.mapper.TraineeMapper;
+import bs.service.trainee.model.entity.HealthCondition;
 import bs.service.trainee.model.entity.Trainee;
+import bs.service.trainee.model.entity.TraineeCertificate;
+import bs.service.trainee.model.entity.TraineeContact;
 import bs.service.trainee.model.enums.AcademicYear;
 import bs.service.trainee.model.enums.TraineeDomains;
 import bs.service.trainee.model.filter.TraineeSearchFilter;
@@ -37,6 +44,9 @@ public class TraineeServiceImpl implements TraineeService {
     private final TraineeMapper traineeMapper;
     private final FileService fileService;
     private final EnrollmentRepository enrollmentRepository;
+    private final TraineeContactRepository traineeContactRepository;
+    private final TraineeCertificateRepository traineeCertificateRepository;
+    private final HealthConditionRepository healthConditionRepository;
 
     @Override
     @Transactional
@@ -77,11 +87,38 @@ public class TraineeServiceImpl implements TraineeService {
     public void deleteTraineeById(Integer traineeId) {
         Trainee trainee = traineeRepository.selectById(traineeId)
                 .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
+        List<TraineeCertificate> traineeCertificates=trainee.getCertificates();
+        if(traineeCertificates!=null && !traineeCertificates.isEmpty()){
+            for (TraineeCertificate traineeCertificate: traineeCertificates ){
+                traineeCertificateRepository.deleteById(traineeCertificate.getId());
+            }
+        }
+        List<TraineeContact> traineeContacts=trainee.getContacts();
+        if(traineeContacts!=null && !traineeContacts.isEmpty()){
+            for (TraineeContact traineeContact: traineeContacts ){
+                traineeContactRepository.deleteById(traineeContact.getId());
+            }
+        }
+        List<HealthCondition> traineeHealthConditions=trainee.getHealthConditions();
+        if(traineeHealthConditions!=null && ! traineeHealthConditions.isEmpty()){
+            for (HealthCondition healthCondition:traineeHealthConditions){
+                healthConditionRepository.deleteById(healthCondition.getId());
+            }
+        }
+        EnrollmentSearchFilter enrollmentSearchFilter =EnrollmentSearchFilter.builder()
+                .traineeId(traineeId)
+                .pagination(PaginationInfo.noPagination())
+                .isDeleted(false)
+                .build();
+        List<Enrollment> enrollments=enrollmentRepository.selectAllByFilters(enrollmentSearchFilter);
+        if(enrollments!=null && !enrollments.isEmpty()){
+            enrollments.forEach(enr-> enrollmentRepository.deleteById(enr.getId()));
+        }
         trainee.setIsDeleted(true);
+        traineeRepository.update(trainee);
         if(trainee.getImageUrl()!=null){
             fileService.deleteByFid(trainee.getImageUrl());
         }
-        traineeRepository.update(trainee);
     }
 
     @Override
@@ -104,6 +141,7 @@ public class TraineeServiceImpl implements TraineeService {
         TraineeSearchFilter filter = TraineeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .gender(gender)
+                .isDeleted(false)
                 .academicYear(academicYear)
                 .createdOnFrom(createdOnFrom)
                 .createdOnTo(createdOnTo)

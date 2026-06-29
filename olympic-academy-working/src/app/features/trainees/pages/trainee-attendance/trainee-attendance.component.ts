@@ -3190,7 +3190,6 @@ async exportToPDF(): Promise<void> {
           body { margin: 0; padding: 20px; background: #f0f4f8; }
           .no-print { display: none; }
           .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         .header {
           text-align: center;
@@ -3253,69 +3252,6 @@ async exportToPDF(): Promise<void> {
           letter-spacing: 0.3px;
         }
         td { padding: 10px 12px; border: 1px solid #e2e8f0; }
-        
-        /* ==========================================================================
-           FOOTER - Powered By
-           ========================================================================== */
-        .footer {
-          text-align: center;
-          margin-top: 30px;
-          padding: 24px 20px 20px;
-          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-          color: white;
-          border-radius: 12px;
-          border: 1px solid #334155;
-        }
-        .footer .company-name {
-          font-size: 20px;
-          font-weight: 700;
-          color: #8b5cf6;
-          display: block;
-          margin-bottom: 4px;
-          letter-spacing: 0.5px;
-        }
-        .footer .company-details {
-          font-size: 13px;
-          color: #94a3b8;
-          display: block;
-          margin-bottom: 2px;
-        }
-        .footer .company-phone {
-          font-size: 13px;
-          color: #94a3b8;
-          display: block;
-          margin-bottom: 2px;
-        }
-        .footer .powered-by {
-          display: block;
-          margin-top: 12px;
-          padding-top: 12px;
-          border-top: 1px solid #334155;
-        }
-        .footer .powered-by .powered-label {
-          font-size: 12px;
-          color: #64748b;
-          display: block;
-          margin-bottom: 2px;
-        }
-        .footer .powered-by .software-company {
-          font-size: 16px;
-          font-weight: 700;
-          color: #a78bfa;
-          display: block;
-          letter-spacing: 0.5px;
-        }
-        .footer .powered-by .software-company .heart {
-          color: #ef4444;
-        }
-        .footer .copyright {
-          font-size: 11px;
-          color: #475569;
-          display: block;
-          margin-top: 10px;
-          padding-top: 10px;
-          border-top: 1px solid #1e293b;
-        }
         .total-row td {
           font-weight: 700;
           background: #f8fafc;
@@ -3383,23 +3319,17 @@ async exportToPDF(): Promise<void> {
       </table>
       
       <!-- ============================================================
-           FOOTER - Powered By
+           FOOTER - Clean (No Background)
            ============================================================ -->
-      <div class="footer">
-        <span class="company-name">🏛️ الأكاديمية الأولمبية</span>
-        <span class="company-details">📍 الرياض - المملكة العربية السعودية</span>
-        <span class="company-phone">📞 966-12-345-6789+</span>
-        <span class="company-phone">📧 info@olympic-academy.com</span>
-        
-        <div class="powered-by">
-          <span class="powered-label">🚀 Powered by</span>
-          <span class="software-company">💻 <span class="heart">❤</span> TechSolutions <span class="heart">❤</span></span>
-          <span style="font-size: 11px; color: #64748b; display: block; margin-top: 2px;">
-            نظام إدارة الأكاديمية الأولمبية
-          </span>
+      <div style="text-align: center; margin-top: 16px; padding: 8px 12px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <span style="font-weight: 700; color: #1e293b;">⚡ CoreStack Solutions</span>
+          <span>📱 01069911181</span>
+          <span style="color: #94a3b8; font-size: 11px;">نظام إدارة الأكاديمية الأولمبية</span>
         </div>
-        
-        <span class="copyright">© ${new Date().getFullYear()} الأكاديمية الأولمبية. جميع الحقوق محفوظة</span>
+        <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+          © ${new Date().getFullYear()} CoreStack Solutions. جميع الحقوق محفوظة
+        </div>
       </div>
       
       <div class="no-print">

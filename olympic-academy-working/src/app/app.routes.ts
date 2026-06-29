@@ -24,6 +24,12 @@ export const routes: Routes = [
         loadComponent: () => import('./../../src/app/features/dashboard/dashboard.component').then(m => m.HomeComponent) 
       },
       
+
+      {
+          path: 'constants',
+          loadChildren: () => import('./features/constant/constant.module').then(m => m.ConstantModule)
+      },
+      
       // Main modules
       { path: 'departments', loadChildren: () => import('./features/departments/department.module').then(m => m.DepartmentsModule) },
       { path: 'courses', loadChildren: () => import('./features/courses/course.module').then(m => m.CoursesModule) },

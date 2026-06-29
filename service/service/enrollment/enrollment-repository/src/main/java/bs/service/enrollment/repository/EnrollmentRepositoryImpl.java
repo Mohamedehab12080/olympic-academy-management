@@ -54,4 +54,9 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     public Integer countAllByFilters(EnrollmentSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        enrollmentJPARepository.deleteById(id);
+    }
 }

@@ -12,4 +12,5 @@ public interface EnrollmentRepository {
     Optional<Enrollment> selectById(Integer id);
     List<Enrollment> selectAllByFilters(EnrollmentSearchFilter filters);
     Integer countAllByFilters(EnrollmentSearchFilter filters);
+    void deleteById(Integer id);
 }

@@ -27,10 +27,10 @@ import { AuthService } from '../../core/auth/auth.service';
         <!-- Scrollable nav list -->
         <div class="nav-scroll-wrapper">
           <mat-nav-list>
-                <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [class.compact]="!sidebarExpanded">
-                  <mat-icon>dashboard</mat-icon>
-                  <span *ngIf="sidebarExpanded">لوحة التحكم</span>
-                </a>
+            <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+              <mat-icon>dashboard</mat-icon>
+              <span *ngIf="sidebarExpanded">لوحة التحكم</span>
+            </a>
             
             <!-- Management Section -->
             <div class="nav-section-title" *ngIf="sidebarExpanded">الإدارة</div>
@@ -94,6 +94,15 @@ import { AuthService } from '../../core/auth/auth.service';
             <a mat-list-item routerLink="/trainees/attendance" routerLinkActive="active" [class.compact]="!sidebarExpanded">
               <mat-icon>event_note</mat-icon>
               <span *ngIf="sidebarExpanded">حضور المتدربين</span>
+            </a>
+            
+            <!-- Settings Section -->
+            <div class="nav-section-title" *ngIf="sidebarExpanded">الإعدادات</div>
+            
+            <!-- Constants -->
+            <a mat-list-item routerLink="/constants" routerLinkActive="active" [class.compact]="!sidebarExpanded">
+              <mat-icon>settings_applications</mat-icon>
+              <span *ngIf="sidebarExpanded">الثوابت</span>
             </a>
             
             <!-- Reports Section -->
@@ -224,20 +233,9 @@ import { AuthService } from '../../core/auth/auth.service';
     /* Logo Wrapper - Blue Theme (matching project colors) */
     .logo-wrapper {
       display: inline-block;
-      /* Blue color matching the project theme (#2563eb / #3b82f6) */
       filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(210deg) brightness(95%);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    /* Slightly different blue shade - more vibrant */
-    /* .logo-wrapper {
-      filter: brightness(0) saturate(100%) invert(25%) sepia(100%) saturate(2500%) hue-rotate(215deg) brightness(90%);
-    } */
-
-    /* Darker blue */
-    /* .logo-wrapper {
-      filter: brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(3000%) hue-rotate(220deg) brightness(85%);
-    } */
 
     .logo-image {
       width: 64px;
@@ -257,7 +255,6 @@ import { AuthService } from '../../core/auth/auth.service';
       height: 56px;
     }
 
-    /* Hover effect - slight scale and glow */
     .logo-wrapper:hover {
       transform: scale(1.05);
       filter: brightness(0) saturate(100%) invert(30%) sepia(100%) saturate(2000%) hue-rotate(210deg) brightness(110%) drop-shadow(0 0 8px rgba(37, 99, 235, 0.3));
@@ -283,7 +280,6 @@ import { AuthService } from '../../core/auth/auth.service';
       padding: 16px 0;
     }
 
-    /* Scrollbar Styling */
     .nav-scroll-wrapper::-webkit-scrollbar {
       width: 5px;
     }
@@ -748,6 +744,11 @@ export class MainLayoutComponent {
   toggleSidebar() {
     if (this.isMobile) {
       this.sidebarOpen = !this.sidebarOpen;
+    } else {
+      this.sidebarExpanded = !this.sidebarExpanded;
+      if (!this.sidebarExpanded) {
+        this.sidebarOpen = true;
+      }
     }
   }
 
