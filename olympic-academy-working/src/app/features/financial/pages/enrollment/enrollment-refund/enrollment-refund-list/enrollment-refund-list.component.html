@@ -1,89 +1,100 @@
 <div class="refunds-container">
   <div class="page-header">
-    <h1>استردادات التسجيلات</h1>
-    <button mat-raised-button color="primary" (click)="openNewRefundModal()">
-      <mat-icon>add</mat-icon> استرداد جديد
-    </button>
+    <div class="header-left">
+      <h1>استردادات التسجيلات</h1>
+      <span class="total-badge" *ngIf="totalItems > 0">
+        {{ totalItems }} سجل
+      </span>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="openNewRefundModal()">
+        <mat-icon>add</mat-icon> استرداد جديد
+      </button>
+    </div>
   </div>
 
   <mat-card>
-    <!-- Filter Section - Row 1 -->
-    <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>بحث عام</mat-label>
-        <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث...">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
+    <!-- Filter Section -->
+    <div class="filters-section">
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field search-field">
+          <mat-label>بحث عام</mat-label>
+          <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
 
-      <app-searchable-select
-        [ngModel]="filters.courseId"
-        (ngModelChange)="filters.courseId = $event; loadData()"
-        label="الدورة"
-        [options]="courseOptions"
-        [required]="false"
-        class="filter-select"
-        [ngModelOptions]="{standalone: true}">
-      </app-searchable-select>
+        <app-searchable-select
+          [ngModel]="filters.courseId"
+          (ngModelChange)="filters.courseId = $event; currentPage = 0; loadData()"
+          label="الدورة"
+          [options]="courseOptions"
+          [required]="false"
+          class="filter-select"
+          [ngModelOptions]="{standalone: true}">
+        </app-searchable-select>
 
-      <app-searchable-select
-        [ngModel]="filters.enrollmentId"
-        (ngModelChange)="filters.enrollmentId = $event; loadData()"
-        label="التسجيل"
-        [options]="enrollmentOptions"
-        [required]="false"
-        class="filter-select"
-        [ngModelOptions]="{standalone: true}">
-      </app-searchable-select>
+        <app-searchable-select
+          [ngModel]="filters.enrollmentId"
+          (ngModelChange)="filters.enrollmentId = $event; currentPage = 0; loadData()"
+          label="التسجيل"
+          [options]="enrollmentOptions"
+          [required]="false"
+          class="filter-select"
+          [ngModelOptions]="{standalone: true}">
+        </app-searchable-select>
 
-      <app-searchable-select
-        [ngModel]="filters.paymentMethodId"
-        (ngModelChange)="filters.paymentMethodId = $event; loadData()"
-        label="طريقة الدفع"
-        [options]="paymentMethodOptions"
-        [required]="false"
-        class="filter-select"
-        [ngModelOptions]="{standalone: true}">
-      </app-searchable-select>
+        <app-searchable-select
+          [ngModel]="filters.paymentMethodId"
+          (ngModelChange)="filters.paymentMethodId = $event; currentPage = 0; loadData()"
+          label="طريقة الدفع"
+          [options]="paymentMethodOptions"
+          [required]="false"
+          class="filter-select"
+          [ngModelOptions]="{standalone: true}">
+        </app-searchable-select>
 
-      <app-searchable-select
-        [ngModel]="filters.status"
-        (ngModelChange)="filters.status = $event; loadData()"
-        label="حالة الاسترداد"
-        [options]="refundStatusOptions"
-        [required]="false"
-        class="filter-select"
-        [ngModelOptions]="{standalone: true}">
-      </app-searchable-select>
-    </div>
+        <app-searchable-select
+          [ngModel]="filters.status"
+          (ngModelChange)="filters.status = $event; currentPage = 0; loadData()"
+          label="حالة الاسترداد"
+          [options]="refundStatusOptions"
+          [required]="false"
+          class="filter-select"
+          [ngModelOptions]="{standalone: true}">
+        </app-searchable-select>
+      </div>
 
-    <!-- Filter Section - Row 2 -->
-    <div class="filters">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>من تاريخ</mat-label>
-        <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.refundDateFrom" (dateChange)="loadData()">
-        <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-        <mat-datepicker #fromPicker></mat-datepicker>
-      </mat-form-field>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field date-field">
+          <mat-label>من تاريخ</mat-label>
+          <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.refundDateFrom" (dateChange)="currentPage = 0; loadData()">
+          <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>إلى تاريخ</mat-label>
-        <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.refundDateTo" (dateChange)="loadData()">
-        <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-        <mat-datepicker #toPicker></mat-datepicker>
-      </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field date-field">
+          <mat-label>إلى تاريخ</mat-label>
+          <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.refundDateTo" (dateChange)="currentPage = 0; loadData()">
+          <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+          <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
 
-      <button mat-stroked-button (click)="resetFilters()">
-        <mat-icon>clear</mat-icon> مسح الفلاتر
-      </button>
-      <button mat-stroked-button color="accent" (click)="exportToExcel()" matTooltip="تصدير إلى Excel">
-        <mat-icon>table_chart</mat-icon> Excel
-      </button>
-      <button mat-stroked-button color="warn" (click)="exportToPDF()" matTooltip="تصدير إلى PDF">
-        <mat-icon>picture_as_pdf</mat-icon> PDF
-      </button>
-      <button mat-stroked-button color="primary" (click)="printList()" matTooltip="طباعة القائمة">
-        <mat-icon>print</mat-icon> طباعة
-      </button>
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="resetFilters()" matTooltip="مسح الفلاتر">
+            <mat-icon>clear</mat-icon> مسح الفلاتر
+            <span class="filter-badge" *ngIf="hasActiveFilters()">{{ getActiveFiltersCount() }}</span>
+          </button>
+          <button mat-stroked-button color="accent" (click)="exportToExcel()" matTooltip="تصدير إلى Excel">
+            <mat-icon>table_chart</mat-icon> Excel
+          </button>
+          <button mat-stroked-button color="warn" (click)="exportToPDF()" matTooltip="تصدير إلى PDF">
+            <mat-icon>picture_as_pdf</mat-icon> PDF
+          </button>
+          <button mat-stroked-button color="primary" (click)="printList()" matTooltip="طباعة القائمة">
+            <mat-icon>print</mat-icon> طباعة
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Loading Spinner -->
@@ -95,7 +106,7 @@
     <div class="table-container" *ngIf="!isLoading">
       
       <!-- Totals Section -->
-      <div class="totals-section">
+      <div class="totals-section" *ngIf="allRefunds.length > 0">
         <div class="totals-header">
           <mat-icon>assessment</mat-icon>
           <span>ملخص الاستردادات</span>
@@ -133,6 +144,14 @@
         </div>
       </div>
 
+      <!-- Pagination Info -->
+      <div class="pagination-info" *ngIf="totalItems > 0">
+        <span>
+          عرض {{ allRefunds.length }} من {{ totalItems }} سجل
+          <span class="page-info">(صفحة {{ currentPage + 1 }} من {{ getTotalPages() }})</span>
+        </span>
+      </div>
+
       <table mat-table [dataSource]="dataSource" matSort class="full-width">
         
         <!-- ID Column -->
@@ -144,7 +163,7 @@
         <!-- Trainee Column -->
         <ng-container matColumnDef="trainee">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> المتدرب </th>
-          <td mat-cell *matCellDef="let r"> {{ r.enrollment?.trainee?.title || '-' }} </td>
+          <td mat-cell *matCellDef="let r"> {{ r.enrollment?.trainee?.fullName || '-' }} </td>
         </ng-container>
 
         <!-- Course Column -->
@@ -203,12 +222,64 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
       </table>
 
-      <div class="no-data" *ngIf="dataSource.data.length === 0">
+      <div class="no-data" *ngIf="allRefunds.length === 0">
         <mat-icon>receipt</mat-icon>
         <p>لا توجد استردادات</p>
+        <button mat-raised-button color="primary" (click)="openNewRefundModal()">
+          <mat-icon>add</mat-icon> إضافة استرداد جديد
+        </button>
       </div>
 
-      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,25,50]" showFirstLastButtons></mat-paginator>
+      <!-- Custom Paginator -->
+      <div class="custom-paginator" *ngIf="totalItems > 0">
+        <div class="paginator-left">
+          <mat-form-field appearance="outline" class="page-size-select">
+            <mat-label>عدد السجلات</mat-label>
+            <mat-select [value]="pageSize" (selectionChange)="pageSize = $event.value; onPageSizeChange()">
+              <mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+                {{ size }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <span class="items-range">
+            {{ currentPage * pageSize + 1 }} - 
+            {{ Math.min((currentPage + 1) * pageSize, totalItems) }}
+            من {{ totalItems }}
+          </span>
+        </div>
+
+        <div class="paginator-right">
+          <button mat-icon-button 
+                  [disabled]="currentPage === 0" 
+                  (click)="goToFirstPage()"
+                  matTooltip="الصفحة الأولى">
+            <mat-icon>first_page</mat-icon>
+          </button>
+          <button mat-icon-button 
+                  [disabled]="currentPage === 0" 
+                  (click)="goToPreviousPage()"
+                  matTooltip="الصفحة السابقة">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          
+          <span class="page-indicator">
+            {{ currentPage + 1 }} / {{ getTotalPages() }}
+          </span>
+          
+          <button mat-icon-button 
+                  [disabled]="currentPage >= getTotalPages() - 1" 
+                  (click)="goToNextPage()"
+                  matTooltip="الصفحة التالية">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-icon-button 
+                  [disabled]="currentPage >= getTotalPages() - 1" 
+                  (click)="goToLastPage()"
+                  matTooltip="الصفحة الأخيرة">
+            <mat-icon>last_page</mat-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </mat-card>
 </div>

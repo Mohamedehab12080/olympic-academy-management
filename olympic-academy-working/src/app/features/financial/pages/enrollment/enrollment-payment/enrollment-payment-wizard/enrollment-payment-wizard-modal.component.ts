@@ -143,12 +143,12 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
   loadEnrollmentsList() {
     this.isLoading = true;
-    this.enrollmentService.getAllEnrollmentsByFilter().subscribe({
+    this.enrollmentService.getAllEnrollmentsDetailsByFilter().subscribe({
       next: (res: any) => {
         this.enrollments = res.items || [];
         this.enrollmentOptions = this.enrollments.map((e: any) => ({ 
           value: e.id, 
-          label: `${e.trainee?.title || 'غير محدد'} - ${e.course?.title || 'غير محدد'}`,
+          label: `${e.trainee?.fullName || 'غير محدد'} - ${e.course?.title || 'غير محدد'}`,
           enrollmentData: {
             trainee: e.trainee,
             course: e.course,
@@ -449,8 +449,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     this.notification.showSuccess('تم فتح الإيصال للطباعة');
   }
 
-// In the generateReceiptHTML method - UPDATED WITH THERMAL PRINTER SUPPORT
-
+// In the generateReceiptHTML method - UPDATED TO MATCH DETAILS MODAL
 private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
   const statusColors: { [key: string]: string } = {
     'PAID': '#d1fae5',
@@ -505,507 +504,538 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
   const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
   const currentDateFormatted = formatDate(new Date());
 
+  const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+
   return `
     <!DOCTYPE html>
     <html dir="rtl">
     <head>
       <meta charset="UTF-8">
-      <title>إيصال الدفع - الأكاديمية الأولمبية</title>
+      <title>إيصال دفع #${paymentData.id}</title>
+      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
       <style>
         * {
           margin: 0;
           padding: 0;
           box-sizing: border-box;
-          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
         }
-        
-        body {
-          background: #f0f4f8;
-          padding: 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
+
+        @page {
+          size: 80mm auto;
+          margin: 0mm;
         }
-        
-        /* ========== RECEIPT CONTAINER - 80mm Printer ========== */
-        .receipt-container {
-          max-width: 938px;
-          width: 100%;
+
+        html, body {
+          margin: 0;
+          padding: 0;
           background: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
+          width: 80mm;
+          min-width: 80mm;
+          max-width: 80mm;
         }
-        
-        /* ========== 58mm Printer Support ========== */
-        @media (max-width: 675px) {
-          .receipt-container {
-            max-width: 675px;
-            border-radius: 4px;
-          }
-          
-          .receipt-header {
-            padding: 12px 16px !important;
-          }
-          
-          .receipt-header h1 {
-            font-size: 16px !important;
-          }
-          
-          .receipt-header .logo {
-            font-size: 24px !important;
-          }
-          
-          .receipt-header .subtitle {
-            font-size: 10px !important;
-          }
-          
-          .receipt-header .receipt-number {
-            font-size: 10px !important;
-            padding: 4px 12px !important;
-          }
-          
-          .receipt-body {
-            padding: 12px 16px 16px !important;
-          }
-          
-          .section-title {
-            font-size: 12px !important;
-          }
-          
-          .info-row {
-            font-size: 11px !important;
-            padding: 4px 0 !important;
-          }
-          
-          .info-row .value.amount {
-            font-size: 13px !important;
-          }
-          
-          .payment-details {
-            padding: 10px !important;
-          }
-          
-          .status-badge {
-            font-size: 10px !important;
-            padding: 2px 10px !important;
-          }
-          
-          .receipt-footer {
-            padding: 10px 16px !important;
-            font-size: 9px !important;
-          }
-          
-          .print-btn {
-            padding: 8px 20px !important;
-            font-size: 12px !important;
-          }
-        }
-        
-        /* ========== Print Styles ========== */
-        @media print {
-          body {
-            background: white !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-          
-          .receipt-container {
-            max-width: 100% !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-          }
-          
-          .print-btn-container {
-            display: none !important;
-          }
-          
-          .receipt-header {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          
-          .status-badge {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          
-          .payment-details {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-        
-        /* ========== Header ========== */
-        .receipt-header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          padding: 20px 24px;
-          color: white;
-          text-align: center;
+
+        .receipt-wrapper {
+          width: 80mm;
+          min-width: 80mm;
+          max-width: 80mm;
+          margin: 0;
+          padding: 0;
+          background: white;
           position: relative;
           overflow: hidden;
         }
-        
-        .receipt-header::before {
-          content: '';
+
+        .receipt {
+          width: 80mm;
+          min-width: 80mm;
+          max-width: 80mm;
+          margin: 0;
+          padding: 2.5mm 3mm 3mm 3mm;
+          background: white;
+          font-family: 'Arial', 'Tahoma', sans-serif;
+          font-size: 9pt;
+          line-height: 1.4;
+          color: #000000;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* ===== WATERMARK - Behind content ===== */
+        .receipt-watermark {
           position: absolute;
-          top: -50%;
-          right: -50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
+          opacity: 0.05;
+          pointer-events: none;
+          z-index: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           width: 100%;
           height: 100%;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 50%;
         }
         
-        .receipt-header .logo {
-          font-size: 28px;
-          margin-bottom: 2px;
-          position: relative;
-          z-index: 1;
+        .receipt-watermark img {
+          width: 100px;
+          height: auto;
+          object-fit: contain;
+          opacity: 0.9;
         }
         
-        .receipt-header h1 {
+        .receipt-watermark-text {
+          position: absolute;
+          top: 56%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(0.8);
           font-size: 20px;
-          font-weight: 700;
-          margin-bottom: 2px;
+          font-weight: 900;
+          color: #2563eb;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          opacity: 0.03;
+          pointer-events: none;
+          z-index: 0;
+          text-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        /* ===== CONTENT - Above watermark ===== */
+        .receipt-content {
           position: relative;
           z-index: 1;
         }
-        
-        .receipt-header .subtitle {
-          font-size: 11px;
-          opacity: 0.85;
-          position: relative;
-          z-index: 1;
-        }
-        
-        .receipt-header .receipt-number {
-          margin-top: 8px;
-          padding: 4px 14px;
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 20px;
-          display: inline-block;
-          font-size: 11px;
-          font-weight: 500;
-          position: relative;
-          z-index: 1;
-          backdrop-filter: blur(4px);
-        }
-        
-        /* ========== Body ========== */
-        .receipt-body {
-          padding: 20px 24px 24px;
-        }
-        
-        .receipt-section {
-          margin-bottom: 16px;
-        }
-        
-        .receipt-section:last-child {
-          margin-bottom: 0;
-        }
-        
-        .section-title {
-          font-size: 13px;
-          font-weight: 600;
-          color: #667eea;
-          margin-bottom: 10px;
-          padding-bottom: 6px;
-          border-bottom: 2px solid #eef2f6;
+
+        /* ===== LOGO SECTION ===== */
+        .logo-section {
+          text-align: center;
+          padding: 1mm 0 1mm 0;
+          border-bottom: 2.5px solid #2563eb;
+          margin-bottom: 2mm;
           display: flex;
           align-items: center;
-          gap: 6px;
+          justify-content: center;
+          gap: 8px;
         }
         
-        .section-title .icon {
-          font-size: 16px;
+        .logo-section img {
+          width: 36px;
+          height: 36px;
+          object-fit: contain;
+          border-radius: 50%;
+          border: 2px solid #2563eb;
+          padding: 2px;
+          background: white;
         }
         
+        .logo-section .academy-name {
+          font-size: 13pt;
+          font-weight: 700;
+          color: #1a1a2e;
+          display: block;
+        }
+        
+        .logo-section .receipt-type {
+          font-size: 7pt;
+          color: #2563eb;
+          font-weight: 600;
+          display: block;
+          margin-top: -1px;
+        }
+
+        .logo-text {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+        }
+
+        /* ===== RECEIPT TITLE ===== */
+        .receipt-title {
+          text-align: center;
+          padding: 0.5mm 0 1.5mm 0;
+          border-bottom: 1px dashed #e5e7eb;
+          margin-bottom: 2mm;
+        }
+        .receipt-title h1 {
+          font-size: 14pt;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0;
+        }
+        .receipt-title .receipt-number {
+          font-size: 8pt;
+          color: #6b7280;
+          margin-top: 0.5mm;
+        }
+
+        /* ===== BODY ===== */
+        .receipt-body {
+          padding: 1mm 0;
+        }
+
+        .receipt-section {
+          margin-bottom: 2mm;
+        }
+        .receipt-section:last-child { margin-bottom: 0; }
+
+        .section-title {
+          font-size: 8pt;
+          font-weight: 600;
+          color: #2563eb;
+          margin-bottom: 1mm;
+          padding-bottom: 0.5mm;
+          border-bottom: 0.5pt solid #eef2f6;
+        }
+
         .info-row {
           display: flex;
           justify-content: space-between;
-          padding: 5px 0;
-          font-size: 13px;
-          border-bottom: 1px dashed #f1f5f9;
+          padding: 0.5mm 0;
+          font-size: 8pt;
+          border-bottom: 0.3pt dashed #f1f5f9;
         }
-        
-        .info-row:last-child {
-          border-bottom: none;
-        }
-        
+        .info-row:last-child { border-bottom: none; }
+
         .info-row .label {
           color: #6b7280;
+          flex-shrink: 0;
         }
-        
         .info-row .value {
           font-weight: 500;
           color: #1e293b;
+          text-align: left;
         }
-        
         .info-row .value.highlight {
           color: #059669;
           font-weight: 700;
         }
-        
         .info-row .value.amount {
-          font-size: 15px;
+          font-size: 10pt;
         }
-        
-        /* ========== Payment Details ========== */
+        .info-row .value.danger {
+          color: #dc2626;
+          font-weight: 700;
+        }
+
         .payment-details {
           background: #f8fafc;
-          border-radius: 12px;
-          padding: 12px 16px;
-          margin-top: 6px;
+          border-radius: 1mm;
+          padding: 1mm 2mm;
+          margin-top: 0.5mm;
         }
-        
         .payment-details .info-row {
           border-bottom-color: #e2e8f0;
-          padding: 4px 0;
+          padding: 0.3mm 0;
         }
-        
-        .payment-details .info-row:last-child {
-          border-bottom: none;
-        }
-        
-        /* ========== Status Badge ========== */
+        .payment-details .info-row:last-child { border-bottom: none; }
+
         .status-badge {
           display: inline-block;
-          padding: 3px 12px;
-          border-radius: 20px;
-          font-size: 11px;
+          padding: 0px 2mm;
+          border-radius: 3mm;
+          font-size: 7pt;
           font-weight: 600;
         }
-        
-        /* ========== Footer ========== */
-        .receipt-footer {
-          padding: 12px 24px;
-          background: #f8fafc;
-          text-align: center;
-          font-size: 10px;
-          color: #94a3b8;
-          border-top: 1px solid #eef2f6;
-        }
-        
-        .receipt-footer .footer-logo {
-          font-weight: 600;
-          color: #667eea;
-        }
-        
-        /* ========== Print Button ========== */
-        .print-btn-container {
-          text-align: center;
-          padding: 12px 24px;
-          background: white;
-          border-top: 1px solid #eef2f6;
-        }
-        
-        .print-btn {
-          padding: 10px 28px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .print-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-        }
-        
-        /* ========== Divider Line (for thermal printer) ========== */
+
         .divider-line {
           border: none;
-          border-top: 2px dashed #e2e8f0;
-          margin: 8px 0;
+          border-top: 0.5pt dashed #e2e8f0;
+          margin: 1mm 0;
         }
-        
-        /* ========== Thermal Printer Optimizations ========== */
-        @media print and (max-width: 675px) {
-          .receipt-container {
-            max-width: 100% !important;
-            padding: 0 !important;
+
+        /* ===== BARCODE AT BOTTOM ===== */
+        .barcode-section {
+          text-align: center;
+          padding: 2mm 0 1mm 0;
+          border-top: 1px solid #e5e7eb;
+          margin-top: 2mm;
+        }
+        .barcode-container {
+          display: inline-block;
+          background: white;
+          padding: 0.5mm 1mm;
+          border: 0.5pt solid #e5e7eb;
+          border-radius: 1mm;
+        }
+        .barcode-container svg {
+          max-width: 100%;
+          height: 8mm;
+          display: block;
+        }
+        .barcode-container .barcode-label {
+          display: block;
+          font-size: 5pt;
+          color: #6b7280;
+          margin-top: 0.5mm;
+        }
+
+        .receipt-footer {
+          text-align: center;
+          padding: 1mm 0 0 0;
+          font-size: 6pt;
+          color: #94a3b8;
+        }
+
+        /* ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== */
+        .receipt-credit {
+          text-align: center;
+          font-size: 4.5px;
+          color: #1a1a2e;
+          font-weight: 500;
+          opacity: 0.6;
+          letter-spacing: 0.3px;
+          direction: ltr;
+          margin-top: 1mm;
+          padding-top: 0.5mm;
+          border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
+        }
+
+        .note-text {
+          font-size: 7pt;
+          color: #4b5563;
+        }
+
+        .print-btn-container {
+          text-align: center;
+          padding: 2mm 0;
+          background: white;
+        }
+        .print-btn {
+          padding: 1mm 4mm;
+          background: #2563eb;
+          color: white;
+          border: none;
+          border-radius: 1mm;
+          font-size: 8pt;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        @media print {
+          html, body {
+            width: 80mm !important;
+            min-width: 80mm !important;
+            max-width: 80mm !important;
             margin: 0 !important;
+            padding: 0 !important;
           }
-          
-          .receipt-body {
-            padding: 8px 12px !important;
+          .receipt {
+            width: 80mm !important;
+            min-width: 80mm !important;
+            max-width: 80mm !important;
+            margin: 0 !important;
+            padding: 2mm 2.5mm 2.5mm 2.5mm !important;
           }
-          
-          .payment-details {
-            padding: 8px 10px !important;
+          .print-btn-container {
+            display: none !important;
           }
-          
-          .info-row {
-            font-size: 10px !important;
-            padding: 3px 0 !important;
+          .receipt-title,
+          .status-badge,
+          .payment-details,
+          .logo-section,
+          .receipt-watermark {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          
-          .section-title {
-            font-size: 11px !important;
+          .logo-section img {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          
-          .receipt-header {
-            padding: 10px 12px !important;
+          .receipt-watermark {
+            opacity: 0.06 !important;
           }
-          
-          .receipt-header h1 {
-            font-size: 14px !important;
+          .receipt-watermark img {
+            width: 90px !important;
           }
-          
-          .receipt-footer {
-            padding: 8px 12px !important;
-            font-size: 8px !important;
+          .receipt-watermark-text {
+            font-size: 18px !important;
+            opacity: 0.04 !important;
+          }
+          .receipt-credit {
+            opacity: 0.5 !important;
+            color: #000000 !important;
           }
         }
-        
-        /* ========== Mobile Responsive ========== */
-        @media (max-width: 480px) {
-          body {
-            padding: 10px;
+
+        @media (max-width: 60mm) {
+          html, body {
+            width: 58mm !important;
+            min-width: 58mm !important;
+            max-width: 58mm !important;
           }
-          
-          .receipt-body {
-            padding: 12px 16px 16px;
+          .receipt {
+            width: 58mm !important;
+            min-width: 58mm !important;
+            max-width: 58mm !important;
+            padding: 1.5mm 2mm 2mm 2mm !important;
+            font-size: 7pt !important;
           }
-          
-          .receipt-header {
-            padding: 16px;
-          }
-          
-          .receipt-header h1 {
-            font-size: 17px;
-          }
-          
-          .info-row {
-            font-size: 12px;
-          }
-          
-          .payment-details {
-            padding: 10px 12px;
-          }
-          
-          .receipt-footer {
-            padding: 10px 16px;
-          }
+          .logo-section img { width: 28px !important; height: 28px !important; }
+          .logo-section .academy-name { font-size: 10pt !important; }
+          .logo-section .receipt-type { font-size: 5.5pt !important; }
+          .receipt-title h1 { font-size: 11pt !important; }
+          .receipt-body { padding: 0.5mm 0 !important; }
+          .section-title { font-size: 6.5pt !important; }
+          .info-row { font-size: 6.5pt !important; padding: 0.3mm 0 !important; }
+          .info-row .value.amount { font-size: 8pt !important; }
+          .payment-details { padding: 0.5mm 1mm !important; }
+          .status-badge { font-size: 5.5pt !important; padding: 0px 1mm !important; }
+          .barcode-container svg { height: 6mm !important; }
+          .barcode-container .barcode-label { font-size: 3.5pt !important; }
+          .note-text { font-size: 5.5pt !important; }
+          .receipt-footer { font-size: 4.5pt !important; }
+          .receipt-watermark img { width: 70px !important; }
+          .receipt-watermark-text { font-size: 14px !important; }
+          .receipt-credit { font-size: 3.5px !important; }
         }
       </style>
     </head>
     <body>
-      <div class="receipt-container">
-        <!-- Header -->
-        <div class="receipt-header">
-          <div class="logo">🏛️</div>
-          <h1>إيصال الدفع</h1>
-          <div class="subtitle">الأكاديمية الأولمبية</div>
-          <div class="receipt-number">
-            رقم الإيصال: #${paymentData.id || 'N/A'}
+      <div class="receipt-wrapper">
+        <div class="receipt">
+          <!-- ===== WATERMARK - Behind content ===== -->
+          <div class="receipt-watermark">
+            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+          </div>
+          <div class="receipt-watermark-text">الأكاديمية الأولمبية</div>
+
+          <!-- ===== CONTENT ===== -->
+          <div class="receipt-content">
+            <!-- LOGO AND ACADEMY NAME -->
+            <div class="logo-section">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+              <div class="logo-text">
+                <span class="academy-name">🏛️ الأكاديمية الأولمبية</span>
+                <span class="receipt-type">✦ إيصال دفع ✦</span>
+              </div>
+            </div>
+
+            <!-- RECEIPT TITLE -->
+            <div class="receipt-title">
+              <h1>إيصال الدفع</h1>
+              <div class="receipt-number">رقم الإيصال: #${paymentData.id || 'N/A'}</div>
+            </div>
+
+            <!-- BODY -->
+            <div class="receipt-body">
+              <!-- Enrollment Info -->
+              <div class="receipt-section">
+                <div class="section-title">📚 معلومات التسجيل</div>
+                <div class="info-row">
+                  <span class="label">المتدرب</span>
+                  <span class="value">${enrollmentData.trainee?.title || '-'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">الدورة</span>
+                  <span class="value">${enrollmentData.course?.title || '-'}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">تاريخ التسجيل</span>
+                  <span class="value">${enrollmentDateFormatted}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">القيمة الإجمالية</span>
+                  <span class="value">${(enrollmentData.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</span>
+                </div>
+              </div>
+
+              <hr class="divider-line">
+
+              <!-- Payment Details -->
+              <div class="receipt-section">
+                <div class="section-title">💰 تفاصيل الدفعة</div>
+                <div class="payment-details">
+                  <div class="info-row">
+                    <span class="label">تاريخ الدفع</span>
+                    <span class="value">${paymentDateFormatted}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">المبلغ المدفوع</span>
+                    <span class="value highlight amount">${paidAmount.toLocaleString('ar-EG')} جم</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">طريقة الدفع</span>
+                    <span class="value">${paymentData.paymentMethodTitle || '-'}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">المبلغ المتبقي</span>
+                    <span class="value ${remainedValue === 0 ? 'highlight' : 'danger'}">${remainedValue.toLocaleString('ar-EG')} جم</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">إجمالي المدفوع</span>
+                    <span class="value highlight">${totalPaid.toLocaleString('ar-EG')} جم</span>
+                  </div>
+                  <div class="info-row" style="border-bottom: none; padding-top: 6px;">
+                    <span class="label">حالة الدفع</span>
+                    <span class="value">
+                      <span class="status-badge" style="background: ${statusColor}; color: ${statusTextColor};">
+                        ${paymentData.paymentStatusTitle || 'قيد الانتظار'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Note -->
+              ${paymentData.note ? `
+                <hr class="divider-line">
+                <div class="receipt-section">
+                  <div class="section-title">📝 ملاحظات</div>
+                  <div class="info-row" style="border-bottom: none;">
+                    <span class="note-text">${paymentData.note}</span>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- BARCODE AT BOTTOM -->
+            <div class="barcode-section">
+              <div class="barcode-container">
+                <svg id="barcode"></svg>
+                <span class="barcode-label">${paymentData.nationalId || enrollmentData.trainee?.nationalId || '0000000000'}</span>
+              </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="receipt-footer">
+              <div>🏛️ الأكاديمية الأولمبية</div>
+              <div style="margin-top: 1px;">شكراً لثقتكم بنا</div>
+              <div style="margin-top: 1px; font-size: 5pt;">${currentDateFormatted}</div>
+            </div>
+
+            <!-- ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== -->
+            <div class="receipt-credit">powered by CoreStack Solutions | 01069911181</div>
           </div>
         </div>
-        
-        <!-- Body -->
-        <div class="receipt-body">
-          <!-- Enrollment Info -->
-          <div class="receipt-section">
-            <div class="section-title">
-              <span class="icon">📚</span>
-              معلومات التسجيل
-            </div>
-            <div class="info-row">
-              <span class="label">المتدرب</span>
-              <span class="value">${enrollmentData.trainee?.title || '-'}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">الدورة</span>
-              <span class="value">${enrollmentData.course?.title || '-'}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">تاريخ التسجيل</span>
-              <span class="value">${enrollmentDateFormatted}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">القيمة الإجمالية</span>
-              <span class="value">${enrollmentData.finalSubscriptionValue || 0} جم</span>
-            </div>
-          </div>
-          
-          <hr class="divider-line">
-          
-          <!-- Payment Details -->
-          <div class="receipt-section">
-            <div class="section-title">
-              <span class="icon">💰</span>
-              تفاصيل الدفعة
-            </div>
-            <div class="payment-details">
-              <div class="info-row">
-                <span class="label">تاريخ الدفع</span>
-                <span class="value">${paymentDateFormatted}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">المبلغ المدفوع</span>
-                <span class="value highlight amount">${paidAmount.toLocaleString('ar-EG')} جم</span>
-              </div>
-              <div class="info-row">
-                <span class="label">طريقة الدفع</span>
-                <span class="value">${paymentData.paymentMethodTitle || '-'}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">المبلغ المتبقي</span>
-                <span class="value ${remainedValue === 0 ? 'highlight' : ''}">${remainedValue.toLocaleString('ar-EG')} جم</span>
-              </div>
-              <div class="info-row">
-                <span class="label">إجمالي المدفوع</span>
-                <span class="value highlight">${totalPaid.toLocaleString('ar-EG')} جم</span>
-              </div>
-              <div class="info-row" style="border-bottom: none; padding-top: 6px;">
-                <span class="label">حالة الدفع</span>
-                <span class="value">
-                  <span class="status-badge" style="background: ${statusColor}; color: ${statusTextColor};">
-                    ${paymentData.paymentStatusTitle || 'قيد الانتظار'}
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Note -->
-          ${paymentData.note ? `
-            <hr class="divider-line">
-            <div class="receipt-section">
-              <div class="section-title">
-                <span class="icon">📝</span>
-                ملاحظات
-              </div>
-              <div class="info-row" style="border-bottom: none;">
-                <span style="color: #4b5563; font-size: 12px;">${paymentData.note}</span>
-              </div>
-            </div>
-          ` : ''}
-        </div>
-        
-        <!-- Footer -->
-        <div class="receipt-footer">
-          <div class="footer-logo">🏛️ الأكاديمية الأولمبية</div>
-          <div style="margin-top: 2px;">شكراً لثقتكم بنا</div>
-          <div style="margin-top: 2px; font-size: 9px;">${currentDateFormatted}</div>
-        </div>
-        
-        <!-- Print Button -->
+
+        <!-- PRINT BUTTON -->
         <div class="print-btn-container">
-          <button class="print-btn" onclick="window.print();">
-            🖨️ طباعة الإيصال
-          </button>
+          <button class="print-btn" onclick="window.print();">🖨️ طباعة</button>
         </div>
       </div>
+
+      <script>
+        window.onload = function() {
+          setTimeout(function() {
+            try {
+              JsBarcode('#barcode', '${paymentData.nationalId || enrollmentData.trainee?.nationalId || '0000000000'}', {
+                format: 'CODE128',
+                lineColor: '#000000',
+                width: 1.5,
+                height: 30,
+                displayValue: false,
+                fontSize: 5,
+                font: 'monospace',
+                textAlign: 'center',
+                margin: 1,
+                background: '#ffffff'
+              });
+            } catch(e) {
+              console.error('Barcode error:', e);
+            }
+          }, 300);
+        };
+      <\/script>
     </body>
     </html>
   `;

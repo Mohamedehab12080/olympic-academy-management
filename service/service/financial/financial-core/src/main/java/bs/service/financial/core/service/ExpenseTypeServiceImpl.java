@@ -52,8 +52,7 @@ public class ExpenseTypeServiceImpl implements ExpenseTypeService {
     public void deleteExpenseType(Integer expenseTypeId) {
         ExpenseType expenseType = expenseTypeRepository.selectById(expenseTypeId)
                 .orElseThrow(() -> new BusinessException(EXPENSE_TYPE_NOT_FOUND, expenseTypeId));
-        expenseType.setIsDeleted(true);
-        expenseTypeRepository.update(expenseType);
+        expenseTypeRepository.deleteById(expenseType.getId());
     }
 
     @Override

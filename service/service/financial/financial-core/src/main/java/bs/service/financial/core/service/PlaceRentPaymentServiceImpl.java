@@ -15,6 +15,7 @@ import bs.service.financial.model.generated.PlaceRentPaymentDTO;
 import bs.service.financial.model.generated.PlaceRentPaymentResultSet;
 import bs.service.financial.model.generated.PlaceRentPaymentVTO;
 import bs.service.place.api.repository.PlaceRepository;
+import bs.service.place.model.entity.Place;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
     @Transactional
     public NewRecordVTO createPlaceRentPayment(PlaceRentPaymentDTO placeRentPaymentDTO) {
         // Validate place exists
-        placeRepository.selectById(placeRentPaymentDTO.getPlaceId())
+        Place place= placeRepository.selectById(placeRentPaymentDTO.getPlaceId())
                 .orElseThrow(() -> new BusinessException(PLACE_NOT_FOUND_FOR_RENT, placeRentPaymentDTO.getPlaceId()));
 
         // Validate payment amount
@@ -46,11 +47,17 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
 
         PlaceRentPayment payment = financialMapper.toPlaceRentPayment(placeRentPaymentDTO);
 
+
         // Calculate remained amount
         Integer payedAmount = placeRentPaymentDTO.getPayedAmount() != null ? placeRentPaymentDTO.getPayedAmount() : 0;
+        if(place.getRentValue() >= payedAmount && place.getRemainedValue()>= payedAmount){
+            place.setRemainedValue(place.getRentValue()-payedAmount);
+        }else{
+            throw new BusinessException(INVALID_RENT_AMOUNT);
+        }
         payment.setPayedAmount(payedAmount);
-        payment.setRemainedAmount(payment.getRentAmount() - payedAmount);
-
+        payment.setRemainedAmount(payment.getRemainedAmount() - payedAmount);
+        payment.setPlace(place);
         payment = placeRentPaymentRepository.insert(payment);
         return NewRecordVTO.builder().id(payment.getId()).build();
     }
@@ -98,6 +105,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
         PlaceRentPaymentSearchFilter filter = PlaceRentPaymentSearchFilter.builder()
                 .placeId(placeId)
                 .rentTypeId(rentTypeId)
+                .isDeleted(false)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)

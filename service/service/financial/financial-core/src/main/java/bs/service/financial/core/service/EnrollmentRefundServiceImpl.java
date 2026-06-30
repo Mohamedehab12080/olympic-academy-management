@@ -94,6 +94,7 @@ public class EnrollmentRefundServiceImpl implements EnrollmentRefundService {
         EnrollmentRefundSearchFilter filter = EnrollmentRefundSearchFilter.builder()
                 .enrollmentId(enrollmentId)
                 .courseId(courseId)
+                .isDeleted(false)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null ? status.getId():null)
                 .refundDateFrom(refundDateFrom)

@@ -21,6 +21,10 @@ public class PlaceRentPaymentQueryBuilder extends AbstractQueryBuilderV2<PlaceRe
     public List<QBCondition> evaluateWhereConditions(PlaceRentPaymentSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         if (filters.getPlaceId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("placeId").value(filters.getPlaceId())
                     .condition("item.place.id = :PH").build());

@@ -49,4 +49,9 @@ public class PaymentMethodRepositoryImpl implements PaymentMethodRepository {
     public Integer countAllByFilters(PaymentMethodSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        paymentMethodJPARepository.deleteById(id);
+    }
 }

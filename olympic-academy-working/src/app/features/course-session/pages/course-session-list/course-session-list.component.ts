@@ -1140,7 +1140,7 @@ export class CourseSessionListComponent implements OnInit, AfterViewInit, OnDest
   private getWatermarkHTML(): string {
     return `
       <div class="watermark">
-        <img src="assets/images/logo.jpeg" alt="الأكاديمية الأولمبية">
+        <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية">
       </div>
     `;
   }
@@ -1700,7 +1700,7 @@ async exportToPDF(): Promise<void> {
     <body>
       <!-- Large Colored Watermark -->
       <div class="watermark">
-        <img src="assets/images/logo.jpeg" alt="الأكاديمية الأولمبية">
+        <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية">
       </div>
       <div class="watermark-text">الأكاديمية الأولمبية</div>
       

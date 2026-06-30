@@ -1,6 +1,7 @@
 package bs.service.enrollment.api.service;
 
 import bs.lib.common.model.enums.PaymentStatus;
+import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.enrollment.model.enums.EnrollmentStatus;
@@ -23,4 +24,6 @@ public interface EnrollmentService {
                                                   LocalDate endDateTo, LocalDate createdOnFrom,
                                                   LocalDate createdOnTo, Integer pageNum, Integer pageSize,
                                                   OrderDirections orderDir, String orderBy);
+
+    LookupResultSet getAllEnrollmentsLookup();
 }

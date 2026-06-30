@@ -171,6 +171,38 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /enrollments/enrollment-details:
+    get:
+      tags:
+        - Enrollment
+      summary: Retrieve list of enrollments
+      operationId: getAllEnrollmentsDetailsByFilter
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '#/components/parameters/QPTraineeId'
+        - $ref: '#/components/parameters/QPTraineeNationalId'
+        - $ref: '#/components/parameters/QPCourseId'
+        - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPEnrollmentTypeId'
+        - $ref: '#/components/parameters/QPEnrollmentStatus'
+        - $ref: '#/components/parameters/QPPaymentStatus'
+        - $ref: '#/components/parameters/QPStartDateFrom'
+        - $ref: '#/components/parameters/QPStartDateTo'
+        - $ref: '#/components/parameters/QPEndDateFrom'
+        - $ref: '#/components/parameters/QPEndDateTo'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /enrollments/{enrollmentId}:
     put:
       tags:
@@ -222,6 +254,22 @@ paths:
       responses:
         '200':
           description: OK
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /lookup/enrollments:
+    get:
+      tags:
+        - EnrollmentLookup
+      summary: Retrieve All Enrollments Lookup
+      operationId: getAllEnrollmentsLookup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupResultSet'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 

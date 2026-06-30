@@ -112,16 +112,20 @@ public class MainTotalRepositoryImpl implements MainTotalRepository {
 
     private int getTotalEnrollmentPayments(LocalDate yearOfDate) {
         String sql = """
-            SELECT COALESCE(SUM(ep.paid_amount), 0)
-            FROM oa_enrollment_payment ep
-            WHERE ep.payment_date <=:startDate
-              AND ep.is_deleted = 0
-              AND ep.payment_status = 2
-        """;
+        SELECT COALESCE(SUM(ep.paid_amount), 0)
+        FROM oa_enrollment_payment ep
+        INNER JOIN oa_enrollment enr ON ep.enrollment_id = enr.id
+        WHERE ep.payment_date <= :startDate
+          AND ep.is_deleted = 0
+          AND enr.payment_status IN (1,2,6)
+          AND enr.is_active=1
+          AND enr.enrollment_status IN (1,2)
+    """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", yearOfDate.atStartOfDay());
         return ((Number) query.getSingleResult()).intValue();
     }
+
 
     private int getTotalExpenses(LocalDate yearOfDate) {
         String sql = """

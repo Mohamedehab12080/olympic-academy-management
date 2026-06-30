@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class SalaryIncentiveSearchFilter extends SearchFilter<SalaryIncentiveSearchFilter.OrderByAttributes> {
 
+    private Boolean isDeleted;
     private String employeeNationalId;
     private String quickSearch;
     private Integer employeeId;

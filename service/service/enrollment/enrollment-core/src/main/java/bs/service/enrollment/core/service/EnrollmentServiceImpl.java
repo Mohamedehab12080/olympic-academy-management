@@ -2,6 +2,8 @@ package bs.service.enrollment.core.service;
 
 import bs.lib.common.model.enums.PaymentStatus;
 import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.LookupResultSet;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
@@ -116,27 +118,30 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                                                          LocalDate endDateTo, LocalDate createdOnFrom,
                                                          LocalDate createdOnTo, Integer pageNum, Integer pageSize,
                                                          OrderDirections orderDir, String orderBy) {
+
+
         EnrollmentSearchFilter filter = EnrollmentSearchFilter.builder()
-                .quickSearchQuery(quickSearch)
-                .isActive(isActive)
-                .isDeleted(false)
-                .traineeId(traineeId)
-                .traineeNationalId(traineeNationalId)
-                .courseId(courseId)
-                .trainerId(trainerId)
-                .enrollmentTypeId(enrollmentTypeId)
-                .enrollmentStatus(enrollmentStatus!=null?enrollmentStatus.id:null)
-                .paymentStatus(paymentStatus!=null ? paymentStatus.id:null)
-                .startDateFrom(startDateFrom)
-                .startDateTo(startDateTo)
-                .endDateFrom(endDateFrom)
-                .endDateTo(endDateTo)
-                .createdOnFrom(createdOnFrom)
-                .createdOnTo(createdOnTo)
-                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
-                .defaultSorting(new SortingInfo<>(EnrollmentSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
-                .sorting(new SortingInfo<>(orderBy, orderDir))
-                .build();
+                    .quickSearchQuery(quickSearch)
+                    .isActive(isActive)
+                    .isDeleted(false)
+                    .traineeId(traineeId)
+                    .traineeNationalId(traineeNationalId)
+                    .courseId(courseId)
+                    .trainerId(trainerId)
+                    .enrollmentTypeId(enrollmentTypeId)
+                    .enrollmentStatus(enrollmentStatus!=null?enrollmentStatus.id:null)
+                    .paymentStatus(paymentStatus!=null ? paymentStatus.id:null)
+                    .startDateFrom(startDateFrom)
+                    .startDateTo(startDateTo)
+                    .endDateFrom(endDateFrom)
+                    .endDateTo(endDateTo)
+                    .createdOnFrom(createdOnFrom)
+                    .createdOnTo(createdOnTo)
+                    .pagination( pageNum==null ? PaginationInfo.noPagination():PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
+                    .defaultSorting(new SortingInfo<>(EnrollmentSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
+                    .sorting(orderBy==null ? null :new SortingInfo<>(orderBy, orderDir))
+                    .build();
+
 
         List<Enrollment> enrollments = enrollmentRepository.selectAllByFilters(filter);
         List<EnrollmentListItem> items = enrollmentMapper.toEnrollmentListItems(enrollments);
@@ -145,5 +150,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .items(items)
                 .total(enrollmentRepository.countAllByFilters(filter))
                 .build();
+    }
+
+    @Override
+    public LookupResultSet getAllEnrollmentsLookup() {
+        EnrollmentSearchFilter enrollmentSearchFilter=EnrollmentSearchFilter.builder()
+                .isDeleted(false)
+                .isActive(true)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<LookupVTO> lookupVTOS=enrollmentMapper.toEnrollmentLookupVTOs(enrollmentRepository.selectAllByFilters(enrollmentSearchFilter));
+        return LookupResultSet.builder().total(enrollmentRepository.countAllByFilters(enrollmentSearchFilter))._list(lookupVTOS).build();
     }
 }

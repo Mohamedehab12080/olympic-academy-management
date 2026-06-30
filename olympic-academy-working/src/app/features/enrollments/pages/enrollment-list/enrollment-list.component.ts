@@ -669,6 +669,7 @@ interface EnrollmentListItem {
 export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
   
+  
   academyContactNumber: string = '01069911181';
 
   // Updated columns to include amount and remaining
@@ -725,6 +726,22 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
 
   @ViewChild(MatSort) sort!: MatSort;
 
+
+  // Add these enum mapping constants at the top of your component
+private readonly ENROLLMENT_STATUS_MAP: { [key: number]: string } = {
+  1: 'PENDING',
+  2: 'COMPLETED',
+  3: 'CANCELLED'
+};
+
+private readonly PAYMENT_STATUS_MAP: { [key: number]: string } = {
+  1: 'PENDING',
+  2: 'PAID',
+  3: 'FAILED',
+  4: 'REFUNDED',
+  5: 'CANCELLED',
+  6: 'PARTIAL'
+};
   // Statistics
   get totalAmount(): number {
     return this.allEnrollments.reduce((sum, item) => sum + (item.finalSubscriptionValue || 0), 0);
@@ -786,17 +803,26 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
     this.traineeImageUrls.clear();
   }
 
-  loadSelectOptions() {
-    this.enrollmentStatusOptions = [
-      { value: null, label: 'الكل' },
-      ...this.enrollmentStatuses.map(s => ({ value: s.id, label: s.title }))
-    ];
-    
-    this.paymentStatusOptions = [
-      { value: null, label: 'الكل' },
-      ...this.paymentStatuses.map(s => ({ value: s.id, label: s.title }))
-    ];
-  }
+loadSelectOptions() {
+  // Enrollment Status options - use numeric IDs but send string enums
+  this.enrollmentStatusOptions = [
+    { value: null, label: 'الكل' },
+    { value: 1, label: 'قيد الانتظار' },
+    { value: 2, label: 'مكتمل' },
+    { value: 3, label: 'ملغي' }
+  ];
+  
+  // Payment Status options - use numeric IDs but send string enums
+  this.paymentStatusOptions = [
+    { value: null, label: 'الكل' },
+    { value: 1, label: 'قيد الانتظار' },
+    { value: 2, label: 'تم الدفع' },
+    { value: 3, label: 'فشل' },
+    { value: 4, label: 'تم استرداد المبلغ' },
+    { value: 5, label: 'تم الإلغاء' },
+    { value: 6, label: 'جزئي' }
+  ];
+}
 
   loadLookupData() {
     this.traineeService.getAllTraineesLookup().subscribe({
@@ -926,62 +952,107 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ==========================================================================
-  // LOAD ENROLLMENTS
-  // ==========================================================================
+// HELPER METHOD - FORMAT DATE FOR BACKEND
+// ==========================================================================
 
-  loadEnrollments() {
-    console.log('🔄 loadEnrollments() called');
-    console.log(`  Current Page: ${this.currentPage}`);
-    console.log(`  Page Size: ${this.pageSize}`);
-    
-    this.isLoading = true;
-    const params: any = {};
-    
-    // ===== FILTERS =====
-    if (this.filters.traineeId) params.traineeId = this.filters.traineeId;
-    if (this.filters.traineeNationalId) params.traineeNationalId = this.filters.traineeNationalId;
-    if (this.filters.courseId) params.courseId = this.filters.courseId;
-    if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
-    if (this.filters.enrollmentStatus) params.enrollmentStatus = this.filters.enrollmentStatus;
-    if (this.filters.paymentStatus) params.paymentStatus = this.filters.paymentStatus;
-    if (this.filters.startDateFrom) params.startDateFrom = this.filters.startDateFrom;
-    if (this.filters.startDateTo) params.startDateTo = this.filters.startDateTo;
-    if (this.filters.endDateFrom) params.endDateFrom = this.filters.endDateFrom;
-    if (this.filters.endDateTo) params.endDateTo = this.filters.endDateTo;
-    if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
-    if (this.quickSearch) params.quickSearch = this.quickSearch;
-    
-    // ===== PAGINATION =====
-    params.pageNum = this.currentPage;
-    params.pageSize = this.pageSize;
-    
-    // ===== SORTING =====
-    if (this.sortBy) params.orderBy = this.sortBy;
-    if (this.sortDir) params.orderDir = this.sortDir;
+// ==========================================================================
+// HELPER METHOD - FORMAT DATE FOR BACKEND
+// ==========================================================================
 
-    console.log('📤 Sending request with params:', params);
-
-    this.enrollmentService.getAllEnrollmentsByFilter(params).subscribe({
-      next: (res: any) => {
-        console.log('✅ Response received:', res);
-        console.log(`  Items: ${res.items?.length || 0}`);
-        console.log(`  Total: ${res.total || 0}`);
-        
-        this.allEnrollments = res.items || [];
-        this.totalItems = res.total || 0;
-        this.loadTraineeImages(this.allEnrollments);
-        this.dataSource.data = this.allEnrollments;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('❌ Error loading enrollments:', err);
-        this.notification.showError('حدث خطأ في تحميل البيانات');
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+private formatDateForBackend(date: any): string | null {
+  if (!date) return null;
+  
+  // If it's already a string in YYYY-MM-DD format, return it
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
   }
+  
+  // If it's a Date object or string, convert it
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return null;
+  
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// ==========================================================================
+// LOAD ENROLLMENTS WITH PROPER FORMATTING
+// ==========================================================================
+
+loadEnrollments() {
+  console.log('🔄 loadEnrollments() called');
+  console.log(`  Current Page: ${this.currentPage}`);
+  console.log(`  Page Size: ${this.pageSize}`);
+  
+  this.isLoading = true;
+  const params: any = {};
+  
+  // ===== FILTERS with proper formatting =====
+  if (this.filters.traineeId) params.traineeId = this.filters.traineeId;
+  if (this.filters.traineeNationalId) params.traineeNationalId = this.filters.traineeNationalId;
+  if (this.filters.courseId) params.courseId = this.filters.courseId;
+  if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
+  
+  // ===== ENROLLMENT STATUS - Convert to String Enum =====
+  if (this.filters.enrollmentStatus) {
+    params.enrollmentStatus = this.ENROLLMENT_STATUS_MAP[this.filters.enrollmentStatus] || this.filters.enrollmentStatus;
+  }
+  
+  // ===== PAYMENT STATUS - Convert to String Enum =====
+  if (this.filters.paymentStatus) {
+    params.paymentStatus = this.PAYMENT_STATUS_MAP[this.filters.paymentStatus] || this.filters.paymentStatus;
+  }
+  
+  // ===== DATES - Format as YYYY-MM-DD =====
+  if (this.filters.startDateFrom) {
+    params.startDateFrom = this.formatDateForBackend(this.filters.startDateFrom);
+  }
+  if (this.filters.startDateTo) {
+    params.startDateTo = this.formatDateForBackend(this.filters.startDateTo);
+  }
+  if (this.filters.endDateFrom) {
+    params.endDateFrom = this.formatDateForBackend(this.filters.endDateFrom);
+  }
+  if (this.filters.endDateTo) {
+    params.endDateTo = this.formatDateForBackend(this.filters.endDateTo);
+  }
+  
+  if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
+  if (this.quickSearch) params.quickSearch = this.quickSearch;
+  
+  // ===== PAGINATION =====
+  params.pageNum = this.currentPage;
+  params.pageSize = this.pageSize;
+  
+  // ===== SORTING =====
+  if (this.sortBy) params.orderBy = this.sortBy;
+  if (this.sortDir) params.orderDir = this.sortDir;
+
+  console.log('📤 Sending request with params:', params);
+
+  this.enrollmentService.getAllEnrollmentsByFilter(params).subscribe({
+    next: (res: any) => {
+      console.log('✅ Response received:', res);
+      console.log(`  Items: ${res.items?.length || 0}`);
+      console.log(`  Total: ${res.total || 0}`);
+      
+      this.allEnrollments = res.items || [];
+      this.totalItems = res.total || 0;
+      this.loadTraineeImages(this.allEnrollments);
+      this.dataSource.data = this.allEnrollments;
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('❌ Error loading enrollments:', err);
+      this.notification.showError('حدث خطأ في تحميل البيانات');
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   loadTraineeImages(items: EnrollmentListItem[]): void {
     this.traineeImageUrls.forEach(url => {
@@ -1019,44 +1090,44 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
     return trainee.fullName || '-';
   }
 
-  toggleActiveFilter(event: any): void {
-    this.filters.isActive = event.checked;
-    this.currentPage = 0;
-    this.loadEnrollments();
-  }
+toggleActiveFilter(event: any): void {
+  this.filters.isActive = event.checked;
+  this.currentPage = 0;
+  this.loadEnrollments();
+} 
 
-  applyQuickSearch(event: Event) {
-    this.quickSearch = (event.target as HTMLInputElement).value;
-    this.currentPage = 0;
-    this.loadEnrollments();
-  }
+applyQuickSearch(event: Event) {
+  const value = (event.target as HTMLInputElement).value;
+  this.quickSearch = value;
+  this.currentPage = 0;
+  this.loadEnrollments();
+}
 
-  resetFilters() {
-    this.filters = {
-      traineeId: null,
-      traineeNationalId: null,
-      courseId: null,
-      trainerId: null,
-      enrollmentStatus: null,
-      paymentStatus: null,
-      startDateFrom: null,
-      startDateTo: null,
-      endDateFrom: null,
-      endDateTo: null,
-      isActive: null
-    };
-    this.quickSearch = '';
-    this.barcodeSearch = '';
-    this.isBarcodeMode = false;
-    this.currentPage = 0;
-    const toggle = document.querySelector('#activeToggle') as HTMLInputElement;
-    if (toggle) {
-      toggle.checked = false;
-    }
-    this.loadEnrollments();
-    this.notification.showSuccess('تم مسح جميع الفلاتر');
+resetFilters() {
+  this.filters = {
+    traineeId: null,
+    traineeNationalId: null,
+    courseId: null,
+    trainerId: null,
+    enrollmentStatus: null,
+    paymentStatus: null,
+    startDateFrom: null,
+    startDateTo: null,
+    endDateFrom: null,
+    endDateTo: null,
+    isActive: null
+  };
+  this.quickSearch = '';
+  this.barcodeSearch = '';
+  this.isBarcodeMode = false;
+  this.currentPage = 0;
+  const toggle = document.querySelector('#activeToggle') as HTMLInputElement;
+  if (toggle) {
+    toggle.checked = false;
   }
-
+  this.loadEnrollments();
+  this.notification.showSuccess('تم مسح جميع الفلاتر');
+}
   // ==========================================================================
   // SORTING EVENTS
   // ==========================================================================
@@ -1078,10 +1149,10 @@ export class EnrollmentListComponent implements OnInit, AfterViewInit, OnDestroy
   // FILTER METHODS
   // ==========================================================================
 
-  onFilterChange(): void {
-    this.currentPage = 0;
-    this.loadEnrollments();
-  }
+    onFilterChange(): void {
+      this.currentPage = 0;
+      this.loadEnrollments();
+    }
 
   // ==========================================================================
   // ENROLLMENT OPERATIONS

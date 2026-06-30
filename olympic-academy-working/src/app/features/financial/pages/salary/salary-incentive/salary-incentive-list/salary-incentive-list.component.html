@@ -22,7 +22,6 @@
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
 
-          <!-- Barcode Search Toggle -->
           <button mat-stroked-button 
                   (click)="toggleBarcodeMode()" 
                   class="barcode-toggle-btn"
@@ -31,10 +30,9 @@
             {{ isBarcodeMode ? 'إلغاء الباركود' : 'بحث بالباركود' }}
           </button>
 
-          <!-- Employee - Searchable Select -->
           <app-searchable-select
             [ngModel]="filters.employeeId"
-            (ngModelChange)="filters.employeeId = $event; loadData()"
+            (ngModelChange)="filters.employeeId = $event; currentPage = 0; loadData()"
             label="الموظف"
             [options]="employeeOptions"
             [required]="false"
@@ -43,7 +41,7 @@
           </app-searchable-select>
         </div>
 
-        <!-- Barcode Search Input (shown when barcode mode is active) -->
+        <!-- Barcode Search Input -->
         <div class="barcode-row" *ngIf="isBarcodeMode">
           <div class="barcode-input-wrapper">
             <mat-form-field appearance="outline" class="barcode-field">
@@ -63,10 +61,9 @@
         </div>
 
         <div class="filters-row">
-          <!-- Transaction Type - Searchable Select -->
           <app-searchable-select
             [ngModel]="filters.type"
-            (ngModelChange)="filters.type = $event; loadData()"
+            (ngModelChange)="filters.type = $event; currentPage = 0; loadData()"
             label="نوع المعاملة"
             [options]="transactionTypeOptions"
             [required]="false"
@@ -74,10 +71,9 @@
             [ngModelOptions]="{standalone: true}">
           </app-searchable-select>
 
-          <!-- Payment Method - Searchable Select -->
           <app-searchable-select
             [ngModel]="filters.paymentMethodId"
-            (ngModelChange)="filters.paymentMethodId = $event; loadData()"
+            (ngModelChange)="filters.paymentMethodId = $event; currentPage = 0; loadData()"
             label="طريقة الدفع"
             [options]="paymentMethodOptions"
             [required]="false"
@@ -85,10 +81,9 @@
             [ngModelOptions]="{standalone: true}">
           </app-searchable-select>
 
-          <!-- Salary Type - Searchable Select -->
           <app-searchable-select
             [ngModel]="filters.salaryType"
-            (ngModelChange)="filters.salaryType = $event; loadData()"
+            (ngModelChange)="filters.salaryType = $event; currentPage = 0; loadData()"
             label="نوع الراتب"
             [options]="salaryTypeOptions"
             [required]="false"
@@ -96,27 +91,28 @@
             [ngModelOptions]="{standalone: true}">
           </app-searchable-select>
 
-         <mat-form-field appearance="outline" class="date-field">
-              <mat-label>من تاريخ</mat-label>
-              <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filterDates.withdrawDateFrom" (dateChange)="onDateFromChange()">
-              <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-              <mat-datepicker #fromPicker></mat-datepicker>
-            </mat-form-field>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>من تاريخ</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filterDates.withdrawDateFrom" (dateChange)="onDateFromChange()">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+          </mat-form-field>
 
-            <mat-form-field appearance="outline" class="date-field">
-              <mat-label>إلى تاريخ</mat-label>
-              <input matInput [matDatepicker]="toPicker" [(ngModel)]="filterDates.withdrawDateTo" (dateChange)="onDateToChange()">
-              <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-              <mat-datepicker #toPicker></mat-datepicker>
-            </mat-form-field>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>إلى تاريخ</mat-label>
+            <input matInput [matDatepicker]="toPicker" [(ngModel)]="filterDates.withdrawDateTo" (dateChange)="onDateToChange()">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+          </mat-form-field>
         </div>
 
         <div class="filter-actions">
           <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
             <mat-icon>refresh</mat-icon>
             مسح الكل
+            <span class="filter-badge" *ngIf="hasActiveFilters()">{{ getActiveFiltersCount() }}</span>
           </button>
-          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="dataSource.data.length === 0" class="export-btn">
+          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allTransactions.length === 0" class="export-btn">
             <mat-icon>grid_on</mat-icon>
             تصدير Excel
           </button>
@@ -129,7 +125,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid" *ngIf="!isLoading && dataSource.data.length > 0">
+    <div class="stats-grid" *ngIf="!isLoading && allTransactions.length > 0">
       <div class="stat-card total">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
@@ -175,7 +171,7 @@
 
     <!-- Table Section -->
     <div class="table-section" *ngIf="!isLoading">
-      <div class="table-header" *ngIf="dataSource.data.length > 0">
+      <div class="table-header" *ngIf="allTransactions.length > 0">
         <div class="records-count">
           <mat-icon>info</mat-icon>
           <span>عدد المعاملات: {{ totalRecords }} معاملة</span>
@@ -324,15 +320,56 @@
         </table>
       </div>
 
-      <mat-paginator 
-        #paginator 
-        [length]="totalRecords"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="pageSizeOptions"
-        (page)="onPageChange($event)"
-        showFirstLastButtons
-        class="custom-paginator">
-      </mat-paginator>
+      <!-- Custom Paginator -->
+      <div class="custom-paginator" *ngIf="totalRecords > 0">
+        <div class="paginator-left">
+          <mat-form-field appearance="outline" class="page-size-select">
+            <mat-label>عدد السجلات</mat-label>
+            <mat-select [value]="pageSize" (selectionChange)="pageSize = $event.value; onPageSizeChange()">
+              <mat-option *ngFor="let size of pageSizeOptions" [value]="size">
+                {{ size }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <span class="items-range">
+            {{ currentPage * pageSize + 1 }} - 
+            {{ Math.min((currentPage + 1) * pageSize, totalRecords) }}
+            من {{ totalRecords }}
+          </span>
+        </div>
+
+        <div class="paginator-right">
+          <button mat-icon-button 
+                  [disabled]="currentPage === 0" 
+                  (click)="goToFirstPage()"
+                  matTooltip="الصفحة الأولى">
+            <mat-icon>first_page</mat-icon>
+          </button>
+          <button mat-icon-button 
+                  [disabled]="currentPage === 0" 
+                  (click)="goToPreviousPage()"
+                  matTooltip="الصفحة السابقة">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          
+          <span class="page-indicator">
+            {{ currentPage + 1 }} / {{ getTotalPages() }}
+          </span>
+          
+          <button mat-icon-button 
+                  [disabled]="currentPage >= getTotalPages() - 1" 
+                  (click)="goToNextPage()"
+                  matTooltip="الصفحة التالية">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-icon-button 
+                  [disabled]="currentPage >= getTotalPages() - 1" 
+                  (click)="goToLastPage()"
+                  matTooltip="الصفحة الأخيرة">
+            <mat-icon>last_page</mat-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </mat-card>
 </div>

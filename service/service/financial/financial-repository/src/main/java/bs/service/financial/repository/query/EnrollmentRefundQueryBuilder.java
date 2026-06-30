@@ -21,6 +21,10 @@ public class EnrollmentRefundQueryBuilder extends AbstractQueryBuilderV2<Enrollm
     public List<QBCondition> evaluateWhereConditions(EnrollmentRefundSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         if (filters.getEnrollmentId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("enrollmentId").value(filters.getEnrollmentId())
                     .condition("item.enrollment.id = :PH").build());

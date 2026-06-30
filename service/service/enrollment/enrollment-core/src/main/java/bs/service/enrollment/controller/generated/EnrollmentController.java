@@ -146,6 +146,67 @@ public interface EnrollmentController {
             @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
+     * GET /enrollments/enrollment-details : Retrieve list of enrollments
+     *
+     * @param quickSearch
+     *            (optional)
+     * @param isActive
+     *            (optional)
+     * @param traineeId
+     *            (optional)
+     * @param traineeNationalId
+     *            (optional)
+     * @param courseId
+     *            (optional)
+     * @param trainerId
+     *            (optional)
+     * @param enrollmentTypeId
+     *            (optional)
+     * @param enrollmentStatus
+     *            (optional)
+     * @param paymentStatus
+     *            (optional)
+     * @param startDateFrom
+     *            (optional)
+     * @param startDateTo
+     *            (optional)
+     * @param endDateFrom
+     *            (optional)
+     * @param endDateTo
+     *            (optional)
+     * @param createdOnFrom
+     *            (optional)
+     * @param createdOnTo
+     *            (optional)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllEnrollmentsDetailsByFilter", summary = "Retrieve list of enrollments", tags = {
+            "Enrollment" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = EnrollmentResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/enrollments/enrollment-details", produces = {
+            "application/json" })
+
+    ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsDetailsByFilter(
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
+            @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
+            @Parameter(name = "traineeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeId", required = false) Integer traineeId,
+            @Parameter(name = "traineeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeNationalId", required = false) String traineeNationalId,
+            @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
+            @Parameter(name = "trainerId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainerId", required = false) Integer trainerId,
+            @Parameter(name = "enrollmentTypeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "enrollmentTypeId", required = false) Integer enrollmentTypeId,
+            @Parameter(name = "enrollmentStatus", description = "", in = ParameterIn.QUERY) @Valid EnrollmentStatus enrollmentStatus,
+            @Parameter(name = "paymentStatus", description = "", in = ParameterIn.QUERY) @Valid PaymentStatus paymentStatus,
+            @Parameter(name = "startDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "startDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDateFrom,
+            @Parameter(name = "startDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "startDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDateTo,
+            @Parameter(name = "endDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "endDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDateFrom,
+            @Parameter(name = "endDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "endDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDateTo,
+            @Parameter(name = "createdOnFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnFrom,
+            @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo);
+
+    /**
      * GET /enrollments/{enrollmentId} : Get enrollment by id
      *
      * @param enrollmentId

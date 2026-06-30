@@ -12,4 +12,5 @@ public interface PaymentMethodRepository {
     Optional<PaymentMethod> selectById(Integer id);
     List<PaymentMethod> selectAllByFilters(PaymentMethodSearchFilter filters);
     Integer countAllByFilters(PaymentMethodSearchFilter filters);
+    void deleteById(Integer id);
 }

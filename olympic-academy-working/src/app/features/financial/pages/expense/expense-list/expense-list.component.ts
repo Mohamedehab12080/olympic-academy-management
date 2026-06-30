@@ -1,11 +1,12 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 // Material Imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -53,17 +54,57 @@ import { ExpenseWizardModalComponent } from '../expense-wizard/expense-wizard-mo
   templateUrl: './expense-list.component.html',
   styleUrls: ['./expense-list.component.css']
 })
-export class ExpenseListComponent implements OnInit, AfterViewInit {
+export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
+  
+  Math = Math;
+  
+  // ==========================================================================
+  // TABLE CONFIGURATION
+  // ==========================================================================
+
   displayedColumns: string[] = ['id', 'expenseType', 'amountExpensed', 'expenseDate', 'paymentMethod', 'note', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+  allExpenses: any[] = [];
   isLoading = false;
   
+  // ==========================================================================
+  // DATA COLLECTIONS
+  // ==========================================================================
+
   expenseTypes: any[] = [];
   paymentMethods: any[] = [];
   
-  // Options for searchable selects
+  // ==========================================================================
+  // OPTIONS FOR SEARCHABLE SELECTS
+  // ==========================================================================
+
   expenseTypeOptions: SelectOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
+  
+  // ==========================================================================
+  // PAGINATION
+  // ==========================================================================
+
+  totalRecords = 0;
+  currentPage = 0;
+  pageSize = 25;
+  pageSizeOptions = [5, 10, 25, 50, 100];
+  
+  // ==========================================================================
+  // SORTING
+  // ==========================================================================
+
+  sortBy: string = 'CREATION_DATE';
+  sortDir: string = 'DESC';
+  
+  // ==========================================================================
+  // FILTER CRITERIA
+  // ==========================================================================
+
+  filterDates = {
+    expenseDateFrom: null as Date | null,
+    expenseDateTo: null as Date | null
+  };
   
   filters = {
     expenseTypeId: null as number | null,
@@ -74,12 +115,26 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
   
   quickSearch: string = '';
 
+  // ==========================================================================
+  // SUBJECTS
+  // ==========================================================================
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
+  // ==========================================================================
+  // VIEW CHILDREN
+  // ==========================================================================
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // Statistics
+  // ==========================================================================
+  // STATISTICS - COMPUTED PROPERTIES
+  // ==========================================================================
+
   get totalExpenses(): number {
-    return this.dataSource.data.reduce((sum, item) => sum + (item.amountExpensed || 0), 0);
+    return this.allExpenses.reduce((sum, item) => sum + (item.amountExpensed || 0), 0);
   }
 
   get averageExpense(): number {
@@ -87,21 +142,35 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
     return count > 0 ? this.totalExpenses / count : 0;
   }
 
-  getTotalExpensesCount(): number {
-    return this.dataSource.data.length;
+  get totalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
   }
+
+  getTotalExpensesCount(): number {
+    return this.allExpenses.length;
+  }
+
+  // ==========================================================================
+  // CONSTRUCTOR
+  // ==========================================================================
 
   constructor(
     private financialService: FinancialService,
     private notification: NotificationService,
     private reportService: ReportService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  // ==========================================================================
+  // LIFECYCLE HOOKS
+  // ==========================================================================
 
   ngOnInit() {
     this.loadLookupData();
     this.loadData();
+    this.setupSearchDebounce();
   }
 
   ngAfterViewInit() {
@@ -109,68 +178,197 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ==========================================================================
+  // GET TOTAL PAGES
+  // ==========================================================================
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  // ==========================================================================
+  // PAGINATION METHODS
+  // ==========================================================================
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 0) {
+      this.currentPage = 0;
+      this.loadData();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  goToNextPage(): void {
+    this.currentPage++;
+    this.loadData();
+  }
+
+  goToLastPage(): void {
+    const totalPages = this.getTotalPages();
+    if (this.currentPage !== totalPages - 1 && totalPages > 0) {
+      this.currentPage = totalPages - 1;
+      this.loadData();
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  onPageEvent(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadData();
+  }
+
+  // ==========================================================================
+  // SEARCH DEBOUNCE
+  // ==========================================================================
+
+  private setupSearchDebounce(): void {
+    this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.currentPage = 0;
+        this.loadData();
+      });
+  }
+
+  // ==========================================================================
+  // INITIALIZATION METHODS
+  // ==========================================================================
+
   loadLookupData() {
     // Load expense types
-    this.financialService.getAllExpenseTypesLookup(true).subscribe({
-      next: (res: any) => { 
-        this.expenseTypes = res.list || [];
-        this.expenseTypeOptions = [
-          { value: null, label: 'الكل' },
-          ...this.expenseTypes.map(t => ({ value: t.id, label: t.title }))
-        ];
-      },
-      error: () => { 
-        this.notification.showError('حدث خطأ في تحميل أنواع المصروفات'); 
-      }
-    });
+    this.financialService.getAllExpenseTypesLookup(true)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => { 
+          this.expenseTypes = res.list || [];
+          this.expenseTypeOptions = [
+            { value: null, label: 'الكل' },
+            ...this.expenseTypes.map(t => ({ value: t.id, label: t.title }))
+          ];
+        },
+        error: () => { 
+          this.notification.showError('حدث خطأ في تحميل أنواع المصروفات'); 
+        }
+      });
 
     // Load payment methods
-    this.financialService.getAllPaymentMethodsLookup().subscribe({
-      next: (res: any) => { 
-        this.paymentMethods = res.list || [];
-        this.paymentMethodOptions = [
-          { value: null, label: 'الكل' },
-          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
-        ];
-      },
-      error: () => { 
-        this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
-      }
-    });
+    this.financialService.getAllPaymentMethodsLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => { 
+          this.paymentMethods = res.list || [];
+          this.paymentMethodOptions = [
+            { value: null, label: 'الكل' },
+            ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+          ];
+        },
+        error: () => { 
+          this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
+        }
+      });
   }
+
+  // ==========================================================================
+  // HELPER METHODS
+  // ==========================================================================
+
+  private formatDateForBackend(date: Date | null): string | null {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private updateFilterDates(): void {
+    this.filters.expenseDateFrom = this.formatDateForBackend(this.filterDates.expenseDateFrom);
+    this.filters.expenseDateTo = this.formatDateForBackend(this.filterDates.expenseDateTo);
+  }
+
+  // ==========================================================================
+  // DATE CHANGE HANDLERS
+  // ==========================================================================
+
+  onDateFromChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  onDateToChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  // ==========================================================================
+  // LOAD DATA WITH PAGINATION
+  // ==========================================================================
 
   loadData() {
     this.isLoading = true;
-    const params: any = {};
+    
+    this.updateFilterDates();
+    
+    const params: any = {
+      pageNum: this.currentPage,
+      pageSize: this.pageSize
+    };
     
     if (this.filters.expenseTypeId) params.expenseTypeId = this.filters.expenseTypeId;
     if (this.filters.paymentMethodId) params.paymentMethodId = this.filters.paymentMethodId;
     if (this.filters.expenseDateFrom) params.expenseDateFrom = this.filters.expenseDateFrom;
     if (this.filters.expenseDateTo) params.expenseDateTo = this.filters.expenseDateTo;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+    
+    if (this.sortBy) params.orderBy = this.sortBy;
+    if (this.sortDir) params.orderDir = this.sortDir;
 
-    this.financialService.getAllExpensesByFilter(params).subscribe({
-      next: (res: any) => {
-        this.dataSource.data = res.items || [];
-        if (this.dataSource.paginator) {
-          this.dataSource.paginator = this.paginator;
+    this.financialService.getAllExpensesByFilter(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.allExpenses = res.items || [];
+          this.totalRecords = res.total || 0;
+          this.dataSource.data = this.allExpenses;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading data:', err);
+          this.notification.showError('حدث خطأ في تحميل البيانات');
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
-        if (this.dataSource.sort) {
-          this.dataSource.sort = this.sort;
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading data:', err);
-        this.notification.showError('حدث خطأ في تحميل البيانات');
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
+  // ==========================================================================
+  // FILTER METHODS
+  // ==========================================================================
+
   applyQuickSearch(event: Event) {
-    this.quickSearch = (event.target as HTMLInputElement).value;
-    this.loadData();
+    const value = (event.target as HTMLInputElement).value;
+    this.quickSearch = value;
+    this.searchSubject.next(value);
   }
 
   resetFilters() {
@@ -180,10 +378,37 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
       expenseDateFrom: null,
       expenseDateTo: null
     };
+    this.filterDates = {
+      expenseDateFrom: null,
+      expenseDateTo: null
+    };
     this.quickSearch = '';
+    this.currentPage = 0;
     this.loadData();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
+
+  hasActiveFilters(): boolean {
+    return !!(this.filters.expenseTypeId || 
+              this.filters.paymentMethodId || 
+              this.filters.expenseDateFrom || 
+              this.filters.expenseDateTo || 
+              this.quickSearch);
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.filters.expenseTypeId) count++;
+    if (this.filters.paymentMethodId) count++;
+    if (this.filters.expenseDateFrom) count++;
+    if (this.filters.expenseDateTo) count++;
+    if (this.quickSearch) count++;
+    return count;
+  }
+
+  // ==========================================================================
+  // EXPENSE OPERATIONS
+  // ==========================================================================
 
   openNewExpenseModal() {
     const dialogRef = this.dialog.open(ExpenseWizardModalComponent, {
@@ -200,15 +425,49 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
   }
 
   viewExpense(id: number) {
-    this.financialService.getExpenseById(id).subscribe({
-      next: (expense) => {
-        this.openDetailsModal(expense);
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات المصروف');
+    this.financialService.getExpenseById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (expense) => {
+          this.openDetailsModal(expense);
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل بيانات المصروف');
+        }
+      });
+  }
+
+  editExpense(id: number) {
+    const dialogRef = this.dialog.open(ExpenseWizardModalComponent, {
+      data: { expenseId: id },
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
       }
     });
   }
+
+  deleteExpense(item: any) {
+    if (confirm(`هل أنت متأكد من حذف المصروف "${item.expenseType?.title}" بقيمة ${item.amountExpensed} جم؟`)) {
+      this.financialService.deleteExpense(item.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notification.showSuccess('تم الحذف بنجاح');
+            this.loadData();
+          },
+          error: () => this.notification.showError('حدث خطأ في الحذف')
+        });
+    }
+  }
+
+  // ==========================================================================
+  // DETAILS MODAL
+  // ==========================================================================
 
   openDetailsModal(expense: any): void {
     const modalContainer = document.createElement('div');
@@ -386,7 +645,6 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
         <div class="no-print" style="text-align: center; margin-top: 15px; padding: 10px;">
           <button onclick="window.print();" style="padding: 8px 20px; background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
-        <script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };</script>
       </body>
       </html>
     `;
@@ -407,40 +665,18 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  editExpense(id: number) {
-    const dialogRef = this.dialog.open(ExpenseWizardModalComponent, {
-      data: { expenseId: id },
-      width: '800px',
-      maxWidth: '90vw'
-    });
-    
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadData();
-      }
-    });
-  }
-
-  deleteExpense(item: any) {
-    if (confirm(`هل أنت متأكد من حذف المصروف "${item.expenseType?.title}" بقيمة ${item.amountExpensed} جم؟`)) {
-      this.financialService.deleteExpense(item.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم الحذف بنجاح');
-          this.loadData();
-        },
-        error: () => this.notification.showError('حدث خطأ في الحذف')
-      });
-    }
-  }
+  // ==========================================================================
+  // EXPORT FUNCTIONS
+  // ==========================================================================
 
   exportToExcel() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allExpenses.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
 
-    const exportData = this.dataSource.data.map((item, index) => ({
-      '#': index + 1,
+    const exportData = this.allExpenses.map((item, index) => ({
+      '#': (this.currentPage * this.pageSize) + index + 1,
       'نوع المصروف': item.expenseType?.title || '-',
       'المبلغ': item.amountExpensed,
       'تاريخ المصروف': item.expenseDate,
@@ -453,7 +689,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
   }
 
   exportToPDF() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allExpenses.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
@@ -474,7 +710,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
     if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
     let tableRows = '';
-    this.dataSource.data.forEach((item: any, index: number) => {
+    this.allExpenses.forEach((item: any, index: number) => {
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
@@ -522,11 +758,11 @@ export class ExpenseListComponent implements OnInit, AfterViewInit {
         <div class="header">
           <h1>تقرير المصروفات</h1>
           <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-          <p>عدد السجلات: ${this.dataSource.data.length} مصروف</p>
+          <p>عدد السجلات: ${this.allExpenses.length} مصروف</p>
         </div>
         ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
         <div class="stats">
-          <div class="stat-item"><div class="stat-value">${this.dataSource.data.length}</div><div class="stat-label">عدد المصروفات</div></div>
+          <div class="stat-item"><div class="stat-value">${this.allExpenses.length}</div><div class="stat-label">عدد المصروفات</div></div>
           <div class="stat-item"><div class="stat-value">${this.totalExpenses.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المصروفات</div></div>
           <div class="stat-item"><div class="stat-value">${this.averageExpense.toLocaleString('ar-EG')} جم</div><div class="stat-label">متوسط المصروف</div></div>
         </div>

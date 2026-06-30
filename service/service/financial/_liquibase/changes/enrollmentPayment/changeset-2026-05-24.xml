@@ -11,8 +11,12 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="title" type="varchar(250)"/>
-            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
-            <column name="created_by_id" type="int"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_id" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
@@ -32,9 +36,13 @@
             <column name="image_url" type="varchar(250)"/>
             <column name="note" type="text"/>
             <column name="payment_status" type="int"/>
-            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
             <column name="last_modified_on" type="timestamp"/>
-            <column name="created_by_id" type="int"/>
+            <column name="created_by_id" type="int">
+                <constraints nullable="false"/>
+            </column>
             <column name="last_modified_by_id" type="int"/>
             <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
         </createTable>
@@ -83,9 +91,13 @@
             <column name="image_url" type="varchar(250)"/>
             <column name="note" type="text"/>
             <column name="refund_status" type="int"/>
-            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
             <column name="last_modified_on" type="timestamp"/>
-            <column name="created_by_id" type="int"/>
+            <column name="created_by_id" type="int">
+                <constraints nullable="false"/>
+            </column>
             <column name="last_modified_by_id" type="int"/>
             <column name="is_deleted" type="boolean" defaultValueBoolean="false"/>
         </createTable>

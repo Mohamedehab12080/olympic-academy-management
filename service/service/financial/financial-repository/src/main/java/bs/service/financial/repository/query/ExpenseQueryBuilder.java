@@ -21,6 +21,11 @@ public class ExpenseQueryBuilder extends AbstractQueryBuilderV2<Expense, Expense
     public List<QBCondition> evaluateWhereConditions(ExpenseSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         if (filters.getExpenseTypeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("expenseTypeId").value(filters.getExpenseTypeId())
                     .condition("item.expenseType.id = :PH").build());

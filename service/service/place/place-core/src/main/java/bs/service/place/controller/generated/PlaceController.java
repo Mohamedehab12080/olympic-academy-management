@@ -99,6 +99,24 @@ public interface PlaceController {
             @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
+     * GET /places/details : Retrieve list of Places
+     *
+     * @param quickSearch
+     *            (optional)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getAllPlacesDetailsByFilter", summary = "Retrieve list of Places", tags = {
+            "Place" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = PlaceResultSet.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/places/details", produces = { "application/json" })
+
+    ResponseEntity<PlaceResultSet> _getAllPlacesDetailsByFilter(
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch);
+
+    /**
      * GET /places/{placeId} : Retrieve place
      *
      * @param placeId

@@ -140,14 +140,14 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
 
   loadEnrollments() {
     this.isLoading = true;
-    this.enrollmentService.getAllEnrollmentsByFilter().subscribe({
+    this.enrollmentService.getAllEnrollmentsDetailsByFilter().subscribe({
       next: (res: any) => {
         this.enrollments = res.items || [];
         this.enrollmentOptions = this.enrollments.map((e: any) => {
           const totalPaid = (e.finalSubscriptionValue || 0) - (e.remainedSubscriptionValue || 0);
           return { 
             value: e.id, 
-            label: `${e.trainee?.title || 'غير محدد'} - ${e.course?.title || 'غير محدد'} (المدفوع: ${totalPaid} جم)`,
+            label: `${e.trainee?.fullName || 'غير محدد'} - ${e.course?.title || 'غير محدد'} (المدفوع: ${totalPaid} جم)`,
             enrollmentData: {
               trainee: e.trainee,
               course: e.course,

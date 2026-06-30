@@ -1,3 +1,7 @@
+<!-- ============================================================ -->
+<!-- WIZARD CONTAINER -->
+<!-- ============================================================ -->
+
 <div class="wizard-container">
   <!-- Header -->
   <div class="wizard-header">
@@ -20,7 +24,9 @@
   <!-- Wizard Steps -->
   <div class="wizard-steps" *ngIf="!isLoading">
     <div class="steps-container">
-      <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i" [class.completed]="step.completed">
+      <div *ngFor="let step of steps; let i = index" class="step-item" 
+           [class.active]="currentStep === i" 
+           [class.completed]="step.completed">
         <div class="step-circle" (click)="goToStep(i)">
           <mat-icon *ngIf="step.completed && currentStep !== i">check</mat-icon>
           <span *ngIf="!step.completed || currentStep === i">{{ i + 1 }}</span>
@@ -38,7 +44,10 @@
   <div class="wizard-content" *ngIf="!isLoading">
     <form [formGroup]="deductionForm">
       
-      <!-- Step 0: Select Employee -->
+      <!-- ========================================================== -->
+      <!-- STEP 0: SELECT EMPLOYEE -->
+      <!-- ========================================================== -->
+      
       <div class="step-content" *ngIf="currentStep === 0">
         <div class="step-title">
           <mat-icon>person</mat-icon>
@@ -50,14 +59,99 @@
         </div>
 
         <div class="form-section">
-          <app-searchable-select
-            formControlName="employeeId"
-            label="الموظف"
-            [options]="employeeOptions"
-            [required]="true"
-            class="full-width"
-            (ngModelChange)="onEmployeeSelect()">
-          </app-searchable-select>
+          <!-- Regular Employee Selection -->
+          <div class="employee-selection-area" *ngIf="!isBarcodeMode">
+            <div class="selection-wrapper">
+              <app-searchable-select
+                formControlName="employeeId"
+                label="الموظف"
+                [options]="employeeOptions"
+                [required]="true"
+                class="full-width"
+                placeholder="ابحث عن موظف..."
+              >
+              </app-searchable-select>
+              
+              <button 
+                mat-icon-button 
+                type="button"
+                class="barcode-toggle-btn"
+                (click)="toggleBarcodeMode()"
+                matTooltip="البحث بالباركود"
+                [disabled]="isLoading"
+              >
+                <mat-icon>qr_code_scanner</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Barcode Search -->
+          <div class="barcode-search-area" *ngIf="isBarcodeMode">
+            <div class="barcode-input-wrapper">
+              <mat-form-field appearance="outline" class="barcode-field">
+                <mat-label>رقم الباركود</mat-label>
+                <input 
+                  #barcodeInput
+                  matInput 
+                  [(ngModel)]="barcodeSearch"
+                  (keydown)="onBarcodeKeydown($event)"
+                  placeholder="أدخل رقم الباركود..."
+                  [ngModelOptions]="{standalone: true}"
+                  [disabled]="isLoading"
+                />
+                <mat-icon matSuffix>qr_code</mat-icon>
+                <mat-hint>اضغط Enter للبحث</mat-hint>
+              </mat-form-field>
+              
+              <button 
+                mat-raised-button 
+                color="primary"
+                [disabled]="!barcodeSearch.trim() || isLoading"
+                (click)="searchEmployeeByBarcode()"
+                class="search-btn"
+              >
+                <mat-icon>search</mat-icon>
+                بحث
+              </button>
+              
+              <button 
+                mat-icon-button
+                type="button"
+                (click)="clearBarcodeSearch()"
+                matTooltip="إلغاء"
+                class="clear-btn"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <!-- Barcode Result -->
+            <div class="barcode-result" *ngIf="barcodeSearchResult">
+              <div *ngIf="barcodeSearchResult.found" class="result-success">
+                <mat-icon>check_circle</mat-icon>
+                <span>
+                  تم العثور على الموظف: 
+                  <strong>{{ barcodeSearchResult.employeeName }}</strong>
+                </span>
+              </div>
+              <div *ngIf="!barcodeSearchResult.found" class="result-error">
+                <mat-icon>error</mat-icon>
+                <span>{{ barcodeSearchResult.message }}</span>
+              </div>
+            </div>
+
+            <div class="barcode-actions">
+              <button 
+                mat-button
+                type="button"
+                (click)="toggleBarcodeMode()"
+                class="back-btn"
+              >
+                <mat-icon>keyboard_arrow_left</mat-icon>
+                العودة إلى البحث العادي
+              </button>
+            </div>
+          </div>
 
           <!-- Employee Details Preview -->
           <div class="employee-preview" *ngIf="selectedEmployee">
@@ -69,6 +163,10 @@
               <div class="preview-row">
                 <span class="label">الاسم:</span>
                 <span class="value">{{ selectedEmployee.fullName }}</span>
+              </div>
+              <div class="preview-row" *ngIf="selectedEmployee.nationalId">
+                <span class="label">رقم الهوية:</span>
+                <span class="value">{{ selectedEmployee.nationalId }}</span>
               </div>
               <div class="preview-row">
                 <span class="label">الراتب الأساسي:</span>
@@ -89,7 +187,10 @@
         </div>
       </div>
 
-      <!-- Step 1: Deduction Details -->
+      <!-- ========================================================== -->
+      <!-- STEP 1: DEDUCTION DETAILS -->
+      <!-- ========================================================== -->
+      
       <div class="step-content" *ngIf="currentStep === 1">
         <div class="step-title">
           <mat-icon>payments</mat-icon>
@@ -116,14 +217,19 @@
             </div>
           </div>
 
+          <!-- Deduction Type & Date -->
           <div class="two-columns">
-            <app-searchable-select
-              formControlName="deductionTypeObj"
-              label="نوع الخصم *"
-              [options]="deductionTypeOptions"
-              [required]="true"
-              class="full-width">
-            </app-searchable-select>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>نوع الخصم *</mat-label>
+              <mat-select formControlName="deductionTypeObj" placeholder="اختر نوع الخصم">
+                <mat-option *ngFor="let type of deductionTypeOptions" [value]="type.value">
+                  {{ type.label }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="deductionForm.get('deductionTypeObj')?.hasError('required')">
+                نوع الخصم مطلوب
+              </mat-error>
+            </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>تاريخ الخصم *</mat-label>
@@ -136,11 +242,20 @@
             </mat-form-field>
           </div>
 
+          <!-- Amount & New Remained -->
           <div class="two-columns">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>المبلغ *</mat-label>
-              <input matInput type="number" formControlName="amountDeducted" placeholder="0" [max]="getCurrentRemained()">
-              <span matTextSuffix>جم</span>
+              <mat-label>المبلغ المخصوم *</mat-label>
+              <input 
+                matInput 
+                type="number" 
+                formControlName="amountDeducted" 
+                placeholder="أدخل المبلغ"
+                [min]="1"
+                [max]="maxDeductionAmount"
+              >
+              <span matSuffix class="currency-suffix">جم</span>
+              <mat-hint>الحد الأقصى: {{ maxDeductionAmount | number }} جم</mat-hint>
               <mat-error *ngIf="deductionForm.get('amountDeducted')?.hasError('required')">
                 المبلغ مطلوب
               </mat-error>
@@ -148,40 +263,46 @@
                 يجب أن يكون المبلغ أكبر من 0
               </mat-error>
               <mat-error *ngIf="deductionForm.get('amountDeducted')?.hasError('max')">
-                المبلغ لا يمكن أن يتجاوز {{ getCurrentRemained() }} جم
+                المبلغ لا يمكن أن يتجاوز {{ maxDeductionAmount | number }} جم
+              </mat-error>
+              <mat-error *ngIf="deductionForm.get('amountDeducted')?.hasError('exceedsRemained')">
+                المبلغ يتجاوز الراتب المتبقي
               </mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>الراتب المتبقي بعد الخصم</mat-label>
               <input matInput type="number" formControlName="newRemainedSalary" readonly>
-              <span matTextSuffix>جم</span>
+              <span matSuffix class="currency-suffix">جم</span>
             </mat-form-field>
           </div>
 
+          <!-- Salary Type & Reason -->
           <div class="two-columns">
-            <app-searchable-select
-              formControlName="salaryTypeObj"
-              label="نوع الراتب"
-              [options]="salaryTypeOptions"
-              [required]="false"
-              class="full-width">
-            </app-searchable-select>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>نوع الراتب (اختياري)</mat-label>
+              <mat-select formControlName="salaryTypeObj" placeholder="اختر نوع الراتب">
+                <mat-option *ngFor="let type of salaryTypeOptions" [value]="type.value">
+                  {{ type.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>سبب الخصم</mat-label>
+              <mat-label>سبب الخصم (اختياري)</mat-label>
               <input matInput formControlName="reason" placeholder="مثال: غياب، تأخير، ...">
             </mat-form-field>
           </div>
 
+          <!-- Note -->
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>ملاحظات</mat-label>
+            <mat-label>ملاحظات (اختياري)</mat-label>
             <textarea matInput formControlName="note" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
             <mat-icon matSuffix>note</mat-icon>
           </mat-form-field>
 
           <!-- Deduction Summary Card -->
-          <div class="deduction-summary">
+          <div class="deduction-summary" *ngIf="selectedEmployee">
             <div class="summary-header">
               <mat-icon>receipt_long</mat-icon>
               <span>ملخص الخصم</span>
@@ -213,7 +334,10 @@
         </div>
       </div>
 
-      <!-- Step 2: Confirmation -->
+      <!-- ========================================================== -->
+      <!-- STEP 2: CONFIRMATION -->
+      <!-- ========================================================== -->
+      
       <div class="step-content" *ngIf="currentStep === 2">
         <div class="step-title">
           <mat-icon>check_circle</mat-icon>
@@ -234,7 +358,11 @@
             <div class="info-grid">
               <div class="info-item">
                 <span class="info-label">الموظف:</span>
-                <span class="info-value">{{ deductionForm.get('employeeFullName')?.value }}</span>
+                <span class="info-value">{{ getEmployeeName() }}</span>
+              </div>
+              <div class="info-item" *ngIf="getEmployeeNationalId()">
+                <span class="info-label">رقم الهوية:</span>
+                <span class="info-value">{{ getEmployeeNationalId() }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">الراتب الأساسي:</span>
@@ -252,7 +380,7 @@
           <!-- Deduction Info -->
           <div class="confirmation-section">
             <div class="section-title">
-              <mat-icon>payments</mat-icon>
+              <mat-icon>{{ getDeductionTypeIcon() }}</mat-icon>
               <span>معلومات الخصم</span>
             </div>
             <div class="info-grid">
@@ -261,7 +389,7 @@
                 <span class="info-value">{{ getDeductionTypeLabel() }}</span>
               </div>
               <div class="info-item">
-                <span class="info-label">المبلغ:</span>
+                <span class="info-label">المبلغ المخصوم:</span>
                 <span class="info-value highlight">{{ getAmountDeducted() | number }} جم</span>
               </div>
               <div class="info-item">
@@ -270,9 +398,9 @@
               </div>
               <div class="info-item">
                 <span class="info-label">تاريخ الخصم:</span>
-                <span class="info-value">{{ deductionForm.get('deductionDate')?.value | date }}</span>
+                <span class="info-value">{{ deductionForm.get('deductionDate')?.value | date:'dd/MM/yyyy' }}</span>
               </div>
-              <div class="info-item" *ngIf="deductionForm.get('salaryTypeObj')?.value">
+              <div class="info-item" *ngIf="getSalaryTypeLabel() !== 'غير محدد'">
                 <span class="info-label">نوع الراتب:</span>
                 <span class="info-value">{{ getSalaryTypeLabel() }}</span>
               </div>
@@ -286,31 +414,59 @@
               </div>
             </div>
           </div>
+
+          <!-- Final Summary -->
+          <div class="confirmation-summary">
+            <div class="summary-row">
+              <span class="summary-label">الراتب المتبقي بعد الخصم</span>
+              <span class="summary-value final">{{ getNewRemained() | number }} جم</span>
+            </div>
+          </div>
         </div>
       </div>
+
     </form>
   </div>
 
   <mat-divider></mat-divider>
 
-  <!-- Actions -->
+  <!-- ============================================================ -->
+  <!-- WIZARD ACTIONS -->
+  <!-- ============================================================ -->
+  
   <div class="wizard-actions">
     <button mat-button (click)="onCancel()" [disabled]="isSubmitting">
       <mat-icon>close</mat-icon> إلغاء
     </button>
     
     <div class="action-buttons">
-      <button mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+      <button 
+        mat-stroked-button 
+        *ngIf="currentStep > 0" 
+        (click)="previousStep()" 
+        [disabled]="isSubmitting"
+      >
         <mat-icon>chevron_right</mat-icon> السابق
       </button>
       
-      <button mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" 
-              [disabled]="isSubmitting || getCurrentRemained() === 0">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        *ngIf="currentStep < steps.length - 1" 
+        (click)="nextStep()" 
+        [disabled]="isSubmitting || getCurrentRemained() === 0"
+      >
         التالي <mat-icon>chevron_left</mat-icon>
       </button>
       
-      <button mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" (click)="onSubmit()" 
-              [disabled]="isSubmitting || getCurrentRemained() === 0">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        *ngIf="currentStep === steps.length - 1" 
+        (click)="onSubmit()" 
+        [disabled]="isSubmitting || getCurrentRemained() === 0"
+        class="submit-btn"
+      >
         <mat-icon *ngIf="!isSubmitting">check</mat-icon>
         <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
         {{ isEditMode ? 'تحديث' : 'إضافة' }}

@@ -76,9 +76,9 @@ public class PlaceServiceImpl implements PlaceService {
                                                OrderDirections orderDir, String orderBy) {
         PlaceSearchFilter filter = PlaceSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
-                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
-                .defaultSorting(new SortingInfo<>(PlaceSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
-                .sorting(new SortingInfo<>(orderBy, orderDir))
+                .pagination(pageNum!=null ? PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build():PaginationInfo.noPagination())
+                .defaultSorting(orderBy!=null ? new SortingInfo<>(PlaceSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC):null)
+                .sorting(orderBy!=null ? new SortingInfo<>(orderBy, orderDir):null)
                 .build();
 
         List<Place> places = placeRepository.selectAllByFilters(filter);

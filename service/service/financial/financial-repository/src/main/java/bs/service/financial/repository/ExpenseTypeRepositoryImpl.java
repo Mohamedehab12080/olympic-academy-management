@@ -50,4 +50,9 @@ public class ExpenseTypeRepositoryImpl implements ExpenseTypeRepository {
     public Integer countAllByFilters(ExpenseTypeSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        expenseTypeJPARepository.deleteById(id);
+    }
 }

@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class SalaryDeductionSearchFilter extends SearchFilter<SalaryDeductionSearchFilter.OrderByAttributes> {
 
+    private Boolean isDeleted;
     private Integer employeeId;
     private Integer salaryType;
     private LocalDate deductionDateFrom;

@@ -1,4 +1,7 @@
-/* Wizard Container */
+/* ============================================================ */
+/* WIZARD CONTAINER */
+/* ============================================================ */
+
 .wizard-container {
   background: white;
   border-radius: 24px;
@@ -8,7 +11,10 @@
   flex-direction: column;
 }
 
-/* Header Styles */
+/* ============================================================ */
+/* HEADER STYLES */
+/* ============================================================ */
+
 .wizard-header {
   display: flex;
   justify-content: space-between;
@@ -46,7 +52,10 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Loading Overlay */
+/* ============================================================ */
+/* LOADING OVERLAY */
+/* ============================================================ */
+
 .loading-overlay {
   display: flex;
   justify-content: center;
@@ -54,7 +63,10 @@
   padding: 60px;
 }
 
-/* Wizard Steps */
+/* ============================================================ */
+/* WIZARD STEPS */
+/* ============================================================ */
+
 .wizard-steps {
   padding: 24px 24px 0;
   background: #f8fafc;
@@ -140,7 +152,10 @@
   background: #10b981;
 }
 
-/* Wizard Content */
+/* ============================================================ */
+/* WIZARD CONTENT */
+/* ============================================================ */
+
 .wizard-content {
   flex: 1;
   overflow-y: auto;
@@ -167,7 +182,10 @@
   background: #94a3b8;
 }
 
-/* Step Content */
+/* ============================================================ */
+/* STEP CONTENT */
+/* ============================================================ */
+
 .step-content {
   animation: fadeIn 0.3s ease;
 }
@@ -211,7 +229,10 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-/* Form Section */
+/* ============================================================ */
+/* FORM SECTION */
+/* ============================================================ */
+
 .form-section {
   margin-top: 16px;
 }
@@ -228,13 +249,141 @@
   margin-bottom: 16px;
 }
 
-/* Employee Preview */
+.currency-suffix {
+  color: #64748b;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+/* ============================================================ */
+/* EMPLOYEE SELECTION */
+/* ============================================================ */
+
+.employee-selection-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.selection-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selection-wrapper app-searchable-select {
+  flex: 1;
+}
+
+.barcode-toggle-btn {
+  color: #64748b;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+
+.barcode-toggle-btn:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* Barcode Search */
+.barcode-search-area {
+  padding: 8px 0;
+}
+
+.barcode-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barcode-field {
+  flex: 1;
+}
+
+.search-btn {
+  min-width: 100px;
+  height: 56px;
+}
+
+.clear-btn {
+  color: #64748b;
+}
+
+/* Barcode Result */
+.barcode-result {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-success {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.result-success mat-icon {
+  color: #10b981;
+}
+
+.result-error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.result-error mat-icon {
+  color: #ef4444;
+}
+
+.barcode-actions {
+  margin-top: 12px;
+}
+
+.back-btn {
+  color: #64748b;
+}
+
+.back-btn:hover {
+  color: #334155;
+}
+
+/* ============================================================ */
+/* EMPLOYEE PREVIEW */
+/* ============================================================ */
+
 .employee-preview {
   background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
   border-radius: 16px;
   padding: 16px;
   margin-top: 16px;
   border: 1px solid #fecaca;
+  transition: all 0.2s ease;
+}
+
+.employee-preview:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .preview-header {
@@ -279,7 +428,10 @@
   color: #d97706;
 }
 
-/* Remained Info Card */
+/* ============================================================ */
+/* REMAINED INFO CARD */
+/* ============================================================ */
+
 .remained-info {
   margin-bottom: 20px;
 }
@@ -320,13 +472,22 @@
   font-size: 16px;
 }
 
-/* Deduction Summary */
+/* ============================================================ */
+/* DEDUCTION SUMMARY */
+/* ============================================================ */
+
 .deduction-summary {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   border-radius: 16px;
   padding: 16px;
   margin-top: 16px;
   border: 1px solid #fcd34d;
+  transition: all 0.2s ease;
+}
+
+.deduction-summary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .summary-header {
@@ -386,12 +547,21 @@
   margin: 8px 0;
 }
 
-/* Confirmation Card */
+/* ============================================================ */
+/* CONFIRMATION CARD */
+/* ============================================================ */
+
 .confirmation-card {
   background: #f8fafc;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.confirmation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .confirmation-section {
@@ -451,7 +621,38 @@
   font-weight: 700;
 }
 
-/* Wizard Actions */
+.confirmation-summary {
+  margin: 16px 20px 20px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confirmation-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.confirmation-summary .summary-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+}
+
+.confirmation-summary .summary-value.final {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ============================================================ */
+/* WIZARD ACTIONS */
+/* ============================================================ */
+
 .wizard-actions {
   display: flex;
   justify-content: space-between;
@@ -466,7 +667,44 @@
   gap: 12px;
 }
 
-/* Responsive Design */
+.submit-btn {
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submit-btn mat-spinner {
+  display: inline-block;
+}
+
+/* ============================================================ */
+/* DISABLED STATES */
+/* ============================================================ */
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+input:read-only {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* ============================================================ */
+/* INPUT NUMBER SPINNER */
+/* ============================================================ */
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  opacity: 0.5;
+}
+
+/* ============================================================ */
+/* RESPONSIVE DESIGN */
+/* ============================================================ */
+
 @media (max-width: 768px) {
   .wizard-container {
     border-radius: 16px;
@@ -534,24 +772,41 @@
   .confirmation-section {
     padding: 16px;
   }
+  
+  .confirmation-summary {
+    margin: 12px 16px 16px;
+    padding: 12px 16px;
+  }
+  
+  .confirmation-summary .summary-value.final {
+    font-size: 20px;
+  }
+  
+  .barcode-input-wrapper {
+    flex-wrap: wrap;
+  }
+  
+  .barcode-input-wrapper .search-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  .employee-selection-area {
+    flex-direction: column;
+  }
+  
+  .selection-wrapper {
+    width: 100%;
+  }
+  
+  .barcode-toggle-btn {
+    align-self: flex-start;
+  }
 }
 
-/* Input number spinner removal */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  opacity: 0.5;
-}
-
-/* Disabled input styles */
-input:read-only {
-  background-color: #f1f5f9;
-  cursor: not-allowed;
-}
-
-/* Animation for step transitions */
-.step-content {
-  animation: slideIn 0.3s ease;
-}
+/* ============================================================ */
+/* ANIMATIONS */
+/* ============================================================ */
 
 @keyframes slideIn {
   from {
@@ -564,17 +819,6 @@ input:read-only {
   }
 }
 
-/* Hover effects for cards */
-.employee-preview:hover,
-.deduction-summary:hover,
-.confirmation-card:hover {
-  transform: translateY(-2px);
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Disabled button styling */
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.step-content {
+  animation: slideIn 0.3s ease;
 }

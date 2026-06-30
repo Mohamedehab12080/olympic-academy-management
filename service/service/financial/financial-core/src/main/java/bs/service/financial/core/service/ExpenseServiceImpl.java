@@ -78,6 +78,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         ExpenseSearchFilter filter = ExpenseSearchFilter.builder()
                 .expenseTypeId(expenseTypeId)
                 .paymentMethodId(paymentMethodId)
+                .isDeleted(false)
                 .expenseDateFrom(expenseDateFrom)
                 .expenseDateTo(expenseDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

@@ -24,6 +24,10 @@ export class PlaceService {
     return this.api.get('/places', params);
   }
 
+  getAllPlacesDetailsByFilter(params?: any): Observable<PlaceResultSet> {
+    return this.api.get('/places/details', params);
+  }
+
   getPlaceById(id: number): Observable<PlaceVTO> {
     return this.api.get(`/places/${id}`);
   }

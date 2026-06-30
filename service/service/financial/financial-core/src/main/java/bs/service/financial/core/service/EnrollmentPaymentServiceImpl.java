@@ -103,6 +103,7 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
                 .enrollmentId(enrollmentId)
                 .courseId(courseId)
                 .quickSearch(quickSearch)
+                .isDeleted(false)
                 .traineeNationalId(traineeNationalId)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null?status.id:null)

@@ -868,6 +868,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: FinancialTotalVTO) => {
           this.data = response;
+          console.log(response)
           this.updateStats();
           this.lastUpdated = new Date();
           this.isLoading = false;
@@ -984,9 +985,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   getTotalRevenue(): number {
     if (!this.data) return 0;
     // Revenue includes: enrollment payments + incentives + places rent
-    return (this.data.totalEnrollmentPayments || 0) + 
-           (this.data.totalIncentives || 0) + 
-           (this.data.totalPlacesRent || 0);
+    return (this.data.totalEnrollmentPayments || 0);
   }
 
   /**
