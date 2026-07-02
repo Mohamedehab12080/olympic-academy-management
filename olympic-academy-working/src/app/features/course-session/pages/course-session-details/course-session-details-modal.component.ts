@@ -124,10 +124,16 @@ const STATUS_ICONS: { [key: number]: string } = {
           <div class="detail-row">
             <div class="detail-label">
               <mat-icon>person</mat-icon>
-              المدرب:
+              المدربون:
             </div>
             <div class="detail-value">
-              <span class="trainer-name">{{ session.trainer?.title }}</span>
+              <div class="trainers-list">
+                <span *ngFor="let trainer of session.trainer" class="trainer-chip">
+                  <mat-icon class="trainer-chip-icon">person</mat-icon>
+                  {{ getTrainerName(trainer) }}
+                </span>
+                <span *ngIf="!session.trainer || session.trainer.length === 0" class="no-trainer">-</span>
+              </div>
             </div>
           </div>
           
@@ -475,8 +481,41 @@ const STATUS_ICONS: { [key: number]: string } = {
       font-weight: 500;
     }
 
-    .trainer-name,
-    .place-name,
+    /* Trainers List */
+    .trainers-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .trainer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #e8f0fe 0%, #dbeafe 100%);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e40af;
+    }
+
+    .trainer-chip-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .no-trainer {
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .place-name {
+      font-weight: 600;
+      color: #374151;
+    }
+
     .date-value,
     .time-value {
       font-weight: 600;
@@ -725,6 +764,11 @@ const STATUS_ICONS: { [key: number]: string } = {
         max-height: none !important;
         overflow: visible !important;
       }
+
+      .trainer-chip {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
     }
 
     /* Responsive */
@@ -794,6 +838,11 @@ const STATUS_ICONS: { [key: number]: string } = {
         width: 100%;
         justify-content: center;
       }
+
+      .trainers-list {
+        flex-direction: column;
+        gap: 4px;
+      }
     }
   `]
 })
@@ -802,6 +851,24 @@ export class CourseSessionDetailsModalComponent {
     private dialogRef: MatDialogRef<CourseSessionDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public session: CourseSessionVTO
   ) {}
+
+  /**
+   * Get trainer display name
+   */
+  getTrainerName(trainer: any): string {
+    if (!trainer) return '-';
+    return trainer.title || trainer.name || trainer.fullName || `مدرب ${trainer.id}`;
+  }
+
+  /**
+   * Get all trainer names as a string (for print view)
+   */
+  getTrainerNamesString(trainers: any[]): string {
+    if (!trainers || !Array.isArray(trainers) || trainers.length === 0) {
+      return '-';
+    }
+    return trainers.map(t => this.getTrainerName(t)).join('، ');
+  }
 
   /**
    * Format time to 12-hour format with AM/PM
@@ -884,6 +951,8 @@ export class CourseSessionDetailsModalComponent {
     else if (statusClass === 'status-in-progress') statusStyle = 'background-color: #fed7aa; color: #92400e; padding: 6px 14px; border-radius: 30px;';
     else if (statusClass === 'status-completed') statusStyle = 'background-color: #d1fae5; color: #065f46; padding: 6px 14px; border-radius: 30px;';
     else if (statusClass === 'status-cancelled') statusStyle = 'background-color: #fee2e2; color: #991b1b; padding: 6px 14px; border-radius: 30px;';
+
+    const trainerNames = this.getTrainerNamesString(this.session.trainer);
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -1007,6 +1076,16 @@ export class CourseSessionDetailsModalComponent {
             color: #374151;
             font-weight: 500;
           }
+          .trainer-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e8f0fe;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e40af;
+            margin: 2px 4px 2px 0;
+          }
           @media print {
             body { padding: 20px; }
             .no-print { display: none; }
@@ -1039,8 +1118,13 @@ export class CourseSessionDetailsModalComponent {
             <div class="print-value"><span class="print-badge course">${this.session.course?.title || '-'}</span></div>
           </div>
           <div class="print-row">
-            <div class="print-label">المدرب:</div>
-            <div class="print-value">${this.session.trainer?.title || '-'}</div>
+            <div class="print-label">المدربون:</div>
+            <div class="print-value">
+              ${this.session.trainer && this.session.trainer.length > 0 
+                ? this.session.trainer.map(t => `<span class="trainer-tag">${this.getTrainerName(t)}</span>`).join('') 
+                : '-'
+              }
+            </div>
           </div>
           <div class="print-row">
             <div class="print-label">المكان:</div>

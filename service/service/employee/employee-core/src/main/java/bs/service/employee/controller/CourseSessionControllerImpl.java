@@ -39,10 +39,10 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseSessionResultSet> _getAllCourseSessionsByFilter(Integer courseId,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public ResponseEntity<CourseSessionResultSet> _getAllCourseSessionsByFilter(Integer courseId,List<Integer> trainerIds ,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         CourseSessionResultSet result = courseSessionService.getAllCourseSessionsByFilter(
-                courseId,sessionDay, status, sessionDateFrom, sessionDateTo,
+                courseId,trainerIds,sessionDay, status, sessionDateFrom, sessionDateTo,
                 startTimeFrom, startTimeTo, endTimeFrom, endTimeTo,
                 pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
@@ -50,10 +50,10 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(Integer courseId,String sessionDay, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy){
+    public ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(Integer courseId,String sessionDay, Integer trainerId,List<Integer> trainerIds , Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy){
 
         CourseSessionResultSet result = courseSessionService.getAllSessionsByFilter(
-                courseId,sessionDay, trainerId, placeId, status,
+                courseId,trainerIds,sessionDay, trainerId, placeId, status,
                 sessionDateFrom, sessionDateTo, startTimeFrom, startTimeTo,
                 endTimeFrom, endTimeTo, pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
@@ -68,9 +68,8 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<List<NewRecordVTO>> _updateCourseSession(Integer courseSessionId,
-                                                             CourseSessionDTO courseSessionDTO) {
-        List<NewRecordVTO> result = courseSessionService.updateCourseSession(courseSessionId, courseSessionDTO);
+    public ResponseEntity<List<NewRecordVTO>> _updateCourseSession(CourseSessionDTO courseSessionDTO) {
+        List<NewRecordVTO> result = courseSessionService.updateCourseSession( courseSessionDTO);
         return ResponseEntity.ok(result);
     }
 }

@@ -1,6 +1,7 @@
 package bs.service.employee.repository.query;
 
 import bs.lib.sql.db.adapter.api.service.AbstractQueryBuilderV2;
+import bs.lib.sql.db.adapter.api.service.AbstractQueryBuilderV3;
 import bs.lib.sql.db.adapter.model.dto.QBCondition;
 import bs.service.employee.model.entity.CourseSession;
 import bs.service.employee.model.filter.CourseSessionSearchFilter;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class CourseSessionQueryBuilder extends AbstractQueryBuilderV2<CourseSession, CourseSessionSearchFilter> {
+public class CourseSessionQueryBuilder extends AbstractQueryBuilderV3<CourseSession, CourseSessionSearchFilter> {
 
     public CourseSessionQueryBuilder(EntityManager em) {
         super(em);
@@ -28,6 +29,10 @@ public class CourseSessionQueryBuilder extends AbstractQueryBuilderV2<CourseSess
         if (filters.getCourseId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("courseId").value(filters.getCourseId())
                     .condition("item.course.id = :PH").build());
+
+        if (filters.getEmployeeIdsIn() != null && !filters.getEmployeeIdsIn().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("trainerIds").value(filters.getEmployeeIdsIn())
+                    .condition("item.trainer.id IN :PH").build());
 
         if (filters.getEmployeeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("trainerId").value(filters.getEmployeeId())
@@ -66,5 +71,25 @@ public class CourseSessionQueryBuilder extends AbstractQueryBuilderV2<CourseSess
                     .condition("item.endTime <= :PH").build());
 
         return qbConditions;
+    }
+
+    // ===== OVERRIDE GROUP BY METHOD =====
+    @Override
+    protected String constructGroupByStatement(CourseSessionSearchFilter filters) {
+        StringBuilder groupBy = new StringBuilder();
+
+        // Group by course only
+        if (filters.getGroupByCourse() != null && filters.getGroupByCourse()) {
+            groupBy.append(" GROUP BY item.course.id");
+            return groupBy.toString();
+        }
+
+        // Group by trainer only
+        if (filters.getGroupByTrainer() != null && filters.getGroupByTrainer()) {
+            groupBy.append(" GROUP BY item.trainer.id");
+            return groupBy.toString();
+        }
+
+        return "";
     }
 }

@@ -140,10 +140,10 @@ export interface EmployeeAttendanceVTO {
 }
 
 export interface CourseSessionVTO {
-  id: number;
+  id:number;
   title: string;
   course: LookupVTO;
-  trainer: LookupVTO;
+  trainer: LookupVTO[];
   place: LookupVTO;
   sessionDate: string;
   sessionDay: string;

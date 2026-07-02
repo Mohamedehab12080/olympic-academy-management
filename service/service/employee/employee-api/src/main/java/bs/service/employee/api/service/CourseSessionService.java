@@ -15,12 +15,12 @@ public interface CourseSessionService {
 
     List<NewRecordVTO> createCourseSession(Integer courseId, CourseSessionDTO courseSessionDTO);
 
-    List<NewRecordVTO> updateCourseSession(Integer courseSessionId, CourseSessionDTO courseSessionDTO);
+    List<NewRecordVTO> updateCourseSession(CourseSessionDTO courseSessionDTO);
 
     void deleteCourseSession(Integer courseSessionId);
 
     CourseSessionVTO getCourseSessionById(Integer courseSessionId);
 
-    CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
-    CourseSessionResultSet getAllSessionsByFilter(Integer courseId,String sessionDay, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    CourseSessionResultSet getAllCourseSessionsByFilter(Integer courseId,List<Integer> trainerIds,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
+    CourseSessionResultSet getAllSessionsByFilter(Integer courseId,List<Integer>trainerIds,String sessionDay, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
 }

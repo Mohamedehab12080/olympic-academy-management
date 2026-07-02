@@ -1,6 +1,8 @@
+// course-session-form-modal.component.ts
+
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,9 +16,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, finalize } from 'rxjs';
 
 import { CourseSessionService } from '../../../../core/services/course-session.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -24,6 +25,7 @@ import { EmployeeService } from '../../../../core/services/employee.service';
 import { PlaceService } from '../../../../core/services/place.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import { ErrorVTO } from '../../../../core/models/common.model';
 
 // ============ INTERFACES & CONSTANTS ============
 
@@ -72,7 +74,6 @@ const WEEK_DAYS = [
     MatDialogModule,
     MatDividerModule,
     MatChipsModule,
-    MatAutocompleteModule,
     SearchableSelectComponent
   ],
   animations: [
@@ -220,11 +221,14 @@ const WEEK_DAYS = [
                   <mat-label>المدربون</mat-label>
                   <mat-select formControlName="trainersId" multiple>
                     <mat-option *ngFor="let trainer of trainers" [value]="trainer.id">
-                      {{ trainer.title || trainer.name || trainer.firstName + ' ' + trainer.lastName }}
+                      {{ getTrainerDisplayName(trainer) }}
                     </mat-option>
                   </mat-select>
                   <mat-icon matPrefix>person_add</mat-icon>
                   <mat-error *ngIf="sessionForm.get('trainersId')?.hasError('required')">
+                    يجب اختيار مدرب واحد على الأقل
+                  </mat-error>
+                  <mat-error *ngIf="sessionForm.get('trainersId')?.hasError('minlength')">
                     يجب اختيار مدرب واحد على الأقل
                   </mat-error>
                   <mat-hint>
@@ -238,7 +242,7 @@ const WEEK_DAYS = [
                   <mat-chip-set>
                     <mat-chip *ngFor="let trainer of selectedTrainers" [removable]="true" (removed)="removeTrainer(trainer.id)">
                       <mat-icon matChipAvatar>person</mat-icon>
-                      {{ trainer.title || trainer.name || trainer.firstName + ' ' + trainer.lastName }}
+                      {{ getTrainerDisplayName(trainer) }}
                       <button matChipRemove>
                         <mat-icon>cancel</mat-icon>
                       </button>
@@ -274,6 +278,9 @@ const WEEK_DAYS = [
                   </mat-select>
                   <mat-icon matPrefix>event</mat-icon>
                   <mat-error *ngIf="sessionForm.get('sessionDays')?.hasError('required')">
+                    يجب اختيار يوم واحد على الأقل
+                  </mat-error>
+                  <mat-error *ngIf="sessionForm.get('sessionDays')?.hasError('minlength')">
                     يجب اختيار يوم واحد على الأقل
                   </mat-error>
                   <mat-hint>
@@ -407,7 +414,7 @@ const WEEK_DAYS = [
           <!-- ========== FORM ACTIONS ========== -->
           <div class="form-actions">
             <div class="actions-left">
-              <button mat-stroked-button type="button" (click)="onClose()" class="cancel-btn">
+              <button mat-stroked-button type="button" (click)="onClose()" class="cancel-btn" [disabled]="isLoading">
                 <mat-icon>close</mat-icon>
                 <span>إلغاء</span>
               </button>
@@ -844,10 +851,15 @@ const WEEK_DAYS = [
       background: white !important;
     }
 
-    .cancel-btn:hover {
+    .cancel-btn:hover:not(:disabled) {
       background: #f8fafc !important;
       border-color: #cbd5e1 !important;
       transform: translateY(-1px);
+    }
+
+    .cancel-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     /* ========== LOADING OVERLAY ========== */
@@ -1050,19 +1062,25 @@ const WEEK_DAYS = [
   `]
 })
 export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
+  // ========== PROPERTIES ==========
+  
   sessionForm: FormGroup;
   isLoading = false;
   private destroy$ = new Subject<void>();
 
+  // Data stores
   courses: any[] = [];
   trainers: any[] = [];
   places: any[] = [];
   statusOptions = STATUS_OPTIONS;
   weekDays = WEEK_DAYS;
 
+  // Options for searchable selects
   courseOptions: SelectOption[] = [];
   placeOptions: SelectOption[] = [];
 
+  // ========== CONSTRUCTOR ==========
+  
   constructor(
     private fb: FormBuilder,
     private sessionService: CourseSessionService,
@@ -1071,14 +1089,19 @@ export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
     private placeService: PlaceService,
     private notification: NotificationService,
     private dialogRef: MatDialogRef<CourseSessionFormModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { mode: 'add' | 'edit', session?: any, courseId?: number, sessionId?: number }
+    @Inject(MAT_DIALOG_DATA) public data: { 
+      mode: 'add' | 'edit'; 
+      session?: any; 
+      courseId?: number; 
+      sessionId?: number 
+    }
   ) {
     this.sessionForm = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(3)]],
+      title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
       courseId: [null, Validators.required],
-      trainersId: [[], Validators.required],
+      trainersId: [[], [Validators.required, Validators.minLength(1)]],
       placeId: [null, Validators.required],
-      sessionDays: [[], Validators.required],
+      sessionDays: [[], [Validators.required, Validators.minLength(1)]],
       sessionDate: [null],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
@@ -1089,11 +1112,13 @@ export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ========== LIFECYCLE HOOKS ==========
+  
   ngOnInit(): void {
     this.loadLookupData();
     
     if (this.data.mode === 'edit' && this.data.session) {
-      this.populateForm();
+      this.populateFormFromSessionVTO(this.data.session);
     } else if (this.data.mode === 'add' && this.data.courseId) {
       this.sessionForm.patchValue({
         courseId: this.data.courseId
@@ -1106,18 +1131,8 @@ export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Custom validator to ensure end time is after start time
-   */
-  timeRangeValidator(group: AbstractControl): { [key: string]: any } | null {
-    const startTime = group.get('startTime')?.value;
-    const endTime = group.get('endTime')?.value;
-    if (startTime && endTime && startTime >= endTime) {
-      return { timeRange: true };
-    }
-    return null;
-  }
-
+  // ========== GETTERS ==========
+  
   /**
    * Get selected trainers
    */
@@ -1132,6 +1147,36 @@ export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
   get selectedDays(): any[] {
     const dayValues = this.sessionForm.get('sessionDays')?.value || [];
     return this.weekDays.filter(d => dayValues.includes(d.value));
+  }
+
+  // ========== VALIDATORS ==========
+  
+  /**
+   * Custom validator to ensure end time is after start time
+   */
+  timeRangeValidator(group: AbstractControl): ValidationErrors | null {
+    const startTime = group.get('startTime')?.value;
+    const endTime = group.get('endTime')?.value;
+    if (startTime && endTime && startTime >= endTime) {
+      return { timeRange: true };
+    }
+    return null;
+  }
+
+  // ========== HELPER METHODS ==========
+  
+  /**
+   * Get trainer display name from various possible formats
+   */
+  getTrainerDisplayName(trainer: any): string {
+    if (!trainer) return 'غير محدد';
+    if (trainer.title) return trainer.title;
+    if (trainer.fullName) return trainer.fullName;
+    if (trainer.firstName && trainer.lastName) {
+      return `${trainer.firstName} ${trainer.lastName}`;
+    }
+    if (trainer.name) return trainer.name;
+    return `مدرب ${trainer.id || ''}`;
   }
 
   /**
@@ -1152,42 +1197,79 @@ export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
     this.sessionForm.get('sessionDays')?.setValue(newValue);
   }
 
+  // ========== DATA LOADING ==========
+  
   loadLookupData(): void {
     // Load courses
-    this.courseService.getAllCourses().subscribe({
+    this.courseService.getAllCourses().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (res: any) => {
         this.courses = res.items || [];
         this.courseOptions = this.courses.map(c => ({ value: c.id, label: c.title }));
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
+      error: (err: ErrorVTO) => {
+        this.handleApiError(err, 'تحميل الدورات');
+      }
     });
 
-    // Load trainers
-    this.employeeService.getAllTrainersLookup().subscribe({
+    // Load trainers (all employees with type TRAINER)
+    this.employeeService.getAllTrainersLookup().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (res: any) => {
         this.trainers = res.list || [];
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل المدربين')
+      error: (err: ErrorVTO) => {
+        this.handleApiError(err, 'تحميل المدربين');
+      }
     });
 
     // Load places
-    this.placeService.getAllPlacesLookup().subscribe({
+    this.placeService.getAllPlacesLookup().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (res: any) => {
         this.places = res.list || [];
         this.placeOptions = this.places.map(p => ({ value: p.id, label: p.title }));
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل الأماكن')
+      error: (err: ErrorVTO) => {
+        this.handleApiError(err, 'تحميل الأماكن');
+      }
     });
   }
 
-  populateForm(): void {
-    const session = this.data.session;
+  // ========== FORM POPULATION FROM CourseSessionVTO ==========
+  
+  /**
+   * Populate form from CourseSessionVTO data structure
+   */
+  populateFormFromSessionVTO(session: any): void {
+    if (!session) return;
     
-    // Map status
+    // Extract trainer IDs from the trainer array (trainer is LookupVTO[])
+    let trainerIds: number[] = [];
+    if (session.trainer && Array.isArray(session.trainer)) {
+      trainerIds = session.trainer.map((t: any) => t.id).filter(Boolean);
+    } else if (session.trainersId && Array.isArray(session.trainersId)) {
+      trainerIds = session.trainersId;
+    } else if (session.trainer?.id) {
+      trainerIds = [session.trainer.id];
+    }
+    
+    // Get session days - sessionDay is a string, convert to array
+    let sessionDays: string[] = [];
+    if (session.sessionDays && Array.isArray(session.sessionDays)) {
+      sessionDays = session.sessionDays;
+    } else if (session.sessionDay) {
+      sessionDays = [session.sessionDay];
+    }
+    
+    // Map status from LookupVTO
     let statusValue = 'SCHEDULED';
     if (session.status) {
-      if (typeof session.status === 'object' && session.status.title) {
-        const foundStatus = this.statusOptions.find(s => s.label === session.status.title);
+      if (typeof session.status === 'object' && session.status.value) {
+        const foundStatus = this.statusOptions.find(s => s.value === session.status.value);
         if (foundStatus) {
           statusValue = foundStatus.value;
         }
@@ -1199,110 +1281,260 @@ export class CourseSessionFormModalComponent implements OnInit, OnDestroy {
       }
     }
     
+    // Format session date if exists
+    let sessionDate = null;
+    if (session.sessionDate) {
+      try {
+        sessionDate = new Date(session.sessionDate);
+      } catch (e) {
+        console.warn('Invalid session date format:', session.sessionDate);
+      }
+    }
+    
     this.sessionForm.patchValue({
-      title: session.title,
-      courseId: session.course?.id || session.courseId,
-      trainersId: session.trainersId || [session.trainer?.id].filter(Boolean),
-      placeId: session.place?.id || session.placeId,
-      sessionDays: session.sessionDays || [session.sessionDay].filter(Boolean),
-      sessionDate: session.sessionDate || null,
-      startTime: session.startTime,
-      endTime: session.endTime,
+      title: session.title || '',
+      courseId: session.course?.id || session.courseId || null,
+      trainersId: trainerIds,
+      placeId: session.place?.id || session.placeId || null,
+      sessionDays: sessionDays,
+      sessionDate: sessionDate,
+      startTime: session.startTime || '',
+      endTime: session.endTime || '',
       status: statusValue,
-      note: session.note
+      note: session.note || ''
     });
   }
 
+  // ========== ERROR HANDLING ==========
+  
+  /**
+   * Handle API errors using ErrorVTO structure
+   */
+  private handleApiError(error: any, context: string = 'العملية'): void {
+    let errorMessage = `حدث خطأ في ${context}`;
+    
+    // Check if error is ErrorVTO
+    if (error && typeof error === 'object') {
+      // Check for ErrorVTO structure
+      if (error.messageEn) {
+        errorMessage = error.messageEn;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Check for field-specific errors
+      if (error.reqBodyErrors && Array.isArray(error.reqBodyErrors) && error.reqBodyErrors.length > 0) {
+        errorMessage = error.reqBodyErrors.join(', ');
+      }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    this.notification.showError(errorMessage);
+  }
+
+  /**
+   * Handle form submission errors
+   */
+  private handleSubmissionError(error: any): void {
+    let errorMessage = 'حدث خطأ في حفظ الجلسة';
+    
+    // Check if error is ErrorVTO
+    if (error && typeof error === 'object') {
+      // ErrorVTO structure
+      if (error.messageEn) {
+        errorMessage = error.messageEn;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Field-specific errors
+      if (error.reqBodyErrors && Array.isArray(error.reqBodyErrors) && error.reqBodyErrors.length > 0) {
+        errorMessage = error.reqBodyErrors.join(', ');
+      }
+    } else if (error?.error) {
+      // Handle nested error
+      if (error.error.messageEn) {
+        errorMessage = error.error.messageEn;
+      } else if (error.error.message) {
+        errorMessage = error.error.message;
+      }
+      if (error.error.reqBodyErrors && Array.isArray(error.error.reqBodyErrors) && error.error.reqBodyErrors.length > 0) {
+        errorMessage = error.error.reqBodyErrors.join(', ');
+      }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    // Map known error codes to user-friendly messages
+    const errorMap: { [key: string]: string } = {
+      'COURSE_NOT_FOUND_FOR_TRAINER': 'الدورة المحددة غير موجودة',
+      'EMPLOYEE_NOT_FOUND': 'أحد المدربين غير موجود في النظام',
+      'PLACE_NOT_FOUND_FOR_SESSION': 'المكان المحدد غير موجود',
+      'START_TIME_AFTER_END_TIME': 'وقت الانتهاء يجب أن يكون بعد وقت البدء',
+      'SESSION_DAYS_REQUIRED': 'يجب تحديد يوم واحد على الأقل للجلسة',
+      'TRAINERS_REQUIRED': 'يجب اختيار مدرب واحد على الأقل',
+      'DUPLICATE_TRAINER_DAY_IN_REQUEST': 'لا يمكن تحديد نفس المدرب ونفس اليوم أكثر من مرة',
+      'TRAINER_ALREADY_BOOKED': 'المدرب محجوز في نفس اليوم والوقت',
+      'PLACE_ALREADY_BOOKED': 'المكان محجوز في نفس اليوم والوقت',
+      'TRAINER_HAS_OVERLAPPING_SESSION': 'المدرب لديه جلسة متداخلة في نفس اليوم والوقت'
+    };
+    
+    // Check if error message contains known error codes
+    for (const [key, value] of Object.entries(errorMap)) {
+      if (errorMessage.includes(key)) {
+        errorMessage = value;
+        break;
+      }
+    }
+    
+    this.notification.showError(errorMessage);
+  }
+
+  // ========== FORM SUBMISSION ==========
+  
   onSubmit(): void {
+    // Validate form
     if (this.sessionForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح');
+      // Mark all fields as touched to show validation errors
       Object.keys(this.sessionForm.controls).forEach(key => {
         const control = this.sessionForm.get(key);
         control?.markAsTouched();
         control?.updateValueAndValidity();
       });
+      
+      // Show specific error messages
+      const errors = this.getFormValidationErrors();
+      if (errors.length > 0) {
+        this.notification.showWarning(errors[0]);
+      } else {
+        this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح');
+      }
       return;
     }
 
     this.isLoading = true;
     const formData = this.sessionForm.value;
     
-    // Prepare payload matching the backend DTO
+    // Build payload matching the backend DTO
     const payload: any = {
-      title: formData.title,
+      title: formData.title.trim(),
       courseId: formData.courseId,
       trainersId: formData.trainersId, // Array of trainer IDs
       placeId: formData.placeId,
       sessionDays: formData.sessionDays, // Array of day strings
       startTime: formData.startTime,
       endTime: formData.endTime,
-      note: formData.note || ''
+      note: formData.note?.trim() || ''
     };
     
     // Add session date if provided (optional)
     if (formData.sessionDate) {
-      payload.sessionDate = formData.sessionDate;
+      const date = new Date(formData.sessionDate);
+      if (!isNaN(date.getTime())) {
+        payload.sessionDate = date.toISOString().split('T')[0];
+      }
     }
     
-    // Add status if provided
+    // Add status if provided (default is SCHEDULED)
     if (formData.status) {
       payload.status = formData.status;
     }
 
-    if (this.data.mode === 'edit' && this.data.sessionId) {
-      this.sessionService.updateCourseSession(this.data.sessionId, payload).subscribe({
-        next: () => {
+    if (this.data.mode === 'edit') {
+      // For edit, we need the session ID from the data
+      const sessionId = this.data.sessionId || this.data.session?.id;
+      if (!sessionId) {
+        this.notification.showError('معرف الجلسة غير موجود');
+        this.isLoading = false;
+        return;
+      }
+      
+      // Note: The update endpoint uses session ID from the DTO
+      // We need to include the session ID in the payload
+      payload.id = sessionId;
+      
+      this.sessionService.updateCourseSession(payload).pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      ).subscribe({
+        next: (response: any) => {
           this.notification.showSuccess('تم تحديث الجلسة بنجاح');
-          this.dialogRef.close('updated');
-          this.isLoading = false;
+          this.dialogRef.close({ action: 'updated', data: response });
         },
         error: (err) => {
-          this.handleError(err);
-          this.isLoading = false;
+          this.handleSubmissionError(err);
         }
       });
     } else {
-      this.sessionService.createCourseSession(formData.courseId, payload).subscribe({
-        next: (response) => {
-          this.notification.showSuccess(`تم إضافة ${response.length} جلسة بنجاح`);
-          this.dialogRef.close('saved');
-          this.isLoading = false;
+      // Create mode - need courseId
+      if (!formData.courseId) {
+        this.notification.showError('معرف الدورة مطلوب');
+        this.isLoading = false;
+        return;
+      }
+      
+      this.sessionService.createCourseSession(formData.courseId, payload).pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      ).subscribe({
+        next: (response: any) => {
+          const count = Array.isArray(response) ? response.length : 1;
+          this.notification.showSuccess(`تم إضافة ${count} جلسة بنجاح`);
+          this.dialogRef.close({ action: 'created', data: response });
         },
         error: (err) => {
-          this.handleError(err);
-          this.isLoading = false;
+          this.handleSubmissionError(err);
         }
       });
     }
   }
 
-  private handleError(err: any): void {
-    let errorMessage = 'حدث خطأ في حفظ الجلسة';
-    if (err.error?.messageEn) {
-      errorMessage = err.error.messageEn;
-    } else if (err.error?.message) {
-      errorMessage = err.error.message;
-    } else if (err.message) {
-      errorMessage = err.message;
-    }
-    
-    // Handle specific error cases
-    if (errorMessage.includes('DUPLICATE_TRAINER_DAY_COMBINATION')) {
-      errorMessage = 'يوجد تكرار في مجموعة المدرب واليوم';
-    } else if (errorMessage.includes('TRAINER_ALREADY_BOOKED')) {
-      errorMessage = 'المدرب محجوز في نفس اليوم والوقت';
-    } else if (errorMessage.includes('PLACE_ALREADY_BOOKED')) {
-      errorMessage = 'المكان محجوز في نفس اليوم والوقت';
-    } else if (errorMessage.includes('EMPLOYEE_NOT_FOUND')) {
-      errorMessage = 'أحد المدربين غير موجود في النظام';
-    }
-    
-    this.notification.showError(errorMessage);
-  }
-
+  // ========== CLOSE ==========
+  
   onClose(): void {
     if (!this.isLoading) {
       this.dialogRef.close();
     }
+  }
+
+  // ========== UTILITY METHODS ==========
+  
+  /**
+   * Get form validation error messages
+   */
+  private getFormValidationErrors(): string[] {
+    const errors: string[] = [];
+    const controls = this.sessionForm.controls;
+    const fieldLabels: { [key: string]: string } = {
+      title: 'عنوان الجلسة',
+      courseId: 'الدورة التدريبية',
+      trainersId: 'المدربون',
+      placeId: 'المكان',
+      sessionDays: 'أيام الجلسة',
+      startTime: 'وقت البدء',
+      endTime: 'وقت الانتهاء',
+      status: 'حالة الجلسة',
+      note: 'الملاحظات'
+    };
+    
+    Object.keys(controls).forEach(key => {
+      const control = controls[key];
+      if (control.invalid) {
+        if (control.hasError('required')) {
+          errors.push(`حقل "${fieldLabels[key] || key}" مطلوب`);
+        } else if (control.hasError('minlength')) {
+          errors.push(`حقل "${fieldLabels[key] || key}" يجب أن يكون على الأقل ${control.errors?.['minlength']?.requiredLength} أحرف`);
+        } else if (control.hasError('maxlength')) {
+          errors.push(`حقل "${fieldLabels[key] || key}" يجب أن لا يتجاوز ${control.errors?.['maxlength']?.requiredLength} أحرف`);
+        }
+      }
+    });
+    
+    if (this.sessionForm.hasError('timeRange')) {
+      errors.push('وقت الانتهاء يجب أن يكون بعد وقت البدء');
+    }
+    
+    return errors;
   }
 }

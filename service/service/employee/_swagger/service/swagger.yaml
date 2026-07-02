@@ -655,6 +655,7 @@ paths:
       operationId: getAllCourseSessionsByFilter
       parameters:
         - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPTrainersId'
         - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPSessionStatus'
         - $ref: '#/components/parameters/QPSessionDateFrom'
@@ -663,6 +664,7 @@ paths:
         - $ref: '#/components/parameters/QPStartTimeTo'
         - $ref: '#/components/parameters/QPEndTimeFrom'
         - $ref: '#/components/parameters/QPEndTimeTo'
+
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -687,6 +689,7 @@ paths:
         - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPTrainersId'
         - $ref: '#/components/parameters/QPPlaceId'
         - $ref: '#/components/parameters/QPSessionStatus'
         - $ref: '#/components/parameters/QPSessionDateFrom'
@@ -709,14 +712,12 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
-  /courses/{courseSessionId}/course-session:
+  /courses/course-session:
     put:
       tags:
         - CourseSession
       summary: Update course session
       operationId: updateCourseSession
-      parameters:
-        - $ref: '#/components/parameters/PPCourseSessionId'
       requestBody:
         content:
           application/json:
@@ -1003,6 +1004,15 @@ components:
       schema:
         type: string
         format: date
+    QPTrainersId:
+      name: trainersId
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int32
     QPSessionDay:
       name: sessionDay
       in: query
@@ -1571,8 +1581,10 @@ components:
           type: string
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
-        trainer:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        trainers:
+          type: array
+          items:
+            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         place:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         sessionDate:

@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.hibernate.validator.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,7 +35,8 @@ public class CourseSessionVTO implements Serializable {
 
     private LookupVTO course;
 
-    private LookupVTO trainer;
+    @Valid
+    private List<@Valid LookupVTO> trainers = new ArrayList<>();
 
     private LookupVTO place;
 
@@ -123,25 +126,33 @@ public class CourseSessionVTO implements Serializable {
         this.course = course;
     }
 
-    public CourseSessionVTO trainer(LookupVTO trainer) {
-        this.trainer = trainer;
+    public CourseSessionVTO trainers(List<@Valid LookupVTO> trainers) {
+        this.trainers = trainers;
+        return this;
+    }
+
+    public CourseSessionVTO addTrainersItem(LookupVTO trainersItem) {
+        if (this.trainers == null) {
+            this.trainers = new ArrayList<>();
+        }
+        this.trainers.add(trainersItem);
         return this;
     }
 
     /**
-     * Get trainer
+     * Get trainers
      *
-     * @return trainer
+     * @return trainers
      */
     @Valid
-    @Schema(name = "trainer", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("trainer")
-    public LookupVTO getTrainer() {
-        return trainer;
+    @Schema(name = "trainers", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("trainers")
+    public List<@Valid LookupVTO> getTrainers() {
+        return trainers;
     }
 
-    public void setTrainer(LookupVTO trainer) {
-        this.trainer = trainer;
+    public void setTrainers(List<@Valid LookupVTO> trainers) {
+        this.trainers = trainers;
     }
 
     public CourseSessionVTO place(LookupVTO place) {
@@ -386,7 +397,7 @@ public class CourseSessionVTO implements Serializable {
         CourseSessionVTO courseSessionVTO = (CourseSessionVTO) o;
         return Objects.equals(this.id, courseSessionVTO.id) && Objects.equals(this.title, courseSessionVTO.title)
                 && Objects.equals(this.course, courseSessionVTO.course)
-                && Objects.equals(this.trainer, courseSessionVTO.trainer)
+                && Objects.equals(this.trainers, courseSessionVTO.trainers)
                 && Objects.equals(this.place, courseSessionVTO.place)
                 && Objects.equals(this.sessionDate, courseSessionVTO.sessionDate)
                 && Objects.equals(this.sessionDay, courseSessionVTO.sessionDay)
@@ -402,7 +413,7 @@ public class CourseSessionVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, course, trainer, place, sessionDate, sessionDay, startTime, endTime, status,
+        return Objects.hash(id, title, course, trainers, place, sessionDate, sessionDay, startTime, endTime, status,
                 note, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
@@ -413,7 +424,7 @@ public class CourseSessionVTO implements Serializable {
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    course: ").append(toIndentedString(course)).append("\n");
-        sb.append("    trainer: ").append(toIndentedString(trainer)).append("\n");
+        sb.append("    trainers: ").append(toIndentedString(trainers)).append("\n");
         sb.append("    place: ").append(toIndentedString(place)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
         sb.append("    sessionDay: ").append(toIndentedString(sessionDay)).append("\n");

@@ -39,6 +39,13 @@ public enum EmployeeErrors implements Errors {
     TRAINER_ALREADY_BOOKED(EmployeeDomains.COURSE_SESSION,"0007","المدرب {0} محجوز بالفعل في هذا الوقت"),
     PLACE_ALREADY_BOOKED(EmployeeDomains.COURSE_SESSION,"0008","المكان {0} محجوز بالفعل في هذا الوقت"),
     COURSE_SESSION_NOT_SCHEDULED(EmployeeDomains.COURSE_SESSION, "0009", "جلسة الدورة غير مجدولة {0}"),
+    SESSION_DAYS_REQUIRED(EmployeeDomains.COURSE_SESSION,"0010", "Session days are required"),
+    TRAINERS_REQUIRED(EmployeeDomains.COURSE_SESSION,"0011", "At least one trainer is required"),
+    DUPLICATE_TRAINER_DAY_IN_REQUEST(EmployeeDomains.COURSE_SESSION,"0012",
+            "Trainer {0} cannot have duplicate day {1} in the same request"),
+
+    TRAINER_HAS_OVERLAPPING_SESSION(EmployeeDomains.COURSE_SESSION,"0013",
+            "Trainer {0} already has a session on {1} from {2} to {3} which overlaps with the requested time"),
 
     EMPLOYEE_DEPARTMENT_NOT_FOUND(EmployeeDomains.EMPLOYEE_DEPARTMENT, "0001", "هذا القسم غير موجود{0}");
 

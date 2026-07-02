@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @SuperBuilder
@@ -18,6 +19,9 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class CourseSessionSearchFilter extends SearchFilter<CourseSessionSearchFilter.OrderByAttributes> {
 
+    private Boolean groupByCourse;
+    private Boolean groupByTrainer;
+    private List<Integer> employeeIdsIn;
     private Integer courseId;
     private String sessionDay;
     private Integer employeeId;
