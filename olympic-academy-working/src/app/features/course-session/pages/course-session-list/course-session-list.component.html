@@ -1,10 +1,11 @@
+<!-- course-session-list.component.html -->
 <div class="sessions-container">
   <mat-card class="main-card">
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="page-header">
       <div class="header-title">
-        <h1>جلسات الدورات</h1>
-        <p>إدارة ومتابعة جلسات الدورات التدريبية - مجمعة حسب الدورة</p>
+        <h1>جدول جلسات الدورات</h1>
+        <p>عرض الجلسات في شكل جدول زمني حسب اليوم</p>
       </div>
       <button mat-raised-button color="primary" (click)="openAddModal()" class="add-button">
         <mat-icon>add</mat-icon>
@@ -12,7 +13,7 @@
       </button>
     </div>
 
-    <!-- Filters Section -->
+    <!-- Filters -->
     <div class="filters-card">
       <div class="filters-grid">
         <div class="filters-row">
@@ -103,20 +104,20 @@
       </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Stats -->
     <div class="stats-grid" *ngIf="!isLoading && allSessions.length > 0">
       <div class="stat-card">
         <div class="stat-icon">📚</div>
         <div class="stat-info">
-          <h3>{{ groupedSessions.length }}</h3>
-          <p>مجموعات الدورات</p>
+          <h3>{{ groupedData.length }}</h3>
+          <p>دورات</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">📅</div>
         <div class="stat-info">
           <h3>{{ totalItems }}</h3>
-          <p>إجمالي الجلسات</p>
+          <p>جلسات</p>
         </div>
       </div>
       <div class="stat-card scheduled">
@@ -149,124 +150,95 @@
       </div>
     </div>
 
-    <!-- Loading State -->
+    <!-- Loading -->
     <div class="loading-container" *ngIf="isLoading">
       <mat-spinner diameter="50"></mat-spinner>
       <p>جاري تحميل الجلسات...</p>
     </div>
 
-    <!-- Table Section -->
+    <!-- Table -->
     <div class="table-section" *ngIf="!isLoading">
-      <div class="table-header" *ngIf="groupedSessions.length > 0">
-        <div class="records-count">
-          <mat-icon>info</mat-icon>
-          <span>عرض {{ groupedSessions.length }} مجموعة دورات</span>
-        </div>
-        <div class="records-sub">
-          <span>إجمالي الجلسات: {{ totalItems }}</span>
-        </div>
-      </div>
-
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="onSortChange($event)">
-          <!-- Index Column -->
-          <ng-container matColumnDef="index">
-            <th mat-header-cell *matHeaderCellDef>#</th>
-            <td mat-cell *matCellDef="let group; let i = index">{{ i + 1 }}</td>
-          </ng-container>
-
-          <!-- Course Title Column -->
-          <ng-container matColumnDef="courseTitle">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>الدورة</th>
-            <td mat-cell *matCellDef="let group" class="clickable-cell">
+        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="timetable-table">
+          
+          <!-- Course Column -->
+          <ng-container matColumnDef="course">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="course-header">الدورة</th>
+            <td mat-cell *matCellDef="let row" class="course-cell">
               <div class="course-info">
-                <mat-icon>school</mat-icon>
-                <strong>{{ group.courseTitle }}</strong>
-                <span class="session-count-badge">{{ group.totalSessions }} جلسة</span>
+                <mat-icon class="course-icon">school</mat-icon>
+                <span class="course-title">{{ row.courseTitle }}</span>
+                <span class="session-badge">{{ row.totalSessions }}</span>
               </div>
             </td>
           </ng-container>
 
           <!-- Trainers Column -->
           <ng-container matColumnDef="trainers">
-            <th mat-header-cell *matHeaderCellDef>المدربون</th>
-            <td mat-cell *matCellDef="let group">
-              <div class="trainers-info">
-                <mat-icon>people</mat-icon>
-                <span>{{ getTrainerNames(getGroupTrainers(group)) }}</span>
-                <span class="trainer-count-badge">({{ group.trainerCount }})</span>
+            <th mat-header-cell *matHeaderCellDef class="trainers-header">المدربون</th>
+            <td mat-cell *matCellDef="let row" class="trainers-cell">
+              <div class="trainers-list">
+                <span *ngFor="let trainer of row.trainers" class="trainer-chip">
+                  {{ trainer.title || trainer.name || 'مدرب' }}
+                </span>
+                <span *ngIf="!row.trainers || row.trainers.length === 0" class="no-trainer">-</span>
               </div>
             </td>
           </ng-container>
 
-          <!-- Session Days Column -->
-          <ng-container matColumnDef="sessionDays">
-            <th mat-header-cell *matHeaderCellDef>الأيام</th>
-            <td mat-cell *matCellDef="let group">
-              <div class="days-info">
-                <mat-icon>calendar_today</mat-icon>
-                <div class="days-chips">
-                  <span *ngFor="let day of group.sessionDays" class="day-chip">{{ getDayLabel(day) }}</span>
+          <!-- Day Columns -->
+          <ng-container *ngFor="let day of DAYS_OF_WEEK" [matColumnDef]="day.value.toLowerCase()">
+            <th mat-header-cell *matHeaderCellDef class="day-header">
+              <div class="day-header-content">
+                <span class="day-short">{{ day.short }}</span>
+                <span class="day-full">{{ day.label }}</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row" class="day-cell">
+              <div class="day-slots">
+                <div *ngFor="let slot of getDaySlots(row, day.value)" 
+                     class="time-slot"
+                     [class.has-trainers]="slot.trainers && slot.trainers.length > 0"
+                     [class.status-scheduled]="slot.status?.id === 1"
+                     [class.status-in-progress]="slot.status?.id === 2"
+                     [class.status-completed]="slot.status?.id === 3"
+                     [class.status-cancelled]="slot.status?.id === 4"
+                     (click)="viewSessionDetails(slot)">
+                  
+                  <div class="slot-time">
+                    <mat-icon class="time-icon">access_time</mat-icon>
+                    <span>{{ formatTimeRange(slot.startTime, slot.endTime) }}</span>
+                  </div>
+                  
+                  <div class="slot-trainers">
+                    <div *ngFor="let trainer of slot.trainers | slice:0:3" class="trainer-avatar-wrapper">
+                      <div class="trainer-avatar" [matTooltip]="getTrainerTooltip(trainer)">
+                        {{ getTrainerAvatarName(trainer) }}
+                      </div>
+                    </div>
+                    <div *ngIf="slot.trainers && slot.trainers.length > 3" class="trainer-more">
+                      +{{ slot.trainers.length - 3 }}
+                    </div>
+                  </div>
+
+                  <div class="slot-status">
+                    <mat-icon [ngClass]="getStatusClass(slot.status?.id || 0)">
+                      {{ getStatusIcon(slot.status?.id || 0) }}
+                    </mat-icon>
+                  </div>
+                </div>
+                
+                <div *ngIf="getDaySlots(row, day.value).length === 0" class="empty-slot">
+                  <span class="empty-text">—</span>
                 </div>
               </div>
             </td>
           </ng-container>
 
-          <!-- Time Column -->
-          <ng-container matColumnDef="time">
-            <th mat-header-cell *matHeaderCellDef>الوقت</th>
-            <td mat-cell *matCellDef="let group">
-              <div class="time-info">
-                <mat-icon>access_time</mat-icon>
-                <span>{{ formatTime(group.startTime) }} - {{ formatTime(group.endTime) }}</span>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Statuses Column -->
-          <ng-container matColumnDef="statuses">
-            <th mat-header-cell *matHeaderCellDef>الحالات</th>
-            <td mat-cell *matCellDef="let group">
-              <div class="statuses-info">
-                <span *ngFor="let status of group.statuses" class="status-badge" [ngClass]="getStatusClass(status.id)">
-                  {{ getStatusLabel(status.id) }} ({{ status.count }})
-                </span>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Sessions Count Column -->
-          <ng-container matColumnDef="sessionsCount">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>عدد الجلسات</th>
-            <td mat-cell *matCellDef="let group">
-              <div class="count-info">
-                <span class="count-number">{{ group.totalSessions }}</span>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-            <td mat-cell *matCellDef="let group">
-              <div class="action-buttons">
-                <button mat-icon-button color="primary" (click)="viewSessionDetails(group.sessions[0]); $event.stopPropagation()" matTooltip="عرض التفاصيل">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button mat-icon-button color="accent" (click)="editSession(group.sessions[0]); $event.stopPropagation()" matTooltip="تعديل">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="deleteSession(group.sessions[0]); $event.stopPropagation()" matTooltip="حذف">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewSessionDetails(row.sessions[0])"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="timetable-row"></tr>
 
-          <!-- No Data Row -->
+          <!-- No Data -->
           <tr class="mat-row no-data-row" *matNoDataRow>
             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
               <div class="no-data-message">
@@ -282,20 +254,20 @@
         </table>
       </div>
 
-      <!-- Custom Pagination Controls -->
+      <!-- Pagination -->
       <div class="custom-pagination" *ngIf="totalItems > 0">
         <div class="pagination-controls">
-          <button class="pagination-btn" (click)="goToFirstPage()" [disabled]="currentPage === 0" matTooltip="الصفحة الأولى">
+          <button class="pagination-btn" (click)="goToFirstPage()" [disabled]="currentPage === 0">
             <mat-icon>first_page</mat-icon>
           </button>
-          <button class="pagination-btn" (click)="goToPreviousPage()" [disabled]="currentPage === 0" matTooltip="الصفحة السابقة">
+          <button class="pagination-btn" (click)="goToPreviousPage()" [disabled]="currentPage === 0">
             <mat-icon>chevron_right</mat-icon>
           </button>
           <span class="page-info">صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}</span>
-          <button class="pagination-btn" (click)="goToNextPage()" [disabled]="currentPage >= getTotalPages() - 1" matTooltip="الصفحة التالية">
+          <button class="pagination-btn" (click)="goToNextPage()" [disabled]="currentPage >= getTotalPages() - 1">
             <mat-icon>chevron_left</mat-icon>
           </button>
-          <button class="pagination-btn" (click)="goToLastPage()" [disabled]="currentPage >= getTotalPages() - 1" matTooltip="الصفحة الأخيرة">
+          <button class="pagination-btn" (click)="goToLastPage()" [disabled]="currentPage >= getTotalPages() - 1">
             <mat-icon>last_page</mat-icon>
           </button>
         </div>

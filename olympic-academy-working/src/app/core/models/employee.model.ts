@@ -143,7 +143,7 @@ export interface CourseSessionVTO {
   id:number;
   title: string;
   course: LookupVTO;
-  trainer: LookupVTO[];
+  trainers: LookupVTO[];
   place: LookupVTO;
   sessionDate: string;
   sessionDay: string;

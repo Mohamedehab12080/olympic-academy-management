@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+// course-session-list.component.ts - COMPLETE WITH UPDATED EXPORT METHODS
+
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -34,27 +36,16 @@ import { ExportPageSelectDialogComponent } from './export-page-select-dialog.com
 import { CourseSessionVTO, SESSION_STATUSES } from '../../../../core/models/employee.model';
 import { ErrorVTO } from '../../../../core/models/common.model';
 
-const DAYS_OF_WEEK: readonly { value: string; label: string }[] = [
-  { value: 'SUNDAY', label: 'الأحد' },
-  { value: 'MONDAY', label: 'الإثنين' },
-  { value: 'TUESDAY', label: 'الثلاثاء' },
-  { value: 'WEDNESDAY', label: 'الأربعاء' },
-  { value: 'THURSDAY', label: 'الخميس' },
-  { value: 'FRIDAY', label: 'الجمعة' },
-  { value: 'SATURDAY', label: 'السبت' }
+// DAYS OF WEEK CONSTANT - EXPORTED FOR TEMPLATE USE
+export const DAYS_OF_WEEK = [
+  { value: 'SUNDAY', label: 'الأحد', short: 'أ' },
+  { value: 'MONDAY', label: 'الإثنين', short: 'إ' },
+  { value: 'TUESDAY', label: 'الثلاثاء', short: 'ث' },
+  { value: 'WEDNESDAY', label: 'الأربعاء', short: 'أر' },
+  { value: 'THURSDAY', label: 'الخميس', short: 'خ' },
+  { value: 'FRIDAY', label: 'الجمعة', short: 'ج' },
+  { value: 'SATURDAY', label: 'السبت', short: 'س' }
 ];
-
-interface GroupedSession {
-  courseId: number;
-  courseTitle: string;
-  sessions: CourseSessionVTO[];
-  trainerCount: number;
-  totalSessions: number;
-  sessionDays: string[];
-  startTime: string;
-  endTime: string;
-  statuses: { id: number; count: number }[];
-}
 
 @Component({
   selector: 'app-course-session-list',
@@ -87,17 +78,25 @@ interface GroupedSession {
 export class CourseSessionListComponent implements OnInit, OnDestroy {
   Math = Math;
 
-  displayedColumns: string[] = ['index', 'courseTitle', 'trainers', 'sessionDays', 'time', 'statuses', 'sessionsCount', 'actions'];
-  dataSource = new MatTableDataSource<GroupedSession>([]);
+  // EXPOSE DAYS_OF_WEEK TO TEMPLATE
+  DAYS_OF_WEEK = DAYS_OF_WEEK;
+
+  // Table columns
+  displayedColumns: string[] = ['course', 'trainers', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  dataSource = new MatTableDataSource<any>([]);
+  
+  // Data
   allSessions: CourseSessionVTO[] = [];
-  groupedSessions: GroupedSession[] = [];
+  groupedData: any[] = [];
   isLoading = false;
 
+  // Pagination
   totalItems = 0;
   pageSize = 25;
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   currentPage = 0;
 
+  // Sorting
   sortBy = 'CREATION_DATE';
   sortDir: 'ASC' | 'DESC' = 'ASC';
 
@@ -113,12 +112,18 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     sessionDay: null as string | null
   };
 
-  // Options
+  // Filter options
   courseOptions: { value: number | null; label: string }[] = [];
   trainerOptions: { value: number | null; label: string }[] = [];
   placeOptions: { value: number | null; label: string }[] = [];
   statusOptions: { value: string | null; label: string }[] = [];
   dayOptions: { value: string | null; label: string }[] = [];
+
+  // Day order mapping
+  private dayOrder: { [key: string]: number } = {
+    'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2,
+    'WEDNESDAY': 3, 'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
+  };
 
   private destroy$ = new Subject<void>();
 
@@ -273,52 +278,54 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     this.loadSessions();
   }
 
-  private groupSessionsByCourse(sessions: CourseSessionVTO[]): GroupedSession[] {
-    const groupedMap = new Map<number, GroupedSession>();
-
+  // ============= DATA PROCESSING =============
+  private processSessions(sessions: CourseSessionVTO[]): void {
+    // Group by course
+    const courseMap = new Map<number, any>();
+    
     sessions.forEach(session => {
-      const courseId = session.course?.id;
-      if (!courseId) return;
-
-      if (!groupedMap.has(courseId)) {
-        groupedMap.set(courseId, {
-          courseId,
+      const courseId = session.course?.id || 0;
+      if (!courseMap.has(courseId)) {
+        courseMap.set(courseId, {
+          courseId: courseId,
           courseTitle: session.course?.title || 'غير محدد',
           sessions: [],
-          trainerCount: 0,
-          totalSessions: 0,
-          sessionDays: [],
-          startTime: session.startTime || '',
-          endTime: session.endTime || '',
-          statuses: []
+          trainers: new Set()
         });
       }
-
-      const group = groupedMap.get(courseId)!;
+      
+      const group = courseMap.get(courseId);
       group.sessions.push(session);
-
-      const uniqueTrainers = new Set(
-        group.sessions.flatMap(s => (s.trainer || []).map(t => t.id))
-      );
-      group.trainerCount = uniqueTrainers.size;
-
-      const days = new Set(group.sessions.map(s => s.sessionDay).filter(Boolean));
-      group.sessionDays = Array.from(days) as string[];
-
-      if (!group.startTime) group.startTime = session.startTime || '';
-      if (!group.endTime) group.endTime = session.endTime || '';
-
-      const statusMap = new Map<number, number>();
-      group.sessions.forEach(s => {
-        const statusId = s.status?.id || 0;
-        statusMap.set(statusId, (statusMap.get(statusId) || 0) + 1);
-      });
-      group.statuses = Array.from(statusMap.entries()).map(([id, count]) => ({ id, count }));
-
-      group.totalSessions = group.sessions.length;
+      
+      // Collect all trainers
+      if (session.trainers && session.trainers.length > 0) {
+        session.trainers.forEach((t: any) => {
+          group.trainers.add(JSON.stringify(t));
+        });
+      }
     });
 
-    return Array.from(groupedMap.values());
+    // Build grouped data for table
+    this.groupedData = Array.from(courseMap.values()).map(group => {
+      const trainers = Array.from(group.trainers).map((t: any) => JSON.parse(t));
+      
+      // Group sessions by day
+      const dayMap: { [key: string]: any[] } = {};
+      DAYS_OF_WEEK.forEach(day => {
+        dayMap[day.value] = group.sessions.filter((s: any) => s.sessionDay === day.value);
+      });
+
+      return {
+        courseId: group.courseId,
+        courseTitle: group.courseTitle,
+        trainers: trainers,
+        totalSessions: group.sessions.length,
+        ...dayMap
+      };
+    });
+
+    this.dataSource.data = this.groupedData;
+    this.cdr.detectChanges();
   }
 
   loadSessions(): void {
@@ -337,9 +344,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
         next: (res: any) => {
           this.allSessions = res?.items || [];
           this.totalItems = res?.total || 0;
-          this.groupedSessions = this.groupSessionsByCourse(this.allSessions);
-          this.dataSource.data = this.groupedSessions;
-          this.cdr.detectChanges();
+          this.processSessions(this.allSessions);
         },
         error: (err: ErrorVTO) => {
           if (err?.code === 'INVALID_DATE_RANGE_FROM_AFTER_TO') {
@@ -363,8 +368,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     this.loadSessions();
   }
 
-  // Filter change handlers — bindings only assign via [(ngModel)] in the
-  // template; these handlers just react and re-fetch.
+  // Filter handlers
   onSearchChange(): void {
     this.currentPage = 0;
     this.loadSessions();
@@ -421,15 +425,14 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
-  // Helper methods used from the template — kept as plain methods so the
-  // template never needs inline arrow functions (Angular templates don't
-  // support `=>` syntax).
-  getGroupTrainers(group: GroupedSession): any[] {
-    return group.sessions.flatMap(s => s.trainer || []);
+  // ============= HELPER METHODS =============
+
+  getStatusCount(statusId: number): number {
+    return this.allSessions?.filter(s => s.status?.id === statusId).length || 0;
   }
 
   getTrainerNames(trainers: any[]): string {
-    if (!trainers || !Array.isArray(trainers) || trainers.length === 0) return '-';
+    if (!trainers || trainers.length === 0) return '-';
     return trainers.map(t => t.title || t.name || `مدرب ${t.id}`).join('، ');
   }
 
@@ -454,6 +457,16 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     return classes[statusId] || '';
   }
 
+  getStatusIcon(statusId: number): string {
+    const icons: Record<number, string> = {
+      1: 'schedule',
+      2: 'play_circle',
+      3: 'check_circle',
+      4: 'cancel'
+    };
+    return icons[statusId] || 'help';
+  }
+
   formatTime(time: string): string {
     if (!time) return '-';
     const [hours, minutes] = time.split(':');
@@ -463,15 +476,48 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     return `${String(hour).padStart(2, '0')}:${minutes} ${ampm}`;
   }
 
-  getStatusCount(statusId: number): number {
-    return this.allSessions.filter(s => s.status?.id === statusId).length;
+  formatTimeRange(start: string, end: string): string {
+    if (!start && !end) return '-';
+    if (!start) return this.formatTime(end);
+    if (!end) return this.formatTime(start);
+    return `${this.formatTime(start)} - ${this.formatTime(end)}`;
   }
 
-  trackByCourseId(_index: number, group: GroupedSession): number {
-    return group.courseId;
+  getDaySlots(row: any, dayValue: string): any[] {
+    return row[dayValue] || [];
   }
 
-  // CRUD Operations
+  getSlotTrainers(slots: any[]): any[] {
+    if (!slots || slots.length === 0) return [];
+    const trainers: any[] = [];
+    slots.forEach(slot => {
+      if (slot.trainers && slot.trainers.length > 0) {
+        slot.trainers.forEach((t: any) => {
+          if (!trainers.find(t2 => t2.id === t.id)) {
+            trainers.push(t);
+          }
+        });
+      }
+    });
+    return trainers;
+  }
+
+  getTrainerAvatarName(trainer: any): string {
+    if (!trainer) return 'م';
+    return (trainer.title || trainer.name || trainer.fullName || 'مدرب').charAt(0);
+  }
+
+  getTrainerTooltip(trainer: any): string {
+    if (!trainer) return '';
+    return trainer.title || trainer.name || trainer.fullName || `مدرب ${trainer.id}`;
+  }
+
+  trackByCourseId(_index: number, item: any): number {
+    return item.courseId;
+  }
+
+  // ============= CRUD OPERATIONS =============
+
   openAddModal(): void {
     const dialogRef = this.dialog.open(CourseSessionFormModalComponent, {
       width: '800px',
@@ -488,7 +534,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   }
 
   viewSessionDetails(session: any): void {
-    const fullSession = this.findSession(session.id);
+    const fullSession = this.allSessions.find(s => s.id === session.id);
     if (!fullSession) {
       this.notification.showError('لم يتم العثور على بيانات الجلسة');
       return;
@@ -510,7 +556,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   }
 
   editSession(session: any): void {
-    const fullSession = this.findSession(session.id);
+    const fullSession = this.allSessions.find(s => s.id === session.id);
     if (fullSession) {
       this.openEditModal(fullSession);
     } else {
@@ -538,7 +584,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   }
 
   deleteSession(session: any): void {
-    const fullSession = this.findSession(session.id);
+    const fullSession = this.allSessions.find(s => s.id === session.id);
     if (fullSession) {
       this.confirmDelete(fullSession);
     } else {
@@ -561,18 +607,18 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       });
   }
 
-  private findSession(sessionId: number): CourseSessionVTO | null {
-    for (const group of this.groupedSessions) {
-      const found = group.sessions.find(s => s.id === sessionId);
-      if (found) return found;
-    }
-    return this.allSessions.find(s => s.id === sessionId) || null;
-  }
+  // ==========================================================================
+  // EXPORT FUNCTIONS WITH PAGE SELECTION - UPDATED
+  // ==========================================================================
 
-  // Export functions
-  private showExportPageSelection(): Promise<any> {
+  /**
+   * Show page selection dialog for export or print
+   * @param isCardPrint - Whether this is for printing cards (true) or exporting (false)
+   */
+  private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
+      
       if (totalPages <= 1) {
         resolve({ option: 'all' });
         return;
@@ -583,14 +629,17 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
         maxWidth: '95vw',
         disableClose: true,
         data: {
-          totalPages,
+          totalPages: totalPages,
           totalItems: this.totalItems,
           pageSize: this.pageSize,
-          currentPage: this.currentPage
+          currentPage: this.currentPage,
+          isCardPrint: isCardPrint  // Pass the mode to dialog
         }
       });
 
-      dialogRef.afterClosed().subscribe(result => resolve(result));
+      dialogRef.afterClosed().subscribe(result => {
+        resolve(result);
+      });
     });
   }
 
@@ -602,11 +651,11 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       const params = this.buildFilterParams(page);
       try {
         const res = await this.sessionService.getAllSessionsByFilter(params).toPromise();
-        console.log(res);
         if (res?.items) {
           allData.push(...res.items);
         }
       } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
         this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
       }
     }
@@ -614,23 +663,12 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     return allData;
   }
 
-  private buildExportRows(grouped: GroupedSession[]) {
-    return grouped.map((group, index) => ({
-      '#': index + 1,
-      'الدورة': group.courseTitle,
-      'المدربون': this.getTrainerNames(this.getGroupTrainers(group)),
-      'الأيام': group.sessionDays.map(d => this.getDayLabel(d)).join(' - '),
-      'وقت البدء': this.formatTime(group.startTime),
-      'وقت الانتهاء': this.formatTime(group.endTime),
-      'الحالات': group.statuses.map(s => `${this.getStatusLabel(s.id)} (${s.count})`).join(' - '),
-      'عدد الجلسات': group.totalSessions,
-      'عدد المدربين': group.trainerCount
-    }));
-  }
-
   async exportToExcel(): Promise<void> {
-    const result = await this.showExportPageSelection();
-    if (!result) return;
+    const result = await this.showExportPageSelection(false);  // false = export mode
+    
+    if (!result) {
+      return;
+    }
 
     let dataToExport: CourseSessionVTO[] = [];
 
@@ -647,16 +685,263 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const grouped = this.groupSessionsByCourse(dataToExport);
-    const exportData = this.buildExportRows(grouped);
+    const exportData = dataToExport.map((session, index) => ({
+      '#': index + 1,
+      'الدورة': session.course?.title || 'غير محدد',
+      'المدربون': this.getTrainerNames(session.trainers || []),
+      'اليوم': this.getDayLabel(session.sessionDay || ''),
+      'الوقت': this.formatTimeRange(session.startTime || '', session.endTime || ''),
+      'الحالة': this.getStatusLabel(session.status?.id || 0),
+      'المكان': session.place?.title || 'غير محدد',
+      'الملاحظات': session.note || ''
+    }));
 
-    this.reportService.exportToExcel(exportData, 'course-sessions-grouped', 'جلسات الدورات (مجمعة)');
-    this.notification.showSuccess(`تم تصدير ${exportData.length} مجموعة بنجاح`);
+    this.reportService.exportToExcel(exportData, 'course-sessions', 'جلسات الدورات');
+    this.notification.showSuccess(`تم تصدير ${exportData.length} جلسة بنجاح`);
+  }
+
+  /**
+   * Generate HTML for PDF export with professional layout
+   */
+  private generatePDFHTML(sessions: CourseSessionVTO[], filterTexts: string[]): string {
+    const totalSessions = sessions.length;
+    const scheduled = sessions.filter(s => s.status?.id === 1).length;
+    const inProgress = sessions.filter(s => s.status?.id === 2).length;
+    const completed = sessions.filter(s => s.status?.id === 3).length;
+    const cancelled = sessions.filter(s => s.status?.id === 4).length;
+    const uniqueCourses = new Set(sessions.map(s => s.course?.id)).size;
+    const uniqueTrainers = new Set();
+    sessions.forEach(s => {
+      if (s.trainers) {
+        s.trainers.forEach((t: any) => uniqueTrainers.add(t.id));
+      }
+    });
+
+    // Split data into pages (20 rows per page for landscape)
+    const rowsPerPage = 20;
+    const pages: CourseSessionVTO[][] = [];
+    for (let i = 0; i < sessions.length; i += rowsPerPage) {
+      pages.push(sessions.slice(i, i + rowsPerPage));
+    }
+
+    let allPagesHTML = '';
+
+    pages.forEach((pageData: CourseSessionVTO[], pageIndex: number) => {
+      let tableRows = '';
+      pageData.forEach((session: CourseSessionVTO, index: number) => {
+        const globalIndex = (pageIndex * rowsPerPage) + index + 1;
+        
+        const statusColors: Record<number, string> = {
+          1: 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
+          2: 'background: #fed7aa; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
+          3: 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
+          4: 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+        };
+        const statusStyle = statusColors[session.status?.id || 0] || 'background: #e5e7eb; color: #374151; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        
+        const dayLabel = this.getDayLabel(session.sessionDay || '');
+        const timeRange = this.formatTimeRange(session.startTime || '', session.endTime || '');
+        const trainersText = this.getTrainerNames(session.trainers || []);
+        const placeText = session.place?.title || '-';
+        
+        tableRows += `
+          <tr>
+            <td style="text-align: center; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;">${globalIndex}</td>
+            <td style="text-align: right; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 9px; background: transparent;">${this.escapeHtml(session.course?.title || '-')}</td>
+            <td style="text-align: right; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;">${this.escapeHtml(trainersText)}</td>
+            <td style="text-align: center; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;">${dayLabel}</td>
+            <td style="text-align: center; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;">${timeRange}</td>
+            <td style="text-align: center; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;"><span style="${statusStyle}">${this.getStatusLabel(session.status?.id || 0)}</span></td>
+            <td style="text-align: right; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;">${this.escapeHtml(placeText)}</td>
+          </tr>
+        `;
+      });
+
+      allPagesHTML += `
+        <div class="page-container">
+          <div class="watermark-wrapper">
+            <div class="watermark-container">
+              <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية">
+            </div>
+            <div class="watermark-text">الأكاديمية الأولمبية</div>
+          </div>
+          
+          <div class="content">
+            <div class="header">
+              <h1>📋 تقرير جلسات الدورات</h1>
+              <p>${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style="font-size: 10px; opacity: 0.8;">صفحة ${pageIndex + 1} من ${pages.length}</p>
+            </div>
+            
+            ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+            
+            ${pageIndex === 0 ? `
+            <div class="totals-grid">
+              <div class="total-card total-all">
+                <span class="total-icon">📅</span>
+                <span class="total-value">${totalSessions}</span>
+                <span class="total-label">إجمالي الجلسات</span>
+              </div>
+              <div class="total-card total-courses">
+                <span class="total-icon">📚</span>
+                <span class="total-value">${uniqueCourses}</span>
+                <span class="total-label">دورات</span>
+              </div>
+              <div class="total-card total-trainers">
+                <span class="total-icon">👨‍🏫</span>
+                <span class="total-value">${uniqueTrainers.size}</span>
+                <span class="total-label">مدربين</span>
+              </div>
+              <div class="total-card total-scheduled">
+                <span class="total-icon">⏰</span>
+                <span class="total-value">${scheduled}</span>
+                <span class="total-label">مجدول</span>
+              </div>
+              <div class="total-card total-completed">
+                <span class="total-icon">✅</span>
+                <span class="total-value">${completed}</span>
+                <span class="total-label">مكتمل</span>
+              </div>
+            </div>
+            ` : ''}
+            
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 5%;">#</th>
+                  <th style="width: 20%;">الدورة</th>
+                  <th style="width: 22%;">المدربون</th>
+                  <th style="width: 12%;">اليوم</th>
+                  <th style="width: 15%;">الوقت</th>
+                  <th style="width: 14%;">الحالة</th>
+                  <th style="width: 12%;">المكان</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            
+            <div class="footer">
+              الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${totalSessions} جلسة
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>تقرير جلسات الدورات</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+          html, body { width: 100%; min-height: 100vh; background: white; margin: 0; padding: 0; }
+          @page { size: A4 landscape; margin: 8mm; }
+          
+          .page-container { position: relative; width: 100%; min-height: 100vh; page-break-after: always; background: white; overflow: hidden; }
+          .page-container:last-child { page-break-after: auto; }
+          
+          .watermark-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+          .watermark-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); width: 60%; height: 60%; display: flex; align-items: center; justify-content: center; opacity: 0.10; }
+          .watermark-container img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg); }
+          .watermark-text { position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 50px; font-weight: 900; color: #667eea; letter-spacing: 6px; text-transform: uppercase; white-space: nowrap; opacity: 0.05; text-shadow: 0 4px 20px rgba(102, 126, 234, 0.15); }
+          
+          .content { position: relative; z-index: 1; padding: 12px; background: transparent; min-height: 100vh; }
+          
+          @media print {
+            .no-print { display: none !important; }
+            .page-container { min-height: 100vh !important; page-break-after: always !important; }
+            .watermark-container { opacity: 0.12 !important; width: 65% !important; height: 65% !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .watermark-container img { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .watermark-text { opacity: 0.06 !important; font-size: 55px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .totals-grid { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .total-card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            td { background: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            tr { background: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            tbody { background: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          }
+          
+          .header { text-align: center; margin-bottom: 10px; padding: 10px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+          .header p { margin: 2px 0 0 0; font-size: 11px; opacity: 0.9; }
+          
+          .filters { margin-bottom: 8px; padding: 6px 12px; background: rgba(248, 250, 252, 0.8); border-radius: 6px; font-size: 10px; border: 1px solid rgba(229, 231, 235, 0.5); }
+          .filters strong { color: #1e293b; }
+          
+          .totals-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 8px; }
+          .total-card { background: rgba(255, 255, 255, 0.9); border-radius: 6px; padding: 5px 8px; text-align: center; border: 1px solid rgba(229, 231, 235, 0.5); display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 30px; backdrop-filter: blur(4px); -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .total-card .total-icon { font-size: 13px; flex-shrink: 0; }
+          .total-card .total-value { font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.2; }
+          .total-card .total-label { font-size: 9px; color: #64748b; margin-right: 2px; font-weight: 500; }
+          
+          .total-card.total-all { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+          .total-card.total-all .total-value { color: white; }
+          .total-card.total-all .total-label { color: rgba(255, 255, 255, 0.85); }
+          .total-card.total-courses .total-value { color: #2563eb; }
+          .total-card.total-trainers .total-value { color: #92400e; }
+          .total-card.total-scheduled .total-value { color: #2563eb; }
+          .total-card.total-completed .total-value { color: #059669; }
+          
+          table { width: 100%; border-collapse: collapse; direction: rtl; margin-top: 4px; font-size: 10px; background: transparent; }
+          th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 4px; border: 1px solid #764ba2; text-align: center; font-weight: 700; font-size: 10px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          td { padding: 4px 4px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 10px; background: transparent !important; }
+          tr { background: transparent !important; }
+          tbody { background: transparent !important; }
+          tr:nth-child(even) td { background: rgba(250, 251, 252, 0.5) !important; }
+          
+          .footer { text-align: center; margin-top: 8px; padding: 5px; font-size: 8px; color: rgba(148, 163, 184, 0.8); border-top: 1px solid rgba(229, 231, 235, 0.3); }
+          
+          @media (max-width: 768px) {
+            .watermark-container { width: 80% !important; height: 80% !important; }
+            .watermark-text { font-size: 30px !important; }
+            .totals-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+            .total-card { padding: 4px 6px; min-height: 26px; }
+            .total-card .total-value { font-size: 12px; }
+            table { font-size: 9px; }
+            th, td { padding: 3px 2px; }
+            .header h1 { font-size: 15px; }
+          }
+        </style>
+      </head>
+      <body>
+        ${allPagesHTML}
+        <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+          <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);">
+            🖨️ طباعة / PDF
+          </button>
+          <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+            ✖ إغلاق
+          </button>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Escape HTML to prevent XSS
+   */
+  private escapeHtml(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   async exportToPDF(): Promise<void> {
-    const result = await this.showExportPageSelection();
-    if (!result) return;
+    const result = await this.showExportPageSelection(false);  // false = export mode
+    
+    if (!result) {
+      return;
+    }
 
     this.isLoading = true;
 
@@ -676,22 +961,60 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const groupedData = this.groupSessionsByCourse(dataToPrint);
-    this.reportService.exportToExcel(
-      groupedData.map((group, index) => ({
-        '#': index + 1,
-        'الدورة': group.courseTitle,
-        'المدربون': this.getTrainerNames(this.getGroupTrainers(group)),
-        'الأيام': group.sessionDays.map(d => this.getDayLabel(d)).join(' - '),
-        'الوقت': `${this.formatTime(group.startTime)} - ${this.formatTime(group.endTime)}`,
-        'الحالات': group.statuses.map(s => `${this.getStatusLabel(s.id)} (${s.count})`).join(' - '),
-        'عدد الجلسات': group.totalSessions
-      })),
-      'course-sessions-pdf',
-      'تقرير جلسات الدورات'
-    );
+    // Build filter texts for display
+    const filterTexts: string[] = [];
+    if (this.filters.courseId) {
+      const course = this.courseOptions.find(c => c.value === this.filters.courseId);
+      if (course) filterTexts.push(`الدورة: ${course.label}`);
+    }
+    if (this.filters.trainerId) {
+      const trainer = this.trainerOptions.find(t => t.value === this.filters.trainerId);
+      if (trainer) filterTexts.push(`المدرب: ${trainer.label}`);
+    }
+    if (this.filters.placeId) {
+      const place = this.placeOptions.find(p => p.value === this.filters.placeId);
+      if (place) filterTexts.push(`المكان: ${place.label}`);
+    }
+    if (this.filters.status) {
+      const status = this.statusOptions.find(s => s.value === this.filters.status);
+      if (status) filterTexts.push(`الحالة: ${status.label}`);
+    }
+    if (this.filters.sessionDay) {
+      const day = this.dayOptions.find(d => d.value === this.filters.sessionDay);
+      if (day) filterTexts.push(`اليوم: ${day.label}`);
+    }
+    if (this.filters.sessionDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateFrom);
+      if (formattedDate) filterTexts.push(`من تاريخ: ${formattedDate}`);
+    }
+    if (this.filters.sessionDateTo) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateTo);
+      if (formattedDate) filterTexts.push(`إلى تاريخ: ${formattedDate}`);
+    }
+    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
-    this.isLoading = false;
-    this.notification.showSuccess(`تم تصدير ${groupedData.length} مجموعة بنجاح`);
+    // Generate HTML and open in new window
+    const htmlContent = this.generatePDFHTML(dataToPrint, filterTexts);
+    
+    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
+    } else {
+      // Fallback: create a temporary element
+      const container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      document.body.appendChild(container);
+      window.print();
+      setTimeout(() => {
+        if (document.body.contains(container)) {
+          document.body.removeChild(container);
+        }
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
+    }
   }
 }

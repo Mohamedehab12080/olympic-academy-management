@@ -1,3 +1,5 @@
+// export-page-select-dialog.component.ts - COMPLETE WORKING VERSION
+
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,13 +27,13 @@ import { MatDividerModule } from '@angular/material/divider';
   ],
   template: `
     <div class="dialog-container" dir="rtl">
-      <div class="dialog-header">
-        <div class="header-icon">
-          <mat-icon>description</mat-icon>
+      <div class="dialog-header" [class.card-print]="isCardPrint">
+        <div class="header-icon" [class.card-print]="isCardPrint">
+          <mat-icon>{{ isCardPrint ? 'credit_card' : 'description' }}</mat-icon>
         </div>
         <div>
-          <h2>تصدير التقرير</h2>
-          <p>اختر الصفحات التي تريد تصديرها</p>
+          <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
+          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
         </div>
         <button mat-icon-button (click)="close()" class="close-btn">
           <mat-icon>close</mat-icon>
@@ -122,7 +124,7 @@ import { MatDividerModule } from '@angular/material/divider';
             
             <div class="range-info">
               <mat-icon>info</mat-icon>
-              <span>سيتم تصدير {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
             </div>
           </div>
         </div>
@@ -137,9 +139,10 @@ import { MatDividerModule } from '@angular/material/divider';
           color="primary" 
           (click)="confirm()"
           [disabled]="!isValid()"
-          class="confirm-btn">
-          <mat-icon>check</mat-icon>
-          <span>تصدير</span>
+          class="confirm-btn"
+          [class.card-print]="isCardPrint">
+          <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
+          <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
         </button>
       </div>
     </div>
@@ -163,6 +166,11 @@ import { MatDividerModule } from '@angular/material/divider';
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .dialog-header.card-print {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     }
 
     .header-icon {
@@ -175,6 +183,11 @@ import { MatDividerModule } from '@angular/material/divider';
       justify-content: center;
       flex-shrink: 0;
       backdrop-filter: blur(4px);
+      transition: all 0.3s ease;
+    }
+
+    .header-icon.card-print {
+      background: rgba(255, 255, 255, 0.25);
     }
 
     .header-icon mat-icon {
@@ -369,9 +382,18 @@ import { MatDividerModule } from '@angular/material/divider';
       box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
     }
 
+    .confirm-btn.card-print {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+    }
+
     .confirm-btn:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+    }
+
+    .confirm-btn.card-print:hover:not(:disabled) {
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
     }
 
     .confirm-btn:disabled {
@@ -458,6 +480,7 @@ export class ExportPageSelectDialogComponent {
   selectedOption: 'all' | 'current' | 'range' = 'all';
   startPage: number = 1;
   endPage: number = 1;
+  isCardPrint: boolean = false;
   
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
@@ -466,9 +489,11 @@ export class ExportPageSelectDialogComponent {
       totalItems: number; 
       pageSize: number; 
       currentPage: number;
+      isCardPrint?: boolean;
     }
   ) {
     this.endPage = data.totalPages;
+    this.isCardPrint = data.isCardPrint || false;
   }
 
   getRangeCount(): number {
@@ -479,7 +504,8 @@ export class ExportPageSelectDialogComponent {
   }
 
   getRangeRecords(): number {
-    return this.getRangeCount() * this.data.pageSize;
+    const count = this.getRangeCount();
+    return count * this.data.pageSize;
   }
 
   isValid(): boolean {

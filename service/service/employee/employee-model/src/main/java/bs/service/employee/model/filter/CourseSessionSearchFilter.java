@@ -19,6 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 public class CourseSessionSearchFilter extends SearchFilter<CourseSessionSearchFilter.OrderByAttributes> {
 
+    private Boolean groupBySessionDay;
+    private Boolean groupByStartTime;
     private Boolean groupByCourse;
     private Boolean groupByTrainer;
     private List<Integer> employeeIdsIn;

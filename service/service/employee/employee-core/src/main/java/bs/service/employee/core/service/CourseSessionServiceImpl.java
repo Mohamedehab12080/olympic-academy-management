@@ -10,13 +10,16 @@ import bs.service.course.api.repository.CourseRepository;
 import bs.service.course.model.entity.Course;
 import bs.service.employee.api.repository.CourseSessionRepository;
 import bs.service.employee.api.repository.EmployeeRepository;
+import bs.service.employee.api.repository.TrainerCourseRepository;
 import bs.service.employee.api.service.CourseSessionService;
 import bs.service.employee.core.mapper.EmployeeMapper;
 import bs.service.employee.model.entity.CourseSession;
 import bs.service.employee.model.entity.Employee;
+import bs.service.employee.model.entity.TrainerCourse;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.enums.SessionStatus;
 import bs.service.employee.model.filter.CourseSessionSearchFilter;
+import bs.service.employee.model.filter.TrainerCourseSearchFilter;
 import bs.service.employee.model.generated.CourseSessionDTO;
 import bs.service.employee.model.generated.CourseSessionResultSet;
 import bs.service.employee.model.generated.CourseSessionVTO;
@@ -45,6 +48,7 @@ public class CourseSessionServiceImpl implements CourseSessionService {
     private final PlaceRepository placeRepository;
     private final EmployeeMapper employeeMapper;
     private final ValidateService validateService;
+    private final TrainerCourseRepository trainerCourseRepository;
 
     @Override
     @Transactional
@@ -611,44 +615,19 @@ public class CourseSessionServiceImpl implements CourseSessionService {
                 .build();
 
         List<CourseSession> sessions = courseSessionRepository.selectAllByFilters(filter);
-        List<CourseSessionVTO> items = employeeMapper.toCourseSessionVTOs(sessions);
-
-        return CourseSessionResultSet.builder()
-                .items(items)
-                .total(courseSessionRepository.countAllByFilters(filter))
-                .build();
-    }
-
-    @Override
-    public CourseSessionResultSet getAllSessionsByFilter(Integer courseId,List<Integer>trainerIds,String sessionDay, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
-
-        validateService.validateFromToFilters(sessionDateFrom,sessionDateTo);
-
-        CourseSessionSearchFilter filter = CourseSessionSearchFilter.builder()
+        TrainerCourseSearchFilter trainerCourseSearchFilter=TrainerCourseSearchFilter.builder()
                 .courseId(courseId)
-                .employeeId(trainerId)
-                .sessionDay(sessionDay)
-                .groupByCourse(courseId!=null ? true: null)
-                .groupByTrainer(trainerId!=null ? true: null)
-                .placeId(placeId)
-                .status(status!=null?status.getId():null)
-                .sessionDateFrom(sessionDateFrom)
-                .sessionDateTo(sessionDateTo)
-                .startTimeFrom(startTimeFrom!=null?LocalTime.parse(startTimeFrom):null)
-                .startTimeTo(startTimeTo!=null ? LocalTime.parse(startTimeTo): null)
-                .endTimeFrom(endTimeFrom!=null ? LocalTime.parse(endTimeFrom) : null)
-                .endTimeTo(endTimeTo!=null ? LocalTime.parse(endTimeTo): null)
-                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
-                .defaultSorting(new SortingInfo<>(CourseSessionSearchFilter.OrderByAttributes.SESSION_DATE, OrderDirections.DESC))
-                .sorting(new SortingInfo<>(orderBy, orderDir))
+                .pagination(PaginationInfo.noPagination())
                 .build();
-
-        List<CourseSession> sessions = courseSessionRepository.selectAllByFilters(filter);
+        List<TrainerCourse> trainerCourses=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter);
         List<CourseSessionVTO> items = employeeMapper.toCourseSessionVTOs(sessions);
+        items =items.stream().peek(itm->{
+            List<Employee> foundEmployees= Objects.requireNonNull(trainerCourses.stream().filter(tC -> tC.getCourse().getId().equals(itm.getCourse().getId())).map(TrainerCourse::getTrainer).collect(Collectors.toList()));
+            itm.setTrainers(employeeMapper.toLookupVTOs(foundEmployees));
+        }).toList();
 
         return CourseSessionResultSet.builder()
                 .items(items)
                 .total(courseSessionRepository.countAllByFilters(filter))
                 .build();
     }
-}

@@ -80,7 +80,17 @@ public class CourseSessionQueryBuilder extends AbstractQueryBuilderV3<CourseSess
 
         // Group by course only
         if (filters.getGroupByCourse() != null && filters.getGroupByCourse()) {
-            groupBy.append(" GROUP BY item.course.id");
+            groupBy.append(" GROUP BY item.course.id ,item.sessionDay,item.startTime");
+            return groupBy.toString();
+        }
+
+        if (filters.getGroupByStartTime() != null && filters.getGroupByStartTime()) {
+            groupBy.append(" GROUP BY item.startTime");
+            return groupBy.toString();
+        }
+
+        if (filters.getGroupBySessionDay() != null && filters.getGroupBySessionDay()) {
+            groupBy.append(" GROUP BY item.sessionDay");
             return groupBy.toString();
         }
 

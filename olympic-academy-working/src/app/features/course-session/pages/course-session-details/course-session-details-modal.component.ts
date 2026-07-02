@@ -1,4 +1,4 @@
-// course-session-details-modal.component.ts - COMPLETE WORKING VERSION WITH PRINT
+// course-session-details-modal.component.ts - COMPLETE WORKING VERSION WITH FIXES
 
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -128,11 +128,13 @@ const STATUS_ICONS: { [key: number]: string } = {
             </div>
             <div class="detail-value">
               <div class="trainers-list">
-                <span *ngFor="let trainer of session.trainer" class="trainer-chip">
+                <!-- FIXED: Changed from session.trainer to session.trainers -->
+                <span *ngFor="let trainer of session.trainers" class="trainer-chip">
                   <mat-icon class="trainer-chip-icon">person</mat-icon>
                   {{ getTrainerName(trainer) }}
                 </span>
-                <span *ngIf="!session.trainer || session.trainer.length === 0" class="no-trainer">-</span>
+                <!-- FIXED: Changed from session.trainer to session.trainers -->
+                <span *ngIf="!session.trainers || session.trainers.length === 0" class="no-trainer">-</span>
               </div>
             </div>
           </div>
@@ -862,6 +864,7 @@ export class CourseSessionDetailsModalComponent {
 
   /**
    * Get all trainer names as a string (for print view)
+   * FIXED: Changed parameter from trainers to trainers
    */
   getTrainerNamesString(trainers: any[]): string {
     if (!trainers || !Array.isArray(trainers) || trainers.length === 0) {
@@ -933,6 +936,7 @@ export class CourseSessionDetailsModalComponent {
 
   /**
    * Print session details
+   * FIXED: Changed session.trainer to session.trainers throughout
    */
   printDetails(): void {
     const printContent = document.getElementById('print-content');
@@ -952,7 +956,8 @@ export class CourseSessionDetailsModalComponent {
     else if (statusClass === 'status-completed') statusStyle = 'background-color: #d1fae5; color: #065f46; padding: 6px 14px; border-radius: 30px;';
     else if (statusClass === 'status-cancelled') statusStyle = 'background-color: #fee2e2; color: #991b1b; padding: 6px 14px; border-radius: 30px;';
 
-    const trainerNames = this.getTrainerNamesString(this.session.trainer);
+    // FIXED: Changed from session.trainer to session.trainers
+    const trainerNames = this.getTrainerNamesString(this.session.trainers);
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -1120,8 +1125,8 @@ export class CourseSessionDetailsModalComponent {
           <div class="print-row">
             <div class="print-label">المدربون:</div>
             <div class="print-value">
-              ${this.session.trainer && this.session.trainer.length > 0 
-                ? this.session.trainer.map(t => `<span class="trainer-tag">${this.getTrainerName(t)}</span>`).join('') 
+              ${this.session.trainers && this.session.trainers.length > 0 
+                ? this.session.trainers.map(t => `<span class="trainer-tag">${this.getTrainerName(t)}</span>`).join('') 
                 : '-'
               }
             </div>
