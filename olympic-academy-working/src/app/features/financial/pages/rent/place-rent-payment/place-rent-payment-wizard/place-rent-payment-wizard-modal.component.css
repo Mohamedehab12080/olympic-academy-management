@@ -1,4 +1,7 @@
-/* Wizard Container */
+/* ============================================================ */
+/* WIZARD CONTAINER */
+/* ============================================================ */
+
 .wizard-container {
   background: white;
   border-radius: 24px;
@@ -8,7 +11,10 @@
   flex-direction: column;
 }
 
-/* Header Styles */
+/* ============================================================ */
+/* HEADER STYLES */
+/* ============================================================ */
+
 .wizard-header {
   display: flex;
   justify-content: space-between;
@@ -46,7 +52,10 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Loading Overlay */
+/* ============================================================ */
+/* LOADING OVERLAY */
+/* ============================================================ */
+
 .loading-overlay {
   display: flex;
   justify-content: center;
@@ -54,7 +63,10 @@
   padding: 60px;
 }
 
-/* Wizard Steps */
+/* ============================================================ */
+/* WIZARD STEPS */
+/* ============================================================ */
+
 .wizard-steps {
   padding: 24px 24px 0;
   background: #f8fafc;
@@ -140,7 +152,10 @@
   background: #10b981;
 }
 
-/* Wizard Content */
+/* ============================================================ */
+/* WIZARD CONTENT */
+/* ============================================================ */
+
 .wizard-content {
   flex: 1;
   overflow-y: auto;
@@ -167,7 +182,10 @@
   background: #94a3b8;
 }
 
-/* Step Content */
+/* ============================================================ */
+/* STEP CONTENT */
+/* ============================================================ */
+
 .step-content {
   animation: fadeIn 0.3s ease;
 }
@@ -211,7 +229,10 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-/* Form Section */
+/* ============================================================ */
+/* FORM SECTION */
+/* ============================================================ */
+
 .form-section {
   margin-top: 16px;
 }
@@ -228,113 +249,175 @@
   margin-bottom: 16px;
 }
 
-/* Place Preview */
-.place-preview {
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 16px;
-  border: 1px solid #c4b5fd;
+.currency-suffix {
+  color: #64748b;
+  font-weight: 500;
+  margin-right: 8px;
 }
 
-.preview-header {
+/* ============================================================ */
+/* PLACE SELECTION */
+/* ============================================================ */
+
+.place-selection-area {
+  margin-bottom: 16px;
+}
+
+/* ============================================================ */
+/* WARNING MESSAGE */
+/* ============================================================ */
+
+.warning-message {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  font-weight: 500;
-  color: #6d28d9;
-}
-
-.preview-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.preview-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-}
-
-.preview-row .label {
-  font-size: 13px;
-  color: #475569;
-}
-
-.preview-row .value {
-  font-weight: 500;
-  color: #1e293b;
-}
-
-.preview-row.highlight .value {
-  color: #8b5cf6;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* Payment Summary */
-.payment-summary {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 16px;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fef3c7;
   border: 1px solid #fcd34d;
+  border-radius: 8px;
+  color: #92400e;
+  margin-bottom: 16px;
 }
 
-.summary-header {
+.warning-message mat-icon {
+  color: #f59e0b;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================================ */
+/* PLACE DETAILS */
+/* ============================================================ */
+
+.place-details {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
+}
+
+.details-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
   font-weight: 600;
-  color: #92400e;
+  color: #1e293b;
 }
 
-.summary-content {
+.details-header mat-icon {
+  color: #8b5cf6;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.detail-item {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-item.highlight {
+  grid-column: span 2;
+  background: #ede9fe;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-bottom: none;
+  margin-top: 4px;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.detail-value.zero {
+  color: #dc2626;
+}
+
+.detail-item.highlight .detail-value {
+  color: #6d28d9;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.detail-item.highlight .detail-value.zero {
+  color: #dc2626;
+}
+
+/* ============================================================ */
+/* PAYMENT SUMMARY */
+/* ============================================================ */
+
+.payment-summary {
+  background: #f0fdf4;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #bbf7d0;
+  margin-bottom: 16px;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  padding: 4px 0;
+}
+
+.summary-label {
+  color: #64748b;
   font-size: 14px;
 }
 
-.summary-row strong {
-  font-size: 16px;
+.summary-value {
+  font-weight: 500;
+  color: #1e293b;
 }
 
-.summary-row .paid-amount {
-  color: #10b981;
-  font-weight: 700;
-}
-
-.summary-row.total {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.summary-row.total strong {
-  font-size: 18px;
-}
-
-.summary-row.total strong.zero {
+.summary-value.highlight {
   color: #059669;
+  font-weight: 700;
+  font-size: 16px;
 }
 
-.summary-divider {
-  height: 1px;
-  background: #fbbf24;
-  margin: 8px 0;
+/* ============================================================ */
+/* PAYMENT METHOD INFO */
+/* ============================================================ */
+
+.payment-method-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  color: #065f46;
+  margin-top: 8px;
 }
 
-/* Confirmation Card */
+.payment-method-info mat-icon {
+  color: #10b981;
+}
+
+/* ============================================================ */
+/* CONFIRMATION CARD */
+/* ============================================================ */
+
 .confirmation-card {
   background: #f8fafc;
   border-radius: 16px;
@@ -363,19 +446,31 @@
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px dashed #e2e8f0;
 }
 
 .info-item.full-width {
   grid-column: span 2;
+}
+
+.info-item.highlight {
+  background: #ede9fe;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-bottom: none;
+}
+
+.info-item.highlight .info-value {
+  color: #6d28d9;
+  font-weight: 700;
 }
 
 .info-label {
@@ -389,17 +484,52 @@
 }
 
 .info-value.highlight {
-  color: #10b981;
+  color: #dc2626;
   font-size: 18px;
   font-weight: 700;
 }
 
-.info-value.success {
-  color: #059669;
+.info-value.zero {
+  color: #10b981;
   font-weight: 700;
 }
 
-/* Wizard Actions */
+.confirmation-summary {
+  margin: 16px 20px 20px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confirmation-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.confirmation-summary .summary-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+}
+
+.confirmation-summary .summary-value.final {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.confirmation-summary .summary-value.final.zero {
+  color: #fcd34d;
+}
+
+/* ============================================================ */
+/* WIZARD ACTIONS */
+/* ============================================================ */
+
 .wizard-actions {
   display: flex;
   justify-content: space-between;
@@ -414,7 +544,44 @@
   gap: 12px;
 }
 
-/* Responsive Design */
+.submit-btn {
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submit-btn mat-spinner {
+  display: inline-block;
+}
+
+/* ============================================================ */
+/* DISABLED STATES */
+/* ============================================================ */
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+input:read-only {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* ============================================================ */
+/* INPUT NUMBER SPINNER */
+/* ============================================================ */
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  opacity: 0.5;
+}
+
+/* ============================================================ */
+/* RESPONSIVE DESIGN */
+/* ============================================================ */
+
 @media (max-width: 768px) {
   .wizard-container {
     border-radius: 16px;
@@ -443,6 +610,14 @@
   }
   
   .info-item.full-width {
+    grid-column: span 1;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-item.highlight {
     grid-column: span 1;
   }
   
@@ -482,24 +657,20 @@
   .confirmation-section {
     padding: 16px;
   }
+  
+  .confirmation-summary {
+    margin: 12px 16px 16px;
+    padding: 12px 16px;
+  }
+  
+  .confirmation-summary .summary-value.final {
+    font-size: 20px;
+  }
 }
 
-/* Input number spinner removal */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  opacity: 0.5;
-}
-
-/* Disabled input styles */
-input:read-only {
-  background-color: #f1f5f9;
-  cursor: not-allowed;
-}
-
-/* Animation for step transitions */
-.step-content {
-  animation: slideIn 0.3s ease;
-}
+/* ============================================================ */
+/* ANIMATIONS */
+/* ============================================================ */
 
 @keyframes slideIn {
   from {
@@ -512,17 +683,6 @@ input:read-only {
   }
 }
 
-/* Hover effects for cards */
-.place-preview:hover,
-.payment-summary:hover,
-.confirmation-card:hover {
-  transform: translateY(-2px);
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Disabled button styling */
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.step-content {
+  animation: slideIn 0.3s ease;
 }

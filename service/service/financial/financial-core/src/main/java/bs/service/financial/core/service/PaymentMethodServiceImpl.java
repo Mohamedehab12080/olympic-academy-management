@@ -52,7 +52,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     public void deletePaymentMethod(Integer paymentMethodId) {
         PaymentMethod paymentMethod = paymentMethodRepository.selectById(paymentMethodId)
                 .orElseThrow(() -> new BusinessException(PAYMENT_METHOD_NOT_FOUND, paymentMethodId));
-        paymentMethodRepository.update(paymentMethod); // Soft delete not needed, just remove
+        paymentMethodRepository.deleteById(paymentMethod.getId()); // Soft delete not needed, just remove
     }
 
     @Override

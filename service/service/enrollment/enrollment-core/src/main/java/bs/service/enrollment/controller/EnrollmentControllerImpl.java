@@ -49,6 +49,17 @@ public class EnrollmentControllerImpl implements EnrollmentController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsDetailsByFilter(String quickSearch, Boolean isActive, Integer traineeId, String traineeNationalId, Integer courseId, Integer trainerId, Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus, PaymentStatus paymentStatus, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo, LocalDate createdOnFrom, LocalDate createdOnTo) {
+        EnrollmentResultSet result = enrollmentService.getAllEnrollmentsByFilter(
+                quickSearch, isActive, traineeId,traineeNationalId, courseId,trainerId, enrollmentTypeId,
+                enrollmentStatus, paymentStatus, startDateFrom, startDateTo,
+                endDateFrom, endDateTo, createdOnFrom, createdOnTo,
+                null, null, null, null);
+        return ResponseEntity.ok(result);
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentVTO> _getEnrollmentById(Integer enrollmentId) {
         EnrollmentVTO result = enrollmentService.getEnrollmentById(enrollmentId);
         return ResponseEntity.ok(result);

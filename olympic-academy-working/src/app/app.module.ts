@@ -59,7 +59,7 @@ import { authInterceptor } from './core/auth/auth.interceptor';
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    RouterModule.forRoot(routes),
+    RouterModule.forRoot(routes, { useHash: true }),
     FormsModule,
     ReactiveFormsModule,
     

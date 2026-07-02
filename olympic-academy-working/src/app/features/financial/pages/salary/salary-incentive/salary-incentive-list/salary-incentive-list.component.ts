@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -33,10 +33,12 @@ import { SALARY_TRANSACTION_TYPES } from '../../../../../../core/models/financia
 import { SALARY_TYPES } from '../../../../../../core/models/common.model';
 import { SalaryIncentiveVTO, SalaryIncentiveResultSet } from '../../../../../../core/models/financial.model';
 import { EmployeeLookupVTO } from '../../../../../../core/models/employee.model';
-// Import the wizard modal component - adjust path as needed
 import { SalaryIncentiveWizardModalComponent } from '../salary-incentive-wizard/salary-incentive-wizard-modal.component.ts';
 
-// Print Dialog Component
+// ============================================================================
+// PRINT DIALOG COMPONENT
+// ============================================================================
+
 @Component({
   selector: 'app-print-dialog',
   standalone: true,
@@ -252,6 +254,10 @@ export class PrintDialogComponent {
   }
 }
 
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 @Component({
   selector: 'app-salary-incentive-list',
   standalone: true,
@@ -283,23 +289,48 @@ export class PrintDialogComponent {
   styleUrls: ['./salary-incentive-list.component.css']
 })
 export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDestroy {
+  
+  Math = Math;
+  
+  // ==========================================================================
+  // TABLE CONFIGURATION
+  // ==========================================================================
+
   displayedColumns: string[] = ['index', 'employee', 'nationalId', 'salary', 'remainedSalary', 'transactionType', 'amount', 'withdrawDate', 'paymentMethod', 'salaryType', 'actions'];
   dataSource = new MatTableDataSource<SalaryIncentiveVTO>([]);
+  allTransactions: SalaryIncentiveVTO[] = [];
   isLoading = false;
   isPrinting = false;
   transactionTypes = SALARY_TRANSACTION_TYPES;
   salaryTypes = SALARY_TYPES;
   
+  // ==========================================================================
+  // DATA COLLECTIONS
+  // ==========================================================================
+
   employees: EmployeeLookupVTO[] = [];
   paymentMethods: any[] = [];
   
-  // Pagination
+  // ==========================================================================
+  // PAGINATION
+  // ==========================================================================
+
   totalRecords = 0;
   currentPage = 0;
-  pageSize = 10;
+  pageSize = 25;
   pageSizeOptions = [5, 10, 25, 50, 100];
   
-  // Filter criteria - store as Date objects for the date picker
+  // ==========================================================================
+  // SORTING
+  // ==========================================================================
+
+  sortBy: string = 'CREATION_DATE';
+  sortDir: string = 'DESC';
+  
+  // ==========================================================================
+  // FILTER CRITERIA
+  // ==========================================================================
+
   filterDates = {
     withdrawDateFrom: null as Date | null,
     withdrawDateTo: null as Date | null
@@ -319,44 +350,57 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   barcodeSearch: string = '';
   isBarcodeMode: boolean = false;
   
-  // Options for searchable selects
+  // ==========================================================================
+  // OPTIONS FOR SEARCHABLE SELECTS
+  // ==========================================================================
+
   employeeOptions: SelectOption[] = [];
   transactionTypeOptions: SelectOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
   salaryTypeOptions: SelectOption[] = [];
   
-  // Subject for debouncing search
+  // ==========================================================================
+  // SUBJECTS
+  // ==========================================================================
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+
+  // ==========================================================================
+  // VIEW CHILDREN
+  // ==========================================================================
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // Statistics
+  // ==========================================================================
+  // STATISTICS - COMPUTED PROPERTIES
+  // ==========================================================================
+
   get totalAmount(): number {
-    return this.dataSource.data.reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
+    return this.allTransactions.reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get salaryTotal(): number {
-    return this.dataSource.data
+    return this.allTransactions
       .filter(item => item.salaryTransactionType?.id === 1)
       .reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get incentiveTotal(): number {
-    return this.dataSource.data
+    return this.allTransactions
       .filter(item => item.salaryTransactionType?.id === 2)
       .reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get bonusTotal(): number {
-    return this.dataSource.data
+    return this.allTransactions
       .filter(item => item.salaryTransactionType?.id === 3)
       .reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
 
   get advanceTotal(): number {
-    return this.dataSource.data
+    return this.allTransactions
       .filter(item => item.salaryTransactionType?.id === 4)
       .reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
   }
@@ -365,14 +409,23 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     return Math.ceil(this.totalRecords / this.pageSize);
   }
 
+  // ==========================================================================
+  // CONSTRUCTOR
+  // ==========================================================================
+
   constructor(
     private financialService: FinancialService,
     private employeeService: EmployeeService,
     private notification: NotificationService,
     private reportService: ReportService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  // ==========================================================================
+  // LIFECYCLE HOOKS
+  // ==========================================================================
 
   ngOnInit() {
     this.loadSelectOptions();
@@ -391,6 +444,60 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     this.destroy$.complete();
   }
 
+  // ==========================================================================
+  // GET TOTAL PAGES
+  // ==========================================================================
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  // ==========================================================================
+  // PAGINATION METHODS
+  // ==========================================================================
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 0) {
+      this.currentPage = 0;
+      this.loadData();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  goToNextPage(): void {
+    this.currentPage++;
+    this.loadData();
+  }
+
+  goToLastPage(): void {
+    const totalPages = this.getTotalPages();
+    if (this.currentPage !== totalPages - 1 && totalPages > 0) {
+      this.currentPage = totalPages - 1;
+      this.loadData();
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  onPageEvent(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadData();
+  }
+
+  // ==========================================================================
+  // INITIALIZATION METHODS
+  // ==========================================================================
+
   private setupSearchDebounce(): void {
     this.searchSubject
       .pipe(
@@ -399,6 +506,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
+        this.currentPage = 0;
         this.loadData();
       });
   }
@@ -422,37 +530,44 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   loadLookupData() {
-    this.employeeService.getAllEmployeesLookup().subscribe({
-      next: (res: EmployeeLookupVTO[]) => { 
-        this.employees = res || [];
-        this.employeeOptions = [
-          { value: null, label: 'الكل' },
-          ...this.employees.map(e => ({ 
-            value: e.id, 
-            label: `${e.fullName} - (الراتب المتبقي: ${e.remainedSalary || 0} جم)`
-          }))
-        ];
-      },
-      error: () => { 
-        this.notification.showError('حدث خطأ في تحميل الموظفين'); 
-      }
-    });
+    this.employeeService.getAllEmployeesLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: EmployeeLookupVTO[]) => { 
+          this.employees = res || [];
+          this.employeeOptions = [
+            { value: null, label: 'الكل' },
+            ...this.employees.map(e => ({ 
+              value: e.id, 
+              label: `${e.fullName} - (الراتب المتبقي: ${e.remainedSalary || 0} جم)`
+            }))
+          ];
+        },
+        error: () => { 
+          this.notification.showError('حدث خطأ في تحميل الموظفين'); 
+        }
+      });
 
-    this.financialService.getAllPaymentMethodsLookup().subscribe({
-      next: (res: any) => { 
-        this.paymentMethods = res.list || [];
-        this.paymentMethodOptions = [
-          { value: null, label: 'الكل' },
-          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
-        ];
-      },
-      error: () => { 
-        this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
-      }
-    });
+    this.financialService.getAllPaymentMethodsLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => { 
+          this.paymentMethods = res.list || [];
+          this.paymentMethodOptions = [
+            { value: null, label: 'الكل' },
+            ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+          ];
+        },
+        error: () => { 
+          this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
+        }
+      });
   }
 
-  // Helper method to format date for backend (YYYY-MM-DD)
+  // ==========================================================================
+  // HELPER METHODS
+  // ==========================================================================
+
   private formatDateForBackend(date: Date | null): string | null {
     if (!date) return null;
     const year = date.getFullYear();
@@ -461,29 +576,32 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     return `${year}-${month}-${day}`;
   }
 
-  // Update filters with formatted dates before loading data
   private updateFilterDates(): void {
     this.filters.withdrawDateFrom = this.formatDateForBackend(this.filterDates.withdrawDateFrom);
     this.filters.withdrawDateTo = this.formatDateForBackend(this.filterDates.withdrawDateTo);
   }
 
-  // Handle date changes
+  // ==========================================================================
+  // DATE CHANGE HANDLERS
+  // ==========================================================================
+
   onDateFromChange(): void {
-    this.filterDates.withdrawDateFrom = this.filterDates.withdrawDateFrom;
     this.currentPage = 0;
     this.loadData();
   }
 
   onDateToChange(): void {
-    this.filterDates.withdrawDateTo = this.filterDates.withdrawDateTo;
     this.currentPage = 0;
     this.loadData();
   }
 
+  // ==========================================================================
+  // LOAD DATA WITH PAGINATION
+  // ==========================================================================
+
   loadData() {
     this.isLoading = true;
     
-    // Update filters with formatted dates
     this.updateFilterDates();
     
     const params: any = {
@@ -499,36 +617,36 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     if (this.filters.withdrawDateFrom) params.withdrawDateFrom = this.filters.withdrawDateFrom;
     if (this.filters.withdrawDateTo) params.withdrawDateTo = this.filters.withdrawDateTo;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+    
+    if (this.sortBy) params.orderBy = this.sortBy;
+    if (this.sortDir) params.orderDir = this.sortDir;
 
-    if (this.sort && this.sort.active) {
-      params.orderBy = this.sort.active;
-      params.orderDir = this.sort.direction.toUpperCase();
-    }
-
-    this.financialService.getAllSalaryIncentivesByFilter(params).subscribe({
-      next: (res: SalaryIncentiveResultSet) => {
-        this.dataSource.data = res.items || [];
-        this.totalRecords = res.total || 0;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading data:', err);
-        this.notification.showError('حدث خطأ في تحميل البيانات');
-        this.isLoading = false;
-      }
-    });
+    this.financialService.getAllSalaryIncentivesByFilter(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: SalaryIncentiveResultSet) => {
+          this.allTransactions = res.items || [];
+          this.totalRecords = res.total || 0;
+          this.dataSource.data = this.allTransactions;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading data:', err);
+          this.notification.showError('حدث خطأ في تحميل البيانات');
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
-  onPageChange(event: PageEvent): void {
-    this.currentPage = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.loadData();
-  }
+  // ==========================================================================
+  // FILTER METHODS
+  // ==========================================================================
 
   applyQuickSearch(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.quickSearch = value;
-    this.currentPage = 0;
     this.searchSubject.next(value);
   }
 
@@ -547,6 +665,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   clearBarcodeSearch(): void {
     this.barcodeSearch = '';
     this.filters.employeeNationalId = null;
+    this.currentPage = 0;
     this.loadData();
   }
 
@@ -555,6 +674,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     if (!this.isBarcodeMode) {
       this.barcodeSearch = '';
       this.filters.employeeNationalId = null;
+      this.currentPage = 0;
       this.loadData();
     }
   }
@@ -581,6 +701,34 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
 
+  hasActiveFilters(): boolean {
+    return !!(this.filters.employeeId || 
+              this.filters.employeeNationalId || 
+              this.filters.type || 
+              this.filters.paymentMethodId || 
+              this.filters.salaryType || 
+              this.filters.withdrawDateFrom || 
+              this.filters.withdrawDateTo || 
+              this.quickSearch);
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.filters.employeeId) count++;
+    if (this.filters.employeeNationalId) count++;
+    if (this.filters.type) count++;
+    if (this.filters.paymentMethodId) count++;
+    if (this.filters.salaryType) count++;
+    if (this.filters.withdrawDateFrom) count++;
+    if (this.filters.withdrawDateTo) count++;
+    if (this.quickSearch) count++;
+    return count;
+  }
+
+  // ==========================================================================
+  // TRANSACTION OPERATIONS
+  // ==========================================================================
+
   openNewTransactionModal() {
     const dialogRef = this.dialog.open(SalaryIncentiveWizardModalComponent, {
       data: {},
@@ -596,15 +744,54 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   viewTransaction(id: number) {
-    this.financialService.getSalaryIncentiveById(id).subscribe({
-      next: (transaction) => {
-        this.openDetailsModal(transaction);
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات المعاملة');
+    this.financialService.getSalaryIncentiveById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (transaction) => {
+          this.openDetailsModal(transaction);
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل بيانات المعاملة');
+        }
+      });
+  }
+
+  editTransaction(id: number) {
+    const dialogRef = this.dialog.open(SalaryIncentiveWizardModalComponent, {
+      data: { transactionId: id },
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
       }
     });
   }
+
+  deleteTransaction(item: SalaryIncentiveVTO) {
+    const typeName = item.salaryTransactionType?.title || 'المعاملة';
+    if (confirm(`هل أنت متأكد من حذف ${typeName} للموظف "${item.employee?.fullName}"؟`)) {
+      this.isLoading = true;
+      this.financialService.deleteSalaryIncentive(item.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notification.showSuccess('تم الحذف بنجاح');
+            this.loadData();
+          },
+          error: () => {
+            this.notification.showError('حدث خطأ في الحذف');
+            this.isLoading = false;
+          }
+        });
+    }
+  }
+
+  // ==========================================================================
+  // DETAILS MODAL
+  // ==========================================================================
 
   openDetailsModal(transaction: SalaryIncentiveVTO): void {
     const modalContainer = document.createElement('div');
@@ -633,6 +820,16 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     const today = new Date().toLocaleDateString('ar-EG');
     const transactionNumber = `TRX-${transaction.id}`;
     
+    const getTransactionTypeStyle = (typeId: number) => {
+      switch(typeId) {
+        case 1: return 'background: #dbeafe; color: #1e40af;';
+        case 2: return 'background: #d1fae5; color: #065f46;';
+        case 3: return 'background: #fef3c7; color: #92400e;';
+        case 4: return 'background: #fee2e2; color: #991b1b;';
+        default: return 'background: #f3f4f6; color: #374151;';
+      }
+    };
+    
     modalContent.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
         <h2 style="margin: 0; color: #10b981; font-size: 20px;">تفاصيل المعاملة</h2>
@@ -660,7 +857,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
       
       <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">💰 تفاصيل المعاملة</h3>
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع المعاملة</div><div style="color: #1f2937; font-size: 12px;">${transaction.salaryTransactionType?.title || '-'}</div></div>
+        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع المعاملة</div><div style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; ${getTransactionTypeStyle(transaction.salaryTransactionType?.id)}">${transaction.salaryTransactionType?.title || '-'}</div></div>
         <div><div style="font-weight: 600; color: #374151; font-size: 11px;">المبلغ</div><div style="color: #dc2626; font-size: 16px; font-weight: 700;">${(transaction.amountWithdrawn || 0).toLocaleString('ar-EG')} جم</div></div>
         <div><div style="font-weight: 600; color: #374151; font-size: 11px;">تاريخ الصرف</div><div style="color: #1f2937; font-size: 12px;">${transaction.withdrawDate ? new Date(transaction.withdrawDate).toLocaleDateString('ar-EG') : '-'}</div></div>
         <div><div style="font-weight: 600; color: #374151; font-size: 11px;">طريقة الدفع</div><div style="color: #1f2937; font-size: 12px;">${transaction.paymentMethod?.title || '-'}</div></div>
@@ -693,36 +890,9 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     });
   }
 
-  editTransaction(id: number) {
-    const dialogRef = this.dialog.open(SalaryIncentiveWizardModalComponent, {
-      data: { transactionId: id },
-      width: '800px',
-      maxWidth: '90vw'
-    });
-    
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadData();
-      }
-    });
-  }
-
-  deleteTransaction(item: SalaryIncentiveVTO) {
-    const typeName = item.salaryTransactionType?.title || 'المعاملة';
-    if (confirm(`هل أنت متأكد من حذف ${typeName} للموظف "${item.employee?.fullName}"؟`)) {
-      this.isLoading = true;
-      this.financialService.deleteSalaryIncentive(item.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم الحذف بنجاح');
-          this.loadData();
-        },
-        error: () => {
-          this.notification.showError('حدث خطأ في الحذف');
-          this.isLoading = false;
-        }
-      });
-    }
-  }
+  // ==========================================================================
+  // HELPER METHODS - GETTERS
+  // ==========================================================================
 
   getTransactionTypeClass(typeId: number): string {
     switch(typeId) {
@@ -748,14 +918,18 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     return this.totalRecords;
   }
 
+  // ==========================================================================
+  // EXPORT FUNCTIONS
+  // ==========================================================================
+
   exportToExcel() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allTransactions.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
 
-    const exportData = this.dataSource.data.map((item, index) => ({
-      '#': index + 1,
+    const exportData = this.allTransactions.map((item, index) => ({
+      '#': (this.currentPage * this.pageSize) + index + 1,
       'الموظف': item.employee?.fullName || '-',
       'الرقم القومي': item.employee?.nationalId || '-',
       'الراتب الأساسي': item.employee?.salary || 0,
@@ -771,6 +945,10 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     this.reportService.exportToExcel(exportData, 'salary-incentives-list', 'الرواتب والحوافز');
     this.notification.showSuccess('تم تصدير البيانات بنجاح');
   }
+
+  // ==========================================================================
+  // PRINT FUNCTIONS
+  // ==========================================================================
 
   openPrintDialog(): void {
     if (this.totalRecords === 0) {
@@ -838,6 +1016,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   private generatePrintContent(data: SalaryIncentiveVTO[]): void {
+    // Build filter text
     const filterTexts: string[] = [];
     if (this.filters.employeeId) {
       const employee = this.employees.find(e => e.id === this.filters.employeeId);
@@ -862,12 +1041,14 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     if (this.filters.withdrawDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.withdrawDateTo}`);
     if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
+    // Calculate totals
     const totalAmount = data.reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
     const salaryTotal = data.filter(item => item.salaryTransactionType?.id === 1).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
     const incentiveTotal = data.filter(item => item.salaryTransactionType?.id === 2).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
     const bonusTotal = data.filter(item => item.salaryTransactionType?.id === 3).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
     const advanceTotal = data.filter(item => item.salaryTransactionType?.id === 4).reduce((sum, item) => sum + (item.amountWithdrawn || 0), 0);
 
+    // Build table rows
     let tableRows = '';
     data.forEach((item: SalaryIncentiveVTO, index: number) => {
       const typeClass = this.getTransactionTypeClass(item.salaryTransactionType?.id);
@@ -899,6 +1080,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
       `;
     });
 
+    // Create print container
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -970,7 +1152,6 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
         </table>
         <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
         <div class="no-print"><button class="print-btn" onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button></div>
-        <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); };</script>
       </body>
       </html>
     `;
@@ -991,6 +1172,10 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
       this.notification.showSuccess('تم فتح التقرير - يمكنك حفظه كـ PDF من نافذة الطباعة');
     }
   }
+
+  // ==========================================================================
+  // ENUM CONVERTERS
+  // ==========================================================================
 
   private getTransactionTypeEnumString(id: number): string {
     switch(id) {

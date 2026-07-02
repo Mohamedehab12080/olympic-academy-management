@@ -25,6 +25,10 @@ public class EnrollmentPaymentQueryBuilder extends AbstractQueryBuilderV2<Enroll
             qbConditions.add(QBCondition.builder().placeHolder("quickSearch").value("%" + filters.getQuickSearch() + "%")
                     .condition("LOWER(item.enrollment.trainee.fullName) LIKE LOWER(:PH)").build());
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         if (filters.getTraineeNationalId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("traineeNationalId").value(filters.getTraineeNationalId())
                     .condition("item.enrollment.trainee.nationalId = :PH").build());

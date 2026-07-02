@@ -21,6 +21,10 @@ public class SalaryDeductionQueryBuilder extends AbstractQueryBuilderV2<SalaryDe
     public List<QBCondition> evaluateWhereConditions(SalaryDeductionSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         if (filters.getEmployeeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("employeeId").value(filters.getEmployeeId())
                     .condition("item.employee.id = :PH").build());

@@ -59,6 +59,24 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  /places/details:
+    get:
+      tags:
+        - Place
+      summary: Retrieve list of Places
+      operationId: getAllPlacesDetailsByFilter
+      parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceResultSet'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /places/{placeId}:
     put:
       tags:

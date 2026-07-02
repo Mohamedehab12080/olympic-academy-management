@@ -1,4 +1,4 @@
-// enrollment-payment-details-modal.component.ts - THERMAL PRINTER FIXED
+// enrollment-payment-details-modal.component.ts - ENHANCED RECEIPT WITH WATERMARK AND COPYRIGHT
 
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -464,28 +464,24 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
   deletePayment(): void {
     this.dialogRef.close({ action: 'delete', payment: this.payment });
   }
+  
   printPaymentDocument(): void {
     this.printReceiptWithLogo();
   }
 
   private printReceiptWithLogo(): void {
-    // Open a minimal print window
     const printWindow = window.open('', '_blank', 'width=350,height=600,scrollbars=no,menubar=no,toolbar=no,status=no');
     if (!printWindow) {
       this.notification.showError('تعذر فتح نافذة الطباعة. يرجى السماح بالنوافذ المنبثقة.');
       return;
     }
 
-    // Prepare receipt data
     const data = this.prepareReceiptData();
-
-    // Generate the HTML with logo image at top and barcode at bottom
-    const html = this.buildReceiptWithLogoImageHTML(data);
+    const html = this.buildEnhancedReceiptHTML(data);
     
     printWindow.document.write(html);
     printWindow.document.close();
 
-    // Force print after content loads
     setTimeout(() => {
       try {
         printWindow.focus();
@@ -497,9 +493,8 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
     }, 1000);
   }
 
-  private buildReceiptWithLogoImageHTML(data: any): string {
-    // Use absolute path from the server
-    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+  private buildEnhancedReceiptHTML(data: any): string {
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
     
     return `
 <!DOCTYPE html>
@@ -529,46 +524,125 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
     max-width: 80mm;
   }
 
+  .receipt-wrapper {
+    width: 80mm;
+    min-width: 80mm;
+    max-width: 80mm;
+    margin: 0;
+    padding: 0;
+    background: white;
+    position: relative;
+    overflow: hidden;
+  }
+
   .receipt {
     width: 80mm;
     min-width: 80mm;
     max-width: 80mm;
     margin: 0;
-    padding: 2mm 3mm;
+    padding: 2.5mm 3mm 3mm 3mm;
     background: white;
     font-family: 'Arial', 'Tahoma', sans-serif;
     font-size: 9pt;
     line-height: 1.4;
     color: #000000;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== WATERMARK - Behind content ===== */
+  .receipt-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .receipt-watermark img {
+    width: 100px;
+    height: auto;
+    object-fit: contain;
+    opacity: 0.9;
+  }
+  
+  .receipt-watermark-text {
+    position: absolute;
+    top: 56%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg) scale(0.8);
+    font-size: 20px;
+    font-weight: 900;
+    color: #2563eb;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+    text-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  }
+
+  /* ===== CONTENT - Above watermark ===== */
+  .receipt-content {
+    position: relative;
+    z-index: 1;
   }
 
   /* ===== LOGO SECTION ===== */
   .logo-section {
     text-align: center;
-    padding: 1mm 0 0.5mm 0;
-    border-bottom: 2px solid #2563eb;
+    padding: 1mm 0 1mm 0;
+    border-bottom: 2.5px solid #2563eb;
     margin-bottom: 2mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
   
   .logo-section img {
-    max-width: 70px;
-    height: auto;
-    display: block;
-    margin: 0 auto;
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 2px solid #2563eb;
+    padding: 2px;
+    background: white;
   }
   
   .logo-section .academy-name {
-    font-size: 14pt;
+    font-size: 13pt;
     font-weight: 700;
-    color: #2563eb;
+    color: #1a1a2e;
     display: block;
-    margin-top: 0.5mm;
+  }
+  
+  .logo-section .receipt-type {
+    font-size: 7pt;
+    color: #2563eb;
+    font-weight: 600;
+    display: block;
+    margin-top: -1px;
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
   }
 
   /* ===== RECEIPT TITLE ===== */
   .receipt-title {
     text-align: center;
-    padding: 1mm 0 2mm 0;
+    padding: 0.5mm 0 1.5mm 0;
     border-bottom: 1px dashed #e5e7eb;
     margin-bottom: 2mm;
   }
@@ -692,6 +766,20 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
     color: #94a3b8;
   }
 
+  /* ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== */
+  .receipt-credit {
+    text-align: center;
+    font-size: 4.5px;
+    color: #1a1a2e;
+    font-weight: 500;
+    opacity: 0.6;
+    letter-spacing: 0.3px;
+    direction: ltr;
+    margin-top: 1mm;
+    padding-top: 0.5mm;
+    border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
+  }
+
   .note-text {
     font-size: 7pt;
     color: #4b5563;
@@ -726,7 +814,7 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
       min-width: 80mm !important;
       max-width: 80mm !important;
       margin: 0 !important;
-      padding: 0 !important;
+      padding: 2mm 2.5mm 2.5mm 2.5mm !important;
     }
     .print-btn-container {
       display: none !important;
@@ -734,13 +822,28 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
     .receipt-title,
     .status-badge,
     .payment-details,
-    .logo-section {
+    .logo-section,
+    .receipt-watermark {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
     .logo-section img {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+    }
+    .receipt-watermark {
+      opacity: 0.06 !important;
+    }
+    .receipt-watermark img {
+      width: 90px !important;
+    }
+    .receipt-watermark-text {
+      font-size: 18px !important;
+      opacity: 0.04 !important;
+    }
+    .receipt-credit {
+      opacity: 0.5 !important;
+      color: #000000 !important;
     }
   }
 
@@ -754,11 +857,12 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
       width: 58mm !important;
       min-width: 58mm !important;
       max-width: 58mm !important;
-      padding: 1mm 1.5mm !important;
+      padding: 1.5mm 2mm 2mm 2mm !important;
       font-size: 7pt !important;
     }
-    .logo-section img { max-width: 50px !important; }
-    .logo-section .academy-name { font-size: 11pt !important; }
+    .logo-section img { width: 28px !important; height: 28px !important; }
+    .logo-section .academy-name { font-size: 10pt !important; }
+    .logo-section .receipt-type { font-size: 5.5pt !important; }
     .receipt-title h1 { font-size: 11pt !important; }
     .receipt-body { padding: 0.5mm 0 !important; }
     .section-title { font-size: 6.5pt !important; }
@@ -770,102 +874,121 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
     .barcode-container .barcode-label { font-size: 3.5pt !important; }
     .note-text { font-size: 5.5pt !important; }
     .receipt-footer { font-size: 4.5pt !important; }
+    .receipt-watermark img { width: 70px !important; }
+    .receipt-watermark-text { font-size: 14px !important; }
+    .receipt-credit { font-size: 3.5px !important; }
   }
 </style>
 </head>
 <body>
-<div class="receipt">
-  <!-- LOGO AND ACADEMY NAME -->
-  <div class="logo-section">
-    <img src="${logoPath}" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
-    <span class="academy-name">الأكاديمية الأولمبية</span>
-  </div>
-
-  <!-- RECEIPT TITLE -->
-  <div class="receipt-title">
-    <h1>إيصال دفع</h1>
-    <div class="receipt-number">#${data.id}</div>
-  </div>
-
-  <!-- BODY -->
-  <div class="receipt-body">
-    <!-- Enrollment Info -->
-    <div class="receipt-section">
-      <div class="section-title">📚 التسجيل</div>
-      <div class="info-row">
-        <span class="label">المتدرب</span>
-        <span class="value">${data.traineeName}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">الدورة</span>
-        <span class="value">${data.courseTitle}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">تاريخ الدفع</span>
-        <span class="value">${data.paymentDate}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">القيمة الإجمالية</span>
-        <span class="value">${this.formatCurrency(data.enrollmentValue)} جم</span>
-      </div>
+<div class="receipt-wrapper">
+  <div class="receipt">
+    <!-- ===== WATERMARK - Behind content ===== -->
+    <div class="receipt-watermark">
+      <img src="${logoPath}" alt="الأكاديمية الأولمبية">
     </div>
+    <div class="receipt-watermark-text">الأكاديمية الأولمبية</div>
 
-    <hr class="divider-line">
-
-    <!-- Payment Details -->
-    <div class="receipt-section">
-      <div class="section-title">💰 الدفعة</div>
-      <div class="payment-details">
-        <div class="info-row">
-          <span class="label">طريقة الدفع</span>
-          <span class="value">${data.paymentMethod}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">المبلغ المدفوع</span>
-          <span class="value highlight amount">${this.formatCurrency(data.paidAmount)} جم</span>
-        </div>
-        <div class="info-row">
-          <span class="label">المبلغ المتبقي</span>
-          <span class="value ${data.remainedValue === 0 ? 'highlight' : 'danger'}">${this.formatCurrency(data.remainedValue)} جم</span>
-        </div>
-        <div class="info-row">
-          <span class="label">إجمالي المدفوع</span>
-          <span class="value highlight">${this.formatCurrency(data.totalPaid)} جم</span>
-        </div>
-        <div class="info-row" style="border-bottom: none;">
-          <span class="label">الحالة</span>
-          <span class="value">
-            <span class="status-badge" style="background: ${data.statusBg}; color: ${data.statusColor};">
-              ${data.paymentStatus}
-            </span>
-          </span>
+    <!-- ===== CONTENT ===== -->
+    <div class="receipt-content">
+      <!-- LOGO AND ACADEMY NAME -->
+      <div class="logo-section">
+        <img src="${logoPath}" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+        <div class="logo-text">
+          <span class="academy-name"> الأكاديمية الأولمبية</span>
+          <span class="receipt-type">✦ إيصال دفع ✦</span>
         </div>
       </div>
-    </div>
 
-    ${data.note ? `
-      <hr class="divider-line">
-      <div class="receipt-section">
-        <div class="section-title">📝 ملاحظات</div>
-        <div class="info-row" style="border-bottom: none;">
-          <span class="note-text">${data.note}</span>
+      <!-- RECEIPT TITLE -->
+      <div class="receipt-title">
+        <h1>إيصال دفع</h1>
+        <div class="receipt-number">#${data.id}</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="receipt-body">
+        <!-- Enrollment Info -->
+        <div class="receipt-section">
+          <div class="section-title">📚 التسجيل</div>
+          <div class="info-row">
+            <span class="label">المتدرب</span>
+            <span class="value">${data.traineeName}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">الدورة</span>
+            <span class="value">${data.courseTitle}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">تاريخ الدفع</span>
+            <span class="value">${data.paymentDate}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">القيمة الإجمالية</span>
+            <span class="value">${this.formatCurrency(data.enrollmentValue)} جم</span>
+          </div>
+        </div>
+
+        <hr class="divider-line">
+
+        <!-- Payment Details -->
+        <div class="receipt-section">
+          <div class="section-title">💰 الدفعة</div>
+          <div class="payment-details">
+            <div class="info-row">
+              <span class="label">طريقة الدفع</span>
+              <span class="value">${data.paymentMethod}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">المبلغ المدفوع</span>
+              <span class="value highlight amount">${this.formatCurrency(data.paidAmount)} جم</span>
+            </div>
+            <div class="info-row">
+              <span class="label">المبلغ المتبقي</span>
+              <span class="value ${data.remainedValue === 0 ? 'highlight' : 'danger'}">${this.formatCurrency(data.remainedValue)} جم</span>
+            </div>
+            <div class="info-row">
+              <span class="label">إجمالي المدفوع</span>
+              <span class="value highlight">${this.formatCurrency(data.totalPaid)} جم</span>
+            </div>
+            <div class="info-row" style="border-bottom: none;">
+              <span class="label">الحالة</span>
+              <span class="value">
+                <span class="status-badge" style="background: ${data.statusBg}; color: ${data.statusColor};">
+                  ${data.paymentStatus}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        ${data.note ? `
+          <hr class="divider-line">
+          <div class="receipt-section">
+            <div class="section-title">📝 ملاحظات</div>
+            <div class="info-row" style="border-bottom: none;">
+              <span class="note-text">${data.note}</span>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- BARCODE AT BOTTOM -->
+      <div class="barcode-section">
+        <div class="barcode-container">
+          <svg id="barcode"></svg>
+          <span class="barcode-label">${data.nationalId}</span>
         </div>
       </div>
-    ` : ''}
-  </div>
 
-  <!-- BARCODE AT BOTTOM -->
-  <div class="barcode-section">
-    <div class="barcode-container">
-      <svg id="barcode"></svg>
-      <span class="barcode-label">${data.nationalId}</span>
+      <!-- FOOTER -->
+      <div class="receipt-footer">
+        <div>شكراً لثقتكم بنا</div>
+      </div>
+
+      <!-- ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== -->
+      <div class="receipt-credit">powered by CoreStack Solutions | 01069911181</div>
     </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div class="receipt-footer">
-    <div>شكراً لثقتكم بنا</div>
-    <div>${data.currentDate}</div>
   </div>
 
   <!-- PRINT BUTTON -->
@@ -899,6 +1022,7 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
 </body>
 </html>`;
   }
+
   private prepareReceiptData(): any {
     const isPaid = this.payment.paymentStatus?.id === 2;
     const totalPaid = (this.payment.enrollmentValue || 0) - (this.payment.remainedValue || 0);

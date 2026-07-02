@@ -12,4 +12,5 @@ public interface ExpenseTypeRepository {
     Optional<ExpenseType> selectById(Integer id);
     List<ExpenseType> selectAllByFilters(ExpenseTypeSearchFilter filters);
     Integer countAllByFilters(ExpenseTypeSearchFilter filters);
+    void deleteById(Integer id);
 }

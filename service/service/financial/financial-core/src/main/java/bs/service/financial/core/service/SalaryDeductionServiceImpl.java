@@ -61,7 +61,9 @@ public class SalaryDeductionServiceImpl implements SalaryDeductionService {
                 .orElseThrow(() -> new BusinessException(SALARY_DEDUCTION_NOT_FOUND, deductionId));
 
         SalaryDeduction deductionToUpdate = financialMapper.toSalaryDeduction(salaryDeductionDTO);
-        deductionToUpdate.setId(deductionId);
+        deductionToUpdate.setId(deduction.getId());
+        deductionToUpdate.setCreatedBy(deduction.getCreatedBy());
+        deductionToUpdate.setCreatedOn(deduction.getCreatedOn());
         salaryDeductionRepository.update(deductionToUpdate);
         return NewRecordVTO.builder().id(deductionId).build();
     }
@@ -90,6 +92,7 @@ public class SalaryDeductionServiceImpl implements SalaryDeductionService {
         SalaryDeductionSearchFilter filter = SalaryDeductionSearchFilter.builder()
                 .employeeId(employeeId)
                 .salaryType(salaryType!=null? salaryType.id:null)
+                .isDeleted(false)
                 .deductionDateFrom(deductionDateFrom)
                 .deductionDateTo(deductionDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

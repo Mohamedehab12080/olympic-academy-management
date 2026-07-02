@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class EnrollmentRefundSearchFilter extends SearchFilter<EnrollmentRefundSearchFilter.OrderByAttributes> {
 
+    private Boolean isDeleted;
     private Integer enrollmentId;
     private Integer courseId;
     private Integer paymentMethodId;

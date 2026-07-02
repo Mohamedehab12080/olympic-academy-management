@@ -1744,73 +1744,95 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
 
   const today = new Date().toLocaleDateString('ar-EG');
   let cardsHtml = '';
+  const logoPath = 'assets/images/mainLogo.jpeg';
 
   employees.forEach((employee, index) => {
     const imageUrl = imageUrls[index] || '';
     const genderDisplay = employee.gender?.title || '-';
     const employeeTypeDisplay = employee.employeeType?.title || '-';
     const isActive = employee.isActive;
-    const departmentsText = employee.departments?.map((d: any) => d.title).join(', ') || '-';
+    const hireDate = employee.hireDate || '-';
+
+    // Conditional photo section - only show if image exists
+    const photoSection = imageUrl ? `
+      <div class="thermal-photo">
+        <img src="${imageUrl}" alt="${this.escapeHtml(employee.fullName)}">
+      </div>
+    ` : '';
 
     cardsHtml += `
       <div class="card-wrapper">
-        <div class="card">
-          <!-- Watermark on Card - Properly sized -->
+        <div class="thermal-card">
+          <!-- Watermark on Card -->
           <div class="card-watermark">
-            <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية">
+            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
           </div>
           <div class="card-watermark-text">الأكاديمية الأولمبية</div>
           
           <div class="card-content">
-            <div class="card-header">
-              <div class="academy-name">الأكاديمية الأولمبية</div>
-              <div class="card-title">بطاقة هوية موظف</div>
-            </div>
-            <div class="card-body">
-              <div class="card-photo">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${employee.fullName}">` : '<div class="placeholder-photo">📷</div>'}
-              </div>
-              <div class="card-info">
-                <div class="card-name">${employee.fullName}</div>
-                <div class="card-id">رقم الهوية: ${employee.nationalId}</div>
-                <div class="card-details">
-                  <div class="detail-row">
-                    <span class="detail-label">النوع:</span>
-                    <span class="detail-value">${employeeTypeDisplay}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">الجنس:</span>
-                    <span class="detail-value">${genderDisplay}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">تاريخ التوظيف:</span>
-                    <span class="detail-value">${employee.hireDate || '-'}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">الأقسام:</span>
-                    <span class="detail-value">${departmentsText}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">الحالة:</span>
-                    <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
-                  </div>
-                </div>
+            <!-- Logo Section at Top -->
+            <div class="card-logo-section">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image">
+              <div class="card-logo-text">
+                <span class="academy-name">🏛️ الأكاديمية الأولمبية</span>
+                <span class="card-type">✦ بطاقة هوية موظف ✦</span>
               </div>
             </div>
-            <div class="card-footer">
-              <div class="card-barcode">
-                <svg id="barcode-${index}" class="barcode-svg"></svg>
+            
+            <!-- Photo - Only shown if image exists -->
+            ${photoSection}
+            
+            <!-- Name & ID -->
+            <div class="thermal-name">${this.escapeHtml(employee.fullName) || ''}</div>
+            <div class="thermal-id">🆔 ${employee.nationalId || ''}</div>
+            
+            <div class="thermal-divider"></div>
+            
+            <!-- Info Table -->
+            <table class="thermal-table">
+              <tr>
+                <td class="thermal-label">🧑 النوع</td>
+                <td class="thermal-value">${employeeTypeDisplay}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">👤 الجنس</td>
+                <td class="thermal-value">${genderDisplay}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">📅 التوظيف</td>
+                <td class="thermal-value">${hireDate}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">✓ الحالة</td>
+                <td class="thermal-value ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
+              </tr>
+            </table>
+            
+            <div class="thermal-divider"></div>
+            
+            <!-- Barcode -->
+            <div class="thermal-barcode">
+              <svg id="barcode-${index}" class="barcode-svg"></svg>
+              <div class="thermal-barcode-number">${employee.nationalId || ''}</div>
+            </div>
+            
+            <!-- Footer with Signatures -->
+            <div class="thermal-footer">
+              <div class="thermal-signature">
+                <div class="thermal-line"></div>
+                <div>توقيع الموظف</div>
               </div>
-              <div class="card-signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">توقيع الموظف</div>
-              </div>
-              <div class="card-signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">ختم الأكاديمية</div>
+              <div class="thermal-signature">
+                <div class="thermal-line"></div>
+                <div>ختم الأكاديمية</div>
               </div>
             </div>
-            <div class="card-issue-date">تاريخ الإصدار: ${today}</div>
+            
+            <!-- Issue Date -->
+            <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
+            
+            <!-- ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== -->
+            <div class="card-credit">powered by CoreStack Solutions | 01069911181</div>
           </div>
         </div>
       </div>
@@ -1825,6 +1847,11 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
       <title>بطاقات الموظفين</title>
       <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
       <style>
+        @page { 
+          size: 58mm auto; 
+          margin: 0mm; 
+        }
+        
         * { 
           font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
           box-sizing: border-box;
@@ -1832,137 +1859,44 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
           padding: 0;
         }
         
-        @media print {
-          body { 
-            margin: 0; 
-            padding: 4px; 
-            background: white; 
-          }
-          .no-print { display: none; }
-          .card-wrapper { 
-            page-break-after: avoid;
-            display: inline-block;
-            width: 50%;
-            padding: 3px;
-          }
-          .card {
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-            border-radius: 4px !important;
-            min-height: 240px;
-            padding: 8px 10px;
-          }
-          .card-watermark {
-            opacity: 0.10 !important;
-          }
-          .card-watermark img {
-            width: 100px !important;
-          }
-          .card-watermark-text {
-            font-size: 20px !important;
-            opacity: 0.05 !important;
-          }
-          .card-header {
-            margin-bottom: 4px;
-            padding-bottom: 4px;
-          }
-          .academy-name {
-            font-size: 10px;
-          }
-          .card-title {
-            font-size: 8px;
-          }
-          .card-body {
-            gap: 6px;
-            margin-bottom: 4px;
-          }
-          .card-photo img, .placeholder-photo {
-            width: 50px;
-            height: 50px;
-          }
-          .card-name {
-            font-size: 11px;
-          }
-          .card-id {
-            font-size: 9px;
-          }
-          .card-details {
-            font-size: 8px;
-          }
-          .detail-row {
-            padding: 1px 0;
-          }
-          .card-footer {
-            padding-top: 4px;
-            margin-top: 2px;
-          }
-          .card-barcode svg {
-            height: 25px;
-          }
-          .card-signature {
-            width: 42%;
-          }
-          .signature-label {
-            font-size: 6px;
-          }
-          .signature-line {
-            margin: 2px 0;
-          }
-          .card-issue-date {
-            display: none;
-          }
-        }
-        
-        @media screen {
-          body { 
-            margin: 0; 
-            padding: 20px; 
-            background: #f0f2f5; 
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            justify-content: center;
-          }
-          .card-wrapper { 
-            flex: 0 0 auto;
-            margin: 0;
-          }
-          .card-issue-date {
-            text-align: center;
-            font-size: 8px;
-            color: #94a3b8;
-            margin-top: 6px;
-            padding-top: 4px;
-            border-top: 1px dashed #e2e8f0;
-          }
+        body { 
+          width: 58mm; 
+          margin: 0; 
+          padding: 0; 
+          background: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          min-height: 100vh;
+          padding-bottom: 2mm;
         }
         
         .card-wrapper {
-          display: inline-block;
-        }
-        
-        .card {
           width: 100%;
-          max-width: 280px;
-          min-width: 220px;
-          height: auto;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
-          direction: rtl;
-          padding: 12px 14px;
-          position: relative;
+          max-width: 58mm;
+          margin: 0;
+          flex-shrink: 0;
         }
         
-        /* ===== CARD WATERMARK - Proper size, clearly visible ===== */
+        .thermal-card {
+          width: 100%;
+          max-width: 58mm;
+          margin: 0;
+          padding: 2.5mm 3mm 3.5mm 3mm;
+          background: white;
+          position: relative;
+          overflow: hidden;
+          direction: rtl;
+        }
+        
+        /* ===== WATERMARK - Behind content with logo ===== */
         .card-watermark {
           position: absolute;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
-          opacity: 0.08;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(1.8);
+          opacity: 0.07;
           pointer-events: none;
           z-index: 0;
           display: flex;
@@ -1973,179 +1907,275 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
         }
         
         .card-watermark img {
-          width: 120px;
+          width: 90px;
           height: auto;
-          filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
-          opacity: 0.85;
+          object-fit: contain;
+          opacity: 0.9;
         }
         
         .card-watermark-text {
           position: absolute;
-          top: 56%;
+          top: 57%;
           left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(1);
-          font-size: 24px;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
+          font-size: 18px;
           font-weight: 900;
           color: #f59e0b;
-          letter-spacing: 6px;
+          letter-spacing: 4px;
           text-transform: uppercase;
           white-space: nowrap;
           opacity: 0.04;
           pointer-events: none;
           z-index: 0;
-          text-shadow: 0 2px 10px rgba(245, 158, 11, 0.1);
+          text-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
         }
         
-        /* ===== CARD CONTENT - Above watermark ===== */
+        /* ===== CONTENT - Above watermark ===== */
         .card-content {
           position: relative;
           z-index: 1;
+          width: 100%;
         }
         
-        .card-header {
-          text-align: center;
-          border-bottom: 2px solid #f59e0b;
-          padding-bottom: 6px;
-          margin-bottom: 8px;
-        }
-        .academy-name {
-          font-size: 12px;
-          font-weight: 700;
-          color: #1a1a2e;
-        }
-        .card-title {
-          font-size: 9px;
-          color: #f59e0b;
-          font-weight: 600;
-          margin-top: 1px;
-        }
-        
-        .card-body {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 8px;
-        }
-        .card-photo {
-          flex-shrink: 0;
-        }
-        .card-photo img {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #f59e0b;
-        }
-        .placeholder-photo {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        /* ===== LOGO SECTION AT TOP ===== */
+        .card-logo-section {
           display: flex;
           align-items: center;
+          gap: 8px;
+          padding: 2.5mm 0 2mm 0;
+          margin-bottom: 2mm;
+          border-bottom: 2.5px solid #f59e0b;
           justify-content: center;
-          font-size: 28px;
-          color: white;
+          background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.05), transparent);
+          border-radius: 2px;
         }
         
-        .card-info {
-          flex: 1;
-          min-width: 0;
+        .card-logo-image {
+          width: 34px;
+          height: 34px;
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 2px;
+          border: 2px solid #f59e0b;
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
-        .card-name {
-          font-size: 13px;
+        
+        .card-logo-text {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+        }
+        
+        .card-logo-text .academy-name {
+          font-size: 11px;
           font-weight: 700;
           color: #1a1a2e;
-          margin-bottom: 2px;
-        }
-        .card-id {
-          font-size: 10px;
-          color: #64748b;
-          margin-bottom: 4px;
-        }
-        .card-details {
-          font-size: 9px;
-        }
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 2px 0;
-          border-bottom: 1px dashed #f1f5f9;
-        }
-        .detail-label {
-          color: #64748b;
-        }
-        .detail-value {
-          color: #1e293b;
-          font-weight: 500;
-        }
-        .detail-value.status.active {
-          color: #10b981;
-        }
-        .detail-value.status.inactive {
-          color: #ef4444;
+          letter-spacing: 0.5px;
         }
         
-        .card-footer {
-          border-top: 2px solid #f59e0b;
-          padding-top: 6px;
-          margin-top: 4px;
-        }
-        .card-barcode {
-          text-align: center;
-          margin-bottom: 6px;
-        }
-        .card-barcode svg {
-          max-width: 100%;
-          height: 35px;
-        }
-        .card-signature {
-          display: inline-block;
-          width: 44%;
-          text-align: center;
-          vertical-align: top;
-        }
-        .card-signature:last-child {
-          margin-right: 5%;
-        }
-        .signature-line {
-          border-top: 1px solid #94a3b8;
-          margin: 3px 0 2px;
-        }
-        .signature-label {
+        .card-logo-text .card-type {
           font-size: 7px;
-          color: #94a3b8;
-        }
-        .card-issue-date {
-          text-align: center;
-          font-size: 8px;
-          color: #94a3b8;
-          margin-top: 6px;
-          padding-top: 4px;
-          border-top: 1px dashed #e2e8f0;
+          color: #f59e0b;
+          font-weight: 600;
+          letter-spacing: 0.5px;
         }
         
-        @media (max-width: 600px) {
-          .card {
-            max-width: 100%;
+        /* Compact Photo */
+        .thermal-photo { 
+          text-align: center; 
+          margin-bottom: 1mm; 
+        }
+        .thermal-photo img { 
+          width: 36px; 
+          height: 36px; 
+          border-radius: 50%; 
+          object-fit: cover;
+          border: 2px solid #f59e0b;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Compact Name & ID */
+        .thermal-name { 
+          font-size: 11px; 
+          font-weight: 700; 
+          text-align: center; 
+          margin-bottom: 0.5mm; 
+          color: #1a1a2e;
+          line-height: 1.2;
+        }
+        .thermal-id { 
+          font-size: 8px; 
+          color: #64748b; 
+          text-align: center; 
+          margin-bottom: 0.8mm; 
+          font-weight: 500;
+          letter-spacing: 0.5px;
+        }
+        
+        /* Divider */
+        .thermal-divider { 
+          border-top: 1px dashed #e5e7eb; 
+          margin: 0.8mm 0; 
+          opacity: 0.6;
+        }
+        
+        /* Info Table */
+        .thermal-table { 
+          width: 100%; 
+          font-size: 7px; 
+          margin-bottom: 0.8mm; 
+          border-collapse: collapse; 
+        }
+        .thermal-table tr { 
+          line-height: 1.3; 
+        }
+        .thermal-label { 
+          text-align: right; 
+          padding: 0.3mm 0.5mm; 
+          color: #64748b; 
+          width: 38%;
+          font-weight: 500;
+          font-size: 6.5px;
+        }
+        .thermal-value { 
+          text-align: left; 
+          padding: 0.3mm 0.5mm; 
+          font-weight: 600; 
+          width: 62%;
+          color: #1e293b;
+          font-size: 6.5px;
+        }
+        .thermal-value.status-active { 
+          color: #10b981; 
+        }
+        .thermal-value.status-inactive { 
+          color: #ef4444; 
+        }
+        
+        /* Barcode */
+        .thermal-barcode { 
+          text-align: center; 
+          margin: 0.8mm 0; 
+        }
+        .thermal-barcode .barcode-svg { 
+          width: 100%; 
+          max-width: 150px; 
+          height: 30px;
+        }
+        .thermal-barcode-number { 
+          font-size: 8px; 
+          font-family: monospace; 
+          text-align: center; 
+          margin-top: 0.5mm; 
+          color: #f59e0b;
+          font-weight: 600;
+          letter-spacing: 1.5px;
+        }
+        
+        /* Footer */
+        .thermal-footer { 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: flex-start;
+          gap: 2mm; 
+          margin-top: 1.5mm; 
+          padding-top: 1.5mm;
+          border-top: 2px solid #f59e0b;
+        }
+        .thermal-signature { 
+          flex: 1; 
+          text-align: center; 
+          font-size: 5.5px; 
+          color: #94a3b8;
+        }
+        .thermal-line { 
+          border-top: 0.5px solid #94a3b8; 
+          margin-bottom: 0.3mm; 
+          padding-top: 3mm; 
+        }
+        
+        .thermal-issue-date {
+          text-align: center;
+          font-size: 6px;
+          color: #94a3b8;
+          margin-top: 0.8mm;
+          padding-top: 0.5mm;
+          border-top: 1px dashed #e5e7eb;
+        }
+        
+        /* ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== */
+        .card-credit {
+          text-align: center;
+          font-size: 4px;
+          color: #1a1a2e;
+          font-weight: 500;
+          opacity: 0.6;
+          letter-spacing: 0.3px;
+          direction: ltr;
+          margin-top: 0.5mm;
+          padding-top: 0.5mm;
+          border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
+        }
+        
+        @media print {
+          body { 
+            margin: 0; 
+            padding: 0; 
+            background: white; 
+            padding-bottom: 1.5mm;
+          }
+          .thermal-card {
+            padding: 2mm 2.5mm 2.5mm 2.5mm;
+            border: none !important;
+            box-shadow: none !important;
           }
           .card-watermark {
-            transform: translate(-50%, -50%) rotate(-25deg) scale(1.4) !important;
+            opacity: 0.08 !important;
           }
           .card-watermark img {
-            width: 100px !important;
+            width: 80px !important;
           }
           .card-watermark-text {
-            font-size: 20px !important;
-            transform: translate(-50%, -50%) rotate(-25deg) scale(0.9) !important;
+            font-size: 16px !important;
+            opacity: 0.05 !important;
+          }
+          .card-logo-image {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .card-credit {
+            opacity: 0.5 !important;
+            color: #000000 !important;
+          }
+          .no-print { 
+            display: none !important; 
+          }
+        }
+        
+        @media screen {
+          .thermal-card {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 2px;
           }
         }
       </style>
     </head>
     <body>
       ${cardsHtml}
-      <div class="no-print" style="text-align: center; margin-top: 20px; width: 100%;">
-        <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🖨️ طباعة / حفظ كـ PDF</button>
+      
+      <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; width: 100%; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+        <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
+          🖨️ طباعة / PDF
+        </button>
+        <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+          ✖ إغلاق
+        </button>
       </div>
+      
       <script>
         window.onload = function() {
           setTimeout(function() {
@@ -2156,7 +2186,7 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
                   format: 'CODE128',
                   lineColor: '#000000',
                   width: 1.2,
-                  height: 30,
+                  height: 25,
                   displayValue: true,
                   fontSize: 8,
                   font: 'monospace',
@@ -2175,7 +2205,6 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
   `);
   printWindow.document.close();
 }
-
   private escapeHtml(str: string | null | undefined): string {
     if (!str) return '';
     return str

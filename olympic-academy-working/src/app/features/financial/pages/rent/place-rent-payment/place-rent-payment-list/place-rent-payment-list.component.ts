@@ -1,11 +1,12 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 // Material Imports
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -26,8 +27,6 @@ import { NotificationService } from '../../../../../../core/services/notificatio
 import { ReportService } from '../../../../../../core/services/report.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { PlaceRentPaymentWizardModalComponent } from '../place-rent-payment-wizard/place-rent-payment-wizard-modal.component';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-place-rent-payment-list',
@@ -56,19 +55,59 @@ import autoTable from 'jspdf-autotable';
   templateUrl: './place-rent-payment-list.component.html',
   styleUrls: ['./place-rent-payment-list.component.css']
 })
-export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
+export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnDestroy {
+  
+  Math = Math;
+  
+  // ==========================================================================
+  // TABLE CONFIGURATION
+  // ==========================================================================
+
   displayedColumns: string[] = ['id', 'place', 'rentAmount', 'payedAmount', 'remainedAmount', 'paymentDate', 'paymentMethod', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+  allPayments: any[] = [];
   isLoading = false;
   
+  // ==========================================================================
+  // DATA COLLECTIONS
+  // ==========================================================================
+
   places: any[] = [];
   rentTypes: any[] = [];
   paymentMethods: any[] = [];
   
-  // Options for searchable selects
+  // ==========================================================================
+  // OPTIONS FOR SEARCHABLE SELECTS
+  // ==========================================================================
+
   placeOptions: SelectOption[] = [];
   rentTypeOptions: SelectOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
+  
+  // ==========================================================================
+  // PAGINATION
+  // ==========================================================================
+
+  totalRecords = 0;
+  currentPage = 0;
+  pageSize = 25;
+  pageSizeOptions = [5, 10, 25, 50, 100];
+  
+  // ==========================================================================
+  // SORTING
+  // ==========================================================================
+
+  sortBy: string = 'PAYMENT_DATE';
+  sortDir: string = 'DESC';
+  
+  // ==========================================================================
+  // FILTER CRITERIA
+  // ==========================================================================
+
+  filterDates = {
+    paymentDateFrom: null as Date | null,
+    paymentDateTo: null as Date | null
+  };
   
   filters = {
     placeId: null as number | null,
@@ -80,25 +119,47 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
   
   quickSearch: string = '';
 
+  // ==========================================================================
+  // SUBJECTS
+  // ==========================================================================
+
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
+  // ==========================================================================
+  // VIEW CHILDREN
+  // ==========================================================================
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // Statistics
+  // ==========================================================================
+  // STATISTICS - COMPUTED PROPERTIES
+  // ==========================================================================
+
   get totalRentAmount(): number {
-    return this.dataSource.data.reduce((sum, item) => sum + (item.rentAmount || 0), 0);
+    return this.allPayments.reduce((sum, item) => sum + (item.rentAmount || 0), 0);
   }
 
   get totalPayedAmount(): number {
-    return this.dataSource.data.reduce((sum, item) => sum + (item.payedAmount || 0), 0);
+    return this.allPayments.reduce((sum, item) => sum + (item.payedAmount || 0), 0);
   }
 
   get totalRemainedAmount(): number {
-    return this.dataSource.data.reduce((sum, item) => sum + (item.remainedAmount || 0), 0);
+    return this.allPayments.reduce((sum, item) => sum + (item.remainedAmount || 0), 0);
   }
 
   get totalPaymentsCount(): number {
-    return this.dataSource.data.length;
+    return this.allPayments.length;
   }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  // ==========================================================================
+  // CONSTRUCTOR
+  // ==========================================================================
 
   constructor(
     private financialService: FinancialService,
@@ -106,12 +167,18 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
     private notification: NotificationService,
     private reportService: ReportService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  // ==========================================================================
+  // LIFECYCLE HOOKS
+  // ==========================================================================
 
   ngOnInit() {
     this.loadLookupData();
     this.loadData();
+    this.setupSearchDebounce();
   }
 
   ngAfterViewInit() {
@@ -119,53 +186,186 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ==========================================================================
+  // SEARCH DEBOUNCE
+  // ==========================================================================
+
+  private setupSearchDebounce(): void {
+    this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.currentPage = 0;
+        this.loadData();
+      });
+  }
+
+  // ==========================================================================
+  // GET TOTAL PAGES
+  // ==========================================================================
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  // ==========================================================================
+  // PAGINATION METHODS
+  // ==========================================================================
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 0) {
+      this.currentPage = 0;
+      this.loadData();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  goToNextPage(): void {
+    this.currentPage++;
+    this.loadData();
+  }
+
+  goToLastPage(): void {
+    const totalPages = this.getTotalPages();
+    if (this.currentPage !== totalPages - 1 && totalPages > 0) {
+      this.currentPage = totalPages - 1;
+      this.loadData();
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  onPageEvent(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadData();
+  }
+
+  // ==========================================================================
+  // HELPER METHODS
+  // ==========================================================================
+
+  private formatDateForBackend(date: any): string | null {
+    if (!date) return null;
+    
+    // If it's already a string in YYYY-MM-DD format, return it
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+    
+    // If it's a Date object or string, convert it
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private updateFilterDates(): void {
+    this.filters.paymentDateFrom = this.formatDateForBackend(this.filterDates.paymentDateFrom);
+    this.filters.paymentDateTo = this.formatDateForBackend(this.filterDates.paymentDateTo);
+  }
+
+  // ==========================================================================
+  // DATE CHANGE HANDLERS
+  // ==========================================================================
+
+  onDateFromChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  onDateToChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  // ==========================================================================
+  // INITIALIZATION METHODS
+  // ==========================================================================
+
   loadLookupData() {
     // Load places
-    this.placeService.getAllPlacesLookup().subscribe({
-      next: (res: any) => {
-        this.places = res.list || [];
-        this.placeOptions = [
-          { value: null, label: 'الكل' },
-          ...this.places.map(p => ({ value: p.id, label: p.title }))
-        ];
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل المواقع');
-      }
-    });
+    this.placeService.getAllPlacesLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.places = res.list || [];
+          this.placeOptions = [
+            { value: null, label: 'الكل' },
+            ...this.places.map(p => ({ value: p.id, label: p.title }))
+          ];
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل المواقع');
+        }
+      });
 
     // Load rent types
-    this.financialService.getAllRentTypesLookup().subscribe({
-      next: (res: any) => {
-        this.rentTypes = res.list || [];
-        this.rentTypeOptions = [
-          { value: null, label: 'الكل' },
-          ...this.rentTypes.map(r => ({ value: r.id, label: r.title }))
-        ];
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل أنواع الإيجار');
-      }
-    });
+    this.financialService.getAllRentTypesLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.rentTypes = res.list || [];
+          this.rentTypeOptions = [
+            { value: null, label: 'الكل' },
+            ...this.rentTypes.map(r => ({ value: r.id, label: r.title }))
+          ];
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل أنواع الإيجار');
+        }
+      });
 
     // Load payment methods
-    this.financialService.getAllPaymentMethodsLookup().subscribe({
-      next: (res: any) => {
-        this.paymentMethods = res.list || [];
-        this.paymentMethodOptions = [
-          { value: null, label: 'الكل' },
-          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
-        ];
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل طرق الدفع');
-      }
-    });
+    this.financialService.getAllPaymentMethodsLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.paymentMethods = res.list || [];
+          this.paymentMethodOptions = [
+            { value: null, label: 'الكل' },
+            ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+          ];
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل طرق الدفع');
+        }
+      });
   }
+
+  // ==========================================================================
+  // LOAD DATA WITH PAGINATION
+  // ==========================================================================
 
   loadData() {
     this.isLoading = true;
-    const params: any = {};
+    
+    this.updateFilterDates();
+    
+    const params: any = {
+      pageNum: this.currentPage,
+      pageSize: this.pageSize
+    };
     
     if (this.filters.placeId) params.placeId = this.filters.placeId;
     if (this.filters.rentTypeId) params.rentTypeId = this.filters.rentTypeId;
@@ -173,29 +373,37 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
     if (this.filters.paymentDateFrom) params.paymentDateFrom = this.filters.paymentDateFrom;
     if (this.filters.paymentDateTo) params.paymentDateTo = this.filters.paymentDateTo;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+    
+    if (this.sortBy) params.orderBy = this.sortBy;
+    if (this.sortDir) params.orderDir = this.sortDir;
 
-    this.financialService.getAllPlaceRentPaymentsByFilter(params).subscribe({
-      next: (res: any) => {
-        this.dataSource.data = res.items || [];
-        if (this.dataSource.paginator) {
-          this.dataSource.paginator = this.paginator;
+    this.financialService.getAllPlaceRentPaymentsByFilter(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.allPayments = res.items || [];
+          this.totalRecords = res.total || 0;
+          this.dataSource.data = this.allPayments;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading data:', err);
+          this.notification.showError('حدث خطأ في تحميل البيانات');
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
-        if (this.dataSource.sort) {
-          this.dataSource.sort = this.sort;
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading data:', err);
-        this.notification.showError('حدث خطأ في تحميل البيانات');
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
+  // ==========================================================================
+  // FILTER METHODS
+  // ==========================================================================
+
   applyQuickSearch(event: Event) {
-    this.quickSearch = (event.target as HTMLInputElement).value;
-    this.loadData();
+    const value = (event.target as HTMLInputElement).value;
+    this.quickSearch = value;
+    this.searchSubject.next(value);
   }
 
   resetFilters() {
@@ -206,10 +414,39 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
       paymentDateFrom: null,
       paymentDateTo: null
     };
+    this.filterDates = {
+      paymentDateFrom: null,
+      paymentDateTo: null
+    };
     this.quickSearch = '';
+    this.currentPage = 0;
     this.loadData();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
+
+  hasActiveFilters(): boolean {
+    return !!(this.filters.placeId || 
+              this.filters.rentTypeId || 
+              this.filters.paymentMethodId || 
+              this.filters.paymentDateFrom || 
+              this.filters.paymentDateTo || 
+              this.quickSearch);
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.filters.placeId) count++;
+    if (this.filters.rentTypeId) count++;
+    if (this.filters.paymentMethodId) count++;
+    if (this.filters.paymentDateFrom) count++;
+    if (this.filters.paymentDateTo) count++;
+    if (this.quickSearch) count++;
+    return count;
+  }
+
+  // ==========================================================================
+  // PAYMENT OPERATIONS
+  // ==========================================================================
 
   openNewPaymentModal() {
     const dialogRef = this.dialog.open(PlaceRentPaymentWizardModalComponent, {
@@ -226,15 +463,39 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
   }
 
   viewPayment(id: number) {
-    this.financialService.getPlaceRentPaymentById(id).subscribe({
-      next: (payment) => {
-        this.openDetailsModal(payment);
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات الدفعة');
-      }
-    });
+    this.financialService.getPlaceRentPaymentById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (payment) => {
+          this.openDetailsModal(payment);
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل بيانات الدفعة');
+        }
+      });
   }
+
+  // ==========================================================================
+  // DELETE PAYMENT - Only delete, no edit
+  // ==========================================================================
+
+  deletePayment(item: any) {
+    if (confirm(`هل أنت متأكد من حذف دفعة الإيجار للموقع "${item.place?.title}" بقيمة ${item.payedAmount} جم؟`)) {
+      this.financialService.deletePlaceRentPayment(item.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notification.showSuccess('تم الحذف بنجاح');
+            this.loadData();
+          },
+          error: () => this.notification.showError('حدث خطأ في الحذف')
+        });
+    }
+  }
+
+  // ==========================================================================
+  // DETAILS MODAL
+  // ==========================================================================
 
   openDetailsModal(payment: any): void {
     const modalContainer = document.createElement('div');
@@ -413,7 +674,6 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
         <div class="no-print" style="text-align: center; margin-top: 15px; padding: 10px;">
           <button onclick="window.print();" style="padding: 8px 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
-        <script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };</script>
       </body>
       </html>
     `;
@@ -434,40 +694,18 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  editPayment(id: number) {
-    const dialogRef = this.dialog.open(PlaceRentPaymentWizardModalComponent, {
-      data: { paymentId: id },
-      width: '800px',
-      maxWidth: '90vw'
-    });
-    
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadData();
-      }
-    });
-  }
-
-  deletePayment(item: any) {
-    if (confirm(`هل أنت متأكد من حذف دفعة الإيجار للموقع "${item.place?.title}" بقيمة ${item.payedAmount} جم؟`)) {
-      this.financialService.deletePlaceRentPayment(item.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم الحذف بنجاح');
-          this.loadData();
-        },
-        error: () => this.notification.showError('حدث خطأ في الحذف')
-      });
-    }
-  }
+  // ==========================================================================
+  // EXPORT FUNCTIONS
+  // ==========================================================================
 
   exportToExcel() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allPayments.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
 
-    const exportData = this.dataSource.data.map((item, index) => ({
-      '#': index + 1,
+    const exportData = this.allPayments.map((item, index) => ({
+      '#': (this.currentPage * this.pageSize) + index + 1,
       'الموقع': item.place?.title || '-',
       'قيمة الإيجار': item.rentAmount,
       'المبلغ المدفوع': item.payedAmount,
@@ -481,7 +719,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
   }
 
   exportToPDF() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allPayments.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
@@ -505,14 +743,19 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
     if (this.filters.paymentDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.paymentDateTo}`);
     if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
+    // Calculate totals
+    const totalPayments = this.allPayments.length;
+    const totalPayed = this.totalPayedAmount;
+    const totalRemained = this.totalRemainedAmount;
+
     let tableRows = '';
-    this.dataSource.data.forEach((item: any, index: number) => {
+    this.allPayments.forEach((item: any, index: number) => {
       const remainedClass = item.remainedAmount === 0 ? 'color: #059669;' : 'color: #d97706; font-weight: bold;';
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${item.place?.title || '-'}</td>
-          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.rentAmount.toLocaleString('ar-EG')} جم}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.rentAmount.toLocaleString('ar-EG')} جم</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd; font-weight: bold; color: #10b981;">
             ${item.payedAmount.toLocaleString('ar-EG')} جم
           </td>
@@ -558,13 +801,13 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit {
         <div class="header">
           <h1>تقرير مدفوعات إيجار المواقع</h1>
           <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-          <p>عدد السجلات: ${this.dataSource.data.length} دفعة</p>
+          <p>عدد السجلات: ${totalPayments} دفعة</p>
         </div>
         ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
         <div class="stats">
-          <div class="stat-item"><div class="stat-value">${this.totalPaymentsCount}</div><div class="stat-label">عدد الدفعات</div></div>
-          <div class="stat-item"><div class="stat-value">${this.totalPayedAmount.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المدفوع</div></div>
-          <div class="stat-item"><div class="stat-value">${this.totalRemainedAmount.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المتبقي</div></div>
+          <div class="stat-item"><div class="stat-value">${totalPayments}</div><div class="stat-label">عدد الدفعات</div></div>
+          <div class="stat-item"><div class="stat-value">${totalPayed.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المدفوع</div></div>
+          <div class="stat-item"><div class="stat-value">${totalRemained.toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المتبقي</div></div>
         </div>
         <table>
           <thead>

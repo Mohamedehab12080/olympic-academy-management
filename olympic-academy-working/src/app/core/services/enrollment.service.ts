@@ -5,7 +5,7 @@ import {
   EnrollmentDTO, EnrollmentVTO, EnrollmentResultSet,
   EnrollmentTypeDTO, EnrollmentTypeVTO, EnrollmentTypeResultSet
 } from '../models/enrollment.model';
-import { NewRecordVTO } from '../models/common.model';
+import { LookupResultSet, NewRecordVTO } from '../models/common.model';
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +41,15 @@ export class EnrollmentService {
 
   getAllEnrollmentsByFilter(params?: any): Observable<EnrollmentResultSet> {
     return this.api.get('/enrollments', params);
+  }
+
+    getAllEnrollmentsDetailsByFilter(params?: any): Observable<EnrollmentResultSet> {
+    return this.api.get('/enrollments/enrollment-details', params);
+  }
+
+
+  getAllEnrollmentsLookup(): Observable<LookupResultSet> {
+    return this.api.get('/lookup/enrollments');
   }
 
   getEnrollmentById(id: number): Observable<EnrollmentVTO> {

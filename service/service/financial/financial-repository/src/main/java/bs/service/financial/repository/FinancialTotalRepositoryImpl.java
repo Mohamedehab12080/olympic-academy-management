@@ -118,12 +118,15 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
 
     private int getTotalEnrollmentPayments(LocalDate from, LocalDate to) {
         String sql = """
-            SELECT COALESCE(SUM(ep.paid_amount), 0)
-            FROM oa_enrollment_payment ep
-            WHERE ep.payment_date BETWEEN :startDate AND :endDate 
-              AND ep.is_deleted = 0 
-              AND ep.payment_status = 2
-        """;
+        SELECT COALESCE(SUM(ep.paid_amount), 0)
+        FROM oa_enrollment_payment ep
+        INNER JOIN oa_enrollment enr ON ep.enrollment_id = enr.id
+        WHERE ep.payment_date BETWEEN :startDate AND :endDate
+          AND ep.is_deleted = 0
+          AND enr.payment_status IN (1,2,6)
+          AND enr.is_active=1
+          AND enr.enrollment_status IN (1,2)
+    """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -147,9 +150,10 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT en.id)
             FROM oa_enrollment en
-            WHERE en.enrollment_status = 2\s
+            WHERE en.enrollment_status IN (1,2)
               AND en.created_on BETWEEN :startDate AND :endDate\s
               AND en.is_deleted = 0
+              AND en.is_active=1
        \s""";
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);

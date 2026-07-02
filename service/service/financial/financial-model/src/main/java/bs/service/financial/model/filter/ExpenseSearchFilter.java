@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ExpenseSearchFilter extends SearchFilter<ExpenseSearchFilter.OrderByAttributes> {
 
+    private Boolean isDeleted;
     private Integer expenseTypeId;
     private Integer paymentMethodId;
     private LocalDate expenseDateFrom;

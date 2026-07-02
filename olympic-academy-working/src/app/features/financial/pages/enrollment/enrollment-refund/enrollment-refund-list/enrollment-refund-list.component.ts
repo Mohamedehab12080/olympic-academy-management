@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +16,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { Subject, takeUntil } from 'rxjs';
 
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { CourseService } from '../../../../../../core/services/course.service';
@@ -51,24 +52,57 @@ import { EnrollmentRefundWizardModalComponent } from '../enrollment-refund-wizar
   templateUrl: './enrollment-refund-list.component.html',
   styleUrls: ['./enrollment-refund-list.component.css']
 })
-export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
+export class EnrollmentRefundListComponent implements OnInit, AfterViewInit, OnDestroy {
+  
+  Math = Math;
+  
+  // ==========================================================================
+  // TABLE CONFIGURATION
+  // ==========================================================================
+
   displayedColumns: string[] = ['id', 'trainee', 'course', 'amountRefunded', 'refundDate', 'paymentMethod', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+  allRefunds: any[] = [];
   isLoading = false;
   refundStatuses = REFUND_STATUSES;
   
-  // Data for filters
+  // ==========================================================================
+  // PAGINATION
+  // ==========================================================================
+
+  totalItems: number = 0;
+  pageSize: number = 25;
+  pageSizeOptions: number[] = [5, 10, 25, 50, 100];
+  currentPage: number = 0;
+  
+  // ==========================================================================
+  // SORTING
+  // ==========================================================================
+
+  sortBy: string = 'CREATION_DATE';
+  sortDir: string = 'DESC';
+  
+  // ==========================================================================
+  // DATA FOR FILTERS
+  // ==========================================================================
+
   courses: any[] = [];
   enrollments: any[] = [];
   paymentMethods: any[] = [];
   
-  // Options for searchable selects
+  // ==========================================================================
+  // OPTIONS FOR SEARCHABLE SELECTS
+  // ==========================================================================
+
   courseOptions: SelectOption[] = [];
   enrollmentOptions: SelectOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
   refundStatusOptions: SelectOption[] = [];
   
-  // Filter criteria
+  // ==========================================================================
+  // FILTER CRITERIA
+  // ==========================================================================
+
   filters = {
     courseId: null as number | null,
     enrollmentId: null as number | null,
@@ -81,8 +115,22 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
   quickSearch: string = '';
   selectedRefund: any = null;
 
+  // ==========================================================================
+  // VIEW CHILDREN
+  // ==========================================================================
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+
+  // ==========================================================================
+  // DESTROY SUBJECT
+  // ==========================================================================
+
+  private destroy$ = new Subject<void>();
+
+  // ==========================================================================
+  // CONSTRUCTOR
+  // ==========================================================================
 
   constructor(
     private financialService: FinancialService,
@@ -90,8 +138,13 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
     private notification: NotificationService,
     private reportService: ReportService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  // ==========================================================================
+  // LIFECYCLE HOOKS
+  // ==========================================================================
 
   ngOnInit() {
     this.loadSelectOptions();
@@ -104,6 +157,65 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ==========================================================================
+  // GET TOTAL PAGES
+  // ==========================================================================
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  // ==========================================================================
+  // PAGINATION METHODS
+  // ==========================================================================
+
+  goToFirstPage(): void {
+    if (this.currentPage !== 0) {
+      this.currentPage = 0;
+      this.loadData();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  goToNextPage(): void {
+    this.currentPage++;
+    this.loadData();
+  }
+
+  goToLastPage(): void {
+    const totalPages = this.getTotalPages();
+    if (this.currentPage !== totalPages - 1 && totalPages > 0) {
+      this.currentPage = totalPages - 1;
+      this.loadData();
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 0;
+    this.loadData();
+  }
+
+  onPageEvent(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadData();
+  }
+
+  // ==========================================================================
+  // INITIALIZATION METHODS
+  // ==========================================================================
+
   loadSelectOptions(): void {
     this.refundStatusOptions = [
       { value: null, label: 'الكل' },
@@ -113,37 +225,48 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
 
   loadLookupData() {
     // Load courses for filter
-    this.courseService.getAllCourses().subscribe({
-      next: (res: any) => {
-        this.courses = res.items || [];
-        this.courseOptions = [
-          { value: null, label: 'الكل' },
-          ...this.courses.map(c => ({ value: c.id, label: c.title }))
-        ];
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الدورات');
-      }
-    });
+    this.courseService.getAllCourses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.courses = res.items || [];
+          this.courseOptions = [
+            { value: null, label: 'الكل' },
+            ...this.courses.map(c => ({ value: c.id, label: c.title }))
+          ];
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل الدورات');
+        }
+      });
 
     // Load payment methods
-    this.financialService.getAllPaymentMethodsLookup().subscribe({
-      next: (res: any) => { 
-        this.paymentMethods = res.list || [];
-        this.paymentMethodOptions = [
-          { value: null, label: 'الكل' },
-          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
-        ];
-      },
-      error: () => { 
-        this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
-      }
-    });
+    this.financialService.getAllPaymentMethodsLookup()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => { 
+          this.paymentMethods = res.list || [];
+          this.paymentMethodOptions = [
+            { value: null, label: 'الكل' },
+            ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+          ];
+        },
+        error: () => { 
+          this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
+        }
+      });
   }
+
+  // ==========================================================================
+  // LOAD DATA WITH PAGINATION
+  // ==========================================================================
 
   loadData() {
     this.isLoading = true;
-    const params: any = {};
+    const params: any = {
+      pageNum: this.currentPage,
+      pageSize: this.pageSize
+    };
     
     if (this.filters.courseId) params.courseId = this.filters.courseId;
     if (this.filters.enrollmentId) params.enrollmentId = this.filters.enrollmentId;
@@ -152,47 +275,55 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
     if (this.filters.refundDateFrom) params.refundDateFrom = this.filters.refundDateFrom;
     if (this.filters.refundDateTo) params.refundDateTo = this.filters.refundDateTo;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
+    
+    if (this.sortBy) params.orderBy = this.sortBy;
+    if (this.sortDir) params.orderDir = this.sortDir;
 
-    this.financialService.getAllEnrollmentRefundsByFilter(params).subscribe({
-      next: (res: any) => {
-        this.dataSource.data = res.items || [];
-        
-        // Extract unique enrollments for filter dropdown
-        const uniqueEnrollments = new Map();
-        res.items.forEach((item: any) => {
-          if (item.enrollment && !uniqueEnrollments.has(item.enrollment.id)) {
-            uniqueEnrollments.set(item.enrollment.id, {
-              id: item.enrollment.id,
-              title: `${item.enrollment.trainee?.title || ''} - ${item.enrollment.course?.title || ''}`,
-              traineeTitle: item.enrollment.trainee?.title,
-              courseTitle: item.enrollment.course?.title
-            });
-          }
-        });
-        this.enrollments = Array.from(uniqueEnrollments.values());
-        this.enrollmentOptions = [
-          { value: null, label: 'الكل' },
-          ...this.enrollments.map(e => ({ value: e.id, label: e.title }))
-        ];
-        
-        if (this.dataSource.paginator) {
-          this.dataSource.paginator = this.paginator;
+    this.financialService.getAllEnrollmentRefundsByFilter(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.allRefunds = res.items || [];
+          this.totalItems = res.total || 0;
+          this.dataSource.data = this.allRefunds;
+          
+          // Extract unique enrollments for filter dropdown
+          const uniqueEnrollments = new Map();
+          res.items.forEach((item: any) => {
+            if (item.enrollment && !uniqueEnrollments.has(item.enrollment.id)) {
+              uniqueEnrollments.set(item.enrollment.id, {
+                id: item.enrollment.id,
+                title: `${item.enrollment.trainee?.fullName || ''} - ${item.enrollment.course?.title || ''}`,
+                traineeTitle: item.enrollment.trainee?.fullName,
+                courseTitle: item.enrollment.course?.title
+              });
+            }
+          });
+          this.enrollments = Array.from(uniqueEnrollments.values());
+          this.enrollmentOptions = [
+            { value: null, label: 'الكل' },
+            ...this.enrollments.map(e => ({ value: e.id, label: e.title }))
+          ];
+          
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading data:', err);
+          this.notification.showError('حدث خطأ في تحميل البيانات');
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
-        if (this.dataSource.sort) {
-          this.dataSource.sort = this.sort;
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading data:', err);
-        this.notification.showError('حدث خطأ في تحميل البيانات');
-        this.isLoading = false;
-      }
-    });
+      });
   }
+
+  // ==========================================================================
+  // FILTER METHODS
+  // ==========================================================================
 
   applyQuickSearch(event: Event) {
     this.quickSearch = (event.target as HTMLInputElement).value;
+    this.currentPage = 0;
     this.loadData();
   }
 
@@ -206,9 +337,36 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
       refundDateTo: null
     };
     this.quickSearch = '';
+    this.currentPage = 0;
     this.loadData();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
+
+  hasActiveFilters(): boolean {
+    return !!(this.filters.courseId || 
+              this.filters.enrollmentId || 
+              this.filters.paymentMethodId || 
+              this.filters.status || 
+              this.filters.refundDateFrom || 
+              this.filters.refundDateTo || 
+              this.quickSearch);
+  }
+
+  getActiveFiltersCount(): number {
+    let count = 0;
+    if (this.filters.courseId) count++;
+    if (this.filters.enrollmentId) count++;
+    if (this.filters.paymentMethodId) count++;
+    if (this.filters.status) count++;
+    if (this.filters.refundDateFrom) count++;
+    if (this.filters.refundDateTo) count++;
+    if (this.quickSearch) count++;
+    return count;
+  }
+
+  // ==========================================================================
+  // REFUND OPERATIONS
+  // ==========================================================================
 
   openNewRefundModal() {
     const dialogRef = this.dialog.open(EnrollmentRefundWizardModalComponent, {
@@ -225,16 +383,52 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
   }
 
   viewRefund(id: number) {
-    this.financialService.getEnrollmentRefundById(id).subscribe({
-      next: (refund) => {
-        this.selectedRefund = refund;
-        this.openDetailsModal();
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات الاسترداد');
+    this.financialService.getEnrollmentRefundById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (refund) => {
+          this.selectedRefund = refund;
+          this.openDetailsModal();
+        },
+        error: () => {
+          this.notification.showError('حدث خطأ في تحميل بيانات الاسترداد');
+        }
+      });
+  }
+
+  editRefund(id: number) {
+    const dialogRef = this.dialog.open(EnrollmentRefundWizardModalComponent, {
+      data: { refundId: id },
+      width: '800px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
       }
     });
   }
+
+  deleteRefund(item: any) {
+    if (confirm(`هل أنت متأكد من حذف استرداد التسجيل؟`)) {
+      this.financialService.deleteEnrollmentRefund(item.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notification.showSuccess('تم الحذف بنجاح');
+            this.loadData();
+          },
+          error: () => {
+            this.notification.showError('حدث خطأ في الحذف');
+          }
+        });
+    }
+  }
+
+  // ==========================================================================
+  // DETAILS MODAL
+  // ==========================================================================
 
   openDetailsModal(): void {
     const modalContainer = document.createElement('div');
@@ -294,9 +488,9 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
           
           <h3 style="color: #dc2626; border-bottom: 2px solid #dc2626; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">📋 معلومات التسجيل</h3>
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
-            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المتدرب</div><div style="color: #1f2937; font-size: 12px;">${refund.enrollment?.trainee?.title || '-'}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المتدرب</div><div style="color: #1f2937; font-size: 12px;">${refund.enrollment?.trainee?.fullName || '-'}</div></div>
             <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">الدورة التدريبية</div><div style="color: #1f2937; font-size: 12px;">${refund.enrollment?.course?.title || '-'}</div></div>
-            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المدرب</div><div style="color: #1f2937; font-size: 12px;">${refund.enrollment?.trainer?.title || '-'}</div></div>
+            <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">المدرب</div><div style="color: #1f2937; font-size: 12px;">${refund.enrollment?.trainer?.fullName || '-'}</div></div>
             <div style="border-bottom: 1px solid #e5e7eb; padding: 5px 0;"><div style="font-weight: 600; color: #374151; font-size: 11px;">تاريخ التسجيل</div><div style="color: #1f2937; font-size: 12px;">${refund.enrollment?.startDate ? new Date(refund.enrollment.startDate).toLocaleDateString('ar-EG') : '-'}</div></div>
           </div>
           
@@ -433,9 +627,9 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
           <div class="refund-details"><div><strong>رقم الإيصال:</strong> ${refundNumber}</div><div><strong>تاريخ الإصدار:</strong> ${today}</div></div>
           <h2>📋 معلومات التسجيل</h2>
           <div class="info-grid">
-            <div class="info-item"><div class="info-label">المتدرب</div><div class="info-value">${refund.enrollment?.trainee?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">المتدرب</div><div class="info-value">${refund.enrollment?.trainee?.fullName || '-'}</div></div>
             <div class="info-item"><div class="info-label">الدورة التدريبية</div><div class="info-value">${refund.enrollment?.course?.title || '-'}</div></div>
-            <div class="info-item"><div class="info-label">المدرب</div><div class="info-value">${refund.enrollment?.trainer?.title || '-'}</div></div>
+            <div class="info-item"><div class="info-label">المدرب</div><div class="info-value">${refund.enrollment?.trainer?.fullName || '-'}</div></div>
             <div class="info-item"><div class="info-label">تاريخ التسجيل</div><div class="info-value">${refund.enrollment?.startDate ? new Date(refund.enrollment.startDate).toLocaleDateString('ar-EG') : '-'}</div></div>
           </div>
           <h2>💰 تفاصيل الاسترداد</h2>
@@ -461,7 +655,6 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
         <div class="no-print" style="text-align: center; margin-top: 15px; padding: 10px;">
           <button onclick="window.print();" style="padding: 8px 20px; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
-        <script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };</script>
       </body>
       </html>
     `;
@@ -482,33 +675,27 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  editRefund(id: number) {
-    const dialogRef = this.dialog.open(EnrollmentRefundWizardModalComponent, {
-      data: { refundId: id },
-      width: '800px',
-      maxWidth: '90vw'
-    });
-    
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadData();
-      }
-    });
+  // ==========================================================================
+  // TOTALS METHODS
+  // ==========================================================================
+
+  getTotalRefundsCount(): number {
+    return this.allRefunds.length;
   }
 
-  deleteRefund(item: any) {
-    if (confirm(`هل أنت متأكد من حذف استرداد التسجيل؟`)) {
-      this.financialService.deleteEnrollmentRefund(item.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم الحذف بنجاح');
-          this.loadData();
-        },
-        error: () => {
-          this.notification.showError('حدث خطأ في الحذف');
-        }
-      });
-    }
+  getTotalRefundedAmount(): number {
+    return this.allRefunds.reduce((sum, refund) => sum + (refund.amountRefunded || 0), 0);
   }
+
+  getAverageRefundAmount(): number {
+    const count = this.getTotalRefundsCount();
+    if (count === 0) return 0;
+    return this.getTotalRefundedAmount() / count;
+  }
+
+  // ==========================================================================
+  // STATUS COLOR HELPERS
+  // ==========================================================================
 
   getStatusColor(statusId: number): string {
     switch(statusId) {
@@ -530,30 +717,19 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Totals Methods
-  getTotalRefundsCount(): number {
-    return this.dataSource.data.length;
-  }
-
-  getTotalRefundedAmount(): number {
-    return this.dataSource.data.reduce((sum, refund) => sum + (refund.amountRefunded || 0), 0);
-  }
-
-  getAverageRefundAmount(): number {
-    const count = this.getTotalRefundsCount();
-    if (count === 0) return 0;
-    return this.getTotalRefundedAmount() / count;
-  }
+  // ==========================================================================
+  // EXPORT FUNCTIONS
+  // ==========================================================================
 
   exportToExcel() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allRefunds.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
 
-    const exportData = this.dataSource.data.map((item, index) => ({
+    const exportData = this.allRefunds.map((item, index) => ({
       '#': index + 1,
-      'المتدرب': item.enrollment?.trainee?.title || '-',
+      'المتدرب': item.enrollment?.trainee?.fullName || '-',
       'الدورة': item.enrollment?.course?.title || '-',
       'المبلغ المسترد': item.amountRefunded,
       'تاريخ الاسترداد': item.refundDate,
@@ -567,7 +743,7 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
   }
 
   exportToPDF() {
-    if (this.dataSource.data.length === 0) {
+    if (this.allRefunds.length === 0) {
       this.notification.showWarning('لا توجد بيانات لتصديرها');
       return;
     }
@@ -598,14 +774,14 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
 
     // Build table rows
     let tableRows = '';
-    this.dataSource.data.forEach((item: any, index: number) => {
+    this.allRefunds.forEach((item: any, index: number) => {
       const statusColor = this.getStatusColor(item.refundStatus?.id);
       const statusTextColor = this.getStatusTextColor(item.refundStatus?.id);
       
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.enrollment?.trainee?.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.enrollment?.trainee?.fullName || '-'}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.enrollment?.course?.title || '-'}</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.amountRefunded} جم</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.refundDate || '-'}</td>
@@ -651,11 +827,11 @@ export class EnrollmentRefundListComponent implements OnInit, AfterViewInit {
         <div class="header">
           <h1>تقرير استردادات التسجيلات</h1>
           <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-          <p>عدد السجلات: ${this.dataSource.data.length} استرداد</p>
+          <p>عدد السجلات: ${this.allRefunds.length} استرداد</p>
         </div>
         ${filterTexts.length > 0 ? `<div class="filters"><strong>الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
         <div class="stats">
-          <div class="stat-item"><div class="stat-value">${this.dataSource.data.length}</div><div class="stat-label">عدد الاستردادات</div></div>
+          <div class="stat-item"><div class="stat-value">${this.allRefunds.length}</div><div class="stat-label">عدد الاستردادات</div></div>
           <div class="stat-item"><div class="stat-value">${this.getTotalRefundedAmount().toLocaleString('ar-EG')} جم</div><div class="stat-label">إجمالي المبالغ المستردة</div></div>
           <div class="stat-item"><div class="stat-value">${this.getAverageRefundAmount().toLocaleString('ar-EG')} جم</div><div class="stat-label">متوسط الاسترداد</div></div>
         </div>

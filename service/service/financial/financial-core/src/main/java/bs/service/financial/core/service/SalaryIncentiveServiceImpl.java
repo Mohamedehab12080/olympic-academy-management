@@ -63,7 +63,10 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
                 .orElseThrow(() -> new BusinessException(SALARY_INCENTIVE_NOT_FOUND, transactionId));
 
         SalaryIncentive incentiveToUpdate = financialMapper.toSalaryIncentive(salaryIncentiveDTO);
-        incentiveToUpdate.setId(transactionId);
+        incentiveToUpdate.setId(incentive.getId());
+        incentiveToUpdate.setCreatedBy(incentive.getCreatedBy());
+        incentiveToUpdate.setCreatedOn(incentive.getCreatedOn());
+        incentiveToUpdate.setIsDeleted(false);
         salaryIncentiveRepository.update(incentiveToUpdate);
         return NewRecordVTO.builder().id(transactionId).build();
     }
@@ -93,6 +96,7 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
         SalaryIncentiveSearchFilter filter = SalaryIncentiveSearchFilter.builder()
                 .employeeId(employeeId)
                 .employeeNationalId(employeeNationalId)
+                .isDeleted(false)
                 .quickSearch(quickSearch)
                 .paymentMethodId(paymentMethodId)
                 .salaryTransactionType(type!=null ?type.getId():null)

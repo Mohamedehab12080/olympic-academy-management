@@ -29,6 +29,10 @@ public class SalaryIncentiveQueryBuilder extends AbstractQueryBuilderV2<SalaryIn
             qbConditions.add(QBCondition.builder().placeHolder("employeeNationalId").value(filters.getEmployeeNationalId())
                     .condition("item.employee.nationalId = :PH").build());
 
+        if (filters.getIsDeleted() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
+                    .condition("item.isDeleted = :PH").build());
+
         if (filters.getEmployeeId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("employeeId").value(filters.getEmployeeId())
                     .condition("item.employee.id = :PH").build());

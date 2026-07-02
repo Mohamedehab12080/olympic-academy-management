@@ -52,8 +52,7 @@ public class RentTypeServiceImpl implements RentTypeService {
     public void deleteRentType(Integer rentTypeId) {
         RentType rentType = rentTypeRepository.selectById(rentTypeId)
                 .orElseThrow(() -> new BusinessException(RENT_TYPE_NOT_FOUND, rentTypeId));
-        rentType.setIsDeleted(true);
-        rentTypeRepository.update(rentType);
+        rentTypeRepository.deleteById(rentType.getId());
     }
 
     @Override

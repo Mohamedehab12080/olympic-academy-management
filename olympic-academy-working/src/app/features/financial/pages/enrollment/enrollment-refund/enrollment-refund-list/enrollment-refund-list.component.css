@@ -7,6 +7,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .page-header h1 {
@@ -16,7 +24,29 @@
   color: #1f2937;
 }
 
-.filters {
+.total-badge {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ============================================================ */
+/* FILTERS SECTION */
+/* ============================================================ */
+
+.filters-section {
+  padding: 16px 0;
+}
+
+.filters-row {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
@@ -24,15 +54,119 @@
   align-items: center;
 }
 
+.filters-row:last-child {
+  margin-bottom: 0;
+}
+
 .filter-field {
   flex: 1;
   min-width: 180px;
 }
 
+.search-field {
+  flex: 2;
+  min-width: 250px;
+}
+
+.date-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-badge {
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  padding: 1px 8px;
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+/* ============================================================ */
+/* PAGINATION INFO */
+/* ============================================================ */
+
+.pagination-info {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0;
+  color: #64748b;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.page-info {
+  color: #94a3b8;
+  margin-right: 8px;
+}
+
+/* ============================================================ */
+/* CUSTOM PAGINATOR */
+/* ============================================================ */
+
+.custom-paginator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 0 0;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.paginator-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-size-select {
+  width: 120px;
+  margin-bottom: -1.25em;
+}
+
+.items-range {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.paginator-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-indicator {
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* ============================================================ */
+/* TABLE STYLES */
+/* ============================================================ */
+
 .loading {
   display: flex;
   justify-content: center;
   padding: 40px;
+  min-height: 300px;
+  align-items: center;
 }
 
 .table-container {
@@ -57,18 +191,29 @@
 
 .no-data {
   text-align: center;
-  padding: 40px;
+  padding: 60px 20px;
   color: #6b7280;
+  animation: fadeIn 0.3s ease-in;
 }
 
 .no-data mat-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
   margin-bottom: 16px;
+  color: #9ca3af;
+  opacity: 0.5;
 }
 
-/* Totals Section Styles */
+.no-data p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+/* ============================================================ */
+/* TOTALS SECTION */
+/* ============================================================ */
+
 .totals-section {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
   border-radius: 16px;
@@ -118,7 +263,6 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* Stagger animation for cards */
 .total-card:nth-child(1) { animation-delay: 0.1s; }
 .total-card:nth-child(2) { animation-delay: 0.2s; }
 .total-card:nth-child(3) { animation-delay: 0.3s; }
@@ -130,6 +274,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .total-icon mat-icon {
@@ -157,7 +302,6 @@
   line-height: 1.2;
 }
 
-/* Color variations for different cards */
 .total-count .total-icon {
   background: linear-gradient(135deg, #3b82f6, #1e40af);
 }
@@ -170,7 +314,10 @@
   background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
-/* Table Styles */
+/* ============================================================ */
+/* TABLE ROW STYLES */
+/* ============================================================ */
+
 .mat-mdc-table {
   background: white;
   border-radius: 12px;
@@ -204,7 +351,10 @@
   border-bottom-color: #f1f5f9;
 }
 
-/* Button hover effects */
+/* ============================================================ */
+/* BUTTON STYLES */
+/* ============================================================ */
+
 button[mat-icon-button] {
   transition: transform 0.2s ease;
 }
@@ -213,7 +363,6 @@ button[mat-icon-button]:hover {
   transform: scale(1.05);
 }
 
-/* Print button specific styling */
 button[mat-stroked-button][color="primary"] {
   border-color: #ef4444;
   color: #ef4444;
@@ -223,20 +372,10 @@ button[mat-stroked-button][color="primary"]:hover {
   background-color: rgba(239, 68, 68, 0.1);
 }
 
-/* Filter section improvements */
-.filters {
-  transition: all 0.2s ease;
-}
+/* ============================================================ */
+/* CARD STYLES */
+/* ============================================================ */
 
-.filter-field .mat-form-field-outline {
-  transition: all 0.2s ease;
-}
-
-.filter-field:hover .mat-form-field-outline {
-  border-color: #ef4444;
-}
-
-/* Card styling */
 mat-card {
   border-radius: 16px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -247,57 +386,10 @@ mat-card:hover {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
-/* Paginator styling */
-mat-paginator {
-  background: transparent;
-  border-top: 1px solid #e5e7eb;
-  margin-top: 20px;
-  padding-top: 8px;
-}
+/* ============================================================ */
+/* ANIMATIONS */
+/* ============================================================ */
 
-/* Loading spinner animation */
-.loading mat-spinner {
-  margin: 0 auto;
-  color: #ef4444;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
-}
-
-/* Empty state animation */
-.no-data {
-  animation: fadeIn 0.3s ease-in;
-  background: #f9fafb;
-  border-radius: 12px;
-  margin: 20px 0;
-}
-
-.no-data mat-icon {
-  font-size: 64px;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  color: #9ca3af;
-  opacity: 0.5;
-}
-
-.no-data p {
-  color: #6b7280;
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-
-/* Tooltip styling */
-.mat-tooltip {
-  font-size: 12px;
-  background-color: #1f2937;
-}
-
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -320,23 +412,10 @@ mat-paginator {
   }
 }
 
-@keyframes slideInBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+/* ============================================================ */
+/* RESPONSIVE DESIGN */
+/* ============================================================ */
 
-/* Snackbar animation */
-.mat-snack-bar-container {
-  animation: slideInBottom 0.3s ease-out;
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
   .refunds-container {
     padding: 16px;
@@ -344,13 +423,25 @@ mat-paginator {
   
   .page-header {
     flex-direction: column;
-    gap: 16px;
     align-items: stretch;
+    gap: 12px;
+  }
+  
+  .header-left {
+    flex-wrap: wrap;
   }
   
   .page-header h1 {
     text-align: center;
     font-size: 22px;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .header-actions button {
+    width: 100%;
   }
   
   .totals-section {
@@ -381,14 +472,27 @@ mat-paginator {
     height: 22px;
   }
   
-  .filters {
+  .filters-row {
     flex-direction: column;
     gap: 12px;
   }
   
-  .filter-field {
+  .filter-field,
+  .filter-select,
+  .search-field,
+  .date-field {
     width: 100%;
     min-width: unset;
+  }
+  
+  .filter-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .filter-actions button {
+    flex: 1;
+    min-width: 80px;
   }
   
   .table-container {
@@ -427,16 +531,30 @@ mat-paginator {
     height: 48px;
   }
   
-  .page-header button {
-    width: 100%;
+  .custom-paginator {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
   
-  .filters button {
-    width: 100%;
+  .paginator-left {
+    justify-content: center;
+  }
+  
+  .paginator-right {
+    justify-content: center;
+  }
+  
+  .pagination-info {
+    justify-content: center;
+    text-align: center;
   }
 }
 
-/* Small mobile devices */
+/* ============================================================ */
+/* SMALL MOBILE DEVICES */
+/* ============================================================ */
+
 @media (max-width: 480px) {
   .refunds-container {
     padding: 12px;
@@ -469,9 +587,25 @@ mat-paginator {
     padding: 8px 4px;
     font-size: 12px;
   }
+  
+  .page-size-select {
+    width: 100px;
+  }
+  
+  .items-range {
+    font-size: 12px;
+  }
+  
+  .page-indicator {
+    font-size: 12px;
+    min-width: 50px;
+  }
 }
 
-/* Print styles for PDF export */
+/* ============================================================ */
+/* PRINT STYLES */
+/* ============================================================ */
+
 @media print {
   .refunds-container {
     padding: 0;
@@ -479,8 +613,9 @@ mat-paginator {
   }
   
   .page-header button,
-  .filters button,
-  .mat-paginator,
+  .filters-row button,
+  .filter-actions,
+  .custom-paginator,
   .total-card:hover,
   button[mat-icon-button],
   .close-btn,
@@ -489,30 +624,30 @@ mat-paginator {
   }
   
   .totals-section {
-    background: #f3f4f6;
+    background: #f3f4f6 !important;
     break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
   
   .totals-header {
-    color: #1f2937;
-    border-bottom-color: #d1d5db;
+    color: #1f2937 !important;
+    border-bottom-color: #d1d5db !important;
   }
   
   .total-card {
-    box-shadow: none;
-    border: 1px solid #e5e7eb;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
     break-inside: avoid;
   }
   
   .mat-mdc-table {
-    box-shadow: none;
+    box-shadow: none !important;
     break-inside: avoid;
   }
   
   .mat-mdc-header-row {
-    background: #e5e7eb;
+    background: #e5e7eb !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -530,43 +665,8 @@ mat-paginator {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-}
-
-/* Loading spinner color */
-::ng-deep .mat-progress-spinner circle,
-::ng-deep .mat-spinner circle {
-  stroke: #ef4444 !important;
-}
-
-/* Focus styles for accessibility */
-button:focus-visible,
-.mat-mdc-icon-button:focus-visible {
-  outline: 2px solid #ef4444;
-  outline-offset: 2px;
-}
-
-/* Selection color */
-::selection {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #1f2937;
-}
-
-/* Scrollbar styling for webkit browsers */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  
+  .pagination-info {
+    display: none !important;
+  }
 }

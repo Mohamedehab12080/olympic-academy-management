@@ -43,6 +43,13 @@ public class PlaceControllerImpl implements PlaceController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<PlaceResultSet> _getAllPlacesDetailsByFilter(String quickSearch) {
+        PlaceResultSet result = placeService.getAllPlacesByFilter(quickSearch, null,null,null,null);
+        return ResponseEntity.ok(result);
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<PlaceVTO> _getPlaceById(Integer placeId) {
         PlaceVTO result = placeService.getPlaceById(placeId);
         return ResponseEntity.ok(result);

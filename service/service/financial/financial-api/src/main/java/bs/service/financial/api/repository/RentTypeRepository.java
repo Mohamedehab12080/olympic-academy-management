@@ -12,4 +12,5 @@ public interface RentTypeRepository {
     Optional<RentType> selectById(Integer id);
     List<RentType> selectAllByFilters(RentTypeSearchFilter filters);
     Integer countAllByFilters(RentTypeSearchFilter filters);
+    void deleteById(Integer id);
 }

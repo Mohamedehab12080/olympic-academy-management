@@ -91,4 +91,9 @@ public abstract class EnrollmentMapper {
     public abstract EnrollmentListItem toEnrollmentListItem(Enrollment enrollment);
 
     public abstract List<EnrollmentListItem> toEnrollmentListItems(List<Enrollment> enrollments);
+
+    @Mapping(target = "title", expression = "java(enrollment.getTrainee().getFullName() + \" -- \" + enrollment.getCourse().getTitle())")
+    public abstract LookupVTO toEnrollmentLookupVTO(Enrollment enrollment);
+
+    public abstract List<LookupVTO> toEnrollmentLookupVTOs(List<Enrollment> enrollments);
 }

@@ -50,4 +50,9 @@ public class RentTypeRepositoryImpl implements RentTypeRepository {
     public Integer countAllByFilters(RentTypeSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        rentTypeJPARepository.deleteById(id);
+    }
 }
