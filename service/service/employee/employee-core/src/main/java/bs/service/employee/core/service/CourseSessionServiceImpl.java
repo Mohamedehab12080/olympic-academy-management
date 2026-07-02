@@ -631,3 +631,67 @@ public class CourseSessionServiceImpl implements CourseSessionService {
                 .total(courseSessionRepository.countAllByFilters(filter))
                 .build();
     }
+
+    @Override
+    public CourseSessionResultSet getAllSessionsByFilter(Integer courseId, List<Integer> trainerIds, String sessionDay,
+                                                         Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom,
+                                                         LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom,
+                                                         String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+
+        validateService.validateFromToFilters(sessionDateFrom, sessionDateTo);
+
+        CourseSessionSearchFilter filter = CourseSessionSearchFilter.builder()
+                .courseId(courseId)
+                .employeeId(trainerId)
+                .sessionDay(sessionDay)
+                .placeId(placeId)
+                .status(status != null ? status.getId() : null)
+                .sessionDateFrom(sessionDateFrom)
+                .sessionDateTo(sessionDateTo)
+                .startTimeFrom(startTimeFrom != null ? LocalTime.parse(startTimeFrom) : null)
+                .startTimeTo(startTimeTo != null ? LocalTime.parse(startTimeTo) : null)
+                .endTimeFrom(endTimeFrom != null ? LocalTime.parse(endTimeFrom) : null)
+                .endTimeTo(endTimeTo != null ? LocalTime.parse(endTimeTo) : null)
+                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
+                .defaultSorting(new SortingInfo<>(CourseSessionSearchFilter.OrderByAttributes.SESSION_DATE, OrderDirections.DESC))
+                .sorting(new SortingInfo<>(orderBy, orderDir))
+                .build();
+
+        List<CourseSession> sessions = courseSessionRepository.selectAllByFilters(filter);
+
+        // Group sessions by courseId + sessionDay + startTime
+        Map<String, List<CourseSession>> groupedSessions = sessions.stream()
+                .collect(Collectors.groupingBy(session ->
+                        session.getCourse().getId() + "|" +
+                                session.getSessionDay() + "|" +
+                                session.getStartTime().toString()
+                ));
+
+        List<CourseSessionVTO> items = new ArrayList<>();
+
+        for (Map.Entry<String, List<CourseSession>> entry : groupedSessions.entrySet()) {
+            List<CourseSession> sessionGroup = entry.getValue();
+
+            // Get the first session for common properties
+            CourseSession firstSession = sessionGroup.get(0);
+
+            // Collect all trainers from all sessions in this group
+            List<Employee> trainersForSlot = sessionGroup.stream()
+                    .map(CourseSession::getTrainer)
+                    .filter(Objects::nonNull)
+                    .distinct() // Remove duplicates
+                    .collect(Collectors.toList());
+
+            // Create VTO
+            CourseSessionVTO vto = employeeMapper.toCourseSessionVTO(firstSession);
+            vto.setTrainers(employeeMapper.toLookupVTOs(trainersForSlot));
+
+            items.add(vto);
+        }
+
+        return CourseSessionResultSet.builder()
+                .items(items)
+                .total(courseSessionRepository.countAllByFilters(filter))
+                .build();
+    }
+}
