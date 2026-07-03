@@ -42,6 +42,16 @@ public class CourseSessionDTO implements Serializable {
     @Valid
     private List<String> sessionDays = new ArrayList<>();
 
+    private String sessionDay;
+
+    private Boolean updateSingleSession;
+
+    @Valid
+    private List<Integer> sessionIdsToDelete = new ArrayList<>();
+
+    @Valid
+    private List<String> daysToRemove = new ArrayList<>();
+
     private String startTime;
 
     private String endTime;
@@ -192,6 +202,106 @@ public class CourseSessionDTO implements Serializable {
         this.sessionDays = sessionDays;
     }
 
+    public CourseSessionDTO sessionDay(String sessionDay) {
+        this.sessionDay = sessionDay;
+        return this;
+    }
+
+    /**
+     * Get sessionDay
+     *
+     * @return sessionDay
+     */
+
+    @Schema(name = "sessionDay", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("sessionDay")
+    public String getSessionDay() {
+        return sessionDay;
+    }
+
+    public void setSessionDay(String sessionDay) {
+        this.sessionDay = sessionDay;
+    }
+
+    public CourseSessionDTO updateSingleSession(Boolean updateSingleSession) {
+        this.updateSingleSession = updateSingleSession;
+        return this;
+    }
+
+    /**
+     * Get updateSingleSession
+     *
+     * @return updateSingleSession
+     */
+
+    @Schema(name = "updateSingleSession", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("updateSingleSession")
+    public Boolean getUpdateSingleSession() {
+        return updateSingleSession;
+    }
+
+    public void setUpdateSingleSession(Boolean updateSingleSession) {
+        this.updateSingleSession = updateSingleSession;
+    }
+
+    public CourseSessionDTO sessionIdsToDelete(List<Integer> sessionIdsToDelete) {
+        this.sessionIdsToDelete = sessionIdsToDelete;
+        return this;
+    }
+
+    public CourseSessionDTO addSessionIdsToDeleteItem(Integer sessionIdsToDeleteItem) {
+        if (this.sessionIdsToDelete == null) {
+            this.sessionIdsToDelete = new ArrayList<>();
+        }
+        this.sessionIdsToDelete.add(sessionIdsToDeleteItem);
+        return this;
+    }
+
+    /**
+     * Get sessionIdsToDelete
+     *
+     * @return sessionIdsToDelete
+     */
+
+    @Schema(name = "sessionIdsToDelete", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("sessionIdsToDelete")
+    public List<Integer> getSessionIdsToDelete() {
+        return sessionIdsToDelete;
+    }
+
+    public void setSessionIdsToDelete(List<Integer> sessionIdsToDelete) {
+        this.sessionIdsToDelete = sessionIdsToDelete;
+    }
+
+    public CourseSessionDTO daysToRemove(List<String> daysToRemove) {
+        this.daysToRemove = daysToRemove;
+        return this;
+    }
+
+    public CourseSessionDTO addDaysToRemoveItem(String daysToRemoveItem) {
+        if (this.daysToRemove == null) {
+            this.daysToRemove = new ArrayList<>();
+        }
+        this.daysToRemove.add(daysToRemoveItem);
+        return this;
+    }
+
+    /**
+     * Get daysToRemove
+     *
+     * @return daysToRemove
+     */
+
+    @Schema(name = "daysToRemove", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("daysToRemove")
+    public List<String> getDaysToRemove() {
+        return daysToRemove;
+    }
+
+    public void setDaysToRemove(List<String> daysToRemove) {
+        this.daysToRemove = daysToRemove;
+    }
+
     public CourseSessionDTO startTime(String startTime) {
         this.startTime = startTime;
         return this;
@@ -291,6 +401,10 @@ public class CourseSessionDTO implements Serializable {
                 && Objects.equals(this.placeId, courseSessionDTO.placeId)
                 && Objects.equals(this.sessionDate, courseSessionDTO.sessionDate)
                 && Objects.equals(this.sessionDays, courseSessionDTO.sessionDays)
+                && Objects.equals(this.sessionDay, courseSessionDTO.sessionDay)
+                && Objects.equals(this.updateSingleSession, courseSessionDTO.updateSingleSession)
+                && Objects.equals(this.sessionIdsToDelete, courseSessionDTO.sessionIdsToDelete)
+                && Objects.equals(this.daysToRemove, courseSessionDTO.daysToRemove)
                 && Objects.equals(this.startTime, courseSessionDTO.startTime)
                 && Objects.equals(this.endTime, courseSessionDTO.endTime)
                 && Objects.equals(this.status, courseSessionDTO.status)
@@ -299,8 +413,8 @@ public class CourseSessionDTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, courseId, trainersId, placeId, sessionDate, sessionDays, startTime, endTime, status,
-                note);
+        return Objects.hash(title, courseId, trainersId, placeId, sessionDate, sessionDays, sessionDay,
+                updateSingleSession, sessionIdsToDelete, daysToRemove, startTime, endTime, status, note);
     }
 
     @Override
@@ -313,6 +427,10 @@ public class CourseSessionDTO implements Serializable {
         sb.append("    placeId: ").append(toIndentedString(placeId)).append("\n");
         sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
         sb.append("    sessionDays: ").append(toIndentedString(sessionDays)).append("\n");
+        sb.append("    sessionDay: ").append(toIndentedString(sessionDay)).append("\n");
+        sb.append("    updateSingleSession: ").append(toIndentedString(updateSingleSession)).append("\n");
+        sb.append("    sessionIdsToDelete: ").append(toIndentedString(sessionIdsToDelete)).append("\n");
+        sb.append("    daysToRemove: ").append(toIndentedString(daysToRemove)).append("\n");
         sb.append("    startTime: ").append(toIndentedString(startTime)).append("\n");
         sb.append("    endTime: ").append(toIndentedString(endTime)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");

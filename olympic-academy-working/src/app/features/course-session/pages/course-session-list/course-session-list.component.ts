@@ -1,10 +1,10 @@
-// course-session-list.component.ts - COMPLETE WITH UPDATED EXPORT METHODS
+// course-session-list.component.ts - ENHANCED WITH MODERN DESIGN & ANIMATIONS
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subject, takeUntil, finalize } from 'rxjs';
+import { Subject, takeUntil, finalize, debounceTime, distinctUntilChanged } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -21,6 +21,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { animate, style, transition, trigger, query, stagger } from '@angular/animations';
 
 import { CourseSessionService, CourseSessionFilterParams } from '../../../../core/services/course-session.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -36,16 +37,24 @@ import { ExportPageSelectDialogComponent } from './export-page-select-dialog.com
 import { CourseSessionVTO, SESSION_STATUSES } from '../../../../core/models/employee.model';
 import { ErrorVTO } from '../../../../core/models/common.model';
 
-// DAYS OF WEEK CONSTANT - EXPORTED FOR TEMPLATE USE
+// DAYS OF WEEK CONSTANT
 export const DAYS_OF_WEEK = [
-  { value: 'SUNDAY', label: 'الأحد', short: 'أ' },
-  { value: 'MONDAY', label: 'الإثنين', short: 'إ' },
-  { value: 'TUESDAY', label: 'الثلاثاء', short: 'ث' },
-  { value: 'WEDNESDAY', label: 'الأربعاء', short: 'أر' },
-  { value: 'THURSDAY', label: 'الخميس', short: 'خ' },
-  { value: 'FRIDAY', label: 'الجمعة', short: 'ج' },
-  { value: 'SATURDAY', label: 'السبت', short: 'س' }
+  { value: 'SUNDAY', label: 'الأحد', short: 'أ', icon: 'sunny' },
+  { value: 'MONDAY', label: 'الإثنين', short: 'إ', icon: 'wb_sunny' },
+  { value: 'TUESDAY', label: 'الثلاثاء', short: 'ث', icon: 'partly_cloudy_day' },
+  { value: 'WEDNESDAY', label: 'الأربعاء', short: 'أر', icon: 'cloud' },
+  { value: 'THURSDAY', label: 'الخميس', short: 'خ', icon: 'cloudy' },
+  { value: 'FRIDAY', label: 'الجمعة', short: 'ج', icon: 'clear_night' },
+  { value: 'SATURDAY', label: 'السبت', short: 'س', icon: 'nightlight' }
 ];
+
+// Status colors and icons
+const STATUS_CONFIG: Record<number, { color: string; icon: string; class: string }> = {
+  1: { color: '#3b82f6', icon: 'schedule', class: 'status-scheduled' },
+  2: { color: '#f59e0b', icon: 'play_circle', class: 'status-in-progress' },
+  3: { color: '#10b981', icon: 'check_circle', class: 'status-completed' },
+  4: { color: '#ef4444', icon: 'cancel', class: 'status-cancelled' }
+};
 
 @Component({
   selector: 'app-course-session-list',
@@ -72,14 +81,53 @@ export const DAYS_OF_WEEK = [
     MatDividerModule,
     SearchableSelectComponent
   ],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }),
+        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)', 
+          style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ]),
+    trigger('staggerFade', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(15px)' }),
+          stagger('80ms', [
+            animate('300ms cubic-bezier(0.4, 0, 0.2, 1)',
+              style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ]),
+    trigger('slideIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateX(-20px)' }),
+        animate('300ms ease-out', 
+          style({ opacity: 1, transform: 'translateX(0)' }))
+      ])
+    ]),
+    trigger('pulse', [
+      transition('* => *', [
+        animate('2s ease-in-out', 
+          style({ transform: 'scale(1.02)' }))
+      ])
+    ]),
+    trigger('cardHover', [
+      transition(':enter', [
+        style({ transform: 'scale(0.95)', opacity: 0 }),
+        animate('200ms ease-out', 
+          style({ transform: 'scale(1)', opacity: 1 }))
+      ])
+    ])
+  ],
   templateUrl: './course-session-list.component.html',
   styleUrls: ['./course-session-list.component.css']
 })
-export class CourseSessionListComponent implements OnInit, OnDestroy {
+export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewInit {
   Math = Math;
-
-  // EXPOSE DAYS_OF_WEEK TO TEMPLATE
   DAYS_OF_WEEK = DAYS_OF_WEEK;
+  STATUS_CONFIG = STATUS_CONFIG;
 
   // Table columns
   displayedColumns: string[] = ['course', 'trainers', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -89,6 +137,8 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   allSessions: CourseSessionVTO[] = [];
   groupedData: any[] = [];
   isLoading = false;
+  isLoadingData = false;
+  isFirstLoad = true;
 
   // Pagination
   totalItems = 0;
@@ -97,8 +147,8 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   currentPage = 0;
 
   // Sorting
-  sortBy = 'CREATION_DATE';
-  sortDir: 'ASC' | 'DESC' = 'ASC';
+  sortBy = 'SESSION_DATE';
+  sortDir: 'ASC' | 'DESC' = 'DESC';
 
   // Filters
   searchText = '';
@@ -119,13 +169,22 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   statusOptions: { value: string | null; label: string }[] = [];
   dayOptions: { value: string | null; label: string }[] = [];
 
-  // Day order mapping
-  private dayOrder: { [key: string]: number } = {
-    'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2,
-    'WEDNESDAY': 3, 'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
+  // Stats
+  stats = {
+    totalCourses: 0,
+    totalSessions: 0,
+    scheduled: 0,
+    inProgress: 0,
+    completed: 0,
+    cancelled: 0
   };
 
+  // Search debounce
+  private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+
+  // View references
+  @ViewChild('searchInput') searchInput!: ElementRef;
 
   constructor(
     private sessionService: CourseSessionService,
@@ -141,18 +200,44 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadSelectOptions();
     this.loadLookupData();
+    this.setupSearchDebounce();
     this.loadSessions();
+  }
+
+  ngAfterViewInit(): void {
+    // Focus search input after view init
+    setTimeout(() => {
+      if (this.searchInput) {
+        this.searchInput.nativeElement.focus();
+      }
+    }, 500);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.searchSubject.complete();
+  }
+
+  private setupSearchDebounce(): void {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.currentPage = 0;
+      this.loadSessions();
+    });
   }
 
   private loadSelectOptions(): void {
     this.statusOptions = [
       { value: null, label: 'الكل' },
-      ...SESSION_STATUSES.map(s => ({ value: String(s.id), label: s.title }))
+      ...SESSION_STATUSES.map(s => ({ 
+        value: String(s.id), 
+        label: s.title,
+        color: STATUS_CONFIG[s.id]?.color 
+      }))
     ];
 
     this.dayOptions = [
@@ -217,28 +302,40 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildFilterParams(pageNum: number): CourseSessionFilterParams {
-    const params: CourseSessionFilterParams = {
-      pageNum,
-      pageSize: this.pageSize,
-      orderBy: this.sortBy,
-      orderDir: this.sortDir
+private buildFilterParams(pageNum: number): CourseSessionFilterParams {
+  const params: CourseSessionFilterParams = {
+    pageNum,
+    pageSize: this.pageSize,
+    orderBy: this.sortBy,
+    orderDir: this.sortDir
+  };
+
+  if (this.searchText) params.quickSearch = this.searchText;
+  if (this.filters.courseId) params.courseId = this.filters.courseId;
+  if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
+  if (this.filters.placeId) params.placeId = this.filters.placeId;
+  
+  // FIX: Convert numeric status to enum string
+  if (this.filters.status) {
+    const statusId = parseInt(this.filters.status, 10);
+    const statusMap: { [key: number]: string } = {
+      1: 'SCHEDULED',
+      2: 'IN_PROGRESS',
+      3: 'COMPLETED',
+      4: 'CANCELLED'
     };
-
-    if (this.searchText) params.quickSearch = this.searchText;
-    if (this.filters.courseId) params.courseId = this.filters.courseId;
-    if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
-    if (this.filters.placeId) params.placeId = this.filters.placeId;
-    if (this.filters.status) params.status = this.filters.status;
-    if (this.filters.sessionDay) params.sessionDay = this.filters.sessionDay;
-
-    const dateFrom = this.formatDateForBackend(this.filters.sessionDateFrom);
-    if (dateFrom) params.sessionDateFrom = dateFrom;
-    const dateTo = this.formatDateForBackend(this.filters.sessionDateTo);
-    if (dateTo) params.sessionDateTo = dateTo;
-
-    return params;
+    params.status = statusMap[statusId] || this.filters.status;
   }
+  
+  if (this.filters.sessionDay) params.sessionDay = this.filters.sessionDay;
+
+  const dateFrom = this.formatDateForBackend(this.filters.sessionDateFrom);
+  if (dateFrom) params.sessionDateFrom = dateFrom;
+  const dateTo = this.formatDateForBackend(this.filters.sessionDateTo);
+  if (dateTo) params.sessionDateTo = dateTo;
+
+  return params;
+}
 
   getTotalPages(): number {
     return Math.ceil(this.totalItems / this.pageSize);
@@ -289,6 +386,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
         courseMap.set(courseId, {
           courseId: courseId,
           courseTitle: session.course?.title || 'غير محدد',
+          courseImage: session.course?.imageUrl,
           sessions: [],
           trainers: new Set()
         });
@@ -297,7 +395,6 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       const group = courseMap.get(courseId);
       group.sessions.push(session);
       
-      // Collect all trainers
       if (session.trainers && session.trainers.length > 0) {
         session.trainers.forEach((t: any) => {
           group.trainers.add(JSON.stringify(t));
@@ -309,7 +406,6 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     this.groupedData = Array.from(courseMap.values()).map(group => {
       const trainers = Array.from(group.trainers).map((t: any) => JSON.parse(t));
       
-      // Group sessions by day
       const dayMap: { [key: string]: any[] } = {};
       DAYS_OF_WEEK.forEach(day => {
         dayMap[day.value] = group.sessions.filter((s: any) => s.sessionDay === day.value);
@@ -318,14 +414,27 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       return {
         courseId: group.courseId,
         courseTitle: group.courseTitle,
+        courseImage: group.courseImage,
         trainers: trainers,
         totalSessions: group.sessions.length,
         ...dayMap
       };
     });
 
+    // Update stats
+    this.updateStats(sessions);
+
     this.dataSource.data = this.groupedData;
     this.cdr.detectChanges();
+  }
+
+  private updateStats(sessions: CourseSessionVTO[]): void {
+    this.stats.totalSessions = sessions.length;
+    this.stats.totalCourses = new Set(sessions.map(s => s.course?.id)).size;
+    this.stats.scheduled = sessions.filter(s => s.status?.id === 1).length;
+    this.stats.inProgress = sessions.filter(s => s.status?.id === 2).length;
+    this.stats.completed = sessions.filter(s => s.status?.id === 3).length;
+    this.stats.cancelled = sessions.filter(s => s.status?.id === 4).length;
   }
 
   loadSessions(): void {
@@ -337,6 +446,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         finalize(() => {
           this.isLoading = false;
+          this.isFirstLoad = false;
           this.cdr.detectChanges();
         })
       )
@@ -356,22 +466,22 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       });
   }
 
+  // ============= SORTING =============
   onSortChange(sort: any): void {
     if (sort.active && sort.direction) {
       this.sortBy = sort.active;
       this.sortDir = sort.direction.toUpperCase();
     } else {
-      this.sortBy = 'COURSE_TITLE';
-      this.sortDir = 'ASC';
+      this.sortBy = 'SESSION_DATE';
+      this.sortDir = 'DESC';
     }
     this.currentPage = 0;
     this.loadSessions();
   }
 
-  // Filter handlers
-  onSearchChange(): void {
-    this.currentPage = 0;
-    this.loadSessions();
+  // ============= FILTER HANDLERS =============
+  onSearchChange(value: string): void {
+    this.searchSubject.next(value);
   }
 
   onCourseFilterChange(): void {
@@ -448,23 +558,15 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   }
 
   getStatusClass(statusId: number): string {
-    const classes: Record<number, string> = {
-      1: 'status-scheduled',
-      2: 'status-in-progress',
-      3: 'status-completed',
-      4: 'status-cancelled'
-    };
-    return classes[statusId] || '';
+    return STATUS_CONFIG[statusId]?.class || '';
   }
 
   getStatusIcon(statusId: number): string {
-    const icons: Record<number, string> = {
-      1: 'schedule',
-      2: 'play_circle',
-      3: 'check_circle',
-      4: 'cancel'
-    };
-    return icons[statusId] || 'help';
+    return STATUS_CONFIG[statusId]?.icon || 'help';
+  }
+
+  getStatusColor(statusId: number): string {
+    return STATUS_CONFIG[statusId]?.color || '#6b7280';
   }
 
   formatTime(time: string): string {
@@ -527,7 +629,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'saved') {
+      if (result === 'saved' || result?.action === 'created') {
         this.loadSessions();
       }
     });
@@ -571,13 +673,14 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       disableClose: true,
       data: {
         mode: 'edit',
-        session,
-        sessionId: session.course?.id
+        session: session,
+        sessionId: session.id,
+        courseId: session.course?.id
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'updated') {
+      if (result === 'updated' || result?.action === 'updated') {
         this.loadSessions();
       }
     });
@@ -608,13 +711,9 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   }
 
   // ==========================================================================
-  // EXPORT FUNCTIONS WITH PAGE SELECTION - UPDATED
+  // EXPORT FUNCTIONS
   // ==========================================================================
 
-  /**
-   * Show page selection dialog for export or print
-   * @param isCardPrint - Whether this is for printing cards (true) or exporting (false)
-   */
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
@@ -633,7 +732,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
           totalItems: this.totalItems,
           pageSize: this.pageSize,
           currentPage: this.currentPage,
-          isCardPrint: isCardPrint  // Pass the mode to dialog
+          isCardPrint: isCardPrint
         }
       });
 
@@ -664,11 +763,8 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
   }
 
   async exportToExcel(): Promise<void> {
-    const result = await this.showExportPageSelection(false);  // false = export mode
-    
-    if (!result) {
-      return;
-    }
+    const result = await this.showExportPageSelection(false);
+    if (!result) return;
 
     let dataToExport: CourseSessionVTO[] = [];
 
@@ -700,15 +796,86 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     this.notification.showSuccess(`تم تصدير ${exportData.length} جلسة بنجاح`);
   }
 
-  /**
-   * Generate HTML for PDF export with professional layout
-   */
+  async exportToPDF(): Promise<void> {
+    const result = await this.showExportPageSelection(false);
+    if (!result) return;
+
+    this.isLoading = true;
+
+    let dataToPrint: CourseSessionVTO[] = [];
+
+    if (result.option === 'all') {
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToPrint = this.allSessions;
+    } else if (result.option === 'range') {
+      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+    }
+
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      this.isLoading = false;
+      return;
+    }
+
+    const filterTexts: string[] = [];
+    if (this.filters.courseId) {
+      const course = this.courseOptions.find(c => c.value === this.filters.courseId);
+      if (course) filterTexts.push(`الدورة: ${course.label}`);
+    }
+    if (this.filters.trainerId) {
+      const trainer = this.trainerOptions.find(t => t.value === this.filters.trainerId);
+      if (trainer) filterTexts.push(`المدرب: ${trainer.label}`);
+    }
+    if (this.filters.placeId) {
+      const place = this.placeOptions.find(p => p.value === this.filters.placeId);
+      if (place) filterTexts.push(`المكان: ${place.label}`);
+    }
+    if (this.filters.status) {
+      const status = this.statusOptions.find(s => s.value === this.filters.status);
+      if (status) filterTexts.push(`الحالة: ${status.label}`);
+    }
+    if (this.filters.sessionDay) {
+      const day = this.dayOptions.find(d => d.value === this.filters.sessionDay);
+      if (day) filterTexts.push(`اليوم: ${day.label}`);
+    }
+    if (this.filters.sessionDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateFrom);
+      if (formattedDate) filterTexts.push(`من تاريخ: ${formattedDate}`);
+    }
+    if (this.filters.sessionDateTo) {
+      const formattedDate = this.formatDateForBackend(this.filters.sessionDateTo);
+      if (formattedDate) filterTexts.push(`إلى تاريخ: ${formattedDate}`);
+    }
+    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
+
+    const htmlContent = this.generatePDFHTML(dataToPrint, filterTexts);
+    
+    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
+    } else {
+      const container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      document.body.appendChild(container);
+      window.print();
+      setTimeout(() => {
+        if (document.body.contains(container)) {
+          document.body.removeChild(container);
+        }
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
+    }
+  }
+
   private generatePDFHTML(sessions: CourseSessionVTO[], filterTexts: string[]): string {
     const totalSessions = sessions.length;
     const scheduled = sessions.filter(s => s.status?.id === 1).length;
-    const inProgress = sessions.filter(s => s.status?.id === 2).length;
     const completed = sessions.filter(s => s.status?.id === 3).length;
-    const cancelled = sessions.filter(s => s.status?.id === 4).length;
     const uniqueCourses = new Set(sessions.map(s => s.course?.id)).size;
     const uniqueTrainers = new Set();
     sessions.forEach(s => {
@@ -717,7 +884,6 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Split data into pages (20 rows per page for landscape)
     const rowsPerPage = 20;
     const pages: CourseSessionVTO[][] = [];
     for (let i = 0; i < sessions.length; i += rowsPerPage) {
@@ -923,9 +1089,6 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
     `;
   }
 
-  /**
-   * Escape HTML to prevent XSS
-   */
   private escapeHtml(str: string | null | undefined): string {
     if (!str) return '';
     return str
@@ -934,87 +1097,5 @@ export class CourseSessionListComponent implements OnInit, OnDestroy {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
-
-  async exportToPDF(): Promise<void> {
-    const result = await this.showExportPageSelection(false);  // false = export mode
-    
-    if (!result) {
-      return;
-    }
-
-    this.isLoading = true;
-
-    let dataToPrint: CourseSessionVTO[] = [];
-
-    if (result.option === 'all') {
-      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-    } else if (result.option === 'current') {
-      dataToPrint = this.allSessions;
-    } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
-    }
-
-    if (dataToPrint.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      this.isLoading = false;
-      return;
-    }
-
-    // Build filter texts for display
-    const filterTexts: string[] = [];
-    if (this.filters.courseId) {
-      const course = this.courseOptions.find(c => c.value === this.filters.courseId);
-      if (course) filterTexts.push(`الدورة: ${course.label}`);
-    }
-    if (this.filters.trainerId) {
-      const trainer = this.trainerOptions.find(t => t.value === this.filters.trainerId);
-      if (trainer) filterTexts.push(`المدرب: ${trainer.label}`);
-    }
-    if (this.filters.placeId) {
-      const place = this.placeOptions.find(p => p.value === this.filters.placeId);
-      if (place) filterTexts.push(`المكان: ${place.label}`);
-    }
-    if (this.filters.status) {
-      const status = this.statusOptions.find(s => s.value === this.filters.status);
-      if (status) filterTexts.push(`الحالة: ${status.label}`);
-    }
-    if (this.filters.sessionDay) {
-      const day = this.dayOptions.find(d => d.value === this.filters.sessionDay);
-      if (day) filterTexts.push(`اليوم: ${day.label}`);
-    }
-    if (this.filters.sessionDateFrom) {
-      const formattedDate = this.formatDateForBackend(this.filters.sessionDateFrom);
-      if (formattedDate) filterTexts.push(`من تاريخ: ${formattedDate}`);
-    }
-    if (this.filters.sessionDateTo) {
-      const formattedDate = this.formatDateForBackend(this.filters.sessionDateTo);
-      if (formattedDate) filterTexts.push(`إلى تاريخ: ${formattedDate}`);
-    }
-    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
-
-    // Generate HTML and open in new window
-    const htmlContent = this.generatePDFHTML(dataToPrint, filterTexts);
-    
-    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
-    } else {
-      // Fallback: create a temporary element
-      const container = document.createElement('div');
-      container.innerHTML = htmlContent;
-      document.body.appendChild(container);
-      window.print();
-      setTimeout(() => {
-        if (document.body.contains(container)) {
-          document.body.removeChild(container);
-        }
-      }, 500);
-      this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
-    }
   }
 }

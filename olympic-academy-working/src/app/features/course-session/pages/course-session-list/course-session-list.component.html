@@ -1,26 +1,39 @@
-<!-- course-session-list.component.html -->
-<div class="sessions-container">
+<!-- course-session-list.component.html - ENHANCED WITH MODERN DESIGN -->
+
+<div class="sessions-container" @fadeIn>
   <mat-card class="main-card">
-    <!-- Header -->
+    <!-- ============================================ -->
+    <!-- HEADER -->
+    <!-- ============================================ -->
     <div class="page-header">
       <div class="header-title">
-        <h1>جدول جلسات الدورات</h1>
-        <p>عرض الجلسات في شكل جدول زمني حسب اليوم</p>
+        <div class="title-icon">
+          <mat-icon>event_note</mat-icon>
+        </div>
+        <div>
+          <h1>جدول جلسات الدورات</h1>
+          <p>عرض الجلسات في شكل جدول زمني حسب اليوم</p>
+        </div>
       </div>
-      <button mat-raised-button color="primary" (click)="openAddModal()" class="add-button">
-        <mat-icon>add</mat-icon>
-        جلسة جديدة
-      </button>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="openAddModal()" class="add-button">
+          <mat-icon>add</mat-icon>
+          جلسة جديدة
+        </button>
+      </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-card">
+    <!-- ============================================ -->
+    <!-- FILTERS -->
+    <!-- ============================================ -->
+    <div class="filters-card" @slideIn>
       <div class="filters-grid">
         <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" placeholder="ابحث عن جلسة...">
+            <input #searchInput matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange($event)" placeholder="ابحث عن جلسة...">
             <mat-icon matSuffix>search</mat-icon>
+            <mat-hint *ngIf="searchText">نتائج البحث عن: "{{ searchText }}"</mat-hint>
           </mat-form-field>
 
           <app-searchable-select
@@ -87,15 +100,15 @@
           </mat-form-field>
 
           <div class="filter-actions">
-            <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+            <button mat-stroked-button (click)="resetFilters()" class="reset-btn" [disabled]="isLoading">
               <mat-icon>refresh</mat-icon>
               مسح الكل
             </button>
-            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allSessions.length === 0" class="export-btn">
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allSessions.length === 0 || isLoading" class="export-btn">
               <mat-icon>grid_on</mat-icon>
               تصدير Excel
             </button>
-            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allSessions.length === 0" class="export-btn">
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allSessions.length === 0 || isLoading" class="export-btn">
               <mat-icon>picture_as_pdf</mat-icon>
               تصدير PDF
             </button>
@@ -104,69 +117,118 @@
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-grid" *ngIf="!isLoading && allSessions.length > 0">
-      <div class="stat-card">
+    <!-- ============================================ -->
+    <!-- STATS -->
+    <!-- ============================================ -->
+    <div class="stats-grid" *ngIf="!isLoading && allSessions.length > 0" @staggerFade>
+      <div class="stat-card total">
         <div class="stat-icon">📚</div>
         <div class="stat-info">
-          <h3>{{ groupedData.length }}</h3>
+          <h3>{{ stats.totalCourses }}</h3>
           <p>دورات</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.totalCourses / Math.max(stats.totalCourses, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card total">
         <div class="stat-icon">📅</div>
         <div class="stat-info">
-          <h3>{{ totalItems }}</h3>
+          <h3>{{ stats.totalSessions }}</h3>
           <p>جلسات</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.totalSessions / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card scheduled">
+      <div class="stat-card scheduled" [class.active]="stats.scheduled > 0">
         <div class="stat-icon">⏰</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(1) }}</h3>
+          <h3>{{ stats.scheduled }}</h3>
           <p>مجدول</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.scheduled / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card in-progress">
+      <div class="stat-card in-progress" [class.active]="stats.inProgress > 0">
         <div class="stat-icon">▶️</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(2) }}</h3>
+          <h3>{{ stats.inProgress }}</h3>
           <p>في تقدم</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.inProgress / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card completed">
+      <div class="stat-card completed" [class.active]="stats.completed > 0">
         <div class="stat-icon">✅</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(3) }}</h3>
+          <h3>{{ stats.completed }}</h3>
           <p>مكتمل</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.completed / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card cancelled">
+      <div class="stat-card cancelled" [class.active]="stats.cancelled > 0">
         <div class="stat-icon">❌</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(4) }}</h3>
+          <h3>{{ stats.cancelled }}</h3>
           <p>ملغي</p>
+        </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.cancelled / Math.max(stats.totalSessions, 1)) * 100"></div>
         </div>
       </div>
     </div>
 
-    <!-- Loading -->
-    <div class="loading-container" *ngIf="isLoading">
-      <mat-spinner diameter="50"></mat-spinner>
+    <!-- ============================================ -->
+    <!-- LOADING -->
+    <!-- ============================================ -->
+    <div class="loading-container" *ngIf="isLoading" @fadeIn>
+      <div class="loading-spinner">
+        <mat-spinner diameter="50" color="accent"></mat-spinner>
+        <div class="loading-ripple"></div>
+      </div>
       <p>جاري تحميل الجلسات...</p>
+      <span class="loading-subtitle" *ngIf="!isFirstLoad">تحديث البيانات</span>
     </div>
 
-    <!-- Table -->
+    <!-- ============================================ -->
+    <!-- TABLE -->
+    <!-- ============================================ -->
     <div class="table-section" *ngIf="!isLoading">
+      <div class="table-header" *ngIf="groupedData.length > 0">
+        <div class="records-count">
+          <mat-icon>table_chart</mat-icon>
+          <span>عرض {{ groupedData.length }} دورة</span>
+          <span class="divider">|</span>
+          <span>{{ totalItems }} جلسة</span>
+        </div>
+        <div class="records-actions">
+          <button mat-icon-button [matTooltip]="'تحديث البيانات'" (click)="loadSessions()" [disabled]="isLoading">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+      </div>
+
       <div class="table-wrapper">
         <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="timetable-table">
           
           <!-- Course Column -->
           <ng-container matColumnDef="course">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header class="course-header">الدورة</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="course-header">
+              <div class="header-content">
+                <mat-icon>school</mat-icon>
+                <span>الدورة</span>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let row" class="course-cell">
               <div class="course-info">
-                <mat-icon class="course-icon">school</mat-icon>
+                <div class="course-avatar">
+                  <mat-icon>school</mat-icon>
+                </div>
                 <span class="course-title">{{ row.courseTitle }}</span>
                 <span class="session-badge">{{ row.totalSessions }}</span>
               </div>
@@ -175,10 +237,16 @@
 
           <!-- Trainers Column -->
           <ng-container matColumnDef="trainers">
-            <th mat-header-cell *matHeaderCellDef class="trainers-header">المدربون</th>
+            <th mat-header-cell *matHeaderCellDef class="trainers-header">
+              <div class="header-content">
+                <mat-icon>people</mat-icon>
+                <span>المدربون</span>
+              </div>
+            </th>
             <td mat-cell *matCellDef="let row" class="trainers-cell">
               <div class="trainers-list">
                 <span *ngFor="let trainer of row.trainers" class="trainer-chip">
+                  <span class="trainer-avatar-small">{{ getTrainerAvatarName(trainer) }}</span>
                   {{ trainer.title || trainer.name || 'مدرب' }}
                 </span>
                 <span *ngIf="!row.trainers || row.trainers.length === 0" class="no-trainer">-</span>
@@ -190,6 +258,7 @@
           <ng-container *ngFor="let day of DAYS_OF_WEEK" [matColumnDef]="day.value.toLowerCase()">
             <th mat-header-cell *matHeaderCellDef class="day-header">
               <div class="day-header-content">
+                <mat-icon class="day-icon">{{ day.icon }}</mat-icon>
                 <span class="day-short">{{ day.short }}</span>
                 <span class="day-full">{{ day.label }}</span>
               </div>
@@ -203,7 +272,8 @@
                      [class.status-in-progress]="slot.status?.id === 2"
                      [class.status-completed]="slot.status?.id === 3"
                      [class.status-cancelled]="slot.status?.id === 4"
-                     (click)="viewSessionDetails(slot)">
+                     (click)="viewSessionDetails(slot)"
+                     @cardHover>
                   
                   <div class="slot-time">
                     <mat-icon class="time-icon">access_time</mat-icon>
@@ -222,7 +292,7 @@
                   </div>
 
                   <div class="slot-status">
-                    <mat-icon [ngClass]="getStatusClass(slot.status?.id || 0)">
+                    <mat-icon [style.color]="getStatusColor(slot.status?.id || 0)">
                       {{ getStatusIcon(slot.status?.id || 0) }}
                     </mat-icon>
                   </div>
@@ -236,14 +306,17 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="timetable-row"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="timetable-row" @fadeIn></tr>
 
           <!-- No Data -->
           <tr class="mat-row no-data-row" *matNoDataRow>
             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-              <div class="no-data-message">
-                <mat-icon>event_busy</mat-icon>
-                <p>لا توجد جلسات</p>
+              <div class="no-data-message" @fadeIn>
+                <div class="no-data-icon">
+                  <mat-icon>event_busy</mat-icon>
+                </div>
+                <h3>لا توجد جلسات</h3>
+                <p>لم يتم العثور على أي جلسات تدريبية مطابقة للفلترة الحالية</p>
                 <button mat-raised-button color="primary" (click)="openAddModal()">
                   <mat-icon>add</mat-icon>
                   إضافة جلسة جديدة
@@ -255,19 +328,19 @@
       </div>
 
       <!-- Pagination -->
-      <div class="custom-pagination" *ngIf="totalItems > 0">
+      <div class="custom-pagination" *ngIf="totalItems > 0" @slideIn>
         <div class="pagination-controls">
-          <button class="pagination-btn" (click)="goToFirstPage()" [disabled]="currentPage === 0">
+          <button class="pagination-btn" (click)="goToFirstPage()" [disabled]="currentPage === 0" matTooltip="الصفحة الأولى">
             <mat-icon>first_page</mat-icon>
           </button>
-          <button class="pagination-btn" (click)="goToPreviousPage()" [disabled]="currentPage === 0">
+          <button class="pagination-btn" (click)="goToPreviousPage()" [disabled]="currentPage === 0" matTooltip="الصفحة السابقة">
             <mat-icon>chevron_right</mat-icon>
           </button>
           <span class="page-info">صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}</span>
-          <button class="pagination-btn" (click)="goToNextPage()" [disabled]="currentPage >= getTotalPages() - 1">
+          <button class="pagination-btn" (click)="goToNextPage()" [disabled]="currentPage >= getTotalPages() - 1" matTooltip="الصفحة التالية">
             <mat-icon>chevron_left</mat-icon>
           </button>
-          <button class="pagination-btn" (click)="goToLastPage()" [disabled]="currentPage >= getTotalPages() - 1">
+          <button class="pagination-btn" (click)="goToLastPage()" [disabled]="currentPage >= getTotalPages() - 1" matTooltip="الصفحة الأخيرة">
             <mat-icon>last_page</mat-icon>
           </button>
         </div>

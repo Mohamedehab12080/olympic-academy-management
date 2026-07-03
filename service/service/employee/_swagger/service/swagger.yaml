@@ -686,6 +686,7 @@ paths:
       summary: Get all course sessions across all courses with filters
       operationId: getAllSessionsByFilter
       parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPTrainerId'
@@ -766,6 +767,115 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Course Session Day-Specific Endpoints ====================
+
+  /courses/course-session/day:
+    put:
+      tags:
+        - CourseSession
+      summary: Update sessions for a specific day and course
+      operationId: updateSessionsByDayAndCourse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSessionDayDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/course-session/day/trainers:
+    put:
+      tags:
+        - CourseSession
+      summary: Update sessions for a specific day and trainers
+      operationId: updateSessionsByDayAndTrainer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSessionDayDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/day:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete all sessions for a specific day and course
+      operationId: deleteSessionsByDayAndCourse
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/day/trainers:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete sessions for specific day, course, and trainers
+      operationId: deleteSessionsByDayCourseAndTrainers
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
+        - $ref: '#/components/parameters/QPTrainersId'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/day/all:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete all sessions for a specific day (all trainers)
+      operationId: deleteSessionsByDay
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/course-session/{courseSessionId}:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete a specific course session by ID
+      operationId: deleteSpecificSession
+      parameters:
+        - $ref: '#/components/parameters/PPCourseSessionId'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 components:
   parameters:
     PPEmployeeId:
@@ -1206,6 +1316,19 @@ components:
           type: array
           items:
             type: string
+        sessionDay:
+          type: string
+        updateSingleSession:
+          type: boolean
+        sessionIdsToDelete:
+          type: array
+          items:
+            type: integer
+            format: int32
+        daysToRemove:
+          type: array
+          items:
+            type: string
         startTime:
           type: string
           format: time
@@ -1217,6 +1340,43 @@ components:
         note:
           type: string
 
+    CourseSessionDayDTO:
+      type: object
+      required:
+        - title
+        - courseId
+        - trainersId
+        - placeId
+        - sessionDay
+        - startTime
+        - endTime
+      properties:
+        title:
+          type: string
+        courseId:
+          type: integer
+          format: int32
+        trainersId:
+          type: array
+          items:
+            type: integer
+            format: int32
+        placeId:
+          type: integer
+          format: int32
+        sessionDay:
+          type: string
+          description: "Specific day to update (e.g., MONDAY, TUESDAY, etc.)"
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        note:
+          type: string
     AssignDepartmentDTO:
       type: object
       required:

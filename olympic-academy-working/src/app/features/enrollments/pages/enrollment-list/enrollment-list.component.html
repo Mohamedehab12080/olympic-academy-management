@@ -128,36 +128,57 @@
           </div>
         </div>
 
-<!-- Update the date fields in the HTML -->
-<div class="filters-row">
-  <mat-form-field appearance="outline" class="date-field">
-    <mat-label>تاريخ البدء من</mat-label>
-    <input matInput [matDatepicker]="startFromPicker" [(ngModel)]="filters.startDateFrom" (dateChange)="onFilterChange()">
-    <mat-datepicker-toggle matSuffix [for]="startFromPicker"></mat-datepicker-toggle>
-    <mat-datepicker #startFromPicker></mat-datepicker>
-  </mat-form-field>
+        <div class="filters-row">
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>تاريخ البدء من</mat-label>
+            <input matInput [matDatepicker]="startFromPicker" [(ngModel)]="filters.startDateFrom" (dateChange)="onFilterChange()">
+            <mat-datepicker-toggle matSuffix [for]="startFromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startFromPicker></mat-datepicker>
+          </mat-form-field>
 
-  <mat-form-field appearance="outline" class="date-field">
-    <mat-label>تاريخ البدء إلى</mat-label>
-    <input matInput [matDatepicker]="startToPicker" [(ngModel)]="filters.startDateTo" (dateChange)="onFilterChange()">
-    <mat-datepicker-toggle matSuffix [for]="startToPicker"></mat-datepicker-toggle>
-    <mat-datepicker #startToPicker></mat-datepicker>
-  </mat-form-field>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>تاريخ البدء إلى</mat-label>
+            <input matInput [matDatepicker]="startToPicker" [(ngModel)]="filters.startDateTo" (dateChange)="onFilterChange()">
+            <mat-datepicker-toggle matSuffix [for]="startToPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startToPicker></mat-datepicker>
+          </mat-form-field>
 
-  <mat-form-field appearance="outline" class="date-field">
-    <mat-label>تاريخ الانتهاء من</mat-label>
-    <input matInput [matDatepicker]="endFromPicker" [(ngModel)]="filters.endDateFrom" (dateChange)="onFilterChange()">
-    <mat-datepicker-toggle matSuffix [for]="endFromPicker"></mat-datepicker-toggle>
-    <mat-datepicker #endFromPicker></mat-datepicker>
-  </mat-form-field>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>تاريخ الانتهاء من</mat-label>
+            <input matInput [matDatepicker]="endFromPicker" [(ngModel)]="filters.endDateFrom" (dateChange)="onFilterChange()">
+            <mat-datepicker-toggle matSuffix [for]="endFromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endFromPicker></mat-datepicker>
+          </mat-form-field>
 
-  <mat-form-field appearance="outline" class="date-field">
-    <mat-label>تاريخ الانتهاء إلى</mat-label>
-    <input matInput [matDatepicker]="endToPicker" [(ngModel)]="filters.endDateTo" (dateChange)="onFilterChange()">
-    <mat-datepicker-toggle matSuffix [for]="endToPicker"></mat-datepicker-toggle>
-    <mat-datepicker #endToPicker></mat-datepicker>
-  </mat-form-field>
-</div>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>تاريخ الانتهاء إلى</mat-label>
+            <input matInput [matDatepicker]="endToPicker" [(ngModel)]="filters.endDateTo" (dateChange)="onFilterChange()">
+            <mat-datepicker-toggle matSuffix [for]="endToPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endToPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Filter Actions Row -->
+        <div class="filters-row filter-actions-row">
+          <div class="filter-actions">
+            <button mat-stroked-button (click)="resetFilters()" class="reset-btn" [disabled]="isLoading">
+              <mat-icon>refresh</mat-icon>
+              مسح الكل
+            </button>
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allEnrollments.length === 0 || isLoading" class="export-btn excel-btn">
+              <mat-icon>grid_on</mat-icon>
+              تصدير Excel
+            </button>
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allEnrollments.length === 0 || isLoading" class="export-btn pdf-btn">
+              <mat-icon>picture_as_pdf</mat-icon>
+              تصدير PDF
+            </button>
+            <button mat-stroked-button color="primary" (click)="printEnrollmentCards()" [disabled]="allEnrollments.length === 0 || isLoading" class="export-btn cards-btn">
+              <mat-icon>credit_card</mat-icon>
+              بطاقات
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -398,6 +419,7 @@
           <button 
             class="pagination-btn" 
             (click)="goToNextPage()" 
+            [disabled]="currentPage >= getTotalPages() - 1"
             matTooltip="الصفحة التالية">
             <mat-icon>chevron_left</mat-icon>
           </button>

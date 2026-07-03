@@ -22,6 +22,10 @@ public class CourseSessionQueryBuilder extends AbstractQueryBuilderV3<CourseSess
     public List<QBCondition> evaluateWhereConditions(CourseSessionSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getQuickSearch() != null && !filters.getQuickSearch().trim().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("quickSearch").value("%" + filters.getQuickSearch() + "%")
+                    .condition("(LOWER(item.title) LIKE LOWER(:PH))").build());
+
         if (filters.getSessionDay() != null && !filters.getSessionDay().trim().isEmpty())
             qbConditions.add(QBCondition.builder().placeHolder("sessionDay").value("%" + filters.getSessionDay() + "%")
                     .condition("(LOWER(item.sessionDay) LIKE LOWER(:PH))").build());
