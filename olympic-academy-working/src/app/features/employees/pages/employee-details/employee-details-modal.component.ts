@@ -1014,7 +1014,7 @@ printEmployeeCard(): void {
     const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
 
     // Use the main logo for both header and watermark
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     // Conditional photo section - only show if image exists
     const photoSection = imagePreviewUrl ? `

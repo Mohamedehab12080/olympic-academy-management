@@ -566,7 +566,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
   }
 
   private generatePrintDocument(data: any): void {
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const applicationNumber = data.isNewEnrollment ? `NEW-${Date.now()}` : `ENR-${data.id}`;
     

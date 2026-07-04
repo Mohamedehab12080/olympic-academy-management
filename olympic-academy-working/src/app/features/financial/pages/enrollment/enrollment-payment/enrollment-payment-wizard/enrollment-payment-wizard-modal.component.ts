@@ -504,7 +504,7 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
   const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
   const currentDateFormatted = formatDate(new Date());
 
-  const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+  const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
   return `
     <!DOCTYPE html>

@@ -1250,7 +1250,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     printContainer.style.width = '100%';
     
     // Get the logo as base64 for reliable printing
-    const logoPath = 'assets/images/mainLogoSvg.svg';
+    const logoPath = 'assets/images/simpleLogoSvg.svg';
     
     printContainer.innerHTML = `
       <!DOCTYPE html>
@@ -1751,7 +1751,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     const today = new Date().toLocaleDateString('ar-EG');
     let cardsHtml = '';
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     trainees.forEach((trainee, index) => {
       const imageUrl = imageUrls[index] || '';

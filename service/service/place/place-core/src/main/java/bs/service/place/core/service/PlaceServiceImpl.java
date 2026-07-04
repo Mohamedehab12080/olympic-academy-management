@@ -51,6 +51,8 @@ public class PlaceServiceImpl implements PlaceService {
                 .orElseThrow(() -> new BusinessException(PLACE_NOT_FOUND, placeId));
         Place placeToUpdate = placeMapper.toPlace(placeDTO);
         placeToUpdate.setId(placeId);
+        placeToUpdate.setCreatedOn(place.getCreatedOn());
+        placeToUpdate.setCreatedBy(place.getCreatedBy());
         placeRepository.update(placeToUpdate);
         return NewRecordVTO.builder().id(placeId).build();
     }

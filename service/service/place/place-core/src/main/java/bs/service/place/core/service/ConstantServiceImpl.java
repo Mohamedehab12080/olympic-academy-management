@@ -50,9 +50,12 @@ public class ConstantServiceImpl implements ConstantService {
     @Transactional
     public NewRecordVTO updateConstant(Integer constantId, ConstantDTO constantDTO) {
         Constant constant=constantRepository.selectById(constantId).orElseThrow(()-> new BusinessException(CONSTANT_NOT_FOUND,constantId));
-        constant.setCreatedOn(LocalDateTime.now());
-        constant=constantRepository.update(constant);
-        return NewRecordVTO.builder().id(constant.getId()).build();
+        Constant constantToUpdate=mapper.toConstant(constantDTO);
+        constantToUpdate.setId(constantId);
+        constantToUpdate.setCreatedOn(constant.getCreatedOn());
+        constantToUpdate.setCreatedBy(constant.getCreatedBy());
+        constantToUpdate=constantRepository.update(constantToUpdate);
+        return NewRecordVTO.builder().id(constantToUpdate.getId()).build();
     }
 
     @Override

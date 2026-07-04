@@ -1,5 +1,3 @@
-// employee-list.component.ts - COMPLETE WORKING VERSION
-
 import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -1744,7 +1742,7 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
 
   const today = new Date().toLocaleDateString('ar-EG');
   let cardsHtml = '';
-  const logoPath = 'assets/images/mainLogo.jpeg';
+  const logoPath = 'assets/images/simpleLogo.jpeg';
 
   employees.forEach((employee, index) => {
     const imageUrl = imageUrls[index] || '';

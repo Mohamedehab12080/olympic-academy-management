@@ -3381,7 +3381,6 @@ async exportToPDF(): Promise<void> {
         <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
           <span style="font-weight: 700; color: #1e293b;">⚡ CoreStack Solutions</span>
           <span>📱 01069911181</span>
-          <span style="color: #94a3b8; font-size: 11px;">نظام إدارة الأكاديمية الأولمبية</span>
         </div>
         <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f1f5f9;">
           © ${new Date().getFullYear()} CoreStack Solutions. جميع الحقوق محفوظة

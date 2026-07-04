@@ -1304,7 +1304,7 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
   const today = new Date().toLocaleDateString('ar-EG');
   const currentYear = new Date().getFullYear();
   let cardsHtml = '';
-  const logoPath = 'assets/images/mainLogo.jpeg';
+  const logoPath = 'assets/images/simpleLogo.jpeg';
   const academyName = 'الأكاديمية الأولمبية';
   const academyAddress = 'الفيوم - حي الجامعة';
 
@@ -2170,7 +2170,7 @@ private generateEnrollmentCards(enrollments: EnrollmentListItem[], imageUrls: st
     let allPagesHTML = '';
 
     // Use mainLogo.jpeg for watermark
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     pages.forEach((pageData: EnrollmentListItem[], pageIndex: number) => {
       let tableRows = '';
