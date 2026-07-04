@@ -10,7 +10,9 @@ import bs.service.course.model.entity.Course;
 import bs.service.employee.model.entity.CourseSession;
 import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.enums.SessionStatus;
+import bs.service.employee.model.generated.CourseSessionLookupVTO;
 import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.employee.model.generated.EmployeeLookupVTO;
 import bs.service.enrollment.model.entity.Enrollment;
 import bs.service.enrollment.model.enums.EnrollmentStatus;
 import bs.service.enrollment.model.generated.EnrollmentVTO;
@@ -175,6 +177,12 @@ public abstract class TraineeMapper {
     public abstract CourseSessionVTO toCourseSessionVTO(CourseSession courseSession);
     public abstract List<CourseSessionVTO> toCourseSessionVTOs(List<CourseSession> courseSessions);
 
+    @Mapping(target = "salaryType", ignore = true)
+    @Mapping(target = "employeeType", ignore = true)
+    public abstract EmployeeLookupVTO toEmployeeLookupVTO(Employee employee);
+
+    public abstract List<EmployeeLookupVTO> toEmployeeLookupVTOs(List<Employee> employees);
+
     /**
      * Convert TraineeAttendance entity to TraineeAttendanceVTO
      *
@@ -183,9 +191,14 @@ public abstract class TraineeMapper {
      */
     @Mapping(target = "trainee", expression = "java(toLookupVTOFromTrainee(entity.getTrainee()))")
     @Mapping(target = "session", source = "courseSession")
-    @Mapping(target = "course", source = "courseSession.course")
     @Mapping(target = "status", qualifiedByName = "attendanceStatusToLookup")
     public abstract TraineeAttendanceVTO toTraineeAttendanceVTO(TraineeAttendance entity);
+
+
+    @Mapping(target = "status", expression = "java(toLookupVTOFromSessionStatus(courseSession.getStatus()))")
+    public abstract CourseSessionLookupVTO toCourseSessionLookupVTO(CourseSession courseSession);
+
+    public abstract List<CourseSessionLookupVTO> toCourseSessionLookupVTOs(List<CourseSession> courseSessions);
 
     /**
      * Convert TraineeAttendance entity to TraineeAttendanceListItem
@@ -193,10 +206,7 @@ public abstract class TraineeMapper {
 
     @Mapping(target = "trainee", source = "entity.trainee")
     @Mapping(target = "attendanceDate", source = "entity.attendanceDate")
-    @Mapping(target = "sessionTitle", source = "courseSession.title")
-    @Mapping(target = "sessionDay", source = "courseSession.sessionDay")
-    @Mapping(target = "courseTitle", source = "courseSession.course.title")
-    @Mapping(target = "sessionDate", source = "courseSession.sessionDate")
+    @Mapping(target = "session", source = "courseSession")
     @Mapping(target = "status", qualifiedByName = "attendanceStatusToLookup")
     public abstract TraineeAttendanceListItem toTraineeAttendanceListItem(TraineeAttendance entity);
 

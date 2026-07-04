@@ -17,6 +17,7 @@ import bs.service.trainee.api.repository.TraineeContactRepository;
 import bs.service.trainee.api.repository.TraineeRepository;
 import bs.service.trainee.api.service.TraineeService;
 import bs.service.trainee.core.mapper.TraineeMapper;
+import bs.service.trainee.model.config.AbstractTraineeConfig;
 import bs.service.trainee.model.entity.HealthCondition;
 import bs.service.trainee.model.entity.Trainee;
 import bs.service.trainee.model.entity.TraineeCertificate;
@@ -30,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,11 +50,12 @@ public class TraineeServiceImpl implements TraineeService {
     private final TraineeContactRepository traineeContactRepository;
     private final TraineeCertificateRepository traineeCertificateRepository;
     private final HealthConditionRepository healthConditionRepository;
+    private final AbstractTraineeConfig abstractTraineeConfig;
 
     @Override
     @Transactional
     public NewRecordVTO createTrainee(TraineeDTO traineeDTO) {
-        TraineeSearchFilter traineeSearchFilter=TraineeSearchFilter.builder().quickSearchQuery(traineeDTO.getNationalId()).pagination(PaginationInfo.noPagination()).build();
+        TraineeSearchFilter traineeSearchFilter=TraineeSearchFilter.builder().quickSearchQuery(traineeDTO.getNationalId()).isDeleted(false).pagination(PaginationInfo.noPagination()).build();
         Trainee existsTrainee = traineeRepository.selectAllByFilters(traineeSearchFilter).stream().findFirst().orElse(null);
         if(existsTrainee!=null) {
             throw new BusinessException(NATIONAL_ID_ALREADY_EXISTS, existsTrainee.getNationalId());
@@ -174,5 +178,21 @@ public class TraineeServiceImpl implements TraineeService {
                 .build();
         System.out.println("Trainee Lookup result set  : " + traineeLookupResultSet);
         return traineeLookupResultSet;
+    }
+
+    @Override
+    public void traineeCleanupScheduler() {
+        TraineeSearchFilter traineeSearchFilter = TraineeSearchFilter.builder()
+                .isDeleted(true)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Trainee> traineesToDelete=traineeRepository.selectAllByFilters(traineeSearchFilter);
+        for (Trainee trainee: traineesToDelete) {
+            if (trainee.getLastModifiedOn() != null &&
+                    ChronoUnit.MINUTES.between(trainee.getLastModifiedOn(), LocalDateTime.now()) >=
+                            abstractTraineeConfig.getTraineeCleanupSchedulerIntervalInMin()) {
+                traineeRepository.deleteById(trainee.getId());
+            }
+        }
     }
 }

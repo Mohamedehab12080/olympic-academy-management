@@ -20,10 +20,7 @@ import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.enums.SessionStatus;
 import bs.service.employee.model.filter.CourseSessionSearchFilter;
 import bs.service.employee.model.filter.TrainerCourseSearchFilter;
-import bs.service.employee.model.generated.CourseSessionDTO;
-import bs.service.employee.model.generated.CourseSessionDayDTO;
-import bs.service.employee.model.generated.CourseSessionResultSet;
-import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.employee.model.generated.*;
 import bs.service.place.api.repository.PlaceRepository;
 import bs.service.place.model.entity.Place;
 import lombok.AllArgsConstructor;
@@ -1063,10 +1060,10 @@ public class CourseSessionServiceImpl implements CourseSessionService {
     }
 
     @Override
-    public CourseSessionVTO getCourseSessionById(Integer courseSessionId) {
+    public CourseSessionLookupVTO getCourseSessionById(Integer courseSessionId) {
         CourseSession courseSession = courseSessionRepository.selectById(courseSessionId)
                 .orElseThrow(() -> new BusinessException(COURSE_SESSION_NOT_FOUND, courseSessionId));
-        return employeeMapper.toCourseSessionVTO(courseSession);
+        return employeeMapper.toCourseSessionLookupVTO(courseSession);
     }
 
     @Override

@@ -962,9 +962,7 @@ components:
         trainee:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         session:
-          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/CourseSessionVTO'
-        course:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/CourseSessionLookupVTO'
         status:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         attendanceDate:
@@ -1086,15 +1084,8 @@ components:
           format: int32
         trainee:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
-        sessionTitle:
-          type: string
-        courseTitle:
-          type: string
-        sessionDate:
-          type: string
-          format: date
-        sessionDay:
-          type: string
+        session:
+          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/CourseSessionLookupVTO'
         attendanceDate:
           type: string
         status:

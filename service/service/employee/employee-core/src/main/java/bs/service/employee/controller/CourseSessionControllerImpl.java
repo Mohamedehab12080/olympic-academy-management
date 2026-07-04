@@ -5,10 +5,7 @@ import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.api.service.CourseSessionService;
 import bs.service.employee.controller.generated.CourseSessionController;
 import bs.service.employee.model.enums.SessionStatus;
-import bs.service.employee.model.generated.CourseSessionDTO;
-import bs.service.employee.model.generated.CourseSessionDayDTO;
-import bs.service.employee.model.generated.CourseSessionResultSet;
-import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.employee.model.generated.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -90,8 +87,8 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseSessionVTO> _getCourseSessionById(Integer courseSessionId) {
-        CourseSessionVTO result = courseSessionService.getCourseSessionById(courseSessionId);
+    public ResponseEntity<CourseSessionLookupVTO> _getCourseSessionById(Integer courseSessionId) {
+        CourseSessionLookupVTO result = courseSessionService.getCourseSessionById(courseSessionId);
         return ResponseEntity.ok(result);
     }
 

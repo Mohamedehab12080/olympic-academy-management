@@ -255,14 +255,29 @@
           <!-- Course Title Column -->
           <ng-container matColumnDef="courseTitle">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الدورة</th>
-            <td mat-cell *matCellDef="let a">{{ a.courseTitle || '-' }}</td>
+            <td mat-cell *matCellDef="let a">{{ a.session.course.title || '-' }}</td>
           </ng-container>
 
           <!-- Session Title Column -->
           <ng-container matColumnDef="sessionTitle">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>الجلسة</th>
-            <td mat-cell *matCellDef="let a">{{ a.sessionTitle || '-' }}</td>
+            <td mat-cell *matCellDef="let a">{{ a.session.title || '-' }}</td>
           </ng-container>
+            <!-- Session Trainer Column - Single EmployeeLookupVTO -->
+      <ng-container matColumnDef="sessionTrainer">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>المدرب</th>
+        <td mat-cell *matCellDef="let a">
+          <div class="trainer-info">
+            <span *ngIf="a.session.trainer; else noTrainer">
+              {{ getTrainerDisplayName(a.session.trainer) }}
+            </span>
+            <ng-template #noTrainer>
+              <span class="no-trainer">-</span>
+            </ng-template>
+          </div>
+        </td>
+      </ng-container>
+      
             <ng-container matColumnDef="attendanceDate">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>تاريخ الحضور</th>
               <td mat-cell *matCellDef="let a">
@@ -278,7 +293,7 @@
             <td mat-cell *matCellDef="let a">
               <div class="day-info">
                 <mat-icon>today</mat-icon>
-                <span>{{ getDayDisplay(a.sessionDay) }}</span>
+                <span>{{ getDayDisplay(a.session.sessionDay) }}</span>
               </div>
             </td>
           </ng-container>

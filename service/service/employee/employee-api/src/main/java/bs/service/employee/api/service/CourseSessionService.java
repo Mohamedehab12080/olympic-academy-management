@@ -5,10 +5,7 @@ package bs.service.employee.api.service;
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.model.enums.SessionStatus;
-import bs.service.employee.model.generated.CourseSessionDTO;
-import bs.service.employee.model.generated.CourseSessionDayDTO;
-import bs.service.employee.model.generated.CourseSessionResultSet;
-import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.employee.model.generated.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,7 +23,7 @@ public interface CourseSessionService {
 
     void deleteCourseSession(Integer courseSessionId);
 
-    CourseSessionVTO getCourseSessionById(Integer courseSessionId);
+    CourseSessionLookupVTO getCourseSessionById(Integer courseSessionId);
 
     CourseSessionResultSet getAllCourseSessionsByFilter(
             Integer courseId,

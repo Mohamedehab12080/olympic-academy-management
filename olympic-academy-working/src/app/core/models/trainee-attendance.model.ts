@@ -1,5 +1,5 @@
 import { LightUserVTO, LookupVTO } from '../../core/models/common.model';
-import {CourseSessionVTO} from '../../core/models/employee.model';
+import {CourseSessionLookupVTO, CourseSessionVTO} from '../../core/models/employee.model';
 
 // ==================== Enum for DTOs (sent to backend) - Trainee specific ====================
 
@@ -32,10 +32,9 @@ export interface TraineeAttendanceDTO {
 
 export interface TraineeAttendanceVTO {
   id: number;
-  trainee: LookupVTO;      // { id: number; title: string; imageUrl: string | null }
-  session: CourseSessionVTO;      // { id: number; title: string; imageUrl: string | null }
-  course: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
-  status: LookupVTO;       // { id: number; title: string; imageUrl: string | null }
+  trainee: LookupVTO;      
+  session: CourseSessionLookupVTO;
+  status: LookupVTO;     
   attendanceDate: string;
   checkInTime?: string;
   checkOutTime?: string;
@@ -50,9 +49,7 @@ export interface TraineeAttendanceVTO {
 export interface TraineeAttendanceListItem {
   id: number;
   trainee: LightUserVTO;
-  sessionTitle: string;
-  courseTitle: string;
-  sessionDate: string;
+  session: CourseSessionLookupVTO;
   attendanceDate:string;
   sessionDay: string;
   status: LookupVTO;       // { id: number; title: string; imageUrl: string | null }

@@ -54,4 +54,9 @@ public class TraineeRepositoryImpl implements TraineeRepository {
     public Integer countAllByFilters(TraineeSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        traineeJPARepository.deleteById(id);
+    }
 }

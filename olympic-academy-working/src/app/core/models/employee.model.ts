@@ -157,6 +157,24 @@ export interface CourseSessionVTO {
   lastModifiedBy?: LightUserVTO;
 }
 
+export interface CourseSessionLookupVTO {
+  id:number;
+  title: string;
+  course: LookupVTO;
+  trainer: EmployeeLookupVTO;
+  place: LookupVTO;
+  sessionDate: string;
+  sessionDay: string;
+  startTime: string;
+  endTime: string;
+  status: LookupVTO;  // SessionStatus as LookupVTO
+  note?: string;
+  createdOn: string;
+  createdBy: LightUserVTO;
+  lastModifiedOn?: string;
+  lastModifiedBy?: LightUserVTO;
+}
+
 export interface TrainerCourseVTO {
   id: number;
   trainer:LookupVTO;

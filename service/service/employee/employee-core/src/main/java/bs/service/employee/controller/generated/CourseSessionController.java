@@ -11,8 +11,8 @@ import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.model.enums.SessionStatus;
 import bs.service.employee.model.generated.CourseSessionDTO;
 import bs.service.employee.model.generated.CourseSessionDayDTO;
+import bs.service.employee.model.generated.CourseSessionLookupVTO;
 import bs.service.employee.model.generated.CourseSessionResultSet;
-import bs.service.employee.model.generated.CourseSessionVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -295,12 +295,12 @@ public interface CourseSessionController {
      */
     @Operation(operationId = "getCourseSessionById", summary = "Get course session by id", tags = {
             "CourseSession" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = CourseSessionVTO.class)) }),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = CourseSessionLookupVTO.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
     @RequestMapping(method = RequestMethod.GET, value = "/courses/course-session", produces = { "application/json" })
 
-    ResponseEntity<CourseSessionVTO> _getCourseSessionById(
+    ResponseEntity<CourseSessionLookupVTO> _getCourseSessionById(
             @Parameter(name = "courseSessionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseSessionId") Integer courseSessionId);
 
     /**

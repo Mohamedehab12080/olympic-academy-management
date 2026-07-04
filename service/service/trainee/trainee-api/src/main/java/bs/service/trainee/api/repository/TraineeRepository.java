@@ -17,5 +17,7 @@ public interface TraineeRepository {
      List<Trainee> selectAllByFilters(TraineeSearchFilter filters) ;
 
      Integer countAllByFilters(TraineeSearchFilter filters) ;
+
+    void deleteById(Integer id);
 }
 
