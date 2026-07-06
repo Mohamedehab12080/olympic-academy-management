@@ -1,8 +1,20 @@
 // employee-details-modal.component.ts - UPDATED WITH SAME CARD PRINT AS TRAINEE
 
-import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
@@ -12,7 +24,13 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
-import { EmployeeVTO, EmployeeContactVTO, CourseSessionVTO, TrainerDepartmentVTO, TrainerCourseVTO } from '../../../../core/models/employee.model';
+import {
+  EmployeeVTO,
+  EmployeeContactVTO,
+  CourseSessionVTO,
+  TrainerDepartmentVTO,
+  TrainerCourseVTO,
+} from '../../../../core/models/employee.model';
 import { FileService } from '../../../../core/services/file.service';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -31,7 +49,7 @@ import * as JsBarcode from 'jsbarcode';
     MatTabsModule,
     MatTableModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
   template: `
     <div class="modal-container" dir="rtl">
@@ -42,10 +60,18 @@ import * as JsBarcode from 'jsbarcode';
           <h2>ملف الموظف</h2>
         </div>
         <div class="header-actions">
-          <button mat-icon-button (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+          <button
+            mat-icon-button
+            (click)="printProfileDocument()"
+            matTooltip="طباعة الملف الكامل"
+          >
             <mat-icon>description</mat-icon>
           </button>
-          <button mat-icon-button (click)="printEmployeeCard()" matTooltip="طباعة البطاقة">
+          <button
+            mat-icon-button
+            (click)="printEmployeeCard()"
+            matTooltip="طباعة البطاقة"
+          >
             <mat-icon>credit_card</mat-icon>
           </button>
           <button mat-icon-button mat-dialog-close class="close-btn">
@@ -53,9 +79,9 @@ import * as JsBarcode from 'jsbarcode';
           </button>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Main Profile Info -->
       <div class="profile-main" *ngIf="employee">
         <div class="profile-image">
@@ -63,7 +89,7 @@ import * as JsBarcode from 'jsbarcode';
             <mat-icon>person</mat-icon>
           </div>
           <ng-template #profileImage>
-            <img [src]="imageUrl" [alt]="employee.fullName">
+            <img [src]="imageUrl" [alt]="employee.fullName" />
           </ng-template>
         </div>
 
@@ -81,17 +107,23 @@ import * as JsBarcode from 'jsbarcode';
               {{ employee.nationalId }}
             </mat-chip>
             <mat-chip *ngIf="employee.gender">
-              <mat-icon>{{ employee.gender.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+              <mat-icon>{{
+                employee.gender.title === 'ذكر' ? 'male' : 'female'
+              }}</mat-icon>
               {{ employee.gender.title }}
             </mat-chip>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Tabs -->
-      <mat-tab-group class="custom-tabs" #tabGroup (selectedTabChange)="onTabChange($event)">
+      <mat-tab-group
+        class="custom-tabs"
+        #tabGroup
+        (selectedTabChange)="onTabChange($event)"
+      >
         <!-- Personal Info Tab -->
         <mat-tab label="المعلومات الشخصية">
           <div class="tab-content" *ngIf="employee">
@@ -116,12 +148,14 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>cake</mat-icon>
                 <div>
                   <label>تاريخ الميلاد</label>
-                  <p>{{ (employee.birthDate | date:'dd/MM/yyyy') || '-' }}</p>
+                  <p>{{ (employee.birthDate | date: 'dd/MM/yyyy') || '-' }}</p>
                 </div>
               </div>
 
               <div class="info-item">
-                <mat-icon>{{ employee.gender?.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+                <mat-icon>{{
+                  employee.gender?.title === 'ذكر' ? 'male' : 'female'
+                }}</mat-icon>
                 <div>
                   <label>الجنس</label>
                   <p>{{ employee.gender?.title || '-' }}</p>
@@ -140,7 +174,7 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>event</mat-icon>
                 <div>
                   <label>تاريخ التوظيف</label>
-                  <p>{{ employee.hireDate | date:'dd/MM/yyyy' }}</p>
+                  <p>{{ employee.hireDate | date: 'dd/MM/yyyy' }}</p>
                 </div>
               </div>
 
@@ -148,7 +182,7 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>event</mat-icon>
                 <div>
                   <label>تاريخ التسجيل</label>
-                  <p>{{ employee.createdOn | date:'dd/MM/yyyy' }}</p>
+                  <p>{{ employee.createdOn | date: 'dd/MM/yyyy' }}</p>
                 </div>
               </div>
 
@@ -171,14 +205,14 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>attach_money</mat-icon>
                 <div>
                   <label>الراتب الأساسي</label>
-                  <h3>{{ employee.salary | currency:'EGP' }}</h3>
+                  <h3>{{ employee.salary | currency: 'EGP' }}</h3>
                 </div>
               </div>
               <div class="financial-card warning">
                 <mat-icon>account_balance_wallet</mat-icon>
                 <div>
                   <label>الراتب المتبقي</label>
-                  <h3>{{ employee.remainedSalary | currency:'EGP' }}</h3>
+                  <h3>{{ employee.remainedSalary | currency: 'EGP' }}</h3>
                 </div>
               </div>
               <div class="financial-card info">
@@ -195,9 +229,14 @@ import * as JsBarcode from 'jsbarcode';
         <!-- Contacts Tab -->
         <mat-tab label="جهات الاتصال">
           <div class="tab-content">
-            <div class="contacts-list" *ngIf="contacts.length > 0; else noContacts">
+            <div
+              class="contacts-list"
+              *ngIf="contacts.length > 0; else noContacts"
+            >
               <div class="contact-card" *ngFor="let contact of contacts">
-                <mat-icon>{{ getContactIcon(contact.contactType?.title || '') }}</mat-icon>
+                <mat-icon>{{
+                  getContactIcon(contact.contactType?.title || '')
+                }}</mat-icon>
                 <div class="contact-info">
                   <label>{{ contact.contactType?.title || 'جهة اتصال' }}</label>
                   <p>{{ contact.contactValue }}</p>
@@ -220,12 +259,23 @@ import * as JsBarcode from 'jsbarcode';
               <mat-spinner diameter="30"></mat-spinner>
               <p>جاري تحميل الأقسام...</p>
             </div>
-            <div class="departments-list" *ngIf="!isLoadingDepartments && trainerDepartments.length > 0; else noDepartments">
-              <div class="department-card" *ngFor="let dept of trainerDepartments">
+            <div
+              class="departments-list"
+              *ngIf="
+                !isLoadingDepartments && trainerDepartments.length > 0;
+                else noDepartments
+              "
+            >
+              <div
+                class="department-card"
+                *ngFor="let dept of trainerDepartments"
+              >
                 <mat-icon>business</mat-icon>
                 <div class="department-info">
                   <h4>{{ dept.department?.title }}</h4>
-                  <p *ngIf="dept.createdOn">تاريخ الإسناد: {{ dept.createdOn | date:'dd/MM/yyyy' }}</p>
+                  <p *ngIf="dept.createdOn">
+                    تاريخ الإسناد: {{ dept.createdOn | date: 'dd/MM/yyyy' }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -239,18 +289,29 @@ import * as JsBarcode from 'jsbarcode';
         </mat-tab>
 
         <!-- Courses Tab - Loaded from API -->
-        <mat-tab *ngIf="employee?.employeeType?.id === 1" label="الدورات المسندة">
+        <mat-tab
+          *ngIf="employee?.employeeType?.id === 1"
+          label="الدورات المسندة"
+        >
           <div class="tab-content">
             <div *ngIf="isLoadingCourses" class="loading-container">
               <mat-spinner diameter="30"></mat-spinner>
               <p>جاري تحميل الدورات...</p>
             </div>
-            <div class="courses-list" *ngIf="!isLoadingCourses && trainerCourses.length > 0; else noCourses">
+            <div
+              class="courses-list"
+              *ngIf="
+                !isLoadingCourses && trainerCourses.length > 0;
+                else noCourses
+              "
+            >
               <div class="course-card" *ngFor="let course of trainerCourses">
                 <mat-icon>school</mat-icon>
                 <div class="course-info">
                   <h4>{{ course.course?.title }}</h4>
-                  <p *ngIf="course.createdOn">تاريخ الإسناد: {{ course.createdOn | date:'dd/MM/yyyy' }}</p>
+                  <p *ngIf="course.createdOn">
+                    تاريخ الإسناد: {{ course.createdOn | date: 'dd/MM/yyyy' }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -266,49 +327,77 @@ import * as JsBarcode from 'jsbarcode';
         <!-- Sessions Tab -->
         <mat-tab label="الجلسات">
           <div class="tab-content">
-            <div class="table-container" *ngIf="sessions.length > 0; else noSessions">
-              <table mat-table [dataSource]="sessionsDataSource" class="full-width-table">
+            <div
+              class="table-container"
+              *ngIf="sessions.length > 0; else noSessions"
+            >
+              <table
+                mat-table
+                [dataSource]="sessionsDataSource"
+                class="full-width-table"
+              >
                 <ng-container matColumnDef="title">
                   <th mat-header-cell *matHeaderCellDef>عنوان الجلسة</th>
-                  <td mat-cell *matCellDef="let session">{{ session.title }}</td>
+                  <td mat-cell *matCellDef="let session">
+                    {{ session.title }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="course">
                   <th mat-header-cell *matHeaderCellDef>الدورة</th>
-                  <td mat-cell *matCellDef="let session">{{ session.course?.title }}</td>
+                  <td mat-cell *matCellDef="let session">
+                    {{ session.course?.title }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="place">
                   <th mat-header-cell *matHeaderCellDef>المكان</th>
-                  <td mat-cell *matCellDef="let session">{{ session.place?.title }}</td>
+                  <td mat-cell *matCellDef="let session">
+                    {{ session.place?.title }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="sessionDate">
                   <th mat-header-cell *matHeaderCellDef>التاريخ</th>
-                  <td mat-cell *matCellDef="let session">{{ session.sessionDate | date:'dd/MM/yyyy' }}</td>
+                  <td mat-cell *matCellDef="let session">
+                    {{ session.sessionDate | date: 'dd/MM/yyyy' }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="startTime">
                   <th mat-header-cell *matHeaderCellDef>وقت البدء</th>
-                  <td mat-cell *matCellDef="let session">{{ session.startTime }}</td>
+                  <td mat-cell *matCellDef="let session">
+                    {{ session.startTime }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="endTime">
                   <th mat-header-cell *matHeaderCellDef>وقت الانتهاء</th>
-                  <td mat-cell *matCellDef="let session">{{ session.endTime }}</td>
+                  <td mat-cell *matCellDef="let session">
+                    {{ session.endTime }}
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="status">
                   <th mat-header-cell *matHeaderCellDef>الحالة</th>
                   <td mat-cell *matCellDef="let session">
-                    <mat-chip [color]="getSessionStatusColor(session.status?.id)" selected>
+                    <mat-chip
+                      [color]="getSessionStatusColor(session.status?.id)"
+                      selected
+                    >
                       {{ session.status?.title }}
                     </mat-chip>
                   </td>
                 </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="sessionsDisplayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: sessionsDisplayedColumns;"></tr>
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="sessionsDisplayedColumns"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: sessionsDisplayedColumns"
+                ></tr>
               </table>
             </div>
             <ng-template #noSessions>
@@ -329,12 +418,17 @@ import * as JsBarcode from 'jsbarcode';
                 <span>بطاقة هوية الموظف</span>
               </div>
               <div class="barcode-container">
-                <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
+                <canvas
+                  #barcodeCanvas
+                  class="barcode-canvas"
+                  width="350"
+                  height="60"
+                ></canvas>
                 <div class="barcode-number">{{ employee?.nationalId }}</div>
               </div>
               <div class="barcode-info">
                 <span>رقم الهوية: {{ employee?.nationalId }}</span>
-                <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
+                <span>تاريخ الإصدار: {{ today | date: 'dd/MM/yyyy' }}</span>
               </div>
             </div>
           </div>
@@ -355,37 +449,49 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>schedule</mat-icon>
                 <div>
                   <label>تاريخ الإنشاء</label>
-                  <p>{{ employee.createdOn | date:'dd/MM/yyyy HH:mm' }}</p>
+                  <p>{{ employee.createdOn | date: 'dd/MM/yyyy HH:mm' }}</p>
                 </div>
               </div>
               <div class="info-item" *ngIf="employee.lastModifiedBy">
                 <mat-icon>edit</mat-icon>
                 <div>
                   <label>تم التعديل بواسطة</label>
-                  <p>{{ employee.lastModifiedBy?.fullName}}</p>
+                  <p>{{ employee.lastModifiedBy?.fullName }}</p>
                 </div>
               </div>
               <div class="info-item" *ngIf="employee.lastModifiedOn">
                 <mat-icon>update</mat-icon>
                 <div>
                   <label>تاريخ التعديل</label>
-                  <p>{{ employee.lastModifiedOn | date:'dd/MM/yyyy HH:mm' }}</p>
+                  <p>
+                    {{ employee.lastModifiedOn | date: 'dd/MM/yyyy HH:mm' }}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </mat-tab>
       </mat-tab-group>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Modal Actions -->
       <div class="modal-actions">
-        <button mat-raised-button color="accent" (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="printProfileDocument()"
+          matTooltip="طباعة الملف الكامل"
+        >
           <mat-icon>description</mat-icon>
           طباعة الملف
         </button>
-        <button mat-raised-button color="primary" (click)="printEmployeeCard()" matTooltip="طباعة البطاقة">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="printEmployeeCard()"
+          matTooltip="طباعة البطاقة"
+        >
           <mat-icon>credit_card</mat-icon>
           طباعة البطاقة
         </button>
@@ -404,381 +510,393 @@ import * as JsBarcode from 'jsbarcode';
       </div>
     </div>
   `,
-  styles: [`
-    .modal-container {
-      min-width: 700px;
-      max-width: 900px;
-      max-height: 90vh;
-      direction: rtl;
-      background: #f5f7fa;
-      border-radius: 24px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-header {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-    }
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .header-title mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-    .modal-header h2 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
-    }
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .close-btn {
-      color: white;
-      transition: transform 0.2s;
-    }
-    .close-btn:hover {
-      transform: scale(1.1);
-    }
-
-    .profile-main {
-      display: flex;
-      gap: 24px;
-      padding: 24px;
-      background: white;
-    }
-    .profile-image {
-      flex-shrink: 0;
-    }
-    .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .avatar mat-icon {
-      font-size: 50px;
-      width: 50px;
-      height: 50px;
-      color: white;
-    }
-    .profile-image img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .profile-info {
-      flex: 1;
-    }
-    .profile-info h1 {
-      margin: 0 0 12px 0;
-      font-size: 24px;
-      color: #1f2937;
-    }
-    .info-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .custom-tabs {
-      flex: 1;
-      overflow-y: auto;
-    }
-    .tab-content {
-      padding: 20px;
-      max-height: 50vh;
-      overflow-y: auto;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #f9fafb;
-      border-radius: 12px;
-    }
-    .info-item mat-icon {
-      color: #f59e0b;
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-    .info-item div {
-      flex: 1;
-    }
-    .info-item label {
-      display: block;
-      font-size: 11px;
-      color: #6b7280;
-      margin-bottom: 2px;
-    }
-    .info-item p {
-      margin: 0;
-      font-size: 14px;
-      color: #1f2937;
-      font-weight: 500;
-    }
-
-    .financial-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-    .financial-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      border-radius: 12px;
-      color: white;
-    }
-    .financial-card mat-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-    }
-    .financial-card.warning {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
-    .financial-card.info {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    }
-    .financial-card label {
-      font-size: 11px;
-      opacity: 0.9;
-    }
-    .financial-card h3 {
-      margin: 4px 0 0;
-      font-size: 18px;
-    }
-
-    .contacts-list,
-    .departments-list,
-    .courses-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .contact-card,
-    .department-card,
-    .course-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #f9fafb;
-      border-radius: 12px;
-    }
-    .contact-card mat-icon,
-    .department-card mat-icon,
-    .course-card mat-icon {
-      color: #f59e0b;
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-    .contact-info label,
-    .department-info h4,
-    .course-info h4 {
-      margin: 0 0 4px 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1f2937;
-    }
-    .contact-info p,
-    .department-info p,
-    .course-info p {
-      margin: 0;
-      font-size: 12px;
-      color: #6b7280;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-    .full-width-table {
-      width: 100%;
-    }
-    .full-width-table th {
-      background: #f8fafc;
-      color: #1e293b;
-      font-weight: 600;
-      font-size: 12px;
-      padding: 10px;
-    }
-    .full-width-table td {
-      padding: 8px;
-      font-size: 12px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #9ca3af;
-    }
-    .empty-state mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 12px;
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 40px;
-      color: #64748b;
-    }
-
-    /* Barcode Tab */
-    .barcode-tab {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 250px;
-    }
-
-    .barcode-card {
-      text-align: center;
-      background: #f8fafc;
-      padding: 30px 40px;
-      border-radius: 20px;
-      border: 1px solid rgba(226, 232, 240, 0.5);
-      width: 100%;
-      max-width: 450px;
-    }
-
-    .barcode-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .barcode-header mat-icon {
-      color: #f59e0b;
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .barcode-header span {
-      font-size: 16px;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .barcode-container {
-      margin: 16px 0;
-    }
-
-    .barcode-canvas {
-      max-width: 100%;
-      height: auto;
-    }
-
-    .barcode-number {
-      font-size: 14px;
-      font-weight: 600;
-      color: #f59e0b;
-      font-family: monospace;
-      margin-top: 8px;
-      letter-spacing: 1px;
-    }
-
-    .barcode-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #64748b;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .modal-actions {
-      flex-shrink: 0;
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      padding: 16px 20px;
-      background: white;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    @media (max-width: 768px) {
+  styles: [
+    `
       .modal-container {
-        min-width: 90vw;
-        max-width: 90vw;
-      }
-      .profile-main {
+        min-width: 700px;
+        max-width: 900px;
+        max-height: 90vh;
+        direction: rtl;
+        background: #f5f7fa;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
         flex-direction: column;
+      }
+
+      .modal-header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        text-align: center;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
       }
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .header-title mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+      .modal-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .header-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .close-btn {
+        color: white;
+        transition: transform 0.2s;
+      }
+      .close-btn:hover {
+        transform: scale(1.1);
+      }
+
+      .profile-main {
+        display: flex;
+        gap: 24px;
+        padding: 24px;
+        background: white;
+      }
+      .profile-image {
+        flex-shrink: 0;
+      }
+      .avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .avatar mat-icon {
+        font-size: 50px;
+        width: 50px;
+        height: 50px;
+        color: white;
+      }
+      .profile-image img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .profile-info {
+        flex: 1;
+      }
+      .profile-info h1 {
+        margin: 0 0 12px 0;
+        font-size: 24px;
+        color: #1f2937;
+      }
+      .info-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .custom-tabs {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .tab-content {
+        padding: 20px;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+
       .info-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
       }
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-radius: 12px;
+      }
+      .info-item mat-icon {
+        color: #f59e0b;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+      .info-item div {
+        flex: 1;
+      }
+      .info-item label {
+        display: block;
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 2px;
+      }
+      .info-item p {
+        margin: 0;
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 500;
+      }
+
       .financial-cards {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
       }
+      .financial-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-radius: 12px;
+        color: white;
+      }
+      .financial-card mat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+      .financial-card.warning {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      }
+      .financial-card.info {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      }
+      .financial-card label {
+        font-size: 11px;
+        opacity: 0.9;
+      }
+      .financial-card h3 {
+        margin: 4px 0 0;
+        font-size: 18px;
+      }
+
       .contacts-list,
       .departments-list,
       .courses-list {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
-      .info-badges {
-        justify-content: center;
+      .contact-card,
+      .department-card,
+      .course-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-radius: 12px;
       }
-      .modal-actions {
-        flex-wrap: wrap;
+      .contact-card mat-icon,
+      .department-card mat-icon,
+      .course-card mat-icon {
+        color: #f59e0b;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
       }
-      .barcode-card {
-        padding: 20px;
+      .contact-info label,
+      .department-info h4,
+      .course-info h4 {
+        margin: 0 0 4px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1f2937;
       }
-      .barcode-info {
-        flex-direction: column;
-        gap: 4px;
+      .contact-info p,
+      .department-info p,
+      .course-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+      .full-width-table {
+        width: 100%;
+      }
+      .full-width-table th {
+        background: #f8fafc;
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .full-width-table td {
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      .empty-state {
         text-align: center;
+        padding: 40px;
+        color: #9ca3af;
       }
-    }
-  `]
+      .empty-state mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+      }
+
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 40px;
+        color: #64748b;
+      }
+
+      /* Barcode Tab */
+      .barcode-tab {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 250px;
+      }
+
+      .barcode-card {
+        text-align: center;
+        background: #f8fafc;
+        padding: 30px 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        width: 100%;
+        max-width: 450px;
+      }
+
+      .barcode-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .barcode-header mat-icon {
+        color: #f59e0b;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+
+      .barcode-header span {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .barcode-container {
+        margin: 16px 0;
+      }
+
+      .barcode-canvas {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .barcode-number {
+        font-size: 14px;
+        font-weight: 600;
+        color: #f59e0b;
+        font-family: monospace;
+        margin-top: 8px;
+        letter-spacing: 1px;
+      }
+
+      .barcode-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .modal-actions {
+        flex-shrink: 0;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding: 16px 20px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      @media (max-width: 768px) {
+        .modal-container {
+          min-width: 90vw;
+          max-width: 90vw;
+        }
+        .profile-main {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+        .financial-cards {
+          grid-template-columns: 1fr;
+        }
+        .contacts-list,
+        .departments-list,
+        .courses-list {
+          grid-template-columns: 1fr;
+        }
+        .info-badges {
+          justify-content: center;
+        }
+        .modal-actions {
+          flex-wrap: wrap;
+        }
+        .barcode-card {
+          padding: 20px;
+        }
+        .barcode-info {
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+        }
+      }
+    `,
+  ],
 })
-export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnDestroy {
+export class EmployeeDetailsModalComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   // Employee Data
   employee: EmployeeVTO;
   contacts: EmployeeContactVTO[] = [];
   sessions: CourseSessionVTO[] = [];
   sessionsDataSource = new MatTableDataSource<CourseSessionVTO>([]);
-  sessionsDisplayedColumns: string[] = ['title', 'course', 'place', 'sessionDate', 'startTime', 'endTime', 'status'];
-  
+  sessionsDisplayedColumns: string[] = [
+    'title',
+    'course',
+    'place',
+    'sessionDate',
+    'startTime',
+    'endTime',
+    'status',
+  ];
+
   // Image
   imageUrl: string | null = null;
   private blobUrl: string | null = null;
@@ -804,7 +922,7 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
     private router: Router,
     private fileService: FileService,
     private employeeService: EmployeeService,
-    private notification: NotificationService
+    private notification: NotificationService,
   ) {
     this.employee = data;
     this.contacts = data.contacts || [];
@@ -814,13 +932,15 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
 
   ngOnInit(): void {
     this.loadImage();
-    
+
     if (this.employee.employeeType?.id === 1) {
       console.log('Employee is a trainer, loading departments and courses...');
       this.loadTrainerDepartments();
       this.loadTrainerCourses();
     } else {
-      console.log('Employee is not a trainer, skipping departments and courses load');
+      console.log(
+        'Employee is not a trainer, skipping departments and courses load',
+      );
     }
   }
 
@@ -840,12 +960,12 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
   onTabChange(event: any): void {
     const tabIndex = event.index;
     console.log('Tab changed to index:', tabIndex);
-    
+
     if (tabIndex === 3 && this.employee.employeeType?.id === 1) {
       console.log('Departments tab selected, loading departments...');
       this.loadTrainerDepartments();
     }
-    
+
     if (event.tab && event.tab.textLabel === 'الدورات المسندة') {
       console.log('Courses tab selected, loading courses...');
       this.loadTrainerCourses();
@@ -867,7 +987,7 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
         error: (error) => {
           console.error('Failed to load image:', error);
           this.imageUrl = null;
-        }
+        },
       });
     } else if (fid) {
       this.imageUrl = fid;
@@ -882,7 +1002,7 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
       console.log('Departments already loaded, skipping...');
       return;
     }
-    
+
     if (this.employee.employeeType?.id !== 1) {
       console.log('Employee is not a trainer, skipping departments load');
       return;
@@ -890,22 +1010,24 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
 
     console.log('Loading trainer departments for employee:', this.employee.id);
     this.isLoadingDepartments = true;
-    this.employeeService.getTrainerDepartments({
-      trainerId: this.employee.id,
-      pageSize: 100
-    }).subscribe({
-      next: (result) => {
-        console.log('Departments loaded successfully:', result);
-        this.trainerDepartments = result.items || [];
-        this.departmentsLoaded = true;
-        this.isLoadingDepartments = false;
-      },
-      error: (err) => {
-        console.error('Error loading trainer departments:', err);
-        this.notification.showError('حدث خطأ في تحميل أقسام المدرب');
-        this.isLoadingDepartments = false;
-      }
-    });
+    this.employeeService
+      .getTrainerDepartments({
+        trainerId: this.employee.id,
+        pageSize: 100,
+      })
+      .subscribe({
+        next: (result) => {
+          console.log('Departments loaded successfully:', result);
+          this.trainerDepartments = result.items || [];
+          this.departmentsLoaded = true;
+          this.isLoadingDepartments = false;
+        },
+        error: (err) => {
+          console.error('Error loading trainer departments:', err);
+          this.notification.showError('حدث خطأ في تحميل أقسام المدرب');
+          this.isLoadingDepartments = false;
+        },
+      });
   }
 
   // ==================== Load Trainer Courses ====================
@@ -914,7 +1036,7 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
       console.log('Courses already loaded, skipping...');
       return;
     }
-    
+
     if (this.employee.employeeType?.id !== 1) {
       console.log('Employee is not a trainer, skipping courses load');
       return;
@@ -922,22 +1044,24 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
 
     console.log('Loading trainer courses for employee:', this.employee.id);
     this.isLoadingCourses = true;
-    this.employeeService.getTrainerCourses({
-      trainerId: this.employee.id,
-      pageSize: 100
-    }).subscribe({
-      next: (result) => {
-        console.log('Courses loaded successfully:', result);
-        this.trainerCourses = result.items || [];
-        this.coursesLoaded = true;
-        this.isLoadingCourses = false;
-      },
-      error: (err) => {
-        console.error('Error loading trainer courses:', err);
-        this.notification.showError('حدث خطأ في تحميل دورات المدرب');
-        this.isLoadingCourses = false;
-      }
-    });
+    this.employeeService
+      .getTrainerCourses({
+        trainerId: this.employee.id,
+        pageSize: 100,
+      })
+      .subscribe({
+        next: (result) => {
+          console.log('Courses loaded successfully:', result);
+          this.trainerCourses = result.items || [];
+          this.coursesLoaded = true;
+          this.isLoadingCourses = false;
+        },
+        error: (err) => {
+          console.error('Error loading trainer courses:', err);
+          this.notification.showError('حدث خطأ في تحميل دورات المدرب');
+          this.isLoadingCourses = false;
+        },
+      });
   }
 
   // ==================== Helper Functions ====================
@@ -946,20 +1070,20 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
       1: 'primary',
       2: 'accent',
       3: 'primary',
-      4: 'warn'
+      4: 'warn',
     };
     return colors[statusId] || 'default';
   }
 
   getContactIcon(contactType: string): string {
     const icons: { [key: string]: string } = {
-      'جوال': 'phone_android',
-      'هاتف': 'phone',
+      جوال: 'phone_android',
+      هاتف: 'phone',
       'بريد إلكتروني': 'email',
-      'واتساب': 'chat',
-      'فيسبوك': 'facebook',
-      'تويتر': 'twitter',
-      'انستجرام': 'instagram'
+      واتساب: 'chat',
+      فيسبوك: 'facebook',
+      تويتر: 'twitter',
+      انستجرام: 'instagram',
     };
     return icons[contactType] || 'contact_phone';
   }
@@ -968,17 +1092,21 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
   generateBarcode(): void {
     if (this.barcodeCanvas?.nativeElement) {
       try {
-        (JsBarcode as any)(this.barcodeCanvas.nativeElement, this.employee?.nationalId?.toString() || '000000', {
-          format: 'CODE128',
-          lineColor: '#000000',
-          width: 1.5,
-          height: 40,
-          displayValue: true,
-          fontSize: 10,
-          font: 'monospace',
-          textAlign: 'center',
-          margin: 5
-        });
+        (JsBarcode as any)(
+          this.barcodeCanvas.nativeElement,
+          this.employee?.nationalId?.toString() || '000000',
+          {
+            format: 'CODE128',
+            lineColor: '#000000',
+            width: 1.5,
+            height: 40,
+            displayValue: true,
+            fontSize: 10,
+            font: 'monospace',
+            textAlign: 'center',
+            margin: 5,
+          },
+        );
       } catch (error) {
         console.error('Barcode error:', error);
       }
@@ -994,36 +1122,42 @@ export class EmployeeDetailsModalComponent implements OnInit, AfterViewInit, OnD
   deleteEmployee(): void {
     this.dialogRef.close({ action: 'delete', employee: this.employee });
   }
-  
-printEmployeeCard(): void {
-  this.generateBarcode();
-  setTimeout(() => {
-    const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
-    const printWindow = window.open('', '_blank', 'width=350,height=500');
-    if (!printWindow) {
-      this.notification.showError('تعذر فتح نافذة الطباعة');
-      return;
-    }
 
-    const t = this.employee;
-    const imagePreviewUrl = this.imageUrl || '';
-    const today = new Date().toLocaleDateString('ar-EG');
-    const genderDisplay = t.gender?.title || '-';
-    const employeeTypeDisplay = t.employeeType?.title || '-';
-    const departmentsText = this.trainerDepartments.map((d: any) => d.department?.title || d.title).join(', ') || '-';
-    const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
+  printEmployeeCard(): void {
+    this.generateBarcode();
+    setTimeout(() => {
+      const barcodeImage =
+        this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open('', '_blank', 'width=350,height=500');
+      if (!printWindow) {
+        this.notification.showError('تعذر فتح نافذة الطباعة');
+        return;
+      }
 
-    // Use the main logo for both header and watermark
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+      const t = this.employee;
+      const imagePreviewUrl = this.imageUrl || '';
+      const today = new Date().toLocaleDateString('ar-EG');
+      const genderDisplay = t.gender?.title || '-';
+      const employeeTypeDisplay = t.employeeType?.title || '-';
+      const departmentsText =
+        this.trainerDepartments
+          .map((d: any) => d.department?.title || d.title)
+          .join(', ') || '-';
+      const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
 
-    // Conditional photo section - only show if image exists
-    const photoSection = imagePreviewUrl ? `
+      // Use the main logo for both header and watermark
+      const logoPath = 'assets/images/mainLogo.jpeg';
+
+      // Conditional photo section - only show if image exists
+      const photoSection = imagePreviewUrl
+        ? `
       <div class="thermal-photo">
         <img src="${imagePreviewUrl}" alt="${this.escapeHtml(t.fullName)}">
       </div>
-    ` : '';
+    `
+        : '';
 
-    printWindow.document.write(`
+      printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
       <head>
@@ -1453,16 +1587,21 @@ printEmployeeCard(): void {
       </body>
       </html>
     `);
-    printWindow.document.close();
-  }, 300);
-}
+      printWindow.document.close();
+    }, 300);
+  }
 
   // ==================== Print Complete Profile (ملف) ====================
   printProfileDocument(): void {
     this.generateBarcode();
     setTimeout(() => {
-      const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
-      const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+      const barcodeImage =
+        this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open(
+        '',
+        '_blank',
+        'width=800,height=800,scrollbars=yes',
+      );
       if (!printWindow) {
         this.notification.showError('تعذر فتح نافذة الطباعة');
         return;
@@ -1477,24 +1616,35 @@ printEmployeeCard(): void {
       const isTrainer = t.employeeType?.id === 1;
 
       // Departments
-      const departmentsList = this.trainerDepartments.length > 0
-        ? this.trainerDepartments.map((d: any) => d.department?.title || d.title).join('، ')
-        : 'لا يوجد';
+      const departmentsList =
+        this.trainerDepartments.length > 0
+          ? this.trainerDepartments
+              .map((d: any) => d.department?.title || d.title)
+              .join('، ')
+          : 'لا يوجد';
 
       // Courses
-      const coursesList = this.trainerCourses.length > 0
-        ? this.trainerCourses.map((c: any) => c.course?.title || c.title).join('، ')
-        : 'لا يوجد';
+      const coursesList =
+        this.trainerCourses.length > 0
+          ? this.trainerCourses
+              .map((c: any) => c.course?.title || c.title)
+              .join('، ')
+          : 'لا يوجد';
 
       // Contacts
-      const contactsList = this.contacts.length > 0
-        ? this.contacts.map((c: any) => `${c.contactType?.title}: ${c.contactValue}`).join(' | ')
-        : 'لا توجد جهات اتصال';
+      const contactsList =
+        this.contacts.length > 0
+          ? this.contacts
+              .map((c: any) => `${c.contactType?.title}: ${c.contactValue}`)
+              .join(' | ')
+          : 'لا توجد جهات اتصال';
 
       // Sessions
       let sessionsHtml = '';
       if (this.sessions.length > 0) {
-        sessionsHtml = this.sessions.map((s: any) => `
+        sessionsHtml = this.sessions
+          .map(
+            (s: any) => `
           <tr>
             <td>${this.escapeHtml(s.title) || '-'}</td>
             <td>${s.course?.title || '-'}</td>
@@ -1504,7 +1654,9 @@ printEmployeeCard(): void {
             <td>${s.endTime || '-'}</td>
             <td>${s.status?.title || '-'}</td>
           </tr>
-        `).join('');
+        `,
+          )
+          .join('');
       }
 
       printWindow.document.write(`
@@ -1706,19 +1858,25 @@ printEmployeeCard(): void {
             <div class="info-item full-width"><span class="label">الأقسام المسندة</span><span class="value">${departmentsList}</span></div>
           </div>
 
-          ${isTrainer ? `
+          ${
+            isTrainer
+              ? `
           <h2>📚 الدورات المسندة</h2>
           <div class="info-grid">
             <div class="info-item full-width"><span class="label">الدورات</span><span class="value">${coursesList}</span></div>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
 
           <h2>📞 جهات الاتصال</h2>
           <div class="info-grid">
             <div class="info-item full-width"><span class="label">جهات الاتصال</span><span class="value">${contactsList}</span></div>
           </div>
 
-          ${this.sessions.length > 0 ? `
+          ${
+            this.sessions.length > 0
+              ? `
           <h2>📅 الجلسات</h2>
           <table class="session-table">
             <thead>
@@ -1726,7 +1884,9 @@ printEmployeeCard(): void {
             </thead>
             <tbody>${sessionsHtml}</tbody>
           </table>
-          ` : ''}
+          `
+              : ''
+          }
 
           <h2>📱 الباركود</h2>
           <div class="barcode-section">

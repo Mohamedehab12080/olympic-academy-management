@@ -2,8 +2,18 @@
 
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -21,7 +31,10 @@ import { FinancialService } from '../../../../../../core/services/financial.serv
 import { EnrollmentService } from '../../../../../../core/services/enrollment.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
 import { ReportService } from '../../../../../../core/services/report.service';
-import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
+import {
+  SearchableSelectComponent,
+  SelectOption,
+} from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { PAYMENT_STATUSES } from '../../../../../../core/models/common.model';
 
 interface EnrollmentOption extends SelectOption {
@@ -55,10 +68,10 @@ interface EnrollmentOption extends SelectOption {
     MatTooltipModule,
     MatStepperModule,
     MatDividerModule,
-    SearchableSelectComponent
+    SearchableSelectComponent,
   ],
   templateUrl: './enrollment-payment-wizard-modal.component.html',
-  styleUrls: ['./enrollment-payment-wizard-modal.component.css']
+  styleUrls: ['./enrollment-payment-wizard-modal.component.css'],
 })
 export class EnrollmentPaymentWizardModalComponent implements OnInit {
   paymentForm: FormGroup;
@@ -68,29 +81,29 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
   isSubmitting = false;
   showSuccess = false;
   paymentResult: any = null;
-  
+
   // Data collections
   enrollments: any[] = [];
   paymentMethods: any[] = [];
   paymentStatuses = PAYMENT_STATUSES;
-  
+
   // Options for selects
   enrollmentOptions: EnrollmentOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
   paymentStatusOptions: SelectOption[] = [];
-  
+
   // Selected data for display
   selectedEnrollment: any = null;
   currentRemainingAmount: number = 0;
   isLoadingEnrollment: boolean = false;
-  
+
   // Wizard steps
   currentStep = 0;
   steps = [
     { label: 'اختر التسجيل', icon: 'school', completed: false },
     { label: 'تفاصيل الدفعة', icon: 'payments', completed: false },
     { label: 'معلومات الدفع', icon: 'credit_card', completed: false },
-    { label: 'تأكيد', icon: 'check_circle', completed: false }
+    { label: 'تأكيد', icon: 'check_circle', completed: false },
   ];
 
   constructor(
@@ -100,11 +113,11 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     private notification: NotificationService,
     private reportService: ReportService,
     private dialogRef: MatDialogRef<EnrollmentPaymentWizardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
   ) {
     this.paymentId = data?.paymentId;
     this.isEditMode = !!this.paymentId;
-    
+
     this.paymentForm = this.fb.group({
       enrollmentId: [null, Validators.required],
       enrollmentValue: [{ value: null, disabled: true }],
@@ -115,7 +128,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
       paymentDate: [new Date(), Validators.required],
       paymentMethodId: [null, Validators.required],
       paymentStatusObj: [null, Validators.required],
-      note: ['']
+      note: [''],
     });
   }
 
@@ -123,11 +136,11 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     this.loadSelectOptions();
     this.loadEnrollmentsList();
     this.loadPaymentMethods();
-    
+
     if (this.isEditMode) {
       this.loadPaymentData();
     }
-    
+
     // Subscribe to paid amount changes
     this.paymentForm.get('paidAmount')?.valueChanges.subscribe(() => {
       this.calculateNewRemaining();
@@ -135,9 +148,9 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
   }
 
   loadSelectOptions(): void {
-    this.paymentStatusOptions = this.paymentStatuses.map(s => ({ 
+    this.paymentStatusOptions = this.paymentStatuses.map((s) => ({
       value: s,
-      label: s.title 
+      label: s.title,
     }));
   }
 
@@ -146,8 +159,8 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     this.enrollmentService.getAllEnrollmentsDetailsByFilter().subscribe({
       next: (res: any) => {
         this.enrollments = res.items || [];
-        this.enrollmentOptions = this.enrollments.map((e: any) => ({ 
-          value: e.id, 
+        this.enrollmentOptions = this.enrollments.map((e: any) => ({
+          value: e.id,
           label: `${e.trainee?.fullName || 'غير محدد'} - ${e.course?.title || 'غير محدد'}`,
           enrollmentData: {
             trainee: e.trainee,
@@ -155,15 +168,17 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
             startDate: e.startDate,
             finalSubscriptionValue: e.finalSubscriptionValue,
             remainedSubscriptionValue: e.remainedSubscriptionValue || 0,
-            totalPaidAmount: (e.finalSubscriptionValue || 0) - (e.remainedSubscriptionValue || 0)
-          }
+            totalPaidAmount:
+              (e.finalSubscriptionValue || 0) -
+              (e.remainedSubscriptionValue || 0),
+          },
         }));
         this.isLoading = false;
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل التسجيلات');
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -171,14 +186,14 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     this.financialService.getAllPaymentMethodsLookup().subscribe({
       next: (res: any) => {
         this.paymentMethods = res.list || [];
-        this.paymentMethodOptions = this.paymentMethods.map((p: any) => ({ 
-          value: p.id, 
-          label: p.title 
+        this.paymentMethodOptions = this.paymentMethods.map((p: any) => ({
+          value: p.id,
+          label: p.title,
         }));
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل طرق الدفع');
-      }
+      },
     });
   }
 
@@ -186,8 +201,10 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     this.isLoading = true;
     this.financialService.getEnrollmentPaymentById(this.paymentId!).subscribe({
       next: (res: any) => {
-        const paymentStatusObj = this.paymentStatuses.find(s => s.id === res.paymentStatus?.id);
-        
+        const paymentStatusObj = this.paymentStatuses.find(
+          (s) => s.id === res.paymentStatus?.id,
+        );
+
         this.paymentForm.patchValue({
           enrollmentId: res.enrollment?.id,
           enrollmentValue: res.enrollmentValue,
@@ -196,108 +213,125 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
           paymentDate: new Date(res.paymentDate),
           paymentMethodId: res.paymentMethod?.id,
           paymentStatusObj: paymentStatusObj,
-          note: res.note
+          note: res.note,
         });
-        
-        this.fetchFreshEnrollmentData(res.enrollment?.id, res.paidAmount, res.remainedValue);
-        
-        this.steps.forEach(step => step.completed = true);
+
+        this.fetchFreshEnrollmentData(
+          res.enrollment?.id,
+          res.paidAmount,
+          res.remainedValue,
+        );
+
+        this.steps.forEach((step) => (step.completed = true));
         this.currentStep = 3;
-        
+
         this.isLoading = false;
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل بيانات الدفعة');
         this.isLoading = false;
-      }
+      },
     });
   }
 
-  fetchFreshEnrollmentData(enrollmentId: number, currentPaidAmount?: number, currentRemainingValue?: number) {
+  fetchFreshEnrollmentData(
+    enrollmentId: number,
+    currentPaidAmount?: number,
+    currentRemainingValue?: number,
+  ) {
     this.isLoadingEnrollment = true;
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
         const realRemainingValue = enrollment.remainedSubscriptionValue || 0;
-        
-        if (this.isEditMode && currentPaidAmount !== undefined && currentRemainingValue !== undefined) {
+
+        if (
+          this.isEditMode &&
+          currentPaidAmount !== undefined &&
+          currentRemainingValue !== undefined
+        ) {
           const previousRemaining = realRemainingValue + currentPaidAmount;
           this.currentRemainingAmount = previousRemaining;
-          
+
           this.paymentForm.patchValue({
             currentRemaining: previousRemaining,
-            totalPaidAmount: (enrollment.finalSubscriptionValue || 0) - previousRemaining
+            totalPaidAmount:
+              (enrollment.finalSubscriptionValue || 0) - previousRemaining,
           });
         } else {
           this.currentRemainingAmount = realRemainingValue;
           this.paymentForm.patchValue({
             currentRemaining: realRemainingValue,
-            totalPaidAmount: (enrollment.finalSubscriptionValue || 0) - realRemainingValue
+            totalPaidAmount:
+              (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
           });
         }
-        
+
         this.selectedEnrollment = {
           trainee: enrollment.trainee,
           course: enrollment.course,
           startDate: enrollment.startDate,
           finalSubscriptionValue: enrollment.finalSubscriptionValue,
           remainedSubscriptionValue: realRemainingValue,
-          totalPaidAmount: (enrollment.finalSubscriptionValue || 0) - realRemainingValue
+          totalPaidAmount:
+            (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
         };
-        
+
         this.paymentForm.patchValue({
-          enrollmentValue: enrollment.finalSubscriptionValue
+          enrollmentValue: enrollment.finalSubscriptionValue,
         });
-        
+
         this.isLoadingEnrollment = false;
       },
       error: (err) => {
         console.error('Error fetching enrollment:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
         this.isLoadingEnrollment = false;
-      }
+      },
     });
   }
 
   onEnrollmentSelect() {
     const enrollmentId = this.paymentForm.get('enrollmentId')?.value;
-    
+
     if (!enrollmentId) {
       this.selectedEnrollment = null;
       this.currentRemainingAmount = 0;
-      this.paymentForm.patchValue({ 
+      this.paymentForm.patchValue({
         enrollmentValue: null,
         totalPaidAmount: null,
         currentRemaining: null,
         paidAmount: null,
-        newRemainingValue: null
+        newRemainingValue: null,
       });
       return;
     }
-    
+
     this.isLoadingEnrollment = true;
-    
+
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
         const realRemainingValue = enrollment.remainedSubscriptionValue || 0;
         this.currentRemainingAmount = realRemainingValue;
-        
+
         this.selectedEnrollment = {
           trainee: enrollment.trainee,
           course: enrollment.course,
           startDate: enrollment.startDate,
           finalSubscriptionValue: enrollment.finalSubscriptionValue,
           remainedSubscriptionValue: realRemainingValue,
-          totalPaidAmount: (enrollment.finalSubscriptionValue || 0) - realRemainingValue
+          totalPaidAmount:
+            (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
         };
-        
-        this.paymentForm.patchValue({ 
+
+        this.paymentForm.patchValue({
           enrollmentValue: enrollment.finalSubscriptionValue,
-          totalPaidAmount: (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
+          totalPaidAmount:
+            (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
           currentRemaining: realRemainingValue,
           paidAmount: null,
-          newRemainingValue: null
+          newRemainingValue: null,
         });
-        
+
         this.isLoadingEnrollment = false;
         this.calculateNewRemaining();
       },
@@ -305,39 +339,42 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
         console.error('Error fetching enrollment:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
         this.isLoadingEnrollment = false;
-      }
+      },
     });
   }
 
   calculateNewRemaining() {
-    const currentRemaining = this.paymentForm.get('currentRemaining')?.value || 0;
+    const currentRemaining =
+      this.paymentForm.get('currentRemaining')?.value || 0;
     const paidAmount = this.paymentForm.get('paidAmount')?.value || 0;
-    
+
     if (paidAmount > currentRemaining && currentRemaining > 0) {
       this.paymentForm.get('paidAmount')?.setErrors({ exceedsRemaining: true });
-      this.notification.showWarning('المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي');
+      this.notification.showWarning(
+        'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي',
+      );
       return;
     } else {
       this.paymentForm.get('paidAmount')?.setErrors(null);
     }
-    
+
     const newRemaining = currentRemaining - paidAmount;
     const finalNewRemaining = newRemaining >= 0 ? newRemaining : 0;
     this.paymentForm.get('newRemainingValue')?.setValue(finalNewRemaining);
-    
+
     // Auto-set payment status based on new remaining amount
     if (finalNewRemaining === 0 && paidAmount > 0) {
-      const paidStatus = this.paymentStatuses.find(s => s.id === 2);
+      const paidStatus = this.paymentStatuses.find((s) => s.id === 2);
       if (paidStatus) {
         this.paymentForm.get('paymentStatusObj')?.setValue(paidStatus);
       }
     } else if (paidAmount > 0 && finalNewRemaining > 0) {
-      const partialStatus = this.paymentStatuses.find(s => s.id === 6);
+      const partialStatus = this.paymentStatuses.find((s) => s.id === 6);
       if (partialStatus) {
         this.paymentForm.get('paymentStatusObj')?.setValue(partialStatus);
       }
     } else if (paidAmount === 0 && currentRemaining > 0) {
-      const pendingStatus = this.paymentStatuses.find(s => s.id === 1);
+      const pendingStatus = this.paymentStatuses.find((s) => s.id === 1);
       if (pendingStatus) {
         this.paymentForm.get('paymentStatusObj')?.setValue(pendingStatus);
       }
@@ -369,25 +406,30 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
   }
 
   isStepValid(step: number): boolean {
-    switch(step) {
+    switch (step) {
       case 0:
         return this.paymentForm.get('enrollmentId')?.valid === true;
       case 1:
         const paidAmount = this.paymentForm.get('paidAmount')?.value;
-        const currentRemaining = this.paymentForm.get('currentRemaining')?.value;
-        return this.paymentForm.get('paidAmount')?.valid === true && 
-               this.paymentForm.get('paymentDate')?.valid === true &&
-               (paidAmount <= currentRemaining || currentRemaining === 0);
+        const currentRemaining =
+          this.paymentForm.get('currentRemaining')?.value;
+        return (
+          this.paymentForm.get('paidAmount')?.valid === true &&
+          this.paymentForm.get('paymentDate')?.valid === true &&
+          (paidAmount <= currentRemaining || currentRemaining === 0)
+        );
       case 2:
-        return this.paymentForm.get('paymentMethodId')?.valid === true && 
-               this.paymentForm.get('paymentStatusObj')?.valid === true;
+        return (
+          this.paymentForm.get('paymentMethodId')?.valid === true &&
+          this.paymentForm.get('paymentStatusObj')?.valid === true
+        );
       default:
         return true;
     }
   }
 
   markCurrentStepFieldsAsTouched() {
-    switch(this.currentStep) {
+    switch (this.currentStep) {
       case 0:
         this.paymentForm.get('enrollmentId')?.markAsTouched();
         break;
@@ -421,7 +463,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
   getPaymentMethodLabel(): string {
     const methodId = this.paymentForm.get('paymentMethodId')?.value;
-    const method = this.paymentMethods.find(m => m.id === methodId);
+    const method = this.paymentMethods.find((m) => m.id === methodId);
     return method?.title || 'غير محدد';
   }
 
@@ -430,83 +472,100 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
   // ==========================================================================
 
   printReceipt(paymentData: any, enrollmentData: any): void {
-    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=800,height=800,scrollbars=yes',
+    );
     if (!printWindow) {
       this.notification.showError('تعذر فتح نافذة الطباعة');
       return;
     }
 
     const receiptHtml = this.generateReceiptHTML(paymentData, enrollmentData);
-    
+
     printWindow.document.write(receiptHtml);
     printWindow.document.close();
-    
+
     // Auto print after a short delay to ensure content is loaded
     setTimeout(() => {
       printWindow.print();
     }, 500);
-    
+
     this.notification.showSuccess('تم فتح الإيصال للطباعة');
   }
 
-// In the generateReceiptHTML method - UPDATED TO MATCH DETAILS MODAL
-private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
-  const statusColors: { [key: string]: string } = {
-    'PAID': '#d1fae5',
-    'PARTIAL': '#fef3c7',
-    'PENDING': '#e0e7ff'
-  };
-  
-  const statusTextColors: { [key: string]: string } = {
-    'PAID': '#065f46',
-    'PARTIAL': '#92400e',
-    'PENDING': '#3730a3'
-  };
+  // In the generateReceiptHTML method - UPDATED TO MATCH DETAILS MODAL
+  private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
+    const statusColors: { [key: string]: string } = {
+      PAID: '#d1fae5',
+      PARTIAL: '#fef3c7',
+      PENDING: '#e0e7ff',
+    };
 
-  const paymentStatus = paymentData.paymentStatus || 'PENDING';
-  const statusColor = statusColors[paymentStatus] || '#f3f4f6';
-  const statusTextColor = statusTextColors[paymentStatus] || '#374151';
-  
-  const paidAmount = paymentData.paidAmount || 0;
-  const remainedValue = paymentData.remainedValue || 0;
-  const totalPaid = (enrollmentData.finalSubscriptionValue || 0) - remainedValue;
+    const statusTextColors: { [key: string]: string } = {
+      PAID: '#065f46',
+      PARTIAL: '#92400e',
+      PENDING: '#3730a3',
+    };
 
-  // Format date properly
-  const formatDate = (dateValue: any): string => {
-    if (!dateValue) return '-';
-    
-    let dateObj: Date;
-    if (typeof dateValue === 'string') {
-      dateObj = new Date(dateValue);
-    } else if (dateValue instanceof Date) {
-      dateObj = dateValue;
-    } else if (dateValue && typeof dateValue === 'object' && dateValue.toDate) {
-      dateObj = dateValue.toDate();
-    } else {
-      return '-';
-    }
-    
-    if (isNaN(dateObj.getTime())) return '-';
-    
-    const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const dayName = days[dateObj.getDay()];
-    const day = dateObj.getDate().toString().padStart(2, '0');
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-    const year = dateObj.getFullYear();
-    const hours = dateObj.getHours().toString().padStart(2, '0');
-    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-    
-    return `${dayName}، ${day}/${month}/${year} - ${hours}:${minutes}`;
-  };
+    const paymentStatus = paymentData.paymentStatus || 'PENDING';
+    const statusColor = statusColors[paymentStatus] || '#f3f4f6';
+    const statusTextColor = statusTextColors[paymentStatus] || '#374151';
 
-  // Format dates for display
-  const paymentDateFormatted = formatDate(paymentData.paymentDate);
-  const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
-  const currentDateFormatted = formatDate(new Date());
+    const paidAmount = paymentData.paidAmount || 0;
+    const remainedValue = paymentData.remainedValue || 0;
+    const totalPaid =
+      (enrollmentData.finalSubscriptionValue || 0) - remainedValue;
 
-  const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+    // Format date properly
+    const formatDate = (dateValue: any): string => {
+      if (!dateValue) return '-';
 
-  return `
+      let dateObj: Date;
+      if (typeof dateValue === 'string') {
+        dateObj = new Date(dateValue);
+      } else if (dateValue instanceof Date) {
+        dateObj = dateValue;
+      } else if (
+        dateValue &&
+        typeof dateValue === 'object' &&
+        dateValue.toDate
+      ) {
+        dateObj = dateValue.toDate();
+      } else {
+        return '-';
+      }
+
+      if (isNaN(dateObj.getTime())) return '-';
+
+      const days = [
+        'الأحد',
+        'الإثنين',
+        'الثلاثاء',
+        'الأربعاء',
+        'الخميس',
+        'الجمعة',
+        'السبت',
+      ];
+      const dayName = days[dateObj.getDay()];
+      const day = dateObj.getDate().toString().padStart(2, '0');
+      const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+      const year = dateObj.getFullYear();
+      const hours = dateObj.getHours().toString().padStart(2, '0');
+      const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+
+      return `${dayName}، ${day}/${month}/${year} - ${hours}:${minutes}`;
+    };
+
+    // Format dates for display
+    const paymentDateFormatted = formatDate(paymentData.paymentDate);
+    const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
+    const currentDateFormatted = formatDate(new Date());
+
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+
+    return `
     <!DOCTYPE html>
     <html dir="rtl">
     <head>
@@ -977,7 +1036,9 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
               </div>
 
               <!-- Note -->
-              ${paymentData.note ? `
+              ${
+                paymentData.note
+                  ? `
                 <hr class="divider-line">
                 <div class="receipt-section">
                   <div class="section-title">📝 ملاحظات</div>
@@ -985,7 +1046,9 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
                     <span class="note-text">${paymentData.note}</span>
                   </div>
                 </div>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
 
             <!-- BARCODE AT BOTTOM -->
@@ -1039,7 +1102,7 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
     </body>
     </html>
   `;
-}
+  }
 
   // ==========================================================================
   // SUBMIT WITH RECEIPT OPTION
@@ -1047,24 +1110,28 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
 
   onSubmit(): void {
     if (this.paymentForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
+      this.notification.showWarning(
+        'يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة',
+      );
       return;
     }
 
     const paidAmount = this.paymentForm.get('paidAmount')?.value;
     const currentRemaining = this.paymentForm.get('currentRemaining')?.value;
-    
+
     if (paidAmount > currentRemaining && currentRemaining > 0) {
-      this.notification.showWarning('المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي');
+      this.notification.showWarning(
+        'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي',
+      );
       return;
     }
 
     const paymentStatusObj = this.paymentForm.get('paymentStatusObj')?.value;
-    
+
     // FIXED: Explicitly type paymentStatusEnum as string | null
     let paymentStatusEnum: string | null = null;
     if (paymentStatusObj) {
-      switch(paymentStatusObj.id) {
+      switch (paymentStatusObj.id) {
         case 1:
           paymentStatusEnum = 'PENDING';
           break;
@@ -1087,29 +1154,35 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
           paymentStatusEnum = 'PENDING';
       }
     }
-    
+
     const paymentData = {
       enrollmentId: this.paymentForm.get('enrollmentId')?.value,
       paidAmount: paidAmount,
       paymentDate: this.paymentForm.get('paymentDate')?.value,
       paymentMethodId: this.paymentForm.get('paymentMethodId')?.value,
       paymentStatus: paymentStatusEnum,
-      note: this.paymentForm.get('note')?.value
+      note: this.paymentForm.get('note')?.value,
     };
 
     console.log('Submitting payment data:', paymentData);
 
     this.isSubmitting = true;
 
-    const serviceCall = this.isEditMode && this.paymentId
-      ? this.financialService.updateEnrollmentPayment(this.paymentId, paymentData as any)
-      : this.financialService.createEnrollmentPayment(paymentData as any);
+    const serviceCall =
+      this.isEditMode && this.paymentId
+        ? this.financialService.updateEnrollmentPayment(
+            this.paymentId,
+            paymentData as any,
+          )
+        : this.financialService.createEnrollmentPayment(paymentData as any);
 
     serviceCall.subscribe({
       next: (response: any) => {
-        this.notification.showSuccess(this.isEditMode ? 'تم تحديث الدفعة بنجاح' : 'تم إضافة الدفعة بنجاح');
+        this.notification.showSuccess(
+          this.isEditMode ? 'تم تحديث الدفعة بنجاح' : 'تم إضافة الدفعة بنجاح',
+        );
         this.isSubmitting = false;
-        
+
         // Store payment result for receipt
         this.paymentResult = {
           id: response.id || this.paymentId,
@@ -1119,23 +1192,25 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
           paymentMethodTitle: this.getPaymentMethodLabel(),
           paymentStatus: paymentStatusEnum,
           paymentStatusTitle: this.getPaymentStatusLabel(),
-          note: this.paymentForm.get('note')?.value
+          note: this.paymentForm.get('note')?.value,
         };
-        
+
         // Show success with receipt option
         this.showSuccess = true;
         this.currentStep = 3; // Stay on confirmation step
-        
+
         // Show receipt print option
-        this.notification.showSuccess('تمت العملية بنجاح! يمكنك طباعة الإيصال.');
-        
+        this.notification.showSuccess(
+          'تمت العملية بنجاح! يمكنك طباعة الإيصال.',
+        );
+
         // Auto print receipt for new payments (not for edit)
         if (!this.isEditMode) {
           setTimeout(() => {
             this.printReceipt(this.paymentResult, this.selectedEnrollment);
           }, 600);
         }
-        
+
         // Close dialog after a delay if user doesn't interact
         setTimeout(() => {
           this.dialogRef.close(true);
@@ -1143,9 +1218,14 @@ private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
       },
       error: (err) => {
         console.error('Error:', err);
-        this.notification.showError(err.error?.messageEn || (this.isEditMode ? 'حدث خطأ في تحديث الدفعة' : 'حدث خطأ في إضافة الدفعة'));
+        this.notification.showError(
+          err.error?.messageEn ||
+            (this.isEditMode
+              ? 'حدث خطأ في تحديث الدفعة'
+              : 'حدث خطأ في إضافة الدفعة'),
+        );
         this.isSubmitting = false;
-      }
+      },
     });
   }
 

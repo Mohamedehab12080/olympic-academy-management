@@ -1,8 +1,21 @@
 // trainee-details-modal.component.ts - UPDATED WITH ACADEMIC YEAR AS STRING
 
-import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule, MatDialog } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialog,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
@@ -11,7 +24,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
-import { TraineeVTO, TraineeCertificateVTO, TraineeContactVTO, HealthConditionVTO } from '../../../../core/models/trainee.model';
+import {
+  TraineeVTO,
+  TraineeCertificateVTO,
+  TraineeContactVTO,
+  HealthConditionVTO,
+} from '../../../../core/models/trainee.model';
 import { CommonEnrollmentVTO } from '../../../../core/models/common.model';
 import { TraineeWizardModalComponent } from './../trainee-wizard/trainee-wizard-modal.component';
 import { FileService } from '../../../../core/services/file.service';
@@ -20,17 +38,20 @@ import * as JsBarcode from 'jsbarcode';
 
 // Helper mapping for enum names to display titles
 const GENDER_MAP: { [key: string]: string } = {
-  'MALE': 'ذكر',
-  'FEMALE': 'أنثى'
+  MALE: 'ذكر',
+  FEMALE: 'أنثى',
 };
 
 const CONTACT_TYPE_MAP: { [key: string]: string } = {
-  'EMAIL': 'بريد إلكتروني',
-  'PHONE': 'جوال'
+  EMAIL: 'بريد إلكتروني',
+  PHONE: 'جوال',
 };
 
 // Helper to get display title from enum name
-function getDisplayTitle(enumName: string | undefined, map: { [key: string]: string }): string {
+function getDisplayTitle(
+  enumName: string | undefined,
+  map: { [key: string]: string },
+): string {
   if (!enumName) return '-';
   return map[enumName] || enumName;
 }
@@ -47,7 +68,7 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
     MatChipsModule,
     MatTabsModule,
     MatTooltipModule,
-    MatTableModule
+    MatTableModule,
   ],
   template: `
     <div class="modal-container" dir="rtl">
@@ -58,10 +79,18 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
           <h2>ملف المتدرب</h2>
         </div>
         <div class="header-actions">
-          <button mat-icon-button (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+          <button
+            mat-icon-button
+            (click)="printProfileDocument()"
+            matTooltip="طباعة الملف الكامل"
+          >
             <mat-icon>description</mat-icon>
           </button>
-          <button mat-icon-button (click)="printTraineeCard()" matTooltip="طباعة البطاقة">
+          <button
+            mat-icon-button
+            (click)="printTraineeCard()"
+            matTooltip="طباعة البطاقة"
+          >
             <mat-icon>credit_card</mat-icon>
           </button>
           <button mat-icon-button mat-dialog-close class="close-btn">
@@ -69,9 +98,9 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
           </button>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Main Profile Info -->
       <div class="profile-main" *ngIf="trainee">
         <div class="profile-image">
@@ -79,7 +108,7 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
             <mat-icon>person</mat-icon>
           </div>
           <ng-template #profileImage>
-            <img [src]="imageUrl" [alt]="trainee.fullName">
+            <img [src]="imageUrl" [alt]="trainee.fullName" />
           </ng-template>
         </div>
 
@@ -98,15 +127,17 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
               السنة {{ trainee.academicYear }}
             </mat-chip>
             <mat-chip *ngIf="trainee.gender">
-              <mat-icon>{{ getGenderDisplay(trainee.gender) === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+              <mat-icon>{{
+                getGenderDisplay(trainee.gender) === 'ذكر' ? 'male' : 'female'
+              }}</mat-icon>
               {{ getGenderDisplay(trainee.gender) }}
             </mat-chip>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Tabs -->
       <mat-tab-group class="custom-tabs">
         <!-- Personal Info Tab -->
@@ -133,12 +164,14 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <mat-icon>cake</mat-icon>
                 <div>
                   <label>تاريخ الميلاد</label>
-                  <p>{{ (trainee.birthDate | date:'dd/MM/yyyy') || '-' }}</p>
+                  <p>{{ (trainee.birthDate | date: 'dd/MM/yyyy') || '-' }}</p>
                 </div>
               </div>
 
               <div class="info-item">
-                <mat-icon>{{ getGenderDisplay(trainee.gender) === 'ذكر' ? 'male' : 'female' }}</mat-icon>
+                <mat-icon>{{
+                  getGenderDisplay(trainee.gender) === 'ذكر' ? 'male' : 'female'
+                }}</mat-icon>
                 <div>
                   <label>الجنس</label>
                   <p>{{ getGenderDisplay(trainee.gender) }}</p>
@@ -165,7 +198,7 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <mat-icon>event</mat-icon>
                 <div>
                   <label>تاريخ التسجيل</label>
-                  <p>{{ trainee.createdOn | date:'dd/MM/yyyy' }}</p>
+                  <p>{{ trainee.createdOn | date: 'dd/MM/yyyy' }}</p>
                 </div>
               </div>
 
@@ -181,7 +214,7 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <mat-icon>update</mat-icon>
                 <div>
                   <label>آخر تحديث</label>
-                  <p>{{ trainee.lastModifiedOn | date:'dd/MM/yyyy' }}</p>
+                  <p>{{ trainee.lastModifiedOn | date: 'dd/MM/yyyy' }}</p>
                 </div>
               </div>
 
@@ -199,11 +232,16 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
         <!-- Contacts Tab -->
         <mat-tab label="جهات الاتصال">
           <div class="tab-content">
-            <div class="contacts-list" *ngIf="contacts.length > 0; else noContacts">
+            <div
+              class="contacts-list"
+              *ngIf="contacts.length > 0; else noContacts"
+            >
               <div class="contact-card" *ngFor="let contact of contacts">
                 <mat-icon>{{ getContactIcon(contact.contactType) }}</mat-icon>
                 <div class="contact-info">
-                  <label>{{ getContactTypeDisplay(contact.contactType) }}</label>
+                  <label>{{
+                    getContactTypeDisplay(contact.contactType)
+                  }}</label>
                   <p>{{ contact.contactValue }}</p>
                 </div>
               </div>
@@ -220,14 +258,25 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
         <!-- Certificates Tab -->
         <mat-tab label="الشهادات">
           <div class="tab-content">
-            <div class="certificates-list" *ngIf="certificates.length > 0; else noCertificates">
+            <div
+              class="certificates-list"
+              *ngIf="certificates.length > 0; else noCertificates"
+            >
               <div class="certificate-card" *ngFor="let cert of certificates">
                 <mat-icon>school</mat-icon>
                 <div class="certificate-info">
                   <h4>{{ cert.certificateName }}</h4>
-                  <p><strong>رقم الشهادة:</strong> {{ cert.certificateNumber || '-' }}</p>
-                  <p><strong>الدورة:</strong> {{ cert.course?.title || '-' }}</p>
-                  <p><strong>تاريخ الإصدار:</strong> {{ cert.issueDate | date:'dd/MM/yyyy' }}</p>
+                  <p>
+                    <strong>رقم الشهادة:</strong>
+                    {{ cert.certificateNumber || '-' }}
+                  </p>
+                  <p>
+                    <strong>الدورة:</strong> {{ cert.course?.title || '-' }}
+                  </p>
+                  <p>
+                    <strong>تاريخ الإصدار:</strong>
+                    {{ cert.issueDate | date: 'dd/MM/yyyy' }}
+                  </p>
                   <p><strong>الدرجة:</strong> {{ cert.grade || '-' }}</p>
                 </div>
               </div>
@@ -244,14 +293,26 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
         <!-- Health Conditions Tab -->
         <mat-tab label="الحالات الصحية">
           <div class="tab-content">
-            <div class="health-list" *ngIf="healthConditions.length > 0; else noHealth">
-              <div class="health-card" *ngFor="let condition of healthConditions">
+            <div
+              class="health-list"
+              *ngIf="healthConditions.length > 0; else noHealth"
+            >
+              <div
+                class="health-card"
+                *ngFor="let condition of healthConditions"
+              >
                 <mat-icon>health_and_safety</mat-icon>
                 <div class="health-info">
                   <h4>{{ condition.title }}</h4>
-                  <p *ngIf="condition.description"><strong>الوصف:</strong> {{ condition.description }}</p>
-                  <p *ngIf="condition.medication"><strong>العلاج:</strong> {{ condition.medication }}</p>
-                  <p *ngIf="condition.note"><strong>ملاحظات:</strong> {{ condition.note }}</p>
+                  <p *ngIf="condition.description">
+                    <strong>الوصف:</strong> {{ condition.description }}
+                  </p>
+                  <p *ngIf="condition.medication">
+                    <strong>العلاج:</strong> {{ condition.medication }}
+                  </p>
+                  <p *ngIf="condition.note">
+                    <strong>ملاحظات:</strong> {{ condition.note }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -267,37 +328,56 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
         <!-- Enrollments Tab -->
         <mat-tab label="التسجيلات">
           <div class="tab-content">
-            <div class="table-container" *ngIf="enrollments.length > 0; else noEnrollments">
-              <table mat-table [dataSource]="enrollmentsDataSource" class="full-width-table">
+            <div
+              class="table-container"
+              *ngIf="enrollments.length > 0; else noEnrollments"
+            >
+              <table
+                mat-table
+                [dataSource]="enrollmentsDataSource"
+                class="full-width-table"
+              >
                 <!-- Course Column -->
                 <ng-container matColumnDef="course">
                   <th mat-header-cell *matHeaderCellDef>الدورة</th>
-                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.course?.title }}</td>
+                  <td mat-cell *matCellDef="let enrollment">
+                    {{ enrollment.course?.title }}
+                  </td>
                 </ng-container>
 
                 <!-- Trainer Column -->
                 <ng-container matColumnDef="trainer">
                   <th mat-header-cell *matHeaderCellDef>المدرب</th>
-                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.trainer?.title }}</td>
+                  <td mat-cell *matCellDef="let enrollment">
+                    {{ enrollment.trainer?.title }}
+                  </td>
                 </ng-container>
 
                 <!-- Start Date Column -->
                 <ng-container matColumnDef="startDate">
                   <th mat-header-cell *matHeaderCellDef>تاريخ البداية</th>
-                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.startDate | date:'dd/MM/yyyy' }}</td>
+                  <td mat-cell *matCellDef="let enrollment">
+                    {{ enrollment.startDate | date: 'dd/MM/yyyy' }}
+                  </td>
                 </ng-container>
 
                 <!-- End Date Column -->
                 <ng-container matColumnDef="endDate">
                   <th mat-header-cell *matHeaderCellDef>تاريخ الانتهاء</th>
-                  <td mat-cell *matCellDef="let enrollment">{{ enrollment.endDate ? (enrollment.endDate | date:'dd/MM/yyyy') : '-' }}</td>
+                  <td mat-cell *matCellDef="let enrollment">
+                    {{
+                      enrollment.endDate
+                        ? (enrollment.endDate | date: 'dd/MM/yyyy')
+                        : '-'
+                    }}
+                  </td>
                 </ng-container>
 
                 <!-- Value Column -->
                 <ng-container matColumnDef="value">
                   <th mat-header-cell *matHeaderCellDef>القيمة</th>
                   <td mat-cell *matCellDef="let enrollment">
-                    {{ enrollment.finalSubscriptionValue | currency:'EGP' }}
+                    {{ enrollment.finalSubscriptionValue | currency: 'EGP' }}
                   </td>
                 </ng-container>
 
@@ -305,8 +385,12 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <ng-container matColumnDef="remaining">
                   <th mat-header-cell *matHeaderCellDef>المتبقي</th>
                   <td mat-cell *matCellDef="let enrollment">
-                    <span [class.zero]="enrollment.remainedSubscriptionValue === 0">
-                      {{ enrollment.remainedSubscriptionValue | currency:'EGP' }}
+                    <span
+                      [class.zero]="enrollment.remainedSubscriptionValue === 0"
+                    >
+                      {{
+                        enrollment.remainedSubscriptionValue | currency: 'EGP'
+                      }}
                     </span>
                   </td>
                 </ng-container>
@@ -315,10 +399,12 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <ng-container matColumnDef="enrollmentStatus">
                   <th mat-header-cell *matHeaderCellDef>حالة التسجيل</th>
                   <td mat-cell *matCellDef="let enrollment">
-                    <span class="status-badge" 
-                          [class.completed]="enrollment.enrollmentStatus?.id === 2"
-                          [class.pending]="enrollment.enrollmentStatus?.id === 1"
-                          [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
+                    <span
+                      class="status-badge"
+                      [class.completed]="enrollment.enrollmentStatus?.id === 2"
+                      [class.pending]="enrollment.enrollmentStatus?.id === 1"
+                      [class.cancelled]="enrollment.enrollmentStatus?.id === 3"
+                    >
                       {{ enrollment.enrollmentStatus?.title }}
                     </span>
                   </td>
@@ -328,16 +414,25 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <ng-container matColumnDef="paymentStatus">
                   <th mat-header-cell *matHeaderCellDef>حالة الدفع</th>
                   <td mat-cell *matCellDef="let enrollment">
-                    <span class="payment-badge" 
-                          [class.paid]="enrollment.paymentStatus?.id === 2"
-                          [class.pending]="enrollment.paymentStatus?.id === 1">
+                    <span
+                      class="payment-badge"
+                      [class.paid]="enrollment.paymentStatus?.id === 2"
+                      [class.pending]="enrollment.paymentStatus?.id === 1"
+                    >
                       {{ enrollment.paymentStatus?.title }}
                     </span>
                   </td>
                 </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="enrollmentsDisplayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: enrollmentsDisplayedColumns;" class="enrollment-row"></tr>
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="enrollmentsDisplayedColumns"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: enrollmentsDisplayedColumns"
+                  class="enrollment-row"
+                ></tr>
               </table>
             </div>
             <ng-template #noEnrollments>
@@ -358,26 +453,41 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
                 <span>بطاقة هوية المتدرب</span>
               </div>
               <div class="barcode-container">
-                <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
+                <canvas
+                  #barcodeCanvas
+                  class="barcode-canvas"
+                  width="350"
+                  height="60"
+                ></canvas>
               </div>
               <div class="barcode-info">
                 <span>رقم الهوية: {{ trainee?.nationalId }}</span>
-                <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
+                <span>تاريخ الإصدار: {{ today | date: 'dd/MM/yyyy' }}</span>
               </div>
             </div>
           </div>
         </mat-tab>
       </mat-tab-group>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Modal Actions -->
       <div class="modal-actions">
-        <button mat-raised-button color="accent" (click)="printProfileDocument()" matTooltip="طباعة الملف الكامل">
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="printProfileDocument()"
+          matTooltip="طباعة الملف الكامل"
+        >
           <mat-icon>description</mat-icon>
           طباعة الملف
         </button>
-        <button mat-raised-button color="primary" (click)="printTraineeCard()" matTooltip="طباعة البطاقة">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="printTraineeCard()"
+          matTooltip="طباعة البطاقة"
+        >
           <mat-icon>credit_card</mat-icon>
           طباعة البطاقة
         </button>
@@ -396,383 +506,387 @@ function getDisplayTitle(enumName: string | undefined, map: { [key: string]: str
       </div>
     </div>
   `,
-  styles: [`
-    .modal-container {
-      min-width: 700px;
-      max-width: 900px;
-      max-height: 90vh;
-      direction: rtl;
-      background: #f5f7fa;
-      border-radius: 24px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Header */
-    .modal-header {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .header-title mat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-    .modal-header h2 {
-      margin: 0;
-      font-size: 20px;
-    }
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .close-btn {
-      color: white;
-      transition: transform 0.2s;
-    }
-    .close-btn:hover {
-      transform: scale(1.1);
-    }
-
-    /* Profile Main */
-    .profile-main {
-      display: flex;
-      gap: 24px;
-      padding: 20px;
-      background: white;
-    }
-    .profile-image {
-      flex-shrink: 0;
-    }
-    .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .avatar mat-icon {
-      font-size: 50px;
-      width: 50px;
-      height: 50px;
-      color: white;
-    }
-    .profile-image img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .profile-info {
-      flex: 1;
-    }
-    .profile-info h1 {
-      margin: 0 0 12px 0;
-      font-size: 22px;
-      color: #1f2937;
-    }
-    .info-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    /* Tabs */
-    .custom-tabs {
-      flex: 1;
-      overflow-y: auto;
-    }
-    .tab-content {
-      padding: 16px;
-      max-height: 50vh;
-      overflow-y: auto;
-    }
-
-    /* Info Grid */
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      background: #f9fafb;
-      border-radius: 10px;
-    }
-    .info-item mat-icon {
-      color: #667eea;
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
-    }
-    .info-item div {
-      flex: 1;
-    }
-    .info-item label {
-      display: block;
-      font-size: 10px;
-      color: #6b7280;
-      margin-bottom: 2px;
-    }
-    .info-item p {
-      margin: 0;
-      font-size: 13px;
-      color: #1f2937;
-      font-weight: 500;
-    }
-
-    /* Lists */
-    .contacts-list,
-    .certificates-list,
-    .health-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .contact-card,
-    .certificate-card,
-    .health-card {
-      display: flex;
-      gap: 12px;
-      padding: 12px;
-      background: #f9fafb;
-      border-radius: 10px;
-    }
-    .contact-card mat-icon,
-    .certificate-card mat-icon,
-    .health-card mat-icon {
-      color: #667eea;
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-    .contact-info label,
-    .certificate-info h4,
-    .health-info h4 {
-      margin: 0 0 6px 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1f2937;
-    }
-    .contact-info p,
-    .certificate-info p,
-    .health-info p {
-      margin: 2px 0;
-      font-size: 11px;
-      color: #6b7280;
-    }
-
-    /* Enrollments Table */
-    .table-container {
-      overflow-x: auto;
-    }
-    .full-width-table {
-      width: 100%;
-    }
-    .full-width-table th {
-      background: #f8fafc;
-      color: #1e293b;
-      font-weight: 600;
-      font-size: 12px;
-      padding: 10px;
-    }
-    .full-width-table td {
-      padding: 8px;
-      font-size: 12px;
-    }
-    .enrollment-row {
-      cursor: default;
-    }
-    .enrollment-row:hover {
-      background: #f8fafc;
-    }
-
-    /* Status Badges */
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      display: inline-block;
-    }
-    .status-badge.completed {
-      background: #d1fae5;
-      color: #065f46;
-    }
-    .status-badge.pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-    .status-badge.cancelled {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .payment-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      display: inline-block;
-    }
-    .payment-badge.paid {
-      background: #d1fae5;
-      color: #065f46;
-    }
-    .payment-badge.pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .zero {
-      color: #10b981;
-      font-weight: 600;
-    }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #9ca3af;
-    }
-    .empty-state mat-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 12px;
-    }
-
-    /* Barcode Tab */
-    .barcode-tab {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 250px;
-    }
-
-    .barcode-card {
-      text-align: center;
-      background: #f8fafc;
-      padding: 30px 40px;
-      border-radius: 20px;
-      border: 1px solid rgba(226, 232, 240, 0.5);
-      width: 100%;
-      max-width: 450px;
-    }
-
-    .barcode-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .barcode-header mat-icon {
-      color: #667eea;
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .barcode-header span {
-      font-size: 16px;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .barcode-container {
-      margin: 16px 0;
-    }
-
-    .barcode-canvas {
-      max-width: 100%;
-      height: auto;
-    }
-
-    .barcode-number {
-      font-size: 14px;
-      font-weight: 600;
-      color: #667eea;
-      font-family: monospace;
-      margin-top: 8px;
-      letter-spacing: 1px;
-    }
-
-    .barcode-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #64748b;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    /* Modal Actions */
-    .modal-actions {
-      flex-shrink: 0;
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      padding: 16px 20px;
-      background: white;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
+  styles: [
+    `
       .modal-container {
-        min-width: 90vw;
-        max-width: 90vw;
-      }
-      .profile-main {
+        min-width: 700px;
+        max-width: 900px;
+        max-height: 90vh;
+        direction: rtl;
+        background: #f5f7fa;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
         flex-direction: column;
+      }
+
+      /* Header */
+      .modal-header {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        text-align: center;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
       }
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .header-title mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+      .modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+      .header-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .close-btn {
+        color: white;
+        transition: transform 0.2s;
+      }
+      .close-btn:hover {
+        transform: scale(1.1);
+      }
+
+      /* Profile Main */
+      .profile-main {
+        display: flex;
+        gap: 24px;
+        padding: 20px;
+        background: white;
+      }
+      .profile-image {
+        flex-shrink: 0;
+      }
+      .avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .avatar mat-icon {
+        font-size: 50px;
+        width: 50px;
+        height: 50px;
+        color: white;
+      }
+      .profile-image img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .profile-info {
+        flex: 1;
+      }
+      .profile-info h1 {
+        margin: 0 0 12px 0;
+        font-size: 22px;
+        color: #1f2937;
+      }
+      .info-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* Tabs */
+      .custom-tabs {
+        flex: 1;
+        overflow-y: auto;
+      }
+      .tab-content {
+        padding: 16px;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+
+      /* Info Grid */
       .info-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: #f9fafb;
+        border-radius: 10px;
+      }
+      .info-item mat-icon {
+        color: #667eea;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+      .info-item div {
+        flex: 1;
+      }
+      .info-item label {
+        display: block;
+        font-size: 10px;
+        color: #6b7280;
+        margin-bottom: 2px;
+      }
+      .info-item p {
+        margin: 0;
+        font-size: 13px;
+        color: #1f2937;
+        font-weight: 500;
+      }
+
+      /* Lists */
       .contacts-list,
       .certificates-list,
       .health-list {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
-      .info-badges {
-        justify-content: center;
+      .contact-card,
+      .certificate-card,
+      .health-card {
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 10px;
       }
-      .modal-actions {
-        flex-wrap: wrap;
+      .contact-card mat-icon,
+      .certificate-card mat-icon,
+      .health-card mat-icon {
+        color: #667eea;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
       }
-      .barcode-card {
-        padding: 20px;
+      .contact-info label,
+      .certificate-info h4,
+      .health-info h4 {
+        margin: 0 0 6px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1f2937;
       }
-      .barcode-info {
-        flex-direction: column;
-        gap: 4px;
+      .contact-info p,
+      .certificate-info p,
+      .health-info p {
+        margin: 2px 0;
+        font-size: 11px;
+        color: #6b7280;
+      }
+
+      /* Enrollments Table */
+      .table-container {
+        overflow-x: auto;
+      }
+      .full-width-table {
+        width: 100%;
+      }
+      .full-width-table th {
+        background: #f8fafc;
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .full-width-table td {
+        padding: 8px;
+        font-size: 12px;
+      }
+      .enrollment-row {
+        cursor: default;
+      }
+      .enrollment-row:hover {
+        background: #f8fafc;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .status-badge.completed {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .status-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .status-badge.cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .payment-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .payment-badge.paid {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .payment-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .zero {
+        color: #10b981;
+        font-weight: 600;
+      }
+
+      /* Empty State */
+      .empty-state {
         text-align: center;
+        padding: 40px;
+        color: #9ca3af;
       }
-    }
-  `]
+      .empty-state mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+      }
+
+      /* Barcode Tab */
+      .barcode-tab {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 250px;
+      }
+
+      .barcode-card {
+        text-align: center;
+        background: #f8fafc;
+        padding: 30px 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        width: 100%;
+        max-width: 450px;
+      }
+
+      .barcode-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .barcode-header mat-icon {
+        color: #667eea;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+
+      .barcode-header span {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .barcode-container {
+        margin: 16px 0;
+      }
+
+      .barcode-canvas {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .barcode-number {
+        font-size: 14px;
+        font-weight: 600;
+        color: #667eea;
+        font-family: monospace;
+        margin-top: 8px;
+        letter-spacing: 1px;
+      }
+
+      .barcode-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      /* Modal Actions */
+      .modal-actions {
+        flex-shrink: 0;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding: 16px 20px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .modal-container {
+          min-width: 90vw;
+          max-width: 90vw;
+        }
+        .profile-main {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+        .contacts-list,
+        .certificates-list,
+        .health-list {
+          grid-template-columns: 1fr;
+        }
+        .info-badges {
+          justify-content: center;
+        }
+        .modal-actions {
+          flex-wrap: wrap;
+        }
+        .barcode-card {
+          padding: 20px;
+        }
+        .barcode-info {
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+        }
+      }
+    `,
+  ],
 })
-export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TraineeDetailsModalComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   trainee: TraineeVTO;
   contacts: TraineeContactVTO[] = [];
   certificates: TraineeCertificateVTO[] = [];
@@ -781,9 +895,18 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
   imageUrl: string | null = null;
   private blobUrl: string | null = null;
   today = new Date();
-  
+
   enrollmentsDataSource = new MatTableDataSource<CommonEnrollmentVTO>([]);
-  enrollmentsDisplayedColumns: string[] = ['course', 'trainer', 'startDate', 'endDate', 'value', 'remaining', 'enrollmentStatus', 'paymentStatus'];
+  enrollmentsDisplayedColumns: string[] = [
+    'course',
+    'trainer',
+    'startDate',
+    'endDate',
+    'value',
+    'remaining',
+    'enrollmentStatus',
+    'paymentStatus',
+  ];
 
   @ViewChild('barcodeCanvas') barcodeCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -793,7 +916,7 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
     private router: Router,
     private dialog: MatDialog,
     private fileService: FileService,
-    private notification: NotificationService
+    private notification: NotificationService,
   ) {
     this.trainee = data;
     this.contacts = data.contacts || [];
@@ -869,7 +992,7 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
         error: (error) => {
           console.error('Failed to load image:', error);
           this.imageUrl = null;
-        }
+        },
       });
     } else if (fid) {
       this.imageUrl = fid;
@@ -881,49 +1004,54 @@ export class TraineeDetailsModalComponent implements OnInit, AfterViewInit, OnDe
   generateBarcode(): void {
     if (this.barcodeCanvas?.nativeElement) {
       try {
-        (JsBarcode as any)(this.barcodeCanvas.nativeElement, this.trainee?.nationalId?.toString() || '000000', {
-          format: 'CODE128',
-          lineColor: '#000000',
-          width: 1.5,
-          height: 40,
-          displayValue: true,
-          fontSize: 10,
-          font: 'monospace',
-          textAlign: 'center',
-          margin: 5
-        });
+        (JsBarcode as any)(
+          this.barcodeCanvas.nativeElement,
+          this.trainee?.nationalId?.toString() || '000000',
+          {
+            format: 'CODE128',
+            lineColor: '#000000',
+            width: 1.5,
+            height: 40,
+            displayValue: true,
+            fontSize: 10,
+            font: 'monospace',
+            textAlign: 'center',
+            margin: 5,
+          },
+        );
       } catch (error) {
         console.error('Barcode error:', error);
       }
     }
   }
 
-getContactIcon(contactType: any): string {
-  const type = typeof contactType === 'string' ? contactType : contactType?.title || '';
-  const icons: { [key: string]: string } = {
-    'جوال': 'phone_android',
-    'هاتف': 'phone',
-    'بريد إلكتروني': 'email',
-    'EMAIL': 'email',
-    'PHONE': 'phone_android',
-    'واتس': 'chat',
-    'WHATSAPP': 'chat',
-    'فيسبوك': 'facebook',
-    'تويتر': 'twitter',
-    'انستجرام': 'instagram'
-  };
-  return icons[type] || 'contact_phone';
-}
+  getContactIcon(contactType: any): string {
+    const type =
+      typeof contactType === 'string' ? contactType : contactType?.title || '';
+    const icons: { [key: string]: string } = {
+      جوال: 'phone_android',
+      هاتف: 'phone',
+      'بريد إلكتروني': 'email',
+      EMAIL: 'email',
+      PHONE: 'phone_android',
+      واتس: 'chat',
+      WHATSAPP: 'chat',
+      فيسبوك: 'facebook',
+      تويتر: 'twitter',
+      انستجرام: 'instagram',
+    };
+    return icons[type] || 'contact_phone';
+  }
 
   editTrainee(): void {
     this.dialogRef.close();
     const wizardDialogRef = this.dialog.open(TraineeWizardModalComponent, {
       data: { traineeId: this.trainee.id },
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    wizardDialogRef.afterClosed().subscribe(result => {
+
+    wizardDialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Parent will handle refresh
       }
@@ -940,17 +1068,18 @@ getContactIcon(contactType: any): string {
   printTraineeCard(): void {
     // Generate barcode first
     this.generateBarcode();
-    
+
     setTimeout(() => {
       // Get barcode as data URL
       let barcodeImage = '';
       try {
-        barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+        barcodeImage =
+          this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
       } catch (e) {
         console.error('Error generating barcode image:', e);
         barcodeImage = '';
       }
-      
+
       const printWindow = window.open('', '_blank', 'width=350,height=500');
       if (!printWindow) {
         this.notification.showError('تعذر فتح نافذة الطباعة');
@@ -968,8 +1097,9 @@ getContactIcon(contactType: any): string {
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="24" font-weight="900" fill="#667eea" opacity="0.15" transform="rotate(-25, 60, 60)">الأكاديمية</text>
         <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="900" fill="#667eea" opacity="0.12" transform="rotate(-25, 60, 60)">الأولمبية</text>
       </svg>`;
-      
-      const watermarkDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(watermarkSvg);
+
+      const watermarkDataUrl =
+        'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(watermarkSvg);
 
       printWindow.document.write(`
         <!DOCTYPE html>
@@ -1237,7 +1367,7 @@ getContactIcon(contactType: any): string {
           <div class="thermal-card">
             <!-- Watermark -->
             <div class="card-watermark">
-              <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+              <img src="assets/images/mainLogo.jpeg" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
             </div>
             <div class="card-watermark-text">الأكاديمية الأولمبية</div>
             
@@ -1324,8 +1454,13 @@ getContactIcon(contactType: any): string {
   printProfileDocument(): void {
     this.generateBarcode();
     setTimeout(() => {
-      const barcodeImage = this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
-      const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+      const barcodeImage =
+        this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+      const printWindow = window.open(
+        '',
+        '_blank',
+        'width=800,height=800,scrollbars=yes',
+      );
       if (!printWindow) {
         this.notification.showError('تعذر فتح نافذة الطباعة');
         return;
@@ -1343,12 +1478,16 @@ getContactIcon(contactType: any): string {
         contactsHtml = `
           <h2>📞 جهات الاتصال</h2>
           <div class="info-grid">
-            ${this.contacts.map(c => `
+            ${this.contacts
+              .map(
+                (c) => `
               <div class="info-item">
                 <div class="info-label">${this.getContactTypeDisplay(c.contactType)}</div>
                 <div class="info-value">${c.contactValue}</div>
               </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </div>
         `;
       } else {
@@ -1364,7 +1503,9 @@ getContactIcon(contactType: any): string {
         certificatesHtml = `
           <h2>🎓 الشهادات</h2>
           <div class="info-grid">
-            ${this.certificates.map(c => `
+            ${this.certificates
+              .map(
+                (c) => `
               <div class="info-item">
                 <div class="info-label">${c.certificateName}</div>
                 <div class="info-value">
@@ -1374,7 +1515,9 @@ getContactIcon(contactType: any): string {
                   الدرجة: ${c.grade || '-'}
                 </div>
               </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </div>
         `;
       } else {
@@ -1390,7 +1533,9 @@ getContactIcon(contactType: any): string {
         healthHtml = `
           <h2>🏥 الحالات الصحية</h2>
           <div class="info-grid">
-            ${this.healthConditions.map(h => `
+            ${this.healthConditions
+              .map(
+                (h) => `
               <div class="info-item">
                 <div class="info-label">${h.title}</div>
                 <div class="info-value">
@@ -1399,7 +1544,9 @@ getContactIcon(contactType: any): string {
                   ${h.note ? `<br>ملاحظات: ${h.note}` : ''}
                 </div>
               </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </div>
         `;
       } else {
@@ -1428,7 +1575,9 @@ getContactIcon(contactType: any): string {
               </tr>
             </thead>
             <tbody>
-              ${this.enrollments.map(e => `
+              ${this.enrollments
+                .map(
+                  (e) => `
                 <tr>
                   <td>${e.course?.title || '-'}</td>
                   <td>${e.trainer?.title || '-'}</td>
@@ -1439,7 +1588,9 @@ getContactIcon(contactType: any): string {
                   <td>${e.enrollmentStatus?.title || '-'}</td>
                   <td>${e.paymentStatus?.title || '-'}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join('')}
             </tbody>
           </table>
         `;

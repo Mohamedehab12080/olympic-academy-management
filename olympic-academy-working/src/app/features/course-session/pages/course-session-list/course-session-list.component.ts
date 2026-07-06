@@ -1,10 +1,25 @@
 // course-session-list.component.ts - ENHANCED WITH MODERN DESIGN & ANIMATIONS
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  Inject,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subject, takeUntil, finalize, debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  Subject,
+  takeUntil,
+  finalize,
+  debounceTime,
+  distinctUntilChanged,
+} from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -21,9 +36,19 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
-import { animate, style, transition, trigger, query, stagger } from '@angular/animations';
+import {
+  animate,
+  style,
+  transition,
+  trigger,
+  query,
+  stagger,
+} from '@angular/animations';
 
-import { CourseSessionService, CourseSessionFilterParams } from '../../../../core/services/course-session.service';
+import {
+  CourseSessionService,
+  CourseSessionFilterParams,
+} from '../../../../core/services/course-session.service';
 import { CourseService } from '../../../../core/services/course.service';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { PlaceService } from '../../../../core/services/place.service';
@@ -34,26 +59,37 @@ import { CourseSessionDetailsModalComponent } from '../course-session-details/co
 import { CourseSessionFormModalComponent } from '../course-session-form/course-session-form-modal.component';
 import { ExportPageSelectDialogComponent } from './export-page-select-dialog.component';
 
-import { CourseSessionVTO, SESSION_STATUSES } from '../../../../core/models/employee.model';
+import {
+  CourseSessionVTO,
+  SESSION_STATUSES,
+} from '../../../../core/models/employee.model';
 import { ErrorVTO } from '../../../../core/models/common.model';
 
 // DAYS OF WEEK CONSTANT
 export const DAYS_OF_WEEK = [
   { value: 'SUNDAY', label: 'الأحد', short: 'أ', icon: 'sunny' },
   { value: 'MONDAY', label: 'الإثنين', short: 'إ', icon: 'wb_sunny' },
-  { value: 'TUESDAY', label: 'الثلاثاء', short: 'ث', icon: 'partly_cloudy_day' },
+  {
+    value: 'TUESDAY',
+    label: 'الثلاثاء',
+    short: 'ث',
+    icon: 'partly_cloudy_day',
+  },
   { value: 'WEDNESDAY', label: 'الأربعاء', short: 'أر', icon: 'cloud' },
   { value: 'THURSDAY', label: 'الخميس', short: 'خ', icon: 'cloudy' },
   { value: 'FRIDAY', label: 'الجمعة', short: 'ج', icon: 'clear_night' },
-  { value: 'SATURDAY', label: 'السبت', short: 'س', icon: 'nightlight' }
+  { value: 'SATURDAY', label: 'السبت', short: 'س', icon: 'nightlight' },
 ];
 
 // Status colors and icons
-const STATUS_CONFIG: Record<number, { color: string; icon: string; class: string }> = {
+const STATUS_CONFIG: Record<
+  number,
+  { color: string; icon: string; class: string }
+> = {
   1: { color: '#3b82f6', icon: 'schedule', class: 'status-scheduled' },
   2: { color: '#f59e0b', icon: 'play_circle', class: 'status-in-progress' },
   3: { color: '#10b981', icon: 'check_circle', class: 'status-completed' },
-  4: { color: '#ef4444', icon: 'cancel', class: 'status-cancelled' }
+  4: { color: '#ef4444', icon: 'cancel', class: 'status-cancelled' },
 };
 
 @Component({
@@ -79,60 +115,80 @@ const STATUS_CONFIG: Record<number, { color: string; icon: string; class: string
     MatTooltipModule,
     MatDialogModule,
     MatDividerModule,
-    SearchableSelectComponent
+    SearchableSelectComponent,
   ],
   animations: [
     trigger('fadeIn', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)', 
-          style({ opacity: 1, transform: 'translateY(0)' }))
-      ])
+        animate(
+          '400ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({ opacity: 1, transform: 'translateY(0)' }),
+        ),
+      ]),
     ]),
     trigger('staggerFade', [
       transition('* => *', [
-        query(':enter', [
-          style({ opacity: 0, transform: 'translateY(15px)' }),
-          stagger('80ms', [
-            animate('300ms cubic-bezier(0.4, 0, 0.2, 1)',
-              style({ opacity: 1, transform: 'translateY(0)' }))
-          ])
-        ], { optional: true })
-      ])
+        query(
+          ':enter',
+          [
+            style({ opacity: 0, transform: 'translateY(15px)' }),
+            stagger('80ms', [
+              animate(
+                '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+                style({ opacity: 1, transform: 'translateY(0)' }),
+              ),
+            ]),
+          ],
+          { optional: true },
+        ),
+      ]),
     ]),
     trigger('slideIn', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateX(-20px)' }),
-        animate('300ms ease-out', 
-          style({ opacity: 1, transform: 'translateX(0)' }))
-      ])
+        animate(
+          '300ms ease-out',
+          style({ opacity: 1, transform: 'translateX(0)' }),
+        ),
+      ]),
     ]),
     trigger('pulse', [
       transition('* => *', [
-        animate('2s ease-in-out', 
-          style({ transform: 'scale(1.02)' }))
-      ])
+        animate('2s ease-in-out', style({ transform: 'scale(1.02)' })),
+      ]),
     ]),
     trigger('cardHover', [
       transition(':enter', [
         style({ transform: 'scale(0.95)', opacity: 0 }),
-        animate('200ms ease-out', 
-          style({ transform: 'scale(1)', opacity: 1 }))
-      ])
-    ])
+        animate('200ms ease-out', style({ transform: 'scale(1)', opacity: 1 })),
+      ]),
+    ]),
   ],
   templateUrl: './course-session-list.component.html',
-  styleUrls: ['./course-session-list.component.css']
+  styleUrls: ['./course-session-list.component.css'],
 })
-export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewInit {
+export class CourseSessionListComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   Math = Math;
   DAYS_OF_WEEK = DAYS_OF_WEEK;
   STATUS_CONFIG = STATUS_CONFIG;
 
   // Table columns
-  displayedColumns: string[] = ['course', 'trainers', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  displayedColumns: string[] = [
+    'course',
+    'trainers',
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
   dataSource = new MatTableDataSource<any>([]);
-  
+
   // Data
   allSessions: CourseSessionVTO[] = [];
   groupedData: any[] = [];
@@ -159,7 +215,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewI
     status: null as string | null,
     sessionDateFrom: null as any,
     sessionDateTo: null as any,
-    sessionDay: null as string | null
+    sessionDay: null as string | null,
   };
 
   // Filter options
@@ -176,7 +232,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewI
     scheduled: 0,
     inProgress: 0,
     completed: 0,
-    cancelled: 0
+    cancelled: 0,
   };
 
   // Search debounce
@@ -194,7 +250,7 @@ export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewI
     private notification: NotificationService,
     private reportService: ReportService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -220,76 +276,78 @@ export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   private setupSearchDebounce(): void {
-    this.searchSubject.pipe(
-      debounceTime(400),
-      distinctUntilChanged(),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      this.currentPage = 0;
-      this.loadSessions();
-    });
+    this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.currentPage = 0;
+        this.loadSessions();
+      });
   }
 
   private loadSelectOptions(): void {
     this.statusOptions = [
       { value: null, label: 'الكل' },
-      ...SESSION_STATUSES.map(s => ({ 
-        value: String(s.id), 
+      ...SESSION_STATUSES.map((s) => ({
+        value: String(s.id),
         label: s.title,
-        color: STATUS_CONFIG[s.id]?.color 
-      }))
+        color: STATUS_CONFIG[s.id]?.color,
+      })),
     ];
 
     this.dayOptions = [
       { value: null, label: 'الكل' },
-      ...DAYS_OF_WEEK.map(day => ({ value: day.value, label: day.label }))
+      ...DAYS_OF_WEEK.map((day) => ({ value: day.value, label: day.label })),
     ];
   }
 
   private loadLookupData(): void {
-    this.courseService.getAllCourses()
+    this.courseService
+      .getAllCourses()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
           const items = res?.items || [];
           this.courseOptions = [
             { value: null, label: 'الكل' },
-            ...items.map((c: any) => ({ value: c.id, label: c.title }))
+            ...items.map((c: any) => ({ value: c.id, label: c.title })),
           ];
         },
-        error: (err: ErrorVTO) => this.notification.showError(err)
+        error: (err: ErrorVTO) => this.notification.showError(err),
       });
 
-    this.employeeService.getAllTrainersLookup()
+    this.employeeService
+      .getAllTrainersLookup()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
           const items = res?.list || [];
           this.trainerOptions = [
             { value: null, label: 'الكل' },
-            ...items.map((t: any) => ({ value: t.id, label: t.title }))
+            ...items.map((t: any) => ({ value: t.id, label: t.title })),
           ];
         },
-        error: (err: ErrorVTO) => this.notification.showError(err)
+        error: (err: ErrorVTO) => this.notification.showError(err),
       });
 
-    this.placeService.getAllPlacesLookup()
+    this.placeService
+      .getAllPlacesLookup()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
           const items = res?.list || [];
           this.placeOptions = [
             { value: null, label: 'الكل' },
-            ...items.map((p: any) => ({ value: p.id, label: p.title }))
+            ...items.map((p: any) => ({ value: p.id, label: p.title })),
           ];
         },
-        error: (err: ErrorVTO) => this.notification.showError(err)
+        error: (err: ErrorVTO) => this.notification.showError(err),
       });
   }
 
   private formatDateForBackend(date: any): string | null {
     if (!date) return null;
-    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date))
+      return date;
     try {
       const d = new Date(date);
       if (isNaN(d.getTime())) return null;
@@ -302,40 +360,40 @@ export class CourseSessionListComponent implements OnInit, OnDestroy, AfterViewI
     }
   }
 
-private buildFilterParams(pageNum: number): CourseSessionFilterParams {
-  const params: CourseSessionFilterParams = {
-    pageNum,
-    pageSize: this.pageSize,
-    orderBy: this.sortBy,
-    orderDir: this.sortDir
-  };
-
-  if (this.searchText) params.quickSearch = this.searchText;
-  if (this.filters.courseId) params.courseId = this.filters.courseId;
-  if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
-  if (this.filters.placeId) params.placeId = this.filters.placeId;
-  
-  // FIX: Convert numeric status to enum string
-  if (this.filters.status) {
-    const statusId = parseInt(this.filters.status, 10);
-    const statusMap: { [key: number]: string } = {
-      1: 'SCHEDULED',
-      2: 'IN_PROGRESS',
-      3: 'COMPLETED',
-      4: 'CANCELLED'
+  private buildFilterParams(pageNum: number): CourseSessionFilterParams {
+    const params: CourseSessionFilterParams = {
+      pageNum,
+      pageSize: this.pageSize,
+      orderBy: this.sortBy,
+      orderDir: this.sortDir,
     };
-    params.status = statusMap[statusId] || this.filters.status;
+
+    if (this.searchText) params.quickSearch = this.searchText;
+    if (this.filters.courseId) params.courseId = this.filters.courseId;
+    if (this.filters.trainerId) params.trainerId = this.filters.trainerId;
+    if (this.filters.placeId) params.placeId = this.filters.placeId;
+
+    // FIX: Convert numeric status to enum string
+    if (this.filters.status) {
+      const statusId = parseInt(this.filters.status, 10);
+      const statusMap: { [key: number]: string } = {
+        1: 'SCHEDULED',
+        2: 'IN_PROGRESS',
+        3: 'COMPLETED',
+        4: 'CANCELLED',
+      };
+      params.status = statusMap[statusId] || this.filters.status;
+    }
+
+    if (this.filters.sessionDay) params.sessionDay = this.filters.sessionDay;
+
+    const dateFrom = this.formatDateForBackend(this.filters.sessionDateFrom);
+    if (dateFrom) params.sessionDateFrom = dateFrom;
+    const dateTo = this.formatDateForBackend(this.filters.sessionDateTo);
+    if (dateTo) params.sessionDateTo = dateTo;
+
+    return params;
   }
-  
-  if (this.filters.sessionDay) params.sessionDay = this.filters.sessionDay;
-
-  const dateFrom = this.formatDateForBackend(this.filters.sessionDateFrom);
-  if (dateFrom) params.sessionDateFrom = dateFrom;
-  const dateTo = this.formatDateForBackend(this.filters.sessionDateTo);
-  if (dateTo) params.sessionDateTo = dateTo;
-
-  return params;
-}
 
   getTotalPages(): number {
     return Math.ceil(this.totalItems / this.pageSize);
@@ -379,8 +437,8 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   private processSessions(sessions: CourseSessionVTO[]): void {
     // Group by course
     const courseMap = new Map<number, any>();
-    
-    sessions.forEach(session => {
+
+    sessions.forEach((session) => {
       const courseId = session.course?.id || 0;
       if (!courseMap.has(courseId)) {
         courseMap.set(courseId, {
@@ -388,13 +446,13 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
           courseTitle: session.course?.title || 'غير محدد',
           courseImage: session.course?.imageUrl,
           sessions: [],
-          trainers: new Set()
+          trainers: new Set(),
         });
       }
-      
+
       const group = courseMap.get(courseId);
       group.sessions.push(session);
-      
+
       if (session.trainers && session.trainers.length > 0) {
         session.trainers.forEach((t: any) => {
           group.trainers.add(JSON.stringify(t));
@@ -403,12 +461,16 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
     });
 
     // Build grouped data for table
-    this.groupedData = Array.from(courseMap.values()).map(group => {
-      const trainers = Array.from(group.trainers).map((t: any) => JSON.parse(t));
-      
+    this.groupedData = Array.from(courseMap.values()).map((group) => {
+      const trainers = Array.from(group.trainers).map((t: any) =>
+        JSON.parse(t),
+      );
+
       const dayMap: { [key: string]: any[] } = {};
-      DAYS_OF_WEEK.forEach(day => {
-        dayMap[day.value] = group.sessions.filter((s: any) => s.sessionDay === day.value);
+      DAYS_OF_WEEK.forEach((day) => {
+        dayMap[day.value] = group.sessions.filter(
+          (s: any) => s.sessionDay === day.value,
+        );
       });
 
       return {
@@ -417,7 +479,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
         courseImage: group.courseImage,
         trainers: trainers,
         totalSessions: group.sessions.length,
-        ...dayMap
+        ...dayMap,
       };
     });
 
@@ -430,25 +492,26 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
 
   private updateStats(sessions: CourseSessionVTO[]): void {
     this.stats.totalSessions = sessions.length;
-    this.stats.totalCourses = new Set(sessions.map(s => s.course?.id)).size;
-    this.stats.scheduled = sessions.filter(s => s.status?.id === 1).length;
-    this.stats.inProgress = sessions.filter(s => s.status?.id === 2).length;
-    this.stats.completed = sessions.filter(s => s.status?.id === 3).length;
-    this.stats.cancelled = sessions.filter(s => s.status?.id === 4).length;
+    this.stats.totalCourses = new Set(sessions.map((s) => s.course?.id)).size;
+    this.stats.scheduled = sessions.filter((s) => s.status?.id === 1).length;
+    this.stats.inProgress = sessions.filter((s) => s.status?.id === 2).length;
+    this.stats.completed = sessions.filter((s) => s.status?.id === 3).length;
+    this.stats.cancelled = sessions.filter((s) => s.status?.id === 4).length;
   }
 
   loadSessions(): void {
     this.isLoading = true;
     const params = this.buildFilterParams(this.currentPage);
 
-    this.sessionService.getAllSessionsByFilter(params)
+    this.sessionService
+      .getAllSessionsByFilter(params)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
           this.isLoading = false;
           this.isFirstLoad = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: (res: any) => {
@@ -458,11 +521,13 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
         },
         error: (err: ErrorVTO) => {
           if (err?.code === 'INVALID_DATE_RANGE_FROM_AFTER_TO') {
-            this.notification.showError('تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية');
+            this.notification.showError(
+              'تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية',
+            );
           } else {
             this.notification.showError(err);
           }
-        }
+        },
       });
   }
 
@@ -528,7 +593,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
       status: null,
       sessionDateFrom: null,
       sessionDateTo: null,
-      sessionDay: null
+      sessionDay: null,
     };
     this.currentPage = 0;
     this.loadSessions();
@@ -538,22 +603,24 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   // ============= HELPER METHODS =============
 
   getStatusCount(statusId: number): number {
-    return this.allSessions?.filter(s => s.status?.id === statusId).length || 0;
+    return (
+      this.allSessions?.filter((s) => s.status?.id === statusId).length || 0
+    );
   }
 
   getTrainerNames(trainers: any[]): string {
     if (!trainers || trainers.length === 0) return '-';
-    return trainers.map(t => t.title || t.name || `مدرب ${t.id}`).join('، ');
+    return trainers.map((t) => t.title || t.name || `مدرب ${t.id}`).join('، ');
   }
 
   getDayLabel(dayEnum: string): string {
     if (!dayEnum) return '-';
-    const found = DAYS_OF_WEEK.find(d => d.value === dayEnum);
+    const found = DAYS_OF_WEEK.find((d) => d.value === dayEnum);
     return found ? found.label : dayEnum;
   }
 
   getStatusLabel(statusId: number): string {
-    const status = SESSION_STATUSES.find(s => s.id === statusId);
+    const status = SESSION_STATUSES.find((s) => s.id === statusId);
     return status?.title || 'غير محدد';
   }
 
@@ -592,10 +659,10 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   getSlotTrainers(slots: any[]): any[] {
     if (!slots || slots.length === 0) return [];
     const trainers: any[] = [];
-    slots.forEach(slot => {
+    slots.forEach((slot) => {
       if (slot.trainers && slot.trainers.length > 0) {
         slot.trainers.forEach((t: any) => {
-          if (!trainers.find(t2 => t2.id === t.id)) {
+          if (!trainers.find((t2) => t2.id === t.id)) {
             trainers.push(t);
           }
         });
@@ -606,12 +673,16 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
 
   getTrainerAvatarName(trainer: any): string {
     if (!trainer) return 'م';
-    return (trainer.title || trainer.name || trainer.fullName || 'مدرب').charAt(0);
+    return (trainer.title || trainer.name || trainer.fullName || 'مدرب').charAt(
+      0,
+    );
   }
 
   getTrainerTooltip(trainer: any): string {
     if (!trainer) return '';
-    return trainer.title || trainer.name || trainer.fullName || `مدرب ${trainer.id}`;
+    return (
+      trainer.title || trainer.name || trainer.fullName || `مدرب ${trainer.id}`
+    );
   }
 
   trackByCourseId(_index: number, item: any): number {
@@ -625,10 +696,10 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
       width: '800px',
       maxWidth: '90vw',
       disableClose: true,
-      data: { mode: 'add' }
+      data: { mode: 'add' },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result === 'saved' || result?.action === 'created') {
         this.loadSessions();
       }
@@ -636,7 +707,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   }
 
   viewSessionDetails(session: any): void {
-    const fullSession = this.allSessions.find(s => s.id === session.id);
+    const fullSession = this.allSessions.find((s) => s.id === session.id);
     if (!fullSession) {
       this.notification.showError('لم يتم العثور على بيانات الجلسة');
       return;
@@ -645,10 +716,10 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
     const dialogRef = this.dialog.open(CourseSessionDetailsModalComponent, {
       data: fullSession,
       width: '650px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result?.action === 'delete') {
         this.confirmDelete(result.session);
       } else if (result?.action === 'edit') {
@@ -658,7 +729,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   }
 
   editSession(session: any): void {
-    const fullSession = this.allSessions.find(s => s.id === session.id);
+    const fullSession = this.allSessions.find((s) => s.id === session.id);
     if (fullSession) {
       this.openEditModal(fullSession);
     } else {
@@ -675,11 +746,11 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
         mode: 'edit',
         session: session,
         sessionId: session.id,
-        courseId: session.course?.id
-      }
+        courseId: session.course?.id,
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result === 'updated' || result?.action === 'updated') {
         this.loadSessions();
       }
@@ -687,7 +758,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   }
 
   deleteSession(session: any): void {
-    const fullSession = this.allSessions.find(s => s.id === session.id);
+    const fullSession = this.allSessions.find((s) => s.id === session.id);
     if (fullSession) {
       this.confirmDelete(fullSession);
     } else {
@@ -699,14 +770,15 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
     const title = session.title || `جلسة #${session.id}`;
     if (!confirm(`هل أنت متأكد من حذف الجلسة "${title}"؟`)) return;
 
-    this.sessionService.deleteCourseSession(session.id)
+    this.sessionService
+      .deleteCourseSession(session.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.notification.showSuccess('تم حذف الجلسة بنجاح');
           this.loadSessions();
         },
-        error: (err: ErrorVTO) => this.notification.showError(err)
+        error: (err: ErrorVTO) => this.notification.showError(err),
       });
   }
 
@@ -717,7 +789,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
-      
+
       if (totalPages <= 1) {
         resolve({ option: 'all' });
         return;
@@ -732,24 +804,33 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
           totalItems: this.totalItems,
           pageSize: this.pageSize,
           currentPage: this.currentPage,
-          isCardPrint: isCardPrint
-        }
+          isCardPrint: isCardPrint,
+        },
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         resolve(result);
       });
     });
   }
 
-  private async fetchPagesForExport(startPage: number, endPage: number): Promise<CourseSessionVTO[]> {
+  private async fetchPagesForExport(
+    startPage: number,
+    endPage: number,
+  ): Promise<CourseSessionVTO[]> {
     const allData: CourseSessionVTO[] = [];
     const totalPages = this.getTotalPages();
 
-    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+    for (
+      let page = startPage;
+      page <= Math.min(endPage, totalPages - 1);
+      page++
+    ) {
       const params = this.buildFilterParams(page);
       try {
-        const res = await this.sessionService.getAllSessionsByFilter(params).toPromise();
+        const res = await this.sessionService
+          .getAllSessionsByFilter(params)
+          .toPromise();
         if (res?.items) {
           allData.push(...res.items);
         }
@@ -769,11 +850,17 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
     let dataToExport: CourseSessionVTO[] = [];
 
     if (result.option === 'all') {
-      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+      dataToExport = await this.fetchPagesForExport(
+        0,
+        this.getTotalPages() - 1,
+      );
     } else if (result.option === 'current') {
       dataToExport = this.allSessions;
     } else if (result.option === 'range') {
-      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToExport = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToExport.length === 0) {
@@ -783,16 +870,23 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
 
     const exportData = dataToExport.map((session, index) => ({
       '#': index + 1,
-      'الدورة': session.course?.title || 'غير محدد',
-      'المدربون': this.getTrainerNames(session.trainers || []),
-      'اليوم': this.getDayLabel(session.sessionDay || ''),
-      'الوقت': this.formatTimeRange(session.startTime || '', session.endTime || ''),
-      'الحالة': this.getStatusLabel(session.status?.id || 0),
-      'المكان': session.place?.title || 'غير محدد',
-      'الملاحظات': session.note || ''
+      الدورة: session.course?.title || 'غير محدد',
+      المدربون: this.getTrainerNames(session.trainers || []),
+      اليوم: this.getDayLabel(session.sessionDay || ''),
+      الوقت: this.formatTimeRange(
+        session.startTime || '',
+        session.endTime || '',
+      ),
+      الحالة: this.getStatusLabel(session.status?.id || 0),
+      المكان: session.place?.title || 'غير محدد',
+      الملاحظات: session.note || '',
     }));
 
-    this.reportService.exportToExcel(exportData, 'course-sessions', 'جلسات الدورات');
+    this.reportService.exportToExcel(
+      exportData,
+      'course-sessions',
+      'جلسات الدورات',
+    );
     this.notification.showSuccess(`تم تصدير ${exportData.length} جلسة بنجاح`);
   }
 
@@ -809,7 +903,10 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
     } else if (result.option === 'current') {
       dataToPrint = this.allSessions;
     } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToPrint.length === 0) {
@@ -820,43 +917,63 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
 
     const filterTexts: string[] = [];
     if (this.filters.courseId) {
-      const course = this.courseOptions.find(c => c.value === this.filters.courseId);
+      const course = this.courseOptions.find(
+        (c) => c.value === this.filters.courseId,
+      );
       if (course) filterTexts.push(`الدورة: ${course.label}`);
     }
     if (this.filters.trainerId) {
-      const trainer = this.trainerOptions.find(t => t.value === this.filters.trainerId);
+      const trainer = this.trainerOptions.find(
+        (t) => t.value === this.filters.trainerId,
+      );
       if (trainer) filterTexts.push(`المدرب: ${trainer.label}`);
     }
     if (this.filters.placeId) {
-      const place = this.placeOptions.find(p => p.value === this.filters.placeId);
+      const place = this.placeOptions.find(
+        (p) => p.value === this.filters.placeId,
+      );
       if (place) filterTexts.push(`المكان: ${place.label}`);
     }
     if (this.filters.status) {
-      const status = this.statusOptions.find(s => s.value === this.filters.status);
+      const status = this.statusOptions.find(
+        (s) => s.value === this.filters.status,
+      );
       if (status) filterTexts.push(`الحالة: ${status.label}`);
     }
     if (this.filters.sessionDay) {
-      const day = this.dayOptions.find(d => d.value === this.filters.sessionDay);
+      const day = this.dayOptions.find(
+        (d) => d.value === this.filters.sessionDay,
+      );
       if (day) filterTexts.push(`اليوم: ${day.label}`);
     }
     if (this.filters.sessionDateFrom) {
-      const formattedDate = this.formatDateForBackend(this.filters.sessionDateFrom);
+      const formattedDate = this.formatDateForBackend(
+        this.filters.sessionDateFrom,
+      );
       if (formattedDate) filterTexts.push(`من تاريخ: ${formattedDate}`);
     }
     if (this.filters.sessionDateTo) {
-      const formattedDate = this.formatDateForBackend(this.filters.sessionDateTo);
+      const formattedDate = this.formatDateForBackend(
+        this.filters.sessionDateTo,
+      );
       if (formattedDate) filterTexts.push(`إلى تاريخ: ${formattedDate}`);
     }
     if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
     const htmlContent = this.generatePDFHTML(dataToPrint, filterTexts);
-    
-    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=1100,height=850,scrollbars=yes',
+    );
     if (printWindow) {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
       this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} جلسة`,
+      );
     } else {
       const container = document.createElement('div');
       container.innerHTML = htmlContent;
@@ -868,17 +985,22 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
         }
       }, 500);
       this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} جلسة`);
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} جلسة`,
+      );
     }
   }
 
-  private generatePDFHTML(sessions: CourseSessionVTO[], filterTexts: string[]): string {
+  private generatePDFHTML(
+    sessions: CourseSessionVTO[],
+    filterTexts: string[],
+  ): string {
     const totalSessions = sessions.length;
-    const scheduled = sessions.filter(s => s.status?.id === 1).length;
-    const completed = sessions.filter(s => s.status?.id === 3).length;
-    const uniqueCourses = new Set(sessions.map(s => s.course?.id)).size;
+    const scheduled = sessions.filter((s) => s.status?.id === 1).length;
+    const completed = sessions.filter((s) => s.status?.id === 3).length;
+    const uniqueCourses = new Set(sessions.map((s) => s.course?.id)).size;
     const uniqueTrainers = new Set();
-    sessions.forEach(s => {
+    sessions.forEach((s) => {
       if (s.trainers) {
         s.trainers.forEach((t: any) => uniqueTrainers.add(t.id));
       }
@@ -895,21 +1017,26 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
     pages.forEach((pageData: CourseSessionVTO[], pageIndex: number) => {
       let tableRows = '';
       pageData.forEach((session: CourseSessionVTO, index: number) => {
-        const globalIndex = (pageIndex * rowsPerPage) + index + 1;
-        
+        const globalIndex = pageIndex * rowsPerPage + index + 1;
+
         const statusColors: Record<number, string> = {
           1: 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
           2: 'background: #fed7aa; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
           3: 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
-          4: 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+          4: 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;',
         };
-        const statusStyle = statusColors[session.status?.id || 0] || 'background: #e5e7eb; color: #374151; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-        
+        const statusStyle =
+          statusColors[session.status?.id || 0] ||
+          'background: #e5e7eb; color: #374151; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
         const dayLabel = this.getDayLabel(session.sessionDay || '');
-        const timeRange = this.formatTimeRange(session.startTime || '', session.endTime || '');
+        const timeRange = this.formatTimeRange(
+          session.startTime || '',
+          session.endTime || '',
+        );
         const trainersText = this.getTrainerNames(session.trainers || []);
         const placeText = session.place?.title || '-';
-        
+
         tableRows += `
           <tr>
             <td style="text-align: center; padding: 4px 3px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 9px; background: transparent;">${globalIndex}</td>
@@ -927,7 +1054,7 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
         <div class="page-container">
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية">
+              <img src="assets/images/mainLogoSvg.svg" alt="الأكاديمية الأولمبية">
             </div>
             <div class="watermark-text">الأكاديمية الأولمبية</div>
           </div>
@@ -941,7 +1068,9 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
             
             ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
             
-            ${pageIndex === 0 ? `
+            ${
+              pageIndex === 0
+                ? `
             <div class="totals-grid">
               <div class="total-card total-all">
                 <span class="total-icon">📅</span>
@@ -969,7 +1098,9 @@ private buildFilterParams(pageNum: number): CourseSessionFilterParams {
                 <span class="total-label">مكتمل</span>
               </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
             <table>
               <thead>

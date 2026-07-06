@@ -1,8 +1,20 @@
 // enrollment-details-modal.component.ts
 
-import { Component, Inject, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
@@ -30,7 +42,7 @@ import * as JsBarcode from 'jsbarcode';
     MatProgressSpinnerModule,
     MatTooltipModule,
     MatTabsModule,
-    MatChipsModule
+    MatChipsModule,
   ],
   template: `
     <div class="modal-container" dir="rtl">
@@ -41,7 +53,11 @@ import * as JsBarcode from 'jsbarcode';
           <h2>تفاصيل التسجيل</h2>
         </div>
         <div class="header-actions">
-          <button mat-icon-button (click)="printCard()" matTooltip="طباعة البطاقة">
+          <button
+            mat-icon-button
+            (click)="printCard()"
+            matTooltip="طباعة البطاقة"
+          >
             <mat-icon>print</mat-icon>
           </button>
           <button mat-icon-button mat-dialog-close class="close-btn">
@@ -49,9 +65,9 @@ import * as JsBarcode from 'jsbarcode';
           </button>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Loading -->
       <div class="loading-area" *ngIf="isLoading">
         <mat-spinner diameter="50"></mat-spinner>
@@ -65,14 +81,17 @@ import * as JsBarcode from 'jsbarcode';
             <mat-icon>person</mat-icon>
           </div>
           <ng-template #profileImage>
-            <img [src]="traineeImageUrl" [alt]="enrollment.trainee?.fullName">
+            <img [src]="traineeImageUrl" [alt]="enrollment.trainee?.fullName" />
           </ng-template>
         </div>
 
         <div class="profile-info">
           <h1>{{ enrollment.trainee?.fullName }}</h1>
           <div class="info-badges">
-            <mat-chip [color]="enrollment.isActive ? 'primary' : 'warn'" selected>
+            <mat-chip
+              [color]="enrollment.isActive ? 'primary' : 'warn'"
+              selected
+            >
               {{ enrollment.isActive ? 'نشط' : 'غير نشط' }}
             </mat-chip>
             <mat-chip>
@@ -83,23 +102,29 @@ import * as JsBarcode from 'jsbarcode';
               <mat-icon>receipt</mat-icon>
               رقم التسجيل: {{ enrollment.id }}
             </mat-chip>
-            <mat-chip class="status-badge-chip" [class.completed]="enrollment.enrollmentStatus?.id === 2"
-                      [class.pending]="enrollment.enrollmentStatus?.id === 1"
-                      [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
+            <mat-chip
+              class="status-badge-chip"
+              [class.completed]="enrollment.enrollmentStatus?.id === 2"
+              [class.pending]="enrollment.enrollmentStatus?.id === 1"
+              [class.cancelled]="enrollment.enrollmentStatus?.id === 3"
+            >
               <mat-icon>verified</mat-icon>
               {{ enrollment.enrollmentStatus?.title }}
             </mat-chip>
-            <mat-chip class="payment-badge-chip" [class.paid]="enrollment.paymentStatus?.id === 2"
-                      [class.pending]="enrollment.paymentStatus?.id === 1">
+            <mat-chip
+              class="payment-badge-chip"
+              [class.paid]="enrollment.paymentStatus?.id === 2"
+              [class.pending]="enrollment.paymentStatus?.id === 1"
+            >
               <mat-icon>payment</mat-icon>
               {{ enrollment.paymentStatus?.title }}
             </mat-chip>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Tabs -->
       <mat-tab-group class="custom-tabs" *ngIf="!isLoading && enrollment">
         <!-- Details Tab -->
@@ -134,7 +159,7 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>event</mat-icon>
                 <div>
                   <label>تاريخ البدء</label>
-                  <p>{{ enrollment.startDate | date:'dd/MM/yyyy' }}</p>
+                  <p>{{ enrollment.startDate | date: 'dd/MM/yyyy' }}</p>
                 </div>
               </div>
 
@@ -142,7 +167,13 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>event_busy</mat-icon>
                 <div>
                   <label>تاريخ الانتهاء</label>
-                  <p>{{ enrollment.endDate ? (enrollment.endDate | date:'dd/MM/yyyy') : 'غير محدد' }}</p>
+                  <p>
+                    {{
+                      enrollment.endDate
+                        ? (enrollment.endDate | date: 'dd/MM/yyyy')
+                        : 'غير محدد'
+                    }}
+                  </p>
                 </div>
               </div>
 
@@ -150,7 +181,9 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>attach_money</mat-icon>
                 <div>
                   <label>القيمة النهائية</label>
-                  <p class="amount">{{ enrollment.finalSubscriptionValue | currency:'EGP' }}</p>
+                  <p class="amount">
+                    {{ enrollment.finalSubscriptionValue | currency: 'EGP' }}
+                  </p>
                 </div>
               </div>
 
@@ -158,8 +191,15 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>account_balance_wallet</mat-icon>
                 <div>
                   <label>المتبقي</label>
-                  <p class="remained" *ngIf="enrollment.remainedSubscriptionValue">{{ enrollment.remainedSubscriptionValue | currency:'EGP' }}</p>
-                  <p class="paid" *ngIf="!enrollment.remainedSubscriptionValue">مدفوع بالكامل</p>
+                  <p
+                    class="remained"
+                    *ngIf="enrollment.remainedSubscriptionValue"
+                  >
+                    {{ enrollment.remainedSubscriptionValue | currency: 'EGP' }}
+                  </p>
+                  <p class="paid" *ngIf="!enrollment.remainedSubscriptionValue">
+                    مدفوع بالكامل
+                  </p>
                 </div>
               </div>
 
@@ -168,9 +208,12 @@ import * as JsBarcode from 'jsbarcode';
                 <div>
                   <label>حالة التسجيل</label>
                   <p>
-                    <span class="status-badge" [class.completed]="enrollment.enrollmentStatus?.id === 2"
-                          [class.pending]="enrollment.enrollmentStatus?.id === 1"
-                          [class.cancelled]="enrollment.enrollmentStatus?.id === 3">
+                    <span
+                      class="status-badge"
+                      [class.completed]="enrollment.enrollmentStatus?.id === 2"
+                      [class.pending]="enrollment.enrollmentStatus?.id === 1"
+                      [class.cancelled]="enrollment.enrollmentStatus?.id === 3"
+                    >
                       {{ enrollment.enrollmentStatus?.title }}
                     </span>
                   </p>
@@ -182,8 +225,11 @@ import * as JsBarcode from 'jsbarcode';
                 <div>
                   <label>حالة الدفع</label>
                   <p>
-                    <span class="payment-badge" [class.paid]="enrollment.paymentStatus?.id === 2"
-                          [class.pending]="enrollment.paymentStatus?.id === 1">
+                    <span
+                      class="payment-badge"
+                      [class.paid]="enrollment.paymentStatus?.id === 2"
+                      [class.pending]="enrollment.paymentStatus?.id === 1"
+                    >
                       {{ enrollment.paymentStatus?.title }}
                     </span>
                   </p>
@@ -219,12 +265,17 @@ import * as JsBarcode from 'jsbarcode';
                 <span>بطاقة هوية المتدرب</span>
               </div>
               <div class="barcode-container">
-                <canvas #barcodeCanvas class="barcode-canvas" width="350" height="60"></canvas>
+                <canvas
+                  #barcodeCanvas
+                  class="barcode-canvas"
+                  width="350"
+                  height="60"
+                ></canvas>
                 <!-- <div class="barcode-number">{{ enrollment.trainee?.nationalId || enrollment.trainee?.id }}</div> -->
               </div>
               <div class="barcode-info">
                 <span>رقم التسجيل: {{ enrollment.id }}</span>
-                <span>تاريخ الإصدار: {{ today | date:'dd/MM/yyyy' }}</span>
+                <span>تاريخ الإصدار: {{ today | date: 'dd/MM/yyyy' }}</span>
               </div>
             </div>
           </div>
@@ -245,7 +296,7 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>schedule</mat-icon>
                 <div>
                   <label>تاريخ الإنشاء</label>
-                  <p>{{ enrollment.createdOn | date:'dd/MM/yyyy HH:mm' }}</p>
+                  <p>{{ enrollment.createdOn | date: 'dd/MM/yyyy HH:mm' }}</p>
                 </div>
               </div>
               <div class="info-item" *ngIf="enrollment.lastModifiedBy">
@@ -259,19 +310,26 @@ import * as JsBarcode from 'jsbarcode';
                 <mat-icon>update</mat-icon>
                 <div>
                   <label>تاريخ التعديل</label>
-                  <p>{{ enrollment.lastModifiedOn | date:'dd/MM/yyyy HH:mm' }}</p>
+                  <p>
+                    {{ enrollment.lastModifiedOn | date: 'dd/MM/yyyy HH:mm' }}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </mat-tab>
       </mat-tab-group>
-      
+
       <mat-divider></mat-divider>
-      
+
       <!-- Modal Actions -->
       <div class="modal-actions">
-        <button mat-raised-button color="accent" (click)="printCard()" matTooltip="طباعة البطاقة">
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="printCard()"
+          matTooltip="طباعة البطاقة"
+        >
           <mat-icon>print</mat-icon>
           طباعة البطاقة
         </button>
@@ -299,7 +357,10 @@ import * as JsBarcode from 'jsbarcode';
         </div>
         <div class="thermal-divider"></div>
         <div class="thermal-photo">
-          <img id="thermalPhoto" style="width: 50px; height: 50px; border-radius: 50%;">
+          <img
+            id="thermalPhoto"
+            style="width: 50px; height: 50px; border-radius: 50%;"
+          />
         </div>
         <div class="thermal-name" id="thermalName"></div>
         <div class="thermal-id" id="thermalId"></div>
@@ -309,7 +370,7 @@ import * as JsBarcode from 'jsbarcode';
         </table>
         <div class="thermal-divider"></div>
         <div class="thermal-barcode">
-          <img id="thermalBarcodeImg">
+          <img id="thermalBarcodeImg" />
           <div class="thermal-barcode-number" id="thermalBarcodeNum"></div>
         </div>
         <div class="thermal-footer">
@@ -325,593 +386,684 @@ import * as JsBarcode from 'jsbarcode';
       </div>
     </div>
   `,
-  styles: [`
-    .modal-container {
-      min-width: 700px;
-      max-width: 900px;
-      max-height: 90vh;
-      direction: rtl;
-      background: #f5f7fa;
-      border-radius: 24px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(226, 232, 240, 0.4);
-    }
-
-    /* Header - Navy Theme */
-    .modal-header {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .modal-header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 200px;
-      height: 200px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .modal-header::after {
-      content: '';
-      position: absolute;
-      bottom: -40%;
-      left: -10%;
-      width: 150px;
-      height: 150px;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 1;
-    }
-
-    .header-title mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      z-index: 1;
-    }
-
-    .close-btn {
-      color: white;
-      transition: transform 0.2s;
-    }
-
-    .close-btn:hover {
-      transform: scale(1.1);
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    .header-actions button {
-      color: white;
-      transition: all 0.3s;
-    }
-
-    .header-actions button:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: scale(1.05);
-    }
-
-    /* Loading */
-    .loading-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 80px;
-      gap: 16px;
-    }
-
-    .loading-area mat-spinner {
-      color: #0f3460 !important;
-    }
-
-    .loading-area p {
-      color: #94a3b8;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    /* Profile Main */
-    .profile-main {
-      display: flex;
-      gap: 24px;
-      padding: 24px;
-      background: white;
-    }
-
-    .profile-image {
-      flex-shrink: 0;
-    }
-
-    .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .avatar mat-icon {
-      font-size: 50px;
-      width: 50px;
-      height: 50px;
-      color: white;
-    }
-
-    .profile-image img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .profile-info {
-      flex: 1;
-    }
-
-    .profile-info h1 {
-      margin: 0 0 12px 0;
-      font-size: 24px;
-      color: #1f2937;
-      font-weight: 700;
-    }
-
-    .info-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    /* Chips */
-    ::ng-deep .mat-chip {
-      font-size: 12px !important;
-      padding: 4px 14px !important;
-    }
-
-    .status-badge-chip {
-      background: #fef3c7 !important;
-      color: #92400e !important;
-    }
-
-    .status-badge-chip.completed {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
-    }
-
-    .status-badge-chip.cancelled {
-      background: #fee2e2 !important;
-      color: #991b1b !important;
-    }
-
-    .payment-badge-chip {
-      background: #e0e7ff !important;
-      color: #3730a3 !important;
-    }
-
-    .payment-badge-chip.paid {
-      background: #d1fae5 !important;
-      color: #065f46 !important;
-    }
-
-    /* Tabs */
-    .custom-tabs {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .tab-content {
-      padding: 20px;
-      max-height: 50vh;
-      overflow-y: auto;
-    }
-
-    /* Custom Scrollbar */
-    .tab-content::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .tab-content::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 10px;
-    }
-
-    .tab-content::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #0f3460, #1a1a2e);
-      border-radius: 10px;
-    }
-
-    .tab-content::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #1a1a2e, #0f3460);
-    }
-
-    /* Info Grid */
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #f9fafb;
-      border-radius: 12px;
-      border: 1px solid rgba(226, 232, 240, 0.3);
-      transition: all 0.2s;
-    }
-
-    .info-item:hover {
-      border-color: rgba(15, 52, 96, 0.15);
-      background: #f1f5f9;
-    }
-
-    .info-item mat-icon {
-      color: #0f3460;
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-
-    .info-item div {
-      flex: 1;
-    }
-
-    .info-item label {
-      display: block;
-      font-size: 11px;
-      color: #6b7280;
-      font-weight: 500;
-      margin-bottom: 2px;
-    }
-
-    .info-item p {
-      margin: 0;
-      font-size: 14px;
-      color: #1f2937;
-      font-weight: 500;
-    }
-
-    .info-item .amount {
-      color: #10b981;
-      font-weight: 600;
-    }
-
-    .info-item .remained {
-      color: #f59e0b;
-      font-weight: 600;
-    }
-
-    .info-item .paid {
-      color: #10b981;
-      font-weight: 600;
-    }
-
-    /* Status Badges */
-    .status-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-block;
-    }
-
-    .status-badge.completed {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .status-badge.pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .status-badge.cancelled {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .payment-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-block;
-    }
-
-    .payment-badge.paid {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .payment-badge.pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    /* Note Container */
-    .note-container {
-      display: flex;
-      gap: 12px;
-      padding: 12px 16px;
-      margin-top: 16px;
-      background: #fffbeb;
-      border-radius: 12px;
-      border: 1px solid rgba(217, 119, 6, 0.15);
-    }
-
-    .note-container mat-icon {
-      color: #d97706;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-
-    .note-container label {
-      display: block;
-      font-size: 11px;
-      color: #92400e;
-      font-weight: 500;
-      margin-bottom: 2px;
-    }
-
-    .note-container p {
-      margin: 0;
-      font-size: 13px;
-      color: #78350f;
-    }
-
-    /* Barcode Tab */
-    .barcode-tab {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 250px;
-    }
-
-    .barcode-card {
-      text-align: center;
-      background: #f8fafc;
-      padding: 30px 40px;
-      border-radius: 20px;
-      border: 1px solid rgba(226, 232, 240, 0.5);
-      width: 100%;
-      max-width: 450px;
-    }
-
-    .barcode-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .barcode-header mat-icon {
-      color: #0f3460;
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .barcode-header span {
-      font-size: 16px;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .barcode-container {
-      margin: 16px 0;
-    }
-
-    .barcode-canvas {
-      max-width: 100%;
-      height: auto;
-    }
-
-    .barcode-number {
-      font-size: 14px;
-      font-weight: 600;
-      color: #0f3460;
-      font-family: monospace;
-      margin-top: 8px;
-      letter-spacing: 1px;
-    }
-
-    .barcode-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #6b7280;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    /* Modal Actions */
-    .modal-actions {
-      flex-shrink: 0;
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      padding: 16px 20px;
-      background: white;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .modal-actions button.mat-raised-button.mat-accent {
-      background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%) !important;
-    }
-
-    .modal-actions button.mat-raised-button.mat-primary {
-      background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%) !important;
-    }
-
-    .modal-actions button.mat-raised-button.mat-warn {
-      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
-    }
-
-    .modal-actions button.mat-button {
-      color: #6b7280;
-      font-weight: 500;
-    }
-
-    .modal-actions button.mat-button:hover {
-      background: #f9fafb;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
+  styles: [
+    `
       .modal-container {
-        min-width: 90vw;
-        max-width: 90vw;
-      }
-
-      .profile-main {
+        min-width: 700px;
+        max-width: 900px;
+        max-height: 90vh;
+        direction: rtl;
+        background: #f5f7fa;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
         flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.4);
       }
 
-      .info-badges {
-        justify-content: center;
-      }
-
-      .info-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .tab-content {
-        padding: 16px;
-      }
-
-      .barcode-card {
-        padding: 20px;
-      }
-
-      .barcode-info {
-        flex-direction: column;
-        gap: 4px;
-        text-align: center;
-      }
-
-      .modal-actions {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .modal-actions button {
-        min-width: 100px;
-      }
-    }
-
-    @media (max-width: 480px) {
+      /* Header - Navy Theme */
       .modal-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 12px;
-        padding: 14px 16px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .modal-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .modal-header::after {
+        content: '';
+        position: absolute;
+        bottom: -40%;
+        left: -10%;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 50%;
+        pointer-events: none;
       }
 
       .header-title {
-        flex-direction: column;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1;
+      }
+
+      .header-title mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
       }
 
       .header-actions {
+        display: flex;
+        gap: 8px;
+        z-index: 1;
+      }
+
+      .close-btn {
+        color: white;
+        transition: transform 0.2s;
+      }
+
+      .close-btn:hover {
+        transform: scale(1.1);
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .header-actions button {
+        color: white;
+        transition: all 0.3s;
+      }
+
+      .header-actions button:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: scale(1.05);
+      }
+
+      /* Loading */
+      .loading-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px;
+        gap: 16px;
+      }
+
+      .loading-area mat-spinner {
+        color: #0f3460 !important;
+      }
+
+      .loading-area p {
+        color: #94a3b8;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Profile Main */
+      .profile-main {
+        display: flex;
+        gap: 24px;
+        padding: 24px;
+        background: white;
+      }
+
+      .profile-image {
+        flex-shrink: 0;
+      }
+
+      .avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+        display: flex;
+        align-items: center;
         justify-content: center;
       }
 
-      .modal-actions {
-        flex-direction: column;
+      .avatar mat-icon {
+        font-size: 50px;
+        width: 50px;
+        height: 50px;
+        color: white;
       }
 
-      .modal-actions button {
-        width: 100%;
+      .profile-image img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
       }
-    }
 
-    /* Thermal Print Styles */
-    @media print {
-      body * {
-        visibility: hidden;
+      .profile-info {
+        flex: 1;
       }
-      #thermalPrint, #thermalPrint * {
-        visibility: visible;
+
+      .profile-info h1 {
+        margin: 0 0 12px 0;
+        font-size: 24px;
+        color: #1f2937;
+        font-weight: 700;
       }
-      #thermalPrint {
-        display: block !important;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 57mm;
+
+      .info-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* Chips */
+      ::ng-deep .mat-chip {
+        font-size: 12px !important;
+        padding: 4px 14px !important;
+      }
+
+      .status-badge-chip {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+      }
+
+      .status-badge-chip.completed {
+        background: #d1fae5 !important;
+        color: #065f46 !important;
+      }
+
+      .status-badge-chip.cancelled {
+        background: #fee2e2 !important;
+        color: #991b1b !important;
+      }
+
+      .payment-badge-chip {
+        background: #e0e7ff !important;
+        color: #3730a3 !important;
+      }
+
+      .payment-badge-chip.paid {
+        background: #d1fae5 !important;
+        color: #065f46 !important;
+      }
+
+      /* Tabs */
+      .custom-tabs {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .tab-content {
+        padding: 20px;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+
+      /* Custom Scrollbar */
+      .tab-content::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .tab-content::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+      }
+
+      .tab-content::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #0f3460, #1a1a2e);
+        border-radius: 10px;
+      }
+
+      .tab-content::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+      }
+
+      /* Info Grid */
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.3);
+        transition: all 0.2s;
+      }
+
+      .info-item:hover {
+        border-color: rgba(15, 52, 96, 0.15);
+        background: #f1f5f9;
+      }
+
+      .info-item mat-icon {
+        color: #0f3460;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .info-item div {
+        flex: 1;
+      }
+
+      .info-item label {
+        display: block;
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+
+      .info-item p {
         margin: 0;
-        padding: 0;
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 500;
       }
-      .thermal-card {
-        font-family: 'Cairo', 'Segoe UI', sans-serif;
-        width: 55mm;
-        margin: 0 auto;
-        padding: 2mm;
+
+      .info-item .amount {
+        color: #10b981;
+        font-weight: 600;
+      }
+
+      .info-item .remained {
+        color: #f59e0b;
+        font-weight: 600;
+      }
+
+      .info-item .paid {
+        color: #10b981;
+        font-weight: 600;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+      }
+
+      .status-badge.completed {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-badge.cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .payment-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+      }
+
+      .payment-badge.paid {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .payment-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      /* Note Container */
+      .note-container {
+        display: flex;
+        gap: 12px;
+        padding: 12px 16px;
+        margin-top: 16px;
+        background: #fffbeb;
+        border-radius: 12px;
+        border: 1px solid rgba(217, 119, 6, 0.15);
+      }
+
+      .note-container mat-icon {
+        color: #d97706;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .note-container label {
+        display: block;
+        font-size: 11px;
+        color: #92400e;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+
+      .note-container p {
+        margin: 0;
+        font-size: 13px;
+        color: #78350f;
+      }
+
+      /* Barcode Tab */
+      .barcode-tab {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 250px;
+      }
+
+      .barcode-card {
+        text-align: center;
+        background: #f8fafc;
+        padding: 30px 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        width: 100%;
+        max-width: 450px;
+      }
+
+      .barcode-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .barcode-header mat-icon {
+        color: #0f3460;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+
+      .barcode-header span {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+      }
+
+      .barcode-container {
+        margin: 16px 0;
+      }
+
+      .barcode-canvas {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .barcode-number {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f3460;
+        font-family: monospace;
+        margin-top: 8px;
+        letter-spacing: 1px;
+      }
+
+      .barcode-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      /* Modal Actions */
+      .modal-actions {
+        flex-shrink: 0;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding: 16px 20px;
         background: white;
-        direction: rtl;
+        border-top: 1px solid #e5e7eb;
       }
-      .thermal-header { text-align: center; margin-bottom: 3mm; }
-      .thermal-title { font-size: 14px; font-weight: bold; }
-      .thermal-subtitle { font-size: 10px; color: #666; }
-      .thermal-divider { border-top: 1px dashed #ccc; margin: 2mm 0; }
-      .thermal-photo { text-align: center; margin-bottom: 2mm; }
-      .thermal-name { font-size: 12px; font-weight: bold; text-align: center; margin-bottom: 1mm; }
-      .thermal-id { font-size: 9px; color: #666; text-align: center; margin-bottom: 2mm; }
-      .thermal-table { width: 100%; font-size: 9px; margin-bottom: 2mm; border-collapse: collapse; }
-      .thermal-table tr { line-height: 1.4; }
-      .thermal-label { text-align: right; padding: 1mm; color: #666; width: 40%; }
-      .thermal-value { text-align: left; padding: 1mm; font-weight: 500; width: 60%; }
-      .thermal-barcode { text-align: center; margin: 2mm 0; }
-      .thermal-barcode img { width: 100%; max-width: 180px; }
-      .thermal-barcode-number { font-size: 9px; font-family: monospace; text-align: center; margin-top: 1mm; }
-      .thermal-footer { display: flex; justify-content: space-between; gap: 3mm; margin-top: 3mm; }
-      .thermal-signature { flex: 1; text-align: center; font-size: 7px; }
-      .thermal-line { border-top: 0.5px solid #000; margin-bottom: 1mm; padding-top: 4mm; }
-      @page { size: 57mm auto; margin: 0mm; }
-    }
-  `]
+
+      .modal-actions button.mat-raised-button.mat-accent {
+        background: linear-gradient(
+          135deg,
+          #0f3460 0%,
+          #1a1a2e 100%
+        ) !important;
+      }
+
+      .modal-actions button.mat-raised-button.mat-primary {
+        background: linear-gradient(
+          135deg,
+          #0f3460 0%,
+          #1a1a2e 100%
+        ) !important;
+      }
+
+      .modal-actions button.mat-raised-button.mat-warn {
+        background: linear-gradient(
+          135deg,
+          #dc2626 0%,
+          #b91c1c 100%
+        ) !important;
+      }
+
+      .modal-actions button.mat-button {
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .modal-actions button.mat-button:hover {
+        background: #f9fafb;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .modal-container {
+          min-width: 90vw;
+          max-width: 90vw;
+        }
+
+        .profile-main {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 16px;
+        }
+
+        .info-badges {
+          justify-content: center;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .tab-content {
+          padding: 16px;
+        }
+
+        .barcode-card {
+          padding: 20px;
+        }
+
+        .barcode-info {
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+        }
+
+        .modal-actions {
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .modal-actions button {
+          min-width: 100px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .modal-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 12px;
+          padding: 14px 16px;
+        }
+
+        .header-title {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .header-actions {
+          justify-content: center;
+        }
+
+        .modal-actions {
+          flex-direction: column;
+        }
+
+        .modal-actions button {
+          width: 100%;
+        }
+      }
+
+      /* Thermal Print Styles */
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #thermalPrint,
+        #thermalPrint * {
+          visibility: visible;
+        }
+        #thermalPrint {
+          display: block !important;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 57mm;
+          margin: 0;
+          padding: 0;
+        }
+        .thermal-card {
+          font-family: 'Cairo', 'Segoe UI', sans-serif;
+          width: 55mm;
+          margin: 0 auto;
+          padding: 2mm;
+          background: white;
+          direction: rtl;
+        }
+        .thermal-header {
+          text-align: center;
+          margin-bottom: 3mm;
+        }
+        .thermal-title {
+          font-size: 14px;
+          font-weight: bold;
+        }
+        .thermal-subtitle {
+          font-size: 10px;
+          color: #666;
+        }
+        .thermal-divider {
+          border-top: 1px dashed #ccc;
+          margin: 2mm 0;
+        }
+        .thermal-photo {
+          text-align: center;
+          margin-bottom: 2mm;
+        }
+        .thermal-name {
+          font-size: 12px;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 1mm;
+        }
+        .thermal-id {
+          font-size: 9px;
+          color: #666;
+          text-align: center;
+          margin-bottom: 2mm;
+        }
+        .thermal-table {
+          width: 100%;
+          font-size: 9px;
+          margin-bottom: 2mm;
+          border-collapse: collapse;
+        }
+        .thermal-table tr {
+          line-height: 1.4;
+        }
+        .thermal-label {
+          text-align: right;
+          padding: 1mm;
+          color: #666;
+          width: 40%;
+        }
+        .thermal-value {
+          text-align: left;
+          padding: 1mm;
+          font-weight: 500;
+          width: 60%;
+        }
+        .thermal-barcode {
+          text-align: center;
+          margin: 2mm 0;
+        }
+        .thermal-barcode img {
+          width: 100%;
+          max-width: 180px;
+        }
+        .thermal-barcode-number {
+          font-size: 9px;
+          font-family: monospace;
+          text-align: center;
+          margin-top: 1mm;
+        }
+        .thermal-footer {
+          display: flex;
+          justify-content: space-between;
+          gap: 3mm;
+          margin-top: 3mm;
+        }
+        .thermal-signature {
+          flex: 1;
+          text-align: center;
+          font-size: 7px;
+        }
+        .thermal-line {
+          border-top: 0.5px solid #000;
+          margin-bottom: 1mm;
+          padding-top: 4mm;
+        }
+        @page {
+          size: 57mm auto;
+          margin: 0mm;
+        }
+      }
+    `,
+  ],
 })
-export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, AfterViewInit {
+export class EnrollmentDetailsModalComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   enrollment: EnrollmentVTO;
   traineeImageUrl: string | null = null;
   private blobUrl: string | null = null;
@@ -925,7 +1077,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
     @Inject(MAT_DIALOG_DATA) private data: EnrollmentVTO,
     private fileService: FileService,
     private constantService: ConstantService,
-    private notification: NotificationService
+    private notification: NotificationService,
   ) {
     this.enrollment = data;
   }
@@ -950,14 +1102,18 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
   loadTraineeImage(): void {
     const trainee = this.enrollment.trainee;
     // Check if trainee has imageUrl (FID - 15 or 18 digits)
-    if (trainee && trainee.imageUrl && /^\d{15}(\d{3})?$/.test(trainee.imageUrl)) {
+    if (
+      trainee &&
+      trainee.imageUrl &&
+      /^\d{15}(\d{3})?$/.test(trainee.imageUrl)
+    ) {
       this.fileService.downloadFile(trainee.imageUrl).subscribe({
         next: (blob) => {
           if (this.blobUrl) URL.revokeObjectURL(this.blobUrl);
           this.blobUrl = URL.createObjectURL(blob);
           this.traineeImageUrl = this.blobUrl;
         },
-        error: () => this.traineeImageUrl = null
+        error: () => (this.traineeImageUrl = null),
       });
     }
   }
@@ -966,10 +1122,11 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
     if (this.barcodeCanvas?.nativeElement) {
       try {
         // Use nationalId if available, otherwise fallback to id
-        const barcodeValue = this.enrollment.trainee?.nationalId?.toString() || 
-                            this.enrollment.trainee?.id?.toString() || 
-                            '000000';
-        
+        const barcodeValue =
+          this.enrollment.trainee?.nationalId?.toString() ||
+          this.enrollment.trainee?.id?.toString() ||
+          '000000';
+
         (JsBarcode as any)(this.barcodeCanvas.nativeElement, barcodeValue, {
           format: 'CODE128',
           lineColor: '#000000',
@@ -979,7 +1136,7 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
           fontSize: 10,
           font: 'monospace',
           textAlign: 'center',
-          margin: 5
+          margin: 5,
         });
       } catch (error) {
         console.error('Barcode error:', error);
@@ -996,38 +1153,43 @@ export class EnrollmentDetailsModalComponent implements OnInit, OnDestroy, After
     this.dialogRef.close({ action: 'delete', enrollment: this.enrollment });
   }
 
-printCard(): void {
-  this.generateBarcode();
-  
-  // First, fetch the contact number from constant service (id = 1)
-  this.constantService.getConstantById(1).subscribe({
-    next: (constant) => {
-      const contactNumber = constant?.value || '01069911181'; // Fallback number
-      this.openPrintWindow(contactNumber);
-    },
-    error: () => {
-      // If error, use fallback number
-      this.openPrintWindow('01069911181');
-    }
-  });
-}
+  printCard(): void {
+    this.generateBarcode();
 
-private openPrintWindow(contactNumber: string): void {
-  setTimeout(() => {
-    const barcodeImage = this.barcodeCanvas.nativeElement.toDataURL('image/png');
-    const printWindow = window.open('', '_blank', 'width=350,height=500,scrollbars=no,menubar=no,toolbar=no,status=no');
-    if (!printWindow) {
-      this.notification.showError('تعذر فتح نافذة الطباعة');
-      return;
-    }
+    // First, fetch the contact number from constant service (id = 1)
+    this.constantService.getConstantById(1).subscribe({
+      next: (constant) => {
+        const contactNumber = constant?.value || '01069911181'; // Fallback number
+        this.openPrintWindow(contactNumber);
+      },
+      error: () => {
+        // If error, use fallback number
+        this.openPrintWindow('01069911181');
+      },
+    });
+  }
 
-    const e = this.enrollment;
-    const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
-    const logoPath = 'assets/images/simpleLogo.jpeg';
-    const academyName = 'الأكاديمية الأولمبية';
-    const currentYear = new Date().getFullYear();
-    
-    printWindow.document.write(`
+  private openPrintWindow(contactNumber: string): void {
+    setTimeout(() => {
+      const barcodeImage =
+        this.barcodeCanvas.nativeElement.toDataURL('image/png');
+      const printWindow = window.open(
+        '',
+        '_blank',
+        'width=350,height=500,scrollbars=no,menubar=no,toolbar=no,status=no',
+      );
+      if (!printWindow) {
+        this.notification.showError('تعذر فتح نافذة الطباعة');
+        return;
+      }
+
+      const e = this.enrollment;
+      const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
+      const logoPath = 'assets/images/mainLogo.jpeg';
+      const academyName = 'الأكاديمية الأولمبية';
+      const currentYear = new Date().getFullYear();
+
+      printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
       <head>
@@ -1501,12 +1663,17 @@ private openPrintWindow(contactNumber: string): void {
                   <td class="thermal-label">💰 القيمة</td>
                   <td class="thermal-value amount">${e.finalSubscriptionValue?.toLocaleString() || 0} جم</td>
                 </tr>
-                ${e.remainedSubscriptionValue !== undefined && e.remainedSubscriptionValue !== null ? `
+                ${
+                  e.remainedSubscriptionValue !== undefined &&
+                  e.remainedSubscriptionValue !== null
+                    ? `
                 <tr>
                   <td class="thermal-label">💳 المتبقي</td>
                   <td class="thermal-value ${e.remainedSubscriptionValue > 0 ? 'remaining' : 'remaining-zero'}">${e.remainedSubscriptionValue.toLocaleString()} جم</td>
                 </tr>
-                ` : ''}
+                `
+                    : ''
+                }
                 <tr>
                   <td class="thermal-label">✓ الحالة</td>
                   <td class="thermal-value">${e.enrollmentStatus?.title || ''}</td>
@@ -1575,7 +1742,7 @@ private openPrintWindow(contactNumber: string): void {
       </body>
       </html>
     `);
-    printWindow.document.close();
-  }, 300);
-}
+      printWindow.document.close();
+    }, 300);
+  }
 }

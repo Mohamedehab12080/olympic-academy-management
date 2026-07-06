@@ -1,6 +1,15 @@
 // enrollment-payment-list.component.ts - COMPLETE WITH ALL METHODS
 
-import { Component, OnInit, ViewChild, Inject, ChangeDetectorRef, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  Inject,
+  ChangeDetectorRef,
+  OnDestroy,
+  AfterViewInit,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +26,12 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 
@@ -27,7 +41,10 @@ import { NotificationService } from '../../../../../../core/services/notificatio
 import { ReportService } from '../../../../../../core/services/report.service';
 import { FileService } from '../../../../../../core/services/file.service';
 import { PAYMENT_STATUSES } from '../../../../../../core/models/common.model';
-import { SearchableSelectComponent, SelectOption } from '../../../../../../shared/components/searchable-select/searchable-select.component';
+import {
+  SearchableSelectComponent,
+  SelectOption,
+} from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { EnrollmentPaymentDetailsModalComponent } from '../enrollment-payment-details/enrollment-payment-details-modal.component';
 import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wizard/enrollment-payment-wizard-modal.component';
 // ============================================================================
@@ -46,7 +63,7 @@ import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wiz
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatDividerModule
+    MatDividerModule,
   ],
   template: `
     <div class="dialog-container" dir="rtl">
@@ -56,15 +73,21 @@ import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wiz
         </div>
         <div>
           <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
-          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
+          <p>
+            {{
+              isCardPrint
+                ? 'اختر الصفحات التي تريد طباعة بطاقاتها'
+                : 'اختر الصفحات التي تريد تصديرها'
+            }}
+          </p>
         </div>
         <button mat-icon-button (click)="close()" class="close-btn">
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-body">
         <div class="info-section">
           <div class="info-row">
@@ -83,37 +106,44 @@ import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wiz
 
         <div class="selection-section">
           <div class="selection-options">
-            <button 
-              mat-raised-button 
+            <button
+              mat-raised-button
               [color]="selectedOption === 'all' ? 'primary' : 'default'"
               (click)="selectedOption = 'all'"
               class="option-btn"
-              [class.selected]="selectedOption === 'all'">
+              [class.selected]="selectedOption === 'all'"
+            >
               <mat-icon>description</mat-icon>
               <span>جميع الصفحات ({{ data.totalPages }})</span>
               <span class="check-icon" *ngIf="selectedOption === 'all'">✓</span>
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'current' ? 'primary' : 'default'"
               (click)="selectedOption = 'current'"
               class="option-btn"
-              [class.selected]="selectedOption === 'current'">
+              [class.selected]="selectedOption === 'current'"
+            >
               <mat-icon>description</mat-icon>
               <span>الصفحة الحالية فقط ({{ data.currentPage + 1 }})</span>
-              <span class="check-icon" *ngIf="selectedOption === 'current'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'current'"
+                >✓</span
+              >
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'range' ? 'primary' : 'default'"
               (click)="selectedOption = 'range'"
               class="option-btn"
-              [class.selected]="selectedOption === 'range'">
+              [class.selected]="selectedOption === 'range'"
+            >
               <mat-icon>description</mat-icon>
               <span>نطاق صفحات محدد</span>
-              <span class="check-icon" *ngIf="selectedOption === 'range'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'range'"
+                >✓</span
+              >
             </button>
           </div>
 
@@ -121,118 +151,413 @@ import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wiz
             <div class="range-inputs">
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>من صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="startPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="startPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="1">
-                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
+                  placeholder="1"
+                />
+                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
               </mat-form-field>
-              
+
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>إلى صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="endPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="endPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="{{ data.totalPages }}">
-                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
-                <mat-error *ngIf="startPage > endPage">يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error>
+                  placeholder="{{ data.totalPages }}"
+                />
+                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
+                <mat-error *ngIf="startPage > endPage"
+                  >يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error
+                >
               </mat-form-field>
             </div>
-            
+
             <div class="range-info">
               <mat-icon>info</mat-icon>
-              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+              <span
+                >سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }}
+                {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span
+              >
             </div>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-actions">
         <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
-        <button 
-          mat-raised-button 
-          color="primary" 
+        <button
+          mat-raised-button
+          color="primary"
           (click)="confirm()"
           [disabled]="!isValid()"
-          class="confirm-btn">
+          class="confirm-btn"
+        >
           <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
           <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
         </button>
       </div>
     </div>
   `,
-  styles: [`
-    .dialog-container { min-width: 480px; max-width: 580px; background: white; border-radius: 24px; overflow: hidden; direction: rtl; box-shadow: 0 24px 48px rgba(0,0,0,0.2); }
-    .dialog-header { display: flex; align-items: center; gap: 16px; padding: 20px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; position: relative; }
-    .dialog-header.card-print { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-    .header-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; backdrop-filter: blur(4px); }
-    .header-icon.card-print { background: rgba(255,255,255,0.25); }
-    .header-icon mat-icon { font-size: 28px; width: 28px; height: 28px; }
-    .dialog-header h2 { margin: 0; font-size: 20px; font-weight: 700; }
-    .dialog-header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
-    .close-btn { color: white !important; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15) !important; transition: all 0.3s; }
-    .close-btn:hover { background: rgba(255,255,255,0.3) !important; transform: translateY(-50%) rotate(90deg); }
-    .dialog-body { padding: 24px; background: #fafbfc; }
-    .info-section { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; padding: 16px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #eef2f6; }
-    .info-row { text-align: center; padding: 4px 0; }
-    .info-label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
-    .info-value { font-size: 20px; font-weight: 700; color: #1e293b; }
-    .info-value:last-child { color: #667eea; }
-    .dialog-header.card-print .info-value:last-child { color: #f59e0b; }
-    .selection-section { display: flex; flex-direction: column; gap: 12px; }
-    .selection-options { display: flex; flex-direction: column; gap: 8px; }
-    .option-btn { width: 100%; justify-content: flex-start; padding: 12px 20px; height: auto; border: 2px solid #e5e7eb; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); border-radius: 12px; background: white; position: relative; font-weight: 500; }
-    .option-btn mat-icon { margin-left: 12px; color: #94a3b8; transition: color 0.3s; }
-    .option-btn.selected { border-color: #667eea; background: #eff6ff !important; box-shadow: 0 4px 12px rgba(102,126,234,0.15); }
-    .option-btn.selected mat-icon { color: #667eea; }
-    .dialog-header.card-print .option-btn.selected { border-color: #f59e0b; background: #fffbeb !important; box-shadow: 0 4px 12px rgba(245,158,11,0.15); }
-    .dialog-header.card-print .option-btn.selected mat-icon { color: #f59e0b; }
-    .option-btn:hover:not(.selected) { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-1px); }
-    .check-icon { margin-right: auto; color: #667eea; font-weight: 700; font-size: 18px; }
-    .dialog-header.card-print .check-icon { color: #f59e0b; }
-    .range-section { padding: 16px; background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .range-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .range-field { width: 100%; }
-    .range-field ::ng-deep .mat-form-field-outline { background: #fafbfc !important; border-radius: 8px !important; }
-    .range-info { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: #f1f5f9; border-radius: 8px; font-size: 13px; color: #475569; }
-    .range-info mat-icon { font-size: 18px; width: 18px; height: 18px; color: #667eea; }
-    .dialog-header.card-print .range-info mat-icon { color: #f59e0b; }
-    .dialog-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; background: white; border-top: 1px solid #eef2f6; }
-    .dialog-actions button { min-width: 100px; font-weight: 600; border-radius: 10px; transition: all 0.3s; }
-    .cancel-btn { color: #64748b !important; }
-    .cancel-btn:hover { background: #f1f5f9 !important; }
-    .confirm-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; box-shadow: 0 4px 16px rgba(102,126,234,0.3) !important; }
-    .confirm-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.4) !important; }
-    .confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-    .dialog-header.card-print .confirm-btn { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important; box-shadow: 0 4px 16px rgba(245,158,11,0.3) !important; }
-    .dialog-header.card-print .confirm-btn:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(245,158,11,0.4) !important; }
-    @media (max-width: 600px) { .dialog-container { min-width: 320px; max-width: 95vw; } .dialog-header { padding: 16px 20px; flex-wrap: wrap; } .header-icon { width: 40px; height: 40px; } .header-icon mat-icon { font-size: 22px; width: 22px; height: 22px; } .dialog-header h2 { font-size: 17px; } .dialog-body { padding: 16px; } .info-section { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; } .info-row:last-child { grid-column: span 2; } .info-value { font-size: 17px; } .range-inputs { grid-template-columns: 1fr; gap: 8px; } .dialog-actions { flex-direction: column-reverse; padding: 12px 16px; gap: 8px; } .dialog-actions button { width: 100%; min-width: unset; } .close-btn { position: relative; left: auto; top: auto; transform: none; } .close-btn:hover { transform: rotate(90deg); } }
-    @media (max-width: 400px) { .dialog-container { min-width: 280px; } .info-section { grid-template-columns: 1fr; } .info-row:last-child { grid-column: span 1; } .option-btn { font-size: 13px; padding: 10px 14px; } .option-btn mat-icon { font-size: 18px; width: 18px; height: 18px; } }
-  `]
+  styles: [
+    `
+      .dialog-container {
+        min-width: 480px;
+        max-width: 580px;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        direction: rtl;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+      }
+      .dialog-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+      }
+      .dialog-header.card-print {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      }
+      .header-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        backdrop-filter: blur(4px);
+      }
+      .header-icon.card-print {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .header-icon mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+      .dialog-header h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .dialog-header p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.9;
+      }
+      .close-btn {
+        color: white !important;
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.15) !important;
+        transition: all 0.3s;
+      }
+      .close-btn:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-50%) rotate(90deg);
+      }
+      .dialog-body {
+        padding: 24px;
+        background: #fafbfc;
+      }
+      .info-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid #eef2f6;
+      }
+      .info-row {
+        text-align: center;
+        padding: 4px 0;
+      }
+      .info-label {
+        display: block;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      .info-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+      .info-value:last-child {
+        color: #667eea;
+      }
+      .dialog-header.card-print .info-value:last-child {
+        color: #f59e0b;
+      }
+      .selection-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .selection-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .option-btn {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 20px;
+        height: auto;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        background: white;
+        position: relative;
+        font-weight: 500;
+      }
+      .option-btn mat-icon {
+        margin-left: 12px;
+        color: #94a3b8;
+        transition: color 0.3s;
+      }
+      .option-btn.selected {
+        border-color: #667eea;
+        background: #eff6ff !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      }
+      .option-btn.selected mat-icon {
+        color: #667eea;
+      }
+      .dialog-header.card-print .option-btn.selected {
+        border-color: #f59e0b;
+        background: #fffbeb !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      }
+      .dialog-header.card-print .option-btn.selected mat-icon {
+        color: #f59e0b;
+      }
+      .option-btn:hover:not(.selected) {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        transform: translateY(-1px);
+      }
+      .check-icon {
+        margin-right: auto;
+        color: #667eea;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .dialog-header.card-print .check-icon {
+        color: #f59e0b;
+      }
+      .range-section {
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .range-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .range-field {
+        width: 100%;
+      }
+      .range-field ::ng-deep .mat-form-field-outline {
+        background: #fafbfc !important;
+        border-radius: 8px !important;
+      }
+      .range-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #475569;
+      }
+      .range-info mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #667eea;
+      }
+      .dialog-header.card-print .range-info mat-icon {
+        color: #f59e0b;
+      }
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #eef2f6;
+      }
+      .dialog-actions button {
+        min-width: 100px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s;
+      }
+      .cancel-btn {
+        color: #64748b !important;
+      }
+      .cancel-btn:hover {
+        background: #f1f5f9 !important;
+      }
+      .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #667eea 0%,
+          #764ba2 100%
+        ) !important;
+        color: white !important;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+      }
+      .confirm-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+      }
+      .confirm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+      .dialog-header.card-print .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #f59e0b 0%,
+          #d97706 100%
+        ) !important;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+      }
+      .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+      }
+      @media (max-width: 600px) {
+        .dialog-container {
+          min-width: 320px;
+          max-width: 95vw;
+        }
+        .dialog-header {
+          padding: 16px 20px;
+          flex-wrap: wrap;
+        }
+        .header-icon {
+          width: 40px;
+          height: 40px;
+        }
+        .header-icon mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
+        }
+        .dialog-header h2 {
+          font-size: 17px;
+        }
+        .dialog-body {
+          padding: 16px;
+        }
+        .info-section {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding: 12px;
+        }
+        .info-row:last-child {
+          grid-column: span 2;
+        }
+        .info-value {
+          font-size: 17px;
+        }
+        .range-inputs {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .dialog-actions {
+          flex-direction: column-reverse;
+          padding: 12px 16px;
+          gap: 8px;
+        }
+        .dialog-actions button {
+          width: 100%;
+          min-width: unset;
+        }
+        .close-btn {
+          position: relative;
+          left: auto;
+          top: auto;
+          transform: none;
+        }
+        .close-btn:hover {
+          transform: rotate(90deg);
+        }
+      }
+      @media (max-width: 400px) {
+        .dialog-container {
+          min-width: 280px;
+        }
+        .info-section {
+          grid-template-columns: 1fr;
+        }
+        .info-row:last-child {
+          grid-column: span 1;
+        }
+        .option-btn {
+          font-size: 13px;
+          padding: 10px 14px;
+        }
+        .option-btn mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    `,
+  ],
 })
 export class PaymentExportPageSelectDialogComponent {
   selectedOption: 'all' | 'current' | 'range' = 'all';
   startPage: number = 1;
   endPage: number = 1;
   isCardPrint: boolean = false;
-  
+
   constructor(
     private dialogRef: MatDialogRef<PaymentExportPageSelectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { 
-      totalPages: number; 
-      totalItems: number; 
-      pageSize: number; 
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      totalPages: number;
+      totalItems: number;
+      pageSize: number;
       currentPage: number;
       isCardPrint?: boolean;
-    }
+    },
   ) {
     this.endPage = data.totalPages;
     this.isCardPrint = data.isCardPrint || false;
@@ -252,7 +577,11 @@ export class PaymentExportPageSelectDialogComponent {
 
   isValid(): boolean {
     if (this.selectedOption === 'range') {
-      return this.startPage >= 1 && this.endPage <= this.data.totalPages && this.startPage <= this.endPage;
+      return (
+        this.startPage >= 1 &&
+        this.endPage <= this.data.totalPages &&
+        this.startPage <= this.endPage
+      );
     }
     return true;
   }
@@ -299,45 +628,56 @@ export class PaymentExportPageSelectDialogComponent {
     MatDividerModule,
     MatChipsModule,
     SearchableSelectComponent,
-    PaymentExportPageSelectDialogComponent
+    PaymentExportPageSelectDialogComponent,
   ],
   templateUrl: './enrollment-payment-list.component.html',
-  styleUrls: ['./enrollment-payment-list.component.css']
+  styleUrls: ['./enrollment-payment-list.component.css'],
 })
-export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, OnDestroy {
-  
+export class EnrollmentPaymentListComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   Math = Math;
-  
-  displayedColumns: string[] = ['id', 'trainee', 'course', 'paidAmount', 'remainedValue', 'paymentDate', 'paymentMethod', 'paymentStatus', 'actions'];
+
+  displayedColumns: string[] = [
+    'id',
+    'trainee',
+    'course',
+    'paidAmount',
+    'remainedValue',
+    'paymentDate',
+    'paymentMethod',
+    'paymentStatus',
+    'actions',
+  ];
   dataSource = new MatTableDataSource<any>([]);
   allPayments: any[] = [];
   isLoading = false;
-  
+
   // ========== IMAGE CACHE ==========
   imageUrls: Map<number, string> = new Map();
-  
+
   // ========== PAGINATION ==========
   totalItems: number = 0;
   pageSize: number = 25;
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   currentPage: number = 0;
-  
+
   // ========== SORTING ==========
   sortBy: string = 'CREATION_DATE';
   sortDir: string = 'DESC';
-  
+
   paymentStatuses = PAYMENT_STATUSES;
-  
+
   courses: any[] = [];
   enrollments: any[] = [];
   paymentMethods: any[] = [];
-  
+
   // Options for searchable selects
   courseOptions: SelectOption[] = [];
   enrollmentOptions: SelectOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
   paymentStatusOptions: SelectOption[] = [];
-  
+
   filters = {
     courseId: null as number | null,
     enrollmentId: null as number | null,
@@ -345,9 +685,9 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
     paymentStatus: null as number | null,
     paymentDateFrom: null as string | null,
     paymentDateTo: null as string | null,
-    traineeNationalId: null as string | null
+    traineeNationalId: null as string | null,
   };
-  
+
   quickSearch: string = '';
   barcodeSearch: string = '';
   isBarcodeMode: boolean = false;
@@ -363,7 +703,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
     private reportService: ReportService,
     private fileService: FileService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -375,14 +715,14 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    
+
     if (this.barcodeInput) {
       this.barcodeInput.nativeElement.focus();
     }
   }
 
   ngOnDestroy(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
@@ -439,14 +779,14 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   // ==========================================================================
 
   loadAllImages(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
     });
     this.imageUrls.clear();
 
-    this.allPayments.forEach(payment => {
+    this.allPayments.forEach((payment) => {
       const trainee = payment.enrollment?.trainee;
       if (trainee?.id && trainee?.imageUrl) {
         this.loadImage(trainee.id, trainee.imageUrl);
@@ -474,7 +814,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
         error: () => {
           this.imageUrls.set(traineeId, '');
           this.cdr.detectChanges();
-        }
+        },
       });
     } else {
       this.imageUrls.set(traineeId, imageUrl);
@@ -484,7 +824,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   getImageUrl(traineeId: number): string | null {
     if (!traineeId) return null;
     const url = this.imageUrls.get(traineeId);
-    return url && url.startsWith('blob:') ? url : (url || null);
+    return url && url.startsWith('blob:') ? url : url || null;
   }
 
   // ==========================================================================
@@ -494,7 +834,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   loadSelectOptions(): void {
     this.paymentStatusOptions = [
       { value: null, label: 'الكل' },
-      ...this.paymentStatuses.map(s => ({ value: s.id, label: s.title }))
+      ...this.paymentStatuses.map((s) => ({ value: s.id, label: s.title })),
     ];
   }
 
@@ -504,25 +844,25 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
         this.courses = res.items || [];
         this.courseOptions = [
           { value: null, label: 'الكل' },
-          ...this.courses.map(c => ({ value: c.id, label: c.title }))
+          ...this.courses.map((c) => ({ value: c.id, label: c.title })),
         ];
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل الدورات');
-      }
+      },
     });
 
     this.financialService.getAllPaymentMethodsLookup().subscribe({
-      next: (res: any) => { 
+      next: (res: any) => {
         this.paymentMethods = res.list || [];
         this.paymentMethodOptions = [
           { value: null, label: 'الكل' },
-          ...this.paymentMethods.map(p => ({ value: p.id, label: p.title }))
+          ...this.paymentMethods.map((p) => ({ value: p.id, label: p.title })),
         ];
       },
-      error: () => { 
-        this.notification.showError('حدث خطأ في تحميل طرق الدفع'); 
-      }
+      error: () => {
+        this.notification.showError('حدث خطأ في تحميل طرق الدفع');
+      },
     });
   }
 
@@ -534,18 +874,24 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
     this.isLoading = true;
     const params: any = {
       pageNum: this.currentPage,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
     };
-    
+
     if (this.filters.courseId) params.courseId = this.filters.courseId;
-    if (this.filters.enrollmentId) params.enrollmentId = this.filters.enrollmentId;
-    if (this.filters.paymentMethodId) params.paymentMethodId = this.filters.paymentMethodId;
-    if (this.filters.paymentStatus) params.paymentStatus = this.filters.paymentStatus;
-    if (this.filters.paymentDateFrom) params.paymentDateFrom = this.filters.paymentDateFrom;
-    if (this.filters.paymentDateTo) params.paymentDateTo = this.filters.paymentDateTo;
-    if (this.filters.traineeNationalId) params.traineeNationalId = this.filters.traineeNationalId;
+    if (this.filters.enrollmentId)
+      params.enrollmentId = this.filters.enrollmentId;
+    if (this.filters.paymentMethodId)
+      params.paymentMethodId = this.filters.paymentMethodId;
+    if (this.filters.paymentStatus)
+      params.paymentStatus = this.filters.paymentStatus;
+    if (this.filters.paymentDateFrom)
+      params.paymentDateFrom = this.filters.paymentDateFrom;
+    if (this.filters.paymentDateTo)
+      params.paymentDateTo = this.filters.paymentDateTo;
+    if (this.filters.traineeNationalId)
+      params.traineeNationalId = this.filters.traineeNationalId;
     if (this.quickSearch) params.quickSearch = this.quickSearch;
-    
+
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
 
@@ -555,7 +901,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
         this.totalItems = res.total || 0;
         this.dataSource.data = this.allPayments;
         this.loadAllImages();
-        
+
         const uniqueEnrollments = new Map();
         res.items.forEach((item: any) => {
           if (item.enrollment && !uniqueEnrollments.has(item.enrollment.id)) {
@@ -563,16 +909,16 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
               id: item.enrollment.id,
               title: `${item.enrollment.trainee?.fullName || ''} - ${item.enrollment.course?.title || ''}`,
               traineeFullName: item.enrollment.trainee?.fullName,
-              courseTitle: item.enrollment.course?.title
+              courseTitle: item.enrollment.course?.title,
             });
           }
         });
         this.enrollments = Array.from(uniqueEnrollments.values());
         this.enrollmentOptions = [
           { value: null, label: 'الكل' },
-          ...this.enrollments.map(e => ({ value: e.id, label: e.title }))
+          ...this.enrollments.map((e) => ({ value: e.id, label: e.title })),
         ];
-        
+
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -581,7 +927,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
         this.notification.showError('حدث خطأ في تحميل البيانات');
         this.isLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -643,7 +989,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
       paymentStatus: null,
       paymentDateFrom: null,
       paymentDateTo: null,
-      traineeNationalId: null
+      traineeNationalId: null,
     };
     this.quickSearch = '';
     this.barcodeSearch = '';
@@ -654,14 +1000,16 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   }
 
   hasActiveFilters(): boolean {
-    return !!(this.filters.courseId || 
-              this.filters.enrollmentId || 
-              this.filters.paymentMethodId || 
-              this.filters.paymentStatus || 
-              this.filters.paymentDateFrom || 
-              this.filters.paymentDateTo || 
-              this.filters.traineeNationalId || 
-              this.quickSearch);
+    return !!(
+      this.filters.courseId ||
+      this.filters.enrollmentId ||
+      this.filters.paymentMethodId ||
+      this.filters.paymentStatus ||
+      this.filters.paymentDateFrom ||
+      this.filters.paymentDateTo ||
+      this.filters.traineeNationalId ||
+      this.quickSearch
+    );
   }
 
   getActiveFiltersCount(): number {
@@ -687,12 +1035,12 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
         this.dialog.open(EnrollmentPaymentDetailsModalComponent, {
           data: payment,
           width: '650px',
-          maxWidth: '90vw'
+          maxWidth: '90vw',
         });
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل بيانات الدفعة');
-      }
+      },
     });
   }
 
@@ -700,10 +1048,10 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
     const dialogRef = this.dialog.open(EnrollmentPaymentWizardModalComponent, {
       data: {},
       width: '800px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadData();
       }
@@ -714,10 +1062,10 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
     const dialogRef = this.dialog.open(EnrollmentPaymentWizardModalComponent, {
       data: { paymentId: id },
       width: '800px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadData();
       }
@@ -733,7 +1081,7 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
         },
         error: () => {
           this.notification.showError('حدث خطأ في الحذف');
-        }
+        },
       });
     }
   }
@@ -747,11 +1095,17 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   }
 
   getTotalPaidAmount(): number {
-    return this.allPayments.reduce((sum, payment) => sum + (payment.paidAmount || 0), 0);
+    return this.allPayments.reduce(
+      (sum, payment) => sum + (payment.paidAmount || 0),
+      0,
+    );
   }
 
   getTotalRemainingAmount(): number {
-    return this.allPayments.reduce((sum, payment) => sum + (payment.remainedValue || 0), 0);
+    return this.allPayments.reduce(
+      (sum, payment) => sum + (payment.remainedValue || 0),
+      0,
+    );
   }
 
   getAveragePayment(): number {
@@ -765,73 +1119,97 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
   // ==========================================================================
 
   getPaidCount(): number {
-    return this.allPayments?.filter(p => p.paymentStatus?.id === 2)?.length || 0;
+    return (
+      this.allPayments?.filter((p) => p.paymentStatus?.id === 2)?.length || 0
+    );
   }
 
   getPartialCount(): number {
-    return this.allPayments?.filter(p => p.paymentStatus?.id === 6)?.length || 0;
+    return (
+      this.allPayments?.filter((p) => p.paymentStatus?.id === 6)?.length || 0
+    );
   }
 
   getPendingCount(): number {
-    return this.allPayments?.filter(p => p.paymentStatus?.id === 1)?.length || 0;
+    return (
+      this.allPayments?.filter((p) => p.paymentStatus?.id === 1)?.length || 0
+    );
   }
 
-   // ==========================================================================
+  // ==========================================================================
   // EXPORT FUNCTIONS WITH PAGE SELECTION
   // ==========================================================================
 
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
-      
+
       if (totalPages <= 1) {
         resolve({ option: 'all' });
         return;
       }
 
-      const dialogRef = this.dialog.open(PaymentExportPageSelectDialogComponent, {
-        width: '580px',
-        maxWidth: '95vw',
-        disableClose: true,
-        data: {
-          totalPages: totalPages,
-          totalItems: this.totalItems,
-          pageSize: this.pageSize,
-          currentPage: this.currentPage,
-          isCardPrint: isCardPrint
-        }
-      });
+      const dialogRef = this.dialog.open(
+        PaymentExportPageSelectDialogComponent,
+        {
+          width: '580px',
+          maxWidth: '95vw',
+          disableClose: true,
+          data: {
+            totalPages: totalPages,
+            totalItems: this.totalItems,
+            pageSize: this.pageSize,
+            currentPage: this.currentPage,
+            isCardPrint: isCardPrint,
+          },
+        },
+      );
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         resolve(result);
       });
     });
   }
 
-  private async fetchPagesForExport(startPage: number, endPage: number): Promise<any[]> {
+  private async fetchPagesForExport(
+    startPage: number,
+    endPage: number,
+  ): Promise<any[]> {
     const allData: any[] = [];
     const totalPages = this.getTotalPages();
-    
-    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+
+    for (
+      let page = startPage;
+      page <= Math.min(endPage, totalPages - 1);
+      page++
+    ) {
       const params: any = {
         pageNum: page,
-        pageSize: this.pageSize
+        pageSize: this.pageSize,
       };
-      
+
       if (this.filters.courseId) params.courseId = this.filters.courseId;
-      if (this.filters.enrollmentId) params.enrollmentId = this.filters.enrollmentId;
-      if (this.filters.paymentMethodId) params.paymentMethodId = this.filters.paymentMethodId;
-      if (this.filters.paymentStatus) params.paymentStatus = this.filters.paymentStatus;
-      if (this.filters.paymentDateFrom) params.paymentDateFrom = this.filters.paymentDateFrom;
-      if (this.filters.paymentDateTo) params.paymentDateTo = this.filters.paymentDateTo;
-      if (this.filters.traineeNationalId) params.traineeNationalId = this.filters.traineeNationalId;
+      if (this.filters.enrollmentId)
+        params.enrollmentId = this.filters.enrollmentId;
+      if (this.filters.paymentMethodId)
+        params.paymentMethodId = this.filters.paymentMethodId;
+      if (this.filters.paymentStatus)
+        params.paymentStatus = this.filters.paymentStatus;
+      if (this.filters.paymentDateFrom)
+        params.paymentDateFrom = this.filters.paymentDateFrom;
+      if (this.filters.paymentDateTo)
+        params.paymentDateTo = this.filters.paymentDateTo;
+      if (this.filters.traineeNationalId)
+        params.traineeNationalId = this.filters.traineeNationalId;
       if (this.quickSearch) params.quickSearch = this.quickSearch;
-      
+
       if (this.sortBy) params.orderBy = this.sortBy;
       if (this.sortDir) params.orderDir = this.sortDir;
 
       try {
-        const res = await this.financialService.getAllEnrollmentPaymentsByFilter(params).toPromise();
+        const res = await this.financialService
+          .getAllEnrollmentPaymentsByFilter(params)
+          .toPromise();
         if (res && res.items) {
           allData.push(...res.items);
         }
@@ -851,11 +1229,17 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
     let dataToExport: any[] = [];
 
     if (result.option === 'all') {
-      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+      dataToExport = await this.fetchPagesForExport(
+        0,
+        this.getTotalPages() - 1,
+      );
     } else if (result.option === 'current') {
       dataToExport = this.allPayments;
     } else if (result.option === 'range') {
-      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToExport = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToExport.length === 0) {
@@ -865,90 +1249,116 @@ export class EnrollmentPaymentListComponent implements OnInit, AfterViewInit, On
 
     const exportData = dataToExport.map((item, index) => ({
       '#': index + 1,
-      'المتدرب': item.enrollment?.trainee?.fullName || '-',
-      'الدورة': item.enrollment?.course?.title || '-',
+      المتدرب: item.enrollment?.trainee?.fullName || '-',
+      الدورة: item.enrollment?.course?.title || '-',
       'المبلغ المدفوع': item.paidAmount,
       'المبلغ المتبقي': item.remainedValue,
       'تاريخ الدفع': item.paymentDate,
       'طريقة الدفع': item.paymentMethod?.title || '-',
       'حالة الدفع': item.paymentStatus?.title || '-',
-      'ملاحظات': item.note || '-'
+      ملاحظات: item.note || '-',
     }));
 
-    this.reportService.exportToExcel(exportData, 'enrollment-payments-list', 'مدفوعات التسجيلات');
+    this.reportService.exportToExcel(
+      exportData,
+      'enrollment-payments-list',
+      'مدفوعات التسجيلات',
+    );
     this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
-async exportToPDF(): Promise<void> {
-  const result = await this.showExportPageSelection(false);
-  if (!result) return;
+  async exportToPDF(): Promise<void> {
+    const result = await this.showExportPageSelection(false);
+    if (!result) return;
 
-  this.isLoading = true;
+    this.isLoading = true;
 
-  let dataToPrint: any[] = [];
+    let dataToPrint: any[] = [];
 
-  if (result.option === 'all') {
-    dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-  } else if (result.option === 'current') {
-    dataToPrint = this.allPayments;
-  } else if (result.option === 'range') {
-    dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
-  }
+    if (result.option === 'all') {
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToPrint = this.allPayments;
+    } else if (result.option === 'range') {
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
+    }
 
-  if (dataToPrint.length === 0) {
-    this.notification.showWarning('لا توجد بيانات لتصديرها');
-    this.isLoading = false;
-    return;
-  }
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      this.isLoading = false;
+      return;
+    }
 
-  const filterTexts: string[] = [];
-  if (this.filters.courseId) {
-    const course = this.courses.find(c => c.id === this.filters.courseId);
-    if (course) filterTexts.push(`الدورة: ${course.title}`);
-  }
-  if (this.filters.enrollmentId) {
-    const enrollment = this.enrollments.find(e => e.id === this.filters.enrollmentId);
-    if (enrollment) filterTexts.push(`التسجيل: ${enrollment.title}`);
-  }
-  if (this.filters.paymentMethodId) {
-    const paymentMethod = this.paymentMethods.find(p => p.id === this.filters.paymentMethodId);
-    if (paymentMethod) filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
-  }
-  if (this.filters.paymentStatus) {
-    const status = this.paymentStatuses.find(s => s.id === this.filters.paymentStatus);
-    if (status) filterTexts.push(`حالة الدفع: ${status.title}`);
-  }
-  if (this.filters.paymentDateFrom) filterTexts.push(`من تاريخ: ${this.filters.paymentDateFrom}`);
-  if (this.filters.paymentDateTo) filterTexts.push(`إلى تاريخ: ${this.filters.paymentDateTo}`);
-  if (this.filters.traineeNationalId) filterTexts.push(`رقم الهوية: ${this.filters.traineeNationalId}`);
-  if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
+    const filterTexts: string[] = [];
+    if (this.filters.courseId) {
+      const course = this.courses.find((c) => c.id === this.filters.courseId);
+      if (course) filterTexts.push(`الدورة: ${course.title}`);
+    }
+    if (this.filters.enrollmentId) {
+      const enrollment = this.enrollments.find(
+        (e) => e.id === this.filters.enrollmentId,
+      );
+      if (enrollment) filterTexts.push(`التسجيل: ${enrollment.title}`);
+    }
+    if (this.filters.paymentMethodId) {
+      const paymentMethod = this.paymentMethods.find(
+        (p) => p.id === this.filters.paymentMethodId,
+      );
+      if (paymentMethod)
+        filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
+    }
+    if (this.filters.paymentStatus) {
+      const status = this.paymentStatuses.find(
+        (s) => s.id === this.filters.paymentStatus,
+      );
+      if (status) filterTexts.push(`حالة الدفع: ${status.title}`);
+    }
+    if (this.filters.paymentDateFrom)
+      filterTexts.push(`من تاريخ: ${this.filters.paymentDateFrom}`);
+    if (this.filters.paymentDateTo)
+      filterTexts.push(`إلى تاريخ: ${this.filters.paymentDateTo}`);
+    if (this.filters.traineeNationalId)
+      filterTexts.push(`رقم الهوية: ${this.filters.traineeNationalId}`);
+    if (this.quickSearch) filterTexts.push(`بحث: ${this.quickSearch}`);
 
-  // Calculate totals
-  const totalPayments = dataToPrint.length;
-  const totalPaidAmount = dataToPrint.reduce((sum, p) => sum + (p.paidAmount || 0), 0);
-  const totalRemainingAmount = dataToPrint.reduce((sum, p) => sum + (p.remainedValue || 0), 0);
-  const averagePayment = totalPayments > 0 ? totalPaidAmount / totalPayments : 0;
+    // Calculate totals
+    const totalPayments = dataToPrint.length;
+    const totalPaidAmount = dataToPrint.reduce(
+      (sum, p) => sum + (p.paidAmount || 0),
+      0,
+    );
+    const totalRemainingAmount = dataToPrint.reduce(
+      (sum, p) => sum + (p.remainedValue || 0),
+      0,
+    );
+    const averagePayment =
+      totalPayments > 0 ? totalPaidAmount / totalPayments : 0;
 
-  // Split data into pages
-  const rowsPerPage = 20;
-  const pages: any[][] = [];
-  for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
-    pages.push(dataToPrint.slice(i, i + rowsPerPage));
-  }
+    // Split data into pages
+    const rowsPerPage = 20;
+    const pages: any[][] = [];
+    for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
+      pages.push(dataToPrint.slice(i, i + rowsPerPage));
+    }
 
-  // Read the SVG file content and embed it directly
-  const svgContent = await this.getSvgContent();
-  
-  let allPagesHTML = '';
+    // Read the SVG file content and embed it directly
+    const svgContent = await this.getSvgContent();
 
-  pages.forEach((pageData: any[], pageIndex: number) => {
-    let tableRows = '';
-    pageData.forEach((item: any, index: number) => {
-      const globalIndex = (pageIndex * rowsPerPage) + index + 1;
-      const statusColor = this.getPaymentStatusColor(item.paymentStatus?.id);
-      const statusTextColor = this.getPaymentStatusTextColor(item.paymentStatus?.id);
-      
-      tableRows += `
+    let allPagesHTML = '';
+
+    pages.forEach((pageData: any[], pageIndex: number) => {
+      let tableRows = '';
+      pageData.forEach((item: any, index: number) => {
+        const globalIndex = pageIndex * rowsPerPage + index + 1;
+        const statusColor = this.getPaymentStatusColor(item.paymentStatus?.id);
+        const statusTextColor = this.getPaymentStatusTextColor(
+          item.paymentStatus?.id,
+        );
+
+        tableRows += `
         <tr>
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
           <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${item.enrollment?.trainee?.fullName || '-'}</td>
@@ -963,9 +1373,9 @@ async exportToPDF(): Promise<void> {
           <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${item.note || '-'}</td>
         </tr>
       `;
-    });
+      });
 
-    allPagesHTML += `
+      allPagesHTML += `
       <div class="page-container">
         <!-- WATERMARK - Embedded SVG -->
         <div class="watermark-wrapper">
@@ -984,7 +1394,9 @@ async exportToPDF(): Promise<void> {
           
           ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
           
-          ${pageIndex === 0 ? `
+          ${
+            pageIndex === 0
+              ? `
           <div class="totals-grid">
             <div class="total-card total-all">
               <span class="total-icon">📋</span>
@@ -1007,7 +1419,9 @@ async exportToPDF(): Promise<void> {
               <span class="total-label">متوسط الدفعة</span>
             </div>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <table>
             <thead>
@@ -1034,17 +1448,17 @@ async exportToPDF(): Promise<void> {
         </div>
       </div>
     `;
-  });
+    });
 
-  const printContainer = document.createElement('div');
-  printContainer.style.direction = 'rtl';
-  printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-  printContainer.style.padding = '0';
-  printContainer.style.backgroundColor = 'white';
-  printContainer.style.position = 'relative';
-  printContainer.style.width = '100%';
-  
-  printContainer.innerHTML = `
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.position = 'relative';
+    printContainer.style.width = '100%';
+
+    printContainer.innerHTML = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -1421,35 +1835,43 @@ async exportToPDF(): Promise<void> {
     </html>
   `;
 
-  const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
-  if (printWindow) {
-    printWindow.document.write(printContainer.innerHTML);
-    printWindow.document.close();
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
-  } else {
-    document.body.appendChild(printContainer);
-    window.print();
-    setTimeout(() => {
-      if (document.body.contains(printContainer)) {
-        document.body.removeChild(printContainer);
-      }
-    }, 500);
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=1100,height=850,scrollbars=yes',
+    );
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer);
+        }
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
+    }
   }
-}
 
-// Add this helper method to read the SVG file
-private async getSvgContent(): Promise<string> {
-  try {
-    const response = await fetch('assets/images/simpleLogoSvg.svg');
-    const svgText = await response.text();
-    return svgText;
-  } catch (error) {
-    console.error('Error loading SVG:', error);
-    // Fallback SVG if file cannot be loaded
-    return `
+  // Add this helper method to read the SVG file
+  private async getSvgContent(): Promise<string> {
+    try {
+      const response = await fetch('assets/images/mainLogoSvg.svg');
+      const svgText = await response.text();
+      return svgText;
+    } catch (error) {
+      console.error('Error loading SVG:', error);
+      // Fallback SVG if file cannot be loaded
+      return `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
         <circle cx="100" cy="100" r="80" fill="none" stroke="#667eea" stroke-width="2" opacity="0.3"/>
         <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-size="40" font-weight="900" fill="#667eea" opacity="0.25">🏛️</text>
@@ -1457,26 +1879,32 @@ private async getSvgContent(): Promise<string> {
         <text x="50%" y="70%" dominant-baseline="middle" text-anchor="middle" font-size="16" font-weight="700" fill="#667eea" opacity="0.15">الأولمبية</text>
       </svg>
     `;
+    }
   }
-}
 
   // ==========================================================================
   // HELPER METHODS - STATUS COLORS
   // ==========================================================================
 
   getPaymentStatusColor(statusId: number): string {
-    switch(statusId) {
-      case 2: return '#d1fae5';
-      case 1: return '#fef3c7';
-      default: return '#f3f4f6';
+    switch (statusId) {
+      case 2:
+        return '#d1fae5';
+      case 1:
+        return '#fef3c7';
+      default:
+        return '#f3f4f6';
     }
   }
 
   getPaymentStatusTextColor(statusId: number): string {
-    switch(statusId) {
-      case 2: return '#065f46';
-      case 1: return '#92400e';
-      default: return '#374151';
+    switch (statusId) {
+      case 2:
+        return '#065f46';
+      case 1:
+        return '#92400e';
+      default:
+        return '#374151';
     }
   }
 }

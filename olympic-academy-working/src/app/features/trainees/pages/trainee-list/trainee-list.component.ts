@@ -1,6 +1,12 @@
 // trainee-list.component.ts - COMPLETE WITH ENHANCED DIALOG AND PRINT CARDS PAGE SELECTION
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  Inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,7 +20,12 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { RouterLink } from '@angular/router';
 
@@ -22,7 +33,10 @@ import { TraineeService } from '../../../../core/services/trainee.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { FileService } from '../../../../core/services/file.service';
-import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import {
+  SearchableSelectComponent,
+  SelectOption,
+} from '../../../../shared/components/searchable-select/searchable-select.component';
 import { GENDERS } from '../../../../core/models/common.model';
 import { TraineeDetailsModalComponent } from '../trainee-details/trainee-details-modal.component';
 import { TraineeWizardModalComponent } from '../trainee-wizard/trainee-wizard-modal.component';
@@ -44,7 +58,7 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatDividerModule
+    MatDividerModule,
   ],
   template: `
     <div class="dialog-container" dir="rtl">
@@ -54,15 +68,21 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
         </div>
         <div>
           <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
-          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
+          <p>
+            {{
+              isCardPrint
+                ? 'اختر الصفحات التي تريد طباعة بطاقاتها'
+                : 'اختر الصفحات التي تريد تصديرها'
+            }}
+          </p>
         </div>
         <button mat-icon-button (click)="close()" class="close-btn">
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-body">
         <div class="info-section">
           <div class="info-row">
@@ -81,37 +101,44 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
 
         <div class="selection-section">
           <div class="selection-options">
-            <button 
-              mat-raised-button 
+            <button
+              mat-raised-button
               [color]="selectedOption === 'all' ? 'primary' : 'default'"
               (click)="selectedOption = 'all'"
               class="option-btn"
-              [class.selected]="selectedOption === 'all'">
+              [class.selected]="selectedOption === 'all'"
+            >
               <mat-icon>description</mat-icon>
               <span>جميع الصفحات ({{ data.totalPages }})</span>
               <span class="check-icon" *ngIf="selectedOption === 'all'">✓</span>
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'current' ? 'primary' : 'default'"
               (click)="selectedOption = 'current'"
               class="option-btn"
-              [class.selected]="selectedOption === 'current'">
+              [class.selected]="selectedOption === 'current'"
+            >
               <mat-icon>description</mat-icon>
               <span>الصفحة الحالية فقط ({{ data.currentPage + 1 }})</span>
-              <span class="check-icon" *ngIf="selectedOption === 'current'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'current'"
+                >✓</span
+              >
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'range' ? 'primary' : 'default'"
               (click)="selectedOption = 'range'"
               class="option-btn"
-              [class.selected]="selectedOption === 'range'">
+              [class.selected]="selectedOption === 'range'"
+            >
               <mat-icon>description</mat-icon>
               <span>نطاق صفحات محدد</span>
-              <span class="check-icon" *ngIf="selectedOption === 'range'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'range'"
+                >✓</span
+              >
             </button>
           </div>
 
@@ -119,452 +146,475 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
             <div class="range-inputs">
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>من صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="startPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="startPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="1">
-                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
+                  placeholder="1"
+                />
+                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
               </mat-form-field>
-              
+
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>إلى صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="endPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="endPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="{{ data.totalPages }}">
-                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
-                <mat-error *ngIf="startPage > endPage">يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error>
+                  placeholder="{{ data.totalPages }}"
+                />
+                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
+                <mat-error *ngIf="startPage > endPage"
+                  >يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error
+                >
               </mat-form-field>
             </div>
-            
+
             <div class="range-info">
               <mat-icon>info</mat-icon>
-              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+              <span
+                >سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }}
+                {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span
+              >
             </div>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-actions">
         <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
-        <button 
-          mat-raised-button 
-          color="primary" 
+        <button
+          mat-raised-button
+          color="primary"
           (click)="confirm()"
           [disabled]="!isValid()"
-          class="confirm-btn">
+          class="confirm-btn"
+        >
           <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
           <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
         </button>
       </div>
     </div>
   `,
-  styles: [`
-    .dialog-container {
-      min-width: 480px;
-      max-width: 580px;
-      background: white;
-      border-radius: 24px;
-      overflow: hidden;
-      direction: rtl;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-    }
-
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      position: relative;
-    }
-
-    .dialog-header.card-print {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
-
-    .header-icon {
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      backdrop-filter: blur(4px);
-    }
-
-    .header-icon.card-print {
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    .header-icon mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .dialog-header h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .dialog-header p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      opacity: 0.9;
-    }
-
-    .close-btn {
-      color: white !important;
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.15) !important;
-      transition: all 0.3s;
-    }
-
-    .close-btn:hover {
-      background: rgba(255, 255, 255, 0.3) !important;
-      transform: translateY(-50%) rotate(90deg);
-    }
-
-    .dialog-body {
-      padding: 24px;
-      background: #fafbfc;
-    }
-
-    .info-section {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1px solid #eef2f6;
-    }
-
-    .info-row {
-      text-align: center;
-      padding: 4px 0;
-    }
-
-    .info-label {
-      display: block;
-      font-size: 11px;
-      color: #94a3b8;
-      margin-bottom: 4px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .info-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .info-value:last-child {
-      color: #667eea;
-    }
-
-    .dialog-header.card-print .info-value:last-child {
-      color: #f59e0b;
-    }
-
-    .selection-section {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .selection-options {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .option-btn {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 12px 20px;
-      height: auto;
-      border: 2px solid #e5e7eb;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 12px;
-      background: white;
-      position: relative;
-      font-weight: 500;
-    }
-
-    .option-btn mat-icon {
-      margin-left: 12px;
-      color: #94a3b8;
-      transition: color 0.3s;
-    }
-
-    .option-btn.selected {
-      border-color: #667eea;
-      background: #eff6ff !important;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    }
-
-    .option-btn.selected mat-icon {
-      color: #667eea;
-    }
-
-    .dialog-header.card-print .option-btn.selected {
-      border-color: #f59e0b;
-      background: #fffbeb !important;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-    }
-
-    .dialog-header.card-print .option-btn.selected mat-icon {
-      color: #f59e0b;
-    }
-
-    .option-btn:hover:not(.selected) {
-      border-color: #cbd5e1;
-      background: #f8fafc;
-      transform: translateY(-1px);
-    }
-
-    .check-icon {
-      margin-right: auto;
-      color: #667eea;
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .dialog-header.card-print .check-icon {
-      color: #f59e0b;
-    }
-
-    .range-section {
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .range-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .range-field {
-      width: 100%;
-    }
-
-    .range-field ::ng-deep .mat-form-field-outline {
-      background: #fafbfc !important;
-      border-radius: 8px !important;
-    }
-
-    .range-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding: 10px 14px;
-      background: #f1f5f9;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #475569;
-    }
-
-    .range-info mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: #667eea;
-    }
-
-    .dialog-header.card-print .range-info mat-icon {
-      color: #f59e0b;
-    }
-
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 16px 24px;
-      background: white;
-      border-top: 1px solid #eef2f6;
-    }
-
-    .dialog-actions button {
-      min-width: 100px;
-      font-weight: 600;
-      border-radius: 10px;
-      transition: all 0.3s;
-    }
-
-    .cancel-btn {
-      color: #64748b !important;
-    }
-
-    .cancel-btn:hover {
-      background: #f1f5f9 !important;
-    }
-
-    .confirm-btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      color: white !important;
-      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
-    }
-
-    .confirm-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
-    }
-
-    .confirm-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    .dialog-header.card-print .confirm-btn {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
-    }
-
-    .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
-      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
-    }
-
-    @media (max-width: 600px) {
+  styles: [
+    `
       .dialog-container {
-        min-width: 320px;
-        max-width: 95vw;
+        min-width: 480px;
+        max-width: 580px;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        direction: rtl;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
       }
 
       .dialog-header {
-        padding: 16px 20px;
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+      }
+
+      .dialog-header.card-print {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       }
 
       .header-icon {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        backdrop-filter: blur(4px);
+      }
+
+      .header-icon.card-print {
+        background: rgba(255, 255, 255, 0.25);
       }
 
       .header-icon mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
       }
 
       .dialog-header h2 {
-        font-size: 17px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
       }
 
-      .dialog-body {
-        padding: 16px;
-      }
-
-      .info-section {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 12px;
-      }
-
-      .info-row:last-child {
-        grid-column: span 2;
-      }
-
-      .info-value {
-        font-size: 17px;
-      }
-
-      .range-inputs {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-
-      .dialog-actions {
-        flex-direction: column-reverse;
-        padding: 12px 16px;
-        gap: 8px;
-      }
-
-      .dialog-actions button {
-        width: 100%;
-        min-width: unset;
+      .dialog-header p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.9;
       }
 
       .close-btn {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
+        color: white !important;
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.15) !important;
+        transition: all 0.3s;
       }
 
       .close-btn:hover {
-        transform: rotate(90deg);
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-50%) rotate(90deg);
       }
-    }
 
-    @media (max-width: 400px) {
-      .dialog-container {
-        min-width: 280px;
+      .dialog-body {
+        padding: 24px;
+        background: #fafbfc;
       }
 
       .info-section {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid #eef2f6;
       }
 
-      .info-row:last-child {
-        grid-column: span 1;
+      .info-row {
+        text-align: center;
+        padding: 4px 0;
+      }
+
+      .info-label {
+        display: block;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .info-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .info-value:last-child {
+        color: #667eea;
+      }
+
+      .dialog-header.card-print .info-value:last-child {
+        color: #f59e0b;
+      }
+
+      .selection-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .selection-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       .option-btn {
-        font-size: 13px;
-        padding: 10px 14px;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 20px;
+        height: auto;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        background: white;
+        position: relative;
+        font-weight: 500;
       }
 
       .option-btn mat-icon {
+        margin-left: 12px;
+        color: #94a3b8;
+        transition: color 0.3s;
+      }
+
+      .option-btn.selected {
+        border-color: #667eea;
+        background: #eff6ff !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      }
+
+      .option-btn.selected mat-icon {
+        color: #667eea;
+      }
+
+      .dialog-header.card-print .option-btn.selected {
+        border-color: #f59e0b;
+        background: #fffbeb !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      }
+
+      .dialog-header.card-print .option-btn.selected mat-icon {
+        color: #f59e0b;
+      }
+
+      .option-btn:hover:not(.selected) {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        transform: translateY(-1px);
+      }
+
+      .check-icon {
+        margin-right: auto;
+        color: #667eea;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .dialog-header.card-print .check-icon {
+        color: #f59e0b;
+      }
+
+      .range-section {
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      .range-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .range-field {
+        width: 100%;
+      }
+
+      .range-field ::ng-deep .mat-form-field-outline {
+        background: #fafbfc !important;
+        border-radius: 8px !important;
+      }
+
+      .range-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #475569;
+      }
+
+      .range-info mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
+        color: #667eea;
       }
-    }
-  `]
+
+      .dialog-header.card-print .range-info mat-icon {
+        color: #f59e0b;
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #eef2f6;
+      }
+
+      .dialog-actions button {
+        min-width: 100px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s;
+      }
+
+      .cancel-btn {
+        color: #64748b !important;
+      }
+
+      .cancel-btn:hover {
+        background: #f1f5f9 !important;
+      }
+
+      .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #667eea 0%,
+          #764ba2 100%
+        ) !important;
+        color: white !important;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+      }
+
+      .confirm-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+      }
+
+      .confirm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      .dialog-header.card-print .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #f59e0b 0%,
+          #d97706 100%
+        ) !important;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+      }
+
+      .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+      }
+
+      @media (max-width: 600px) {
+        .dialog-container {
+          min-width: 320px;
+          max-width: 95vw;
+        }
+
+        .dialog-header {
+          padding: 16px 20px;
+          flex-wrap: wrap;
+        }
+
+        .header-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .header-icon mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
+        }
+
+        .dialog-header h2 {
+          font-size: 17px;
+        }
+
+        .dialog-body {
+          padding: 16px;
+        }
+
+        .info-section {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding: 12px;
+        }
+
+        .info-row:last-child {
+          grid-column: span 2;
+        }
+
+        .info-value {
+          font-size: 17px;
+        }
+
+        .range-inputs {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .dialog-actions {
+          flex-direction: column-reverse;
+          padding: 12px 16px;
+          gap: 8px;
+        }
+
+        .dialog-actions button {
+          width: 100%;
+          min-width: unset;
+        }
+
+        .close-btn {
+          position: relative;
+          left: auto;
+          top: auto;
+          transform: none;
+        }
+
+        .close-btn:hover {
+          transform: rotate(90deg);
+        }
+      }
+
+      @media (max-width: 400px) {
+        .dialog-container {
+          min-width: 280px;
+        }
+
+        .info-section {
+          grid-template-columns: 1fr;
+        }
+
+        .info-row:last-child {
+          grid-column: span 1;
+        }
+
+        .option-btn {
+          font-size: 13px;
+          padding: 10px 14px;
+        }
+
+        .option-btn mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    `,
+  ],
 })
 export class ExportPageSelectDialogComponent {
   selectedOption: 'all' | 'current' | 'range' = 'all';
   startPage: number = 1;
   endPage: number = 1;
   isCardPrint: boolean = false;
-  
+
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { 
-      totalPages: number; 
-      totalItems: number; 
-      pageSize: number; 
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      totalPages: number;
+      totalItems: number;
+      pageSize: number;
       currentPage: number;
       isCardPrint?: boolean;
-    }
+    },
   ) {
     this.endPage = data.totalPages;
     this.isCardPrint = data.isCardPrint || false;
@@ -584,21 +634,23 @@ export class ExportPageSelectDialogComponent {
 
   isValid(): boolean {
     if (this.selectedOption === 'range') {
-      return this.startPage >= 1 && 
-             this.endPage <= this.data.totalPages && 
-             this.startPage <= this.endPage;
+      return (
+        this.startPage >= 1 &&
+        this.endPage <= this.data.totalPages &&
+        this.startPage <= this.endPage
+      );
     }
     return true;
   }
 
   confirm(): void {
     let result: any = { option: this.selectedOption };
-    
+
     if (this.selectedOption === 'range') {
       result.startPage = this.startPage - 1; // Convert to 0-based index
       result.endPage = this.endPage - 1;
     }
-    
+
     this.dialogRef.close(result);
   }
 
@@ -631,46 +683,55 @@ export class ExportPageSelectDialogComponent {
     MatDialogModule,
     MatDividerModule,
     RouterLink,
-    SearchableSelectComponent
+    SearchableSelectComponent,
   ],
   templateUrl: './trainee-list.component.html',
-  styleUrls: ['./trainee-list.component.css']
+  styleUrls: ['./trainee-list.component.css'],
 })
 export class TraineeListComponent implements OnInit, OnDestroy {
   Math = Math;
-  
-  displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'academicYear', 'gender', 'status', 'actions'];
+
+  displayedColumns: string[] = [
+    'index',
+    'image',
+    'fullName',
+    'nationalId',
+    'academicYear',
+    'gender',
+    'status',
+    'actions',
+  ];
   dataSource = new MatTableDataSource<TraineeListItem>([]);
   allTrainees: TraineeListItem[] = [];
   imageUrls: Map<number, string> = new Map();
   isLoading = false;
-  
+
   // ========== PAGINATION ==========
   totalItems: number = 0;
   pageSize: number = 25;
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   currentPage: number = 0;
-  
+
   // ========== SORTING ==========
   sortBy: string = 'CREATION_DATE';
   sortDir: string = 'DESC';
-  
+
   // ========== FILTERS ==========
   searchText = '';
   genderFilter: string | null = null;
   statusFilter: boolean | null = null;
   academicYearFilter: string | null = null;
-  
+
   // Options for selects
   genderOptions: SelectOption[] = [];
   statusOptions: SelectOption[] = [];
-  
-  get activeCount(): number { 
-    return this.allTrainees.filter(t => t.isActive).length; 
+
+  get activeCount(): number {
+    return this.allTrainees.filter((t) => t.isActive).length;
   }
-  
-  get inactiveCount(): number { 
-    return this.allTrainees.filter(t => !t.isActive).length; 
+
+  get inactiveCount(): number {
+    return this.allTrainees.filter((t) => !t.isActive).length;
   }
 
   constructor(
@@ -679,7 +740,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     private notification: NotificationService,
     private dialog: MatDialog,
     private fileService: FileService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -688,7 +749,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
@@ -699,23 +760,23 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   loadSelectOptions(): void {
     this.genderOptions = [
       { value: null, label: 'الكل' },
-      ...GENDERS.map(g => ({ 
-        value: this.getGenderEnumName(g.id), 
-        label: g.title 
-      }))
+      ...GENDERS.map((g) => ({
+        value: this.getGenderEnumName(g.id),
+        label: g.title,
+      })),
     ];
 
     this.statusOptions = [
       { value: null, label: 'الكل' },
       { value: true, label: 'نشط' },
-      { value: false, label: 'غير نشط' }
+      { value: false, label: 'غير نشط' },
     ];
   }
 
   private getGenderEnumName(id: number): string {
     const genderMap: { [key: number]: string } = {
       1: 'MALE',
-      2: 'FEMALE'
+      2: 'FEMALE',
     };
     return genderMap[id] || '';
   }
@@ -779,20 +840,20 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     console.log('🔄 loadTrainees() called');
     console.log(`  Current Page: ${this.currentPage}`);
     console.log(`  Page Size: ${this.pageSize}`);
-    
+
     this.isLoading = true;
     const params: any = {};
-    
+
     if (this.searchText) params.quickSearch = this.searchText;
     if (this.genderFilter) params.gender = this.genderFilter;
     if (this.statusFilter !== null) params.isActive = this.statusFilter;
     if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
       params.academicYear = this.academicYearFilter.trim();
     }
-    
+
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
-    
+
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
 
@@ -803,7 +864,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         console.log('✅ Response received:', res);
         console.log(`  Items: ${res.items?.length || 0}`);
         console.log(`  Total: ${res.total || 0}`);
-        
+
         this.allTrainees = res.items || [];
         this.totalItems = res.total || 0;
         this.loadAllImages();
@@ -816,19 +877,19 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         this.notification.showError('حدث خطأ في تحميل المتدربين');
         this.isLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   loadAllImages(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
     });
     this.imageUrls.clear();
 
-    this.allTrainees.forEach(trainee => {
+    this.allTrainees.forEach((trainee) => {
       this.loadImage(trainee);
     });
   }
@@ -849,11 +910,14 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             this.cdr.detectChanges();
           },
           error: (error) => {
-            console.error(`Failed to load image for trainee ${trainee.id}:`, error);
+            console.error(
+              `Failed to load image for trainee ${trainee.id}:`,
+              error,
+            );
             this.imageUrls.set(trainee.id, '');
             this.dataSource.data = [...this.dataSource.data];
             this.cdr.detectChanges();
-          }
+          },
         });
       } else {
         this.imageUrls.set(trainee.id, fid);
@@ -937,42 +1001,42 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         this.dialog.open(TraineeDetailsModalComponent, {
           data: trainee,
           width: '700px',
-          maxWidth: '90vw'
+          maxWidth: '90vw',
         });
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
-      }
+      },
     });
   }
-  
+
   editTrainee(id: number): void {
-    const trainee = this.allTrainees.find(t => t.id === id);
-    
+    const trainee = this.allTrainees.find((t) => t.id === id);
+
     const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
-      data: { 
+      data: {
         traineeId: id,
-        traineeData: trainee
+        traineeData: trainee,
       },
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadTrainees();
       }
     });
   }
-  
+
   openNewTraineeModal(): void {
     const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
       data: {},
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadTrainees();
       }
@@ -986,7 +1050,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
           this.notification.showSuccess('تم حذف المتدرب بنجاح');
           this.loadTrainees();
         },
-        error: () => this.notification.showError('حدث خطأ في الحذف')
+        error: () => this.notification.showError('حدث خطأ في الحذف'),
       });
     }
   }
@@ -998,7 +1062,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
-      
+
       if (totalPages <= 1) {
         // If only one page, export directly
         resolve({ option: 'all' });
@@ -1014,39 +1078,48 @@ export class TraineeListComponent implements OnInit, OnDestroy {
           totalItems: this.totalItems,
           pageSize: this.pageSize,
           currentPage: this.currentPage,
-          isCardPrint: isCardPrint
-        }
+          isCardPrint: isCardPrint,
+        },
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         resolve(result);
       });
     });
   }
 
-  private async fetchPagesForExport(startPage: number, endPage: number): Promise<TraineeListItem[]> {
+  private async fetchPagesForExport(
+    startPage: number,
+    endPage: number,
+  ): Promise<TraineeListItem[]> {
     const allData: TraineeListItem[] = [];
     const totalPages = this.getTotalPages();
-    
+
     // If exporting all pages or range, fetch each page
-    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+    for (
+      let page = startPage;
+      page <= Math.min(endPage, totalPages - 1);
+      page++
+    ) {
       const params: any = {};
-      
+
       if (this.searchText) params.quickSearch = this.searchText;
       if (this.genderFilter) params.gender = this.genderFilter;
       if (this.statusFilter !== null) params.isActive = this.statusFilter;
       if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
         params.academicYear = this.academicYearFilter.trim();
       }
-      
+
       params.pageNum = page;
       params.pageSize = this.pageSize;
-      
+
       if (this.sortBy) params.orderBy = this.sortBy;
       if (this.sortDir) params.orderDir = this.sortDir;
-      
+
       try {
-        const res = await this.traineeService.getAllTraineesByFilter(params).toPromise();
+        const res = await this.traineeService
+          .getAllTraineesByFilter(params)
+          .toPromise();
         if (res && res.items) {
           allData.push(...res.items);
         }
@@ -1055,13 +1128,13 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
       }
     }
-    
+
     return allData;
   }
 
   async exportToExcel(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return; // User cancelled
     }
@@ -1070,13 +1143,19 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     if (result.option === 'all') {
       // Get all pages
-      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+      dataToExport = await this.fetchPagesForExport(
+        0,
+        this.getTotalPages() - 1,
+      );
     } else if (result.option === 'current') {
       // Use current page data
       dataToExport = this.allTrainees;
     } else if (result.option === 'range') {
       // Get specific range
-      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToExport = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToExport.length === 0) {
@@ -1086,20 +1165,20 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     const exportData = dataToExport.map((t: TraineeListItem, i: number) => ({
       '#': i + 1,
-      'الاسم': t.fullName,
+      الاسم: t.fullName,
       'رقم الهوية': t.nationalId,
       'السنة الدراسية': this.getAcademicYearDisplay(t.academicYear),
-      'الجنس': t.gender?.title || '-',
-      'الحالة': t.isActive ? 'نشط' : 'غير نشط'
+      الجنس: t.gender?.title || '-',
+      الحالة: t.isActive ? 'نشط' : 'غير نشط',
     }));
-    
+
     this.reportService.exportToExcel(exportData, 'trainees-list', 'المتدربين');
     this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
   async exportToPDF(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return; // User cancelled
     }
@@ -1113,7 +1192,10 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     } else if (result.option === 'current') {
       dataToPrint = this.allTrainees;
     } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToPrint.length === 0) {
@@ -1124,7 +1206,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     const filterTexts: string[] = [];
     if (this.genderFilter) {
-      const gender = GENDERS.find(g => this.getGenderEnumName(g.id) === this.genderFilter);
+      const gender = GENDERS.find(
+        (g) => this.getGenderEnumName(g.id) === this.genderFilter,
+      );
       if (gender) filterTexts.push(`الجنس: ${gender.title}`);
     }
     if (this.statusFilter !== null) {
@@ -1137,10 +1221,14 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     // Calculate totals
     const totalTrainees = dataToPrint.length;
-    const totalActive = dataToPrint.filter(t => t.isActive).length;
-    const totalInactive = dataToPrint.filter(t => !t.isActive).length;
-    const totalMale = dataToPrint.filter(t => t.gender?.title === 'ذكر').length;
-    const totalFemale = dataToPrint.filter(t => t.gender?.title === 'أنثى' || t.gender?.title === 'انثي').length;
+    const totalActive = dataToPrint.filter((t) => t.isActive).length;
+    const totalInactive = dataToPrint.filter((t) => !t.isActive).length;
+    const totalMale = dataToPrint.filter(
+      (t) => t.gender?.title === 'ذكر',
+    ).length;
+    const totalFemale = dataToPrint.filter(
+      (t) => t.gender?.title === 'أنثى' || t.gender?.title === 'انثي',
+    ).length;
 
     // Split data into pages
     const rowsPerPage = 20;
@@ -1154,15 +1242,16 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     pages.forEach((pageData: TraineeListItem[], pageIndex: number) => {
       let tableRows = '';
       pageData.forEach((t: TraineeListItem, index: number) => {
-        const globalIndex = (pageIndex * rowsPerPage) + index + 1;
-        const statusStyle = t.isActive 
-          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;' 
+        const globalIndex = pageIndex * rowsPerPage + index + 1;
+        const statusStyle = t.isActive
+          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
           : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-        
-        const genderStyle = t.gender?.title === 'ذكر'
-          ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
-          : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-        
+
+        const genderStyle =
+          t.gender?.title === 'ذكر'
+            ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+            : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
         tableRows += `
           <tr>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
@@ -1187,7 +1276,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             
             ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
             
-            ${pageIndex === 0 ? `
+            ${
+              pageIndex === 0
+                ? `
             <div class="totals-grid">
               <div class="total-card total-all">
                 <span class="total-icon">👥</span>
@@ -1215,7 +1306,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
                 <span class="total-label">إناث</span>
               </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
             <table>
               <thead>
@@ -1248,10 +1341,10 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     printContainer.style.backgroundColor = 'white';
     printContainer.style.position = 'relative';
     printContainer.style.width = '100%';
-    
+
     // Get the logo as base64 for reliable printing
-    const logoPath = 'assets/images/simpleLogoSvg.svg';
-    
+    const logoPath = 'assets/images/mainLogoSvg.svg';
+
     printContainer.innerHTML = `
       <!DOCTYPE html>
       <html>
@@ -1659,12 +1752,18 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       </html>
     `;
 
-    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=1100,height=850,scrollbars=yes',
+    );
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
       printWindow.document.close();
       this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
     } else {
       document.body.appendChild(printContainer);
       window.print();
@@ -1674,7 +1773,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         }
       }, 500);
       this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
     }
   }
 
@@ -1684,7 +1785,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
   async printTraineeCards(): Promise<void> {
     const result = await this.showExportPageSelection(true);
-    
+
     if (!result) {
       return; // User cancelled
     }
@@ -1701,7 +1802,10 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       dataToPrint = this.allTrainees;
     } else if (result.option === 'range') {
       // Get specific range
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToPrint.length === 0) {
@@ -1722,7 +1826,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             },
             error: () => {
               resolve('');
-            }
+            },
           });
         } else if (fid) {
           resolve(fid);
@@ -1742,8 +1846,15 @@ export class TraineeListComponent implements OnInit, OnDestroy {
    * Generate optimized card printing view for trainees
    * Follows the same style as enrollment card printing
    */
-  private generateCardsPrintOptimized(trainees: TraineeListItem[], imageUrls: string[]): void {
-    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+  private generateCardsPrintOptimized(
+    trainees: TraineeListItem[],
+    imageUrls: string[],
+  ): void {
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=800,height=800,scrollbars=yes',
+    );
     if (!printWindow) {
       this.notification.showError('تعذر فتح نافذة الطباعة');
       return;
@@ -1751,14 +1862,16 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     const today = new Date().toLocaleDateString('ar-EG');
     let cardsHtml = '';
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
     trainees.forEach((trainee, index) => {
       const imageUrl = imageUrls[index] || '';
       const traineeName = trainee.fullName || '-';
       const nationalId = trainee.nationalId || '-';
       const genderDisplay = trainee.gender?.title || '-';
-      const academicYearDisplay = this.getAcademicYearDisplay(trainee.academicYear);
+      const academicYearDisplay = this.getAcademicYearDisplay(
+        trainee.academicYear,
+      );
       const isActive = trainee.isActive;
 
       cardsHtml += `
@@ -2210,7 +2323,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         <script>
           window.onload = function() {
             setTimeout(function() {
-              const trainees = ${JSON.stringify(trainees.map(t => t.nationalId || t.id))};
+              const trainees = ${JSON.stringify(trainees.map((t) => t.nationalId || t.id))};
               trainees.forEach(function(id, index) {
                 try {
                   JsBarcode('#barcode-' + index, String(id || '000000'), {

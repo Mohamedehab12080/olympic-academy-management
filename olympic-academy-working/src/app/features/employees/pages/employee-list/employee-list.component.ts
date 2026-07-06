@@ -1,4 +1,12 @@
-import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  Inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -16,14 +24,22 @@ import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { FileService } from '../../../../core/services/file.service';
-import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import {
+  SearchableSelectComponent,
+  SelectOption,
+} from '../../../../shared/components/searchable-select/searchable-select.component';
 import { EMPLOYEE_TYPES } from '../../../../core/models/employee.model';
 import { EmployeeDetailsModalComponent } from '../employee-details/employee-details-modal.component';
 import { EmployeeWizardModalComponent } from '../employee-form/employee-wizard-modal.component';
@@ -45,7 +61,7 @@ import { ErrorVTO } from '../../../../core/models/common.model';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatDividerModule
+    MatDividerModule,
   ],
   template: `
     <div class="dialog-container" dir="rtl">
@@ -55,15 +71,21 @@ import { ErrorVTO } from '../../../../core/models/common.model';
         </div>
         <div>
           <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
-          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
+          <p>
+            {{
+              isCardPrint
+                ? 'اختر الصفحات التي تريد طباعة بطاقاتها'
+                : 'اختر الصفحات التي تريد تصديرها'
+            }}
+          </p>
         </div>
         <button mat-icon-button (click)="close()" class="close-btn">
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-body">
         <div class="info-section">
           <div class="info-row">
@@ -82,37 +104,44 @@ import { ErrorVTO } from '../../../../core/models/common.model';
 
         <div class="selection-section">
           <div class="selection-options">
-            <button 
-              mat-raised-button 
+            <button
+              mat-raised-button
               [color]="selectedOption === 'all' ? 'primary' : 'default'"
               (click)="selectedOption = 'all'"
               class="option-btn"
-              [class.selected]="selectedOption === 'all'">
+              [class.selected]="selectedOption === 'all'"
+            >
               <mat-icon>description</mat-icon>
               <span>جميع الصفحات ({{ data.totalPages }})</span>
               <span class="check-icon" *ngIf="selectedOption === 'all'">✓</span>
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'current' ? 'primary' : 'default'"
               (click)="selectedOption = 'current'"
               class="option-btn"
-              [class.selected]="selectedOption === 'current'">
+              [class.selected]="selectedOption === 'current'"
+            >
               <mat-icon>description</mat-icon>
               <span>الصفحة الحالية فقط ({{ data.currentPage + 1 }})</span>
-              <span class="check-icon" *ngIf="selectedOption === 'current'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'current'"
+                >✓</span
+              >
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'range' ? 'primary' : 'default'"
               (click)="selectedOption = 'range'"
               class="option-btn"
-              [class.selected]="selectedOption === 'range'">
+              [class.selected]="selectedOption === 'range'"
+            >
               <mat-icon>description</mat-icon>
               <span>نطاق صفحات محدد</span>
-              <span class="check-icon" *ngIf="selectedOption === 'range'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'range'"
+                >✓</span
+              >
             </button>
           </div>
 
@@ -120,387 +149,406 @@ import { ErrorVTO } from '../../../../core/models/common.model';
             <div class="range-inputs">
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>من صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="startPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="startPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="1">
-                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
+                  placeholder="1"
+                />
+                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
               </mat-form-field>
-              
+
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>إلى صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="endPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="endPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="{{ data.totalPages }}">
-                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
-                <mat-error *ngIf="startPage > endPage">يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error>
+                  placeholder="{{ data.totalPages }}"
+                />
+                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
+                <mat-error *ngIf="startPage > endPage"
+                  >يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error
+                >
               </mat-form-field>
             </div>
-            
+
             <div class="range-info">
               <mat-icon>info</mat-icon>
-              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+              <span
+                >سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }}
+                {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span
+              >
             </div>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-actions">
         <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
-        <button 
-          mat-raised-button 
-          color="primary" 
+        <button
+          mat-raised-button
+          color="primary"
           (click)="confirm()"
           [disabled]="!isValid()"
-          class="confirm-btn">
+          class="confirm-btn"
+        >
           <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
           <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
         </button>
       </div>
     </div>
   `,
-  styles: [`
-    .dialog-container {
-      min-width: 480px;
-      max-width: 580px;
-      background: white;
-      border-radius: 24px;
-      overflow: hidden;
-      direction: rtl;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-    }
-
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-      position: relative;
-    }
-
-    .dialog-header.card-print {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
-
-    .header-icon {
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      backdrop-filter: blur(4px);
-    }
-
-    .header-icon.card-print {
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    .header-icon mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .dialog-header h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .dialog-header p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      opacity: 0.9;
-    }
-
-    .close-btn {
-      color: white !important;
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.15) !important;
-      transition: all 0.3s;
-    }
-
-    .close-btn:hover {
-      background: rgba(255, 255, 255, 0.3) !important;
-      transform: translateY(-50%) rotate(90deg);
-    }
-
-    .dialog-body {
-      padding: 24px;
-      background: #fafbfc;
-    }
-
-    .info-section {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1px solid #eef2f6;
-    }
-
-    .info-row {
-      text-align: center;
-      padding: 4px 0;
-    }
-
-    .info-label {
-      display: block;
-      font-size: 11px;
-      color: #94a3b8;
-      margin-bottom: 4px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .info-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .selection-section {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .selection-options {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .option-btn {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 12px 20px;
-      height: auto;
-      border: 2px solid #e5e7eb;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 12px;
-      background: white;
-      position: relative;
-      font-weight: 500;
-    }
-
-    .option-btn mat-icon {
-      margin-left: 12px;
-      color: #94a3b8;
-      transition: color 0.3s;
-    }
-
-    .option-btn.selected {
-      border-color: #f59e0b;
-      background: #fffbeb !important;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-    }
-
-    .option-btn.selected mat-icon {
-      color: #f59e0b;
-    }
-
-    .option-btn:hover:not(.selected) {
-      border-color: #cbd5e1;
-      background: #f8fafc;
-      transform: translateY(-1px);
-    }
-
-    .check-icon {
-      margin-right: auto;
-      color: #f59e0b;
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .range-section {
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .range-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .range-field {
-      width: 100%;
-    }
-
-    .range-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding: 10px 14px;
-      background: #f1f5f9;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #475569;
-    }
-
-    .range-info mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: #f59e0b;
-    }
-
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 16px 24px;
-      background: white;
-      border-top: 1px solid #eef2f6;
-    }
-
-    .dialog-actions button {
-      min-width: 100px;
-      font-weight: 600;
-      border-radius: 10px;
-      transition: all 0.3s;
-    }
-
-    .cancel-btn {
-      color: #64748b !important;
-    }
-
-    .cancel-btn:hover {
-      background: #f1f5f9 !important;
-    }
-
-    .confirm-btn {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-      color: white !important;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
-    }
-
-    .confirm-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
-    }
-
-    .confirm-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    @media (max-width: 600px) {
+  styles: [
+    `
       .dialog-container {
-        min-width: 320px;
-        max-width: 95vw;
+        min-width: 480px;
+        max-width: 580px;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        direction: rtl;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
       }
 
       .dialog-header {
-        padding: 16px 20px;
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        position: relative;
+      }
+
+      .dialog-header.card-print {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       }
 
       .header-icon {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        backdrop-filter: blur(4px);
+      }
+
+      .header-icon.card-print {
+        background: rgba(255, 255, 255, 0.25);
       }
 
       .header-icon mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
       }
 
       .dialog-header h2 {
-        font-size: 17px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
       }
 
-      .dialog-body {
-        padding: 16px;
-      }
-
-      .info-section {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 12px;
-      }
-
-      .info-row:last-child {
-        grid-column: span 2;
-      }
-
-      .info-value {
-        font-size: 17px;
-      }
-
-      .range-inputs {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-
-      .dialog-actions {
-        flex-direction: column-reverse;
-        padding: 12px 16px;
-        gap: 8px;
-      }
-
-      .dialog-actions button {
-        width: 100%;
-        min-width: unset;
+      .dialog-header p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.9;
       }
 
       .close-btn {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
+        color: white !important;
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.15) !important;
+        transition: all 0.3s;
       }
 
       .close-btn:hover {
-        transform: rotate(90deg);
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-50%) rotate(90deg);
       }
-    }
-  `]
+
+      .dialog-body {
+        padding: 24px;
+        background: #fafbfc;
+      }
+
+      .info-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid #eef2f6;
+      }
+
+      .info-row {
+        text-align: center;
+        padding: 4px 0;
+      }
+
+      .info-label {
+        display: block;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .info-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .selection-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .selection-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .option-btn {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 20px;
+        height: auto;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        background: white;
+        position: relative;
+        font-weight: 500;
+      }
+
+      .option-btn mat-icon {
+        margin-left: 12px;
+        color: #94a3b8;
+        transition: color 0.3s;
+      }
+
+      .option-btn.selected {
+        border-color: #f59e0b;
+        background: #fffbeb !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      }
+
+      .option-btn.selected mat-icon {
+        color: #f59e0b;
+      }
+
+      .option-btn:hover:not(.selected) {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        transform: translateY(-1px);
+      }
+
+      .check-icon {
+        margin-right: auto;
+        color: #f59e0b;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .range-section {
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      .range-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .range-field {
+        width: 100%;
+      }
+
+      .range-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #475569;
+      }
+
+      .range-info mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #f59e0b;
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #eef2f6;
+      }
+
+      .dialog-actions button {
+        min-width: 100px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s;
+      }
+
+      .cancel-btn {
+        color: #64748b !important;
+      }
+
+      .cancel-btn:hover {
+        background: #f1f5f9 !important;
+      }
+
+      .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #f59e0b 0%,
+          #d97706 100%
+        ) !important;
+        color: white !important;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+      }
+
+      .confirm-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+      }
+
+      .confirm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      @media (max-width: 600px) {
+        .dialog-container {
+          min-width: 320px;
+          max-width: 95vw;
+        }
+
+        .dialog-header {
+          padding: 16px 20px;
+          flex-wrap: wrap;
+        }
+
+        .header-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .header-icon mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
+        }
+
+        .dialog-header h2 {
+          font-size: 17px;
+        }
+
+        .dialog-body {
+          padding: 16px;
+        }
+
+        .info-section {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding: 12px;
+        }
+
+        .info-row:last-child {
+          grid-column: span 2;
+        }
+
+        .info-value {
+          font-size: 17px;
+        }
+
+        .range-inputs {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .dialog-actions {
+          flex-direction: column-reverse;
+          padding: 12px 16px;
+          gap: 8px;
+        }
+
+        .dialog-actions button {
+          width: 100%;
+          min-width: unset;
+        }
+
+        .close-btn {
+          position: relative;
+          left: auto;
+          top: auto;
+          transform: none;
+        }
+
+        .close-btn:hover {
+          transform: rotate(90deg);
+        }
+      }
+    `,
+  ],
 })
 export class ExportPageSelectDialogComponent {
   selectedOption: 'all' | 'current' | 'range' = 'all';
   startPage: number = 1;
   endPage: number = 1;
   isCardPrint: boolean = false;
-  
+
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { 
-      totalPages: number; 
-      totalItems: number; 
-      pageSize: number; 
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      totalPages: number;
+      totalItems: number;
+      pageSize: number;
       currentPage: number;
       isCardPrint?: boolean;
-    }
+    },
   ) {
     this.endPage = data.totalPages;
     this.isCardPrint = data.isCardPrint || false;
@@ -520,21 +568,23 @@ export class ExportPageSelectDialogComponent {
 
   isValid(): boolean {
     if (this.selectedOption === 'range') {
-      return this.startPage >= 1 && 
-             this.endPage <= this.data.totalPages && 
-             this.startPage <= this.endPage;
+      return (
+        this.startPage >= 1 &&
+        this.endPage <= this.data.totalPages &&
+        this.startPage <= this.endPage
+      );
     }
     return true;
   }
 
   confirm(): void {
     let result: any = { option: this.selectedOption };
-    
+
     if (this.selectedOption === 'range') {
       result.startPage = this.startPage - 1;
       result.endPage = this.endPage - 1;
     }
-    
+
     this.dialogRef.close(result);
   }
 
@@ -582,26 +632,37 @@ interface EmployeeListItem {
     MatTooltipModule,
     MatDialogModule,
     MatDividerModule,
-    SearchableSelectComponent
+    SearchableSelectComponent,
   ],
   templateUrl: './employee-list.component.html',
-  styleUrls: ['./employee-list.component.css']
+  styleUrls: ['./employee-list.component.css'],
 })
 export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
-  
-  displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'employeeType', 'gender', 'hireDate', 'departments', 'status', 'actions'];
+
+  displayedColumns: string[] = [
+    'index',
+    'image',
+    'fullName',
+    'nationalId',
+    'employeeType',
+    'gender',
+    'hireDate',
+    'departments',
+    'status',
+    'actions',
+  ];
   dataSource = new MatTableDataSource<EmployeeListItem>([]);
   allEmployees: EmployeeListItem[] = [];
   imageUrls: Map<number, string> = new Map();
   isLoading = false;
-  
+
   // ========== PAGINATION ==========
   totalItems: number = 0;
   pageSize: number = 25;
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   currentPage: number = 0;
-  
+
   // ========== SORTING ==========
   sortBy: string = 'HIRE_DATE';
   sortDir: string = 'DESC';
@@ -620,21 +681,21 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatSort) sort!: MatSort;
 
   get trainerCount(): number {
-    return this.allEmployees.filter(e => e.employeeType?.id === 1).length;
+    return this.allEmployees.filter((e) => e.employeeType?.id === 1).length;
   }
 
   get managerCount(): number {
-    return this.allEmployees.filter(e => e.employeeType?.id === 2).length;
+    return this.allEmployees.filter((e) => e.employeeType?.id === 2).length;
   }
 
   get activeCount(): number {
-    return this.allEmployees.filter(e => e.isActive === true).length;
+    return this.allEmployees.filter((e) => e.isActive === true).length;
   }
 
   get totalDepartments(): number {
     const depts = new Set();
-    this.allEmployees.forEach(e => {
-      e.departments?.forEach(d => depts.add(d.id));
+    this.allEmployees.forEach((e) => {
+      e.departments?.forEach((d) => depts.add(d.id));
     });
     return depts.size;
   }
@@ -646,7 +707,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
     private fileService: FileService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -659,7 +720,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
@@ -671,31 +732,31 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.employeeTypeOptions = [
       { value: null, label: 'الكل' },
       { value: 'TRAINER', label: 'مدرب' },
-      { value: 'MANAGER', label: 'مدير' }
+      { value: 'MANAGER', label: 'مدير' },
     ];
 
     this.statusOptions = [
       { value: null, label: 'الكل' },
       { value: true, label: 'نشط' },
-      { value: false, label: 'غير نشط' }
+      { value: false, label: 'غير نشط' },
     ];
   }
 
   private formatDateForBackend(date: any): string | null {
     if (!date) return null;
-    
+
     if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return date;
     }
-    
+
     try {
       const d = new Date(date);
       if (isNaN(d.getTime())) return null;
-      
+
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
-      
+
       return `${year}-${month}-${day}`;
     } catch (error) {
       return null;
@@ -756,16 +817,16 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('🔄 loadEmployees() called');
     console.log(`  Current Page: ${this.currentPage}`);
     console.log(`  Page Size: ${this.pageSize}`);
-    
+
     this.isLoading = true;
-    
+
     const params: any = {};
-    
+
     // ===== FILTERS =====
     if (this.searchText) params.quickSearch = this.searchText;
     if (this.employeeTypeFilter) params.employeeType = this.employeeTypeFilter;
     if (this.statusFilter !== null) params.isActive = this.statusFilter;
-    
+
     if (this.hireDateFrom) {
       const formattedDate = this.formatDateForBackend(this.hireDateFrom);
       if (formattedDate) params.hireDateFrom = formattedDate;
@@ -774,11 +835,11 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       const formattedDate = this.formatDateForBackend(this.hireDateTo);
       if (formattedDate) params.hireDateTo = formattedDate;
     }
-    
+
     // ===== PAGINATION =====
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
-    
+
     // ===== SORTING =====
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
@@ -790,7 +851,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('✅ Response received:', res);
         console.log(`  Items: ${res.items?.length || 0}`);
         console.log(`  Total: ${res.total || 0}`);
-        
+
         this.allEmployees = res.items || [];
         this.totalItems = res.total || 0;
         this.loadAllImages();
@@ -803,7 +864,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.notification.showError(err);
         this.isLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -812,14 +873,14 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   // ==========================================================================
 
   loadAllImages(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
     });
     this.imageUrls.clear();
 
-    this.allEmployees.forEach(employee => {
+    this.allEmployees.forEach((employee) => {
       this.loadImage(employee);
     });
   }
@@ -839,11 +900,14 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error(`Failed to load image for employee ${employee.id}:`, error);
+          console.error(
+            `Failed to load image for employee ${employee.id}:`,
+            error,
+          );
           this.imageUrls.set(employee.id, '');
           this.dataSource.data = [...this.dataSource.data];
           this.cdr.detectChanges();
-        }
+        },
       });
     } else {
       this.imageUrls.set(employee.id, '');
@@ -924,12 +988,12 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dialog.open(EmployeeDetailsModalComponent, {
           data: employee,
           width: '850px',
-          maxWidth: '90vw'
+          maxWidth: '90vw',
         });
       },
       error: (err: ErrorVTO) => {
         this.notification.showError(err);
-      }
+      },
     });
   }
 
@@ -937,10 +1001,10 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogRef = this.dialog.open(EmployeeWizardModalComponent, {
       data: { employeeId: id },
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadEmployees();
       }
@@ -951,10 +1015,10 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogRef = this.dialog.open(EmployeeWizardModalComponent, {
       data: {},
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadEmployees();
       }
@@ -970,7 +1034,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (err: ErrorVTO) => {
           this.notification.showError(err);
-        }
+        },
       });
     }
   }
@@ -982,7 +1046,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
-      
+
       if (totalPages <= 1) {
         resolve({ option: 'all' });
         return;
@@ -997,27 +1061,35 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           totalItems: this.totalItems,
           pageSize: this.pageSize,
           currentPage: this.currentPage,
-          isCardPrint: isCardPrint
-        }
+          isCardPrint: isCardPrint,
+        },
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         resolve(result);
       });
     });
   }
 
-  private async fetchPagesForExport(startPage: number, endPage: number): Promise<EmployeeListItem[]> {
+  private async fetchPagesForExport(
+    startPage: number,
+    endPage: number,
+  ): Promise<EmployeeListItem[]> {
     const allData: EmployeeListItem[] = [];
     const totalPages = this.getTotalPages();
-    
-    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+
+    for (
+      let page = startPage;
+      page <= Math.min(endPage, totalPages - 1);
+      page++
+    ) {
       const params: any = {};
-      
+
       if (this.searchText) params.quickSearch = this.searchText;
-      if (this.employeeTypeFilter) params.employeeType = this.employeeTypeFilter;
+      if (this.employeeTypeFilter)
+        params.employeeType = this.employeeTypeFilter;
       if (this.statusFilter !== null) params.isActive = this.statusFilter;
-      
+
       if (this.hireDateFrom) {
         const formattedDate = this.formatDateForBackend(this.hireDateFrom);
         if (formattedDate) params.hireDateFrom = formattedDate;
@@ -1026,15 +1098,17 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         const formattedDate = this.formatDateForBackend(this.hireDateTo);
         if (formattedDate) params.hireDateTo = formattedDate;
       }
-      
+
       params.pageNum = page;
       params.pageSize = this.pageSize;
-      
+
       if (this.sortBy) params.orderBy = this.sortBy;
       if (this.sortDir) params.orderDir = this.sortDir;
-      
+
       try {
-        const res = await this.employeeService.getAllEmployees(params).toPromise();
+        const res = await this.employeeService
+          .getAllEmployees(params)
+          .toPromise();
         if (res && res.items) {
           allData.push(...res.items);
         }
@@ -1043,13 +1117,13 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
       }
     }
-    
+
     return allData;
   }
 
   async exportToExcel(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return;
     }
@@ -1057,11 +1131,17 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     let dataToExport: EmployeeListItem[] = [];
 
     if (result.option === 'all') {
-      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+      dataToExport = await this.fetchPagesForExport(
+        0,
+        this.getTotalPages() - 1,
+      );
     } else if (result.option === 'current') {
       dataToExport = this.allEmployees;
     } else if (result.option === 'range') {
-      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToExport = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToExport.length === 0) {
@@ -1069,94 +1149,107 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const exportData = dataToExport.map((employee: EmployeeListItem, index: number) => ({
-      '#': index + 1,
-      'الاسم': employee.fullName,
-      'رقم الهوية': employee.nationalId,
-      'النوع': employee.employeeType?.title || '-',
-      'الجنس': employee.gender?.title || '-',
-      'تاريخ التوظيف': employee.hireDate || '-',
-      'الأقسام': employee.departments?.map((d: any) => d.title).join(', ') || '-',
-      'الحالة': employee.isActive ? 'نشط' : 'غير نشط'
-    }));
+    const exportData = dataToExport.map(
+      (employee: EmployeeListItem, index: number) => ({
+        '#': index + 1,
+        الاسم: employee.fullName,
+        'رقم الهوية': employee.nationalId,
+        النوع: employee.employeeType?.title || '-',
+        الجنس: employee.gender?.title || '-',
+        'تاريخ التوظيف': employee.hireDate || '-',
+        الأقسام:
+          employee.departments?.map((d: any) => d.title).join(', ') || '-',
+        الحالة: employee.isActive ? 'نشط' : 'غير نشط',
+      }),
+    );
 
     this.reportService.exportToExcel(exportData, 'employees-list', 'الموظفين');
     this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
-async exportToPDF(): Promise<void> {
-  const result = await this.showExportPageSelection(false);
-  
-  if (!result) {
-    return;
-  }
+  async exportToPDF(): Promise<void> {
+    const result = await this.showExportPageSelection(false);
 
-  this.isLoading = true;
+    if (!result) {
+      return;
+    }
 
-  let dataToPrint: EmployeeListItem[] = [];
+    this.isLoading = true;
 
-  if (result.option === 'all') {
-    dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-  } else if (result.option === 'current') {
-    dataToPrint = this.allEmployees;
-  } else if (result.option === 'range') {
-    dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
-  }
+    let dataToPrint: EmployeeListItem[] = [];
 
-  if (dataToPrint.length === 0) {
-    this.notification.showWarning('لا توجد بيانات لتصديرها');
-    this.isLoading = false;
-    return;
-  }
+    if (result.option === 'all') {
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToPrint = this.allEmployees;
+    } else if (result.option === 'range') {
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
+    }
 
-  const filterTexts: string[] = [];
-  if (this.employeeTypeFilter) {
-    const type = this.employeeTypeFilter === 'TRAINER' ? 'مدرب' : 'مدير';
-    filterTexts.push(`نوع الموظف: ${type}`);
-  }
-  if (this.statusFilter !== null) {
-    filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
-  }
-  if (this.hireDateFrom) {
-    const formattedDate = this.formatDateForBackend(this.hireDateFrom);
-    if (formattedDate) filterTexts.push(`من تاريخ التوظيف: ${formattedDate}`);
-  }
-  if (this.hireDateTo) {
-    const formattedDate = this.formatDateForBackend(this.hireDateTo);
-    if (formattedDate) filterTexts.push(`إلى تاريخ التوظيف: ${formattedDate}`);
-  }
-  if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      this.isLoading = false;
+      return;
+    }
 
-  // Calculate totals
-  const totalEmployees = dataToPrint.length;
-  const totalTrainers = dataToPrint.filter(e => e.employeeType?.id === 1).length;
-  const totalManagers = dataToPrint.filter(e => e.employeeType?.id === 2).length;
-  const totalActive = dataToPrint.filter(e => e.isActive).length;
+    const filterTexts: string[] = [];
+    if (this.employeeTypeFilter) {
+      const type = this.employeeTypeFilter === 'TRAINER' ? 'مدرب' : 'مدير';
+      filterTexts.push(`نوع الموظف: ${type}`);
+    }
+    if (this.statusFilter !== null) {
+      filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
+    }
+    if (this.hireDateFrom) {
+      const formattedDate = this.formatDateForBackend(this.hireDateFrom);
+      if (formattedDate) filterTexts.push(`من تاريخ التوظيف: ${formattedDate}`);
+    }
+    if (this.hireDateTo) {
+      const formattedDate = this.formatDateForBackend(this.hireDateTo);
+      if (formattedDate)
+        filterTexts.push(`إلى تاريخ التوظيف: ${formattedDate}`);
+    }
+    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
-  // Split data into pages
-  const rowsPerPage = 20;
-  const pages: EmployeeListItem[][] = [];
-  for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
-    pages.push(dataToPrint.slice(i, i + rowsPerPage));
-  }
+    // Calculate totals
+    const totalEmployees = dataToPrint.length;
+    const totalTrainers = dataToPrint.filter(
+      (e) => e.employeeType?.id === 1,
+    ).length;
+    const totalManagers = dataToPrint.filter(
+      (e) => e.employeeType?.id === 2,
+    ).length;
+    const totalActive = dataToPrint.filter((e) => e.isActive).length;
 
-  let allPagesHTML = '';
+    // Split data into pages
+    const rowsPerPage = 20;
+    const pages: EmployeeListItem[][] = [];
+    for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
+      pages.push(dataToPrint.slice(i, i + rowsPerPage));
+    }
 
-  pages.forEach((pageData: EmployeeListItem[], pageIndex: number) => {
-    let tableRows = '';
-    pageData.forEach((employee: EmployeeListItem, index: number) => {
-      const globalIndex = (pageIndex * rowsPerPage) + index + 1;
-      const statusStyle = employee.isActive 
-        ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;' 
-        : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-      
-      const typeStyle = employee.employeeType?.id === 1
-        ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
-        : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-      
-      const departmentsText = employee.departments?.map((d: any) => d.title).join(', ') || '-';
-      
-      tableRows += `
+    let allPagesHTML = '';
+
+    pages.forEach((pageData: EmployeeListItem[], pageIndex: number) => {
+      let tableRows = '';
+      pageData.forEach((employee: EmployeeListItem, index: number) => {
+        const globalIndex = pageIndex * rowsPerPage + index + 1;
+        const statusStyle = employee.isActive
+          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+          : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
+        const typeStyle =
+          employee.employeeType?.id === 1
+            ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+            : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
+        const departmentsText =
+          employee.departments?.map((d: any) => d.title).join(', ') || '-';
+
+        tableRows += `
         <tr>
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
           <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${this.escapeHtml(employee.fullName) || '-'}</td>
@@ -1168,14 +1261,14 @@ async exportToPDF(): Promise<void> {
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${statusStyle}">${employee.isActive ? 'نشط' : 'غير نشط'}</span></td>
         </tr>
       `;
-    });
+      });
 
-    allPagesHTML += `
+      allPagesHTML += `
       <div class="page-container">
         <!-- Watermark - Behind content -->
         <div class="watermark-wrapper">
           <div class="watermark-container">
-            <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية">
+            <img src="assets/images/mainLogoSvg.svg" alt="الأكاديمية الأولمبية">
           </div>
           <div class="watermark-text">الأكاديمية الأولمبية</div>
         </div>
@@ -1190,7 +1283,9 @@ async exportToPDF(): Promise<void> {
           
           ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
           
-          ${pageIndex === 0 ? `
+          ${
+            pageIndex === 0
+              ? `
           <div class="totals-grid">
             <div class="total-card total-all">
               <span class="total-icon">👥</span>
@@ -1218,7 +1313,9 @@ async exportToPDF(): Promise<void> {
               <span class="total-label">غير نشطاء</span>
             </div>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <table>
             <thead>
@@ -1244,18 +1341,18 @@ async exportToPDF(): Promise<void> {
         </div>
       </div>
     `;
-  });
+    });
 
-  // Build the complete HTML with watermark behind content
-  const printContainer = document.createElement('div');
-  printContainer.style.direction = 'rtl';
-  printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-  printContainer.style.padding = '0';
-  printContainer.style.backgroundColor = 'white';
-  printContainer.style.position = 'relative';
-  printContainer.style.width = '100%';
-  
-  printContainer.innerHTML = `
+    // Build the complete HTML with watermark behind content
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '0';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.position = 'relative';
+    printContainer.style.width = '100%';
+
+    printContainer.innerHTML = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -1657,24 +1754,32 @@ async exportToPDF(): Promise<void> {
     </html>
   `;
 
-  const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
-  if (printWindow) {
-    printWindow.document.write(printContainer.innerHTML);
-    printWindow.document.close();
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
-  } else {
-    document.body.appendChild(printContainer);
-    window.print();
-    setTimeout(() => {
-      if (document.body.contains(printContainer)) {
-        document.body.removeChild(printContainer);
-      }
-    }, 500);
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=1100,height=850,scrollbars=yes',
+    );
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => {
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer);
+        }
+      }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
+    }
   }
-}
 
   // ==========================================================================
   // PRINT EMPLOYEE CARDS WITH PAGE SELECTION
@@ -1682,7 +1787,7 @@ async exportToPDF(): Promise<void> {
 
   async printEmployeeCards(): Promise<void> {
     const result = await this.showExportPageSelection(true);
-    
+
     if (!result) {
       return;
     }
@@ -1696,7 +1801,10 @@ async exportToPDF(): Promise<void> {
     } else if (result.option === 'current') {
       dataToPrint = this.allEmployees;
     } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToPrint.length === 0) {
@@ -1717,7 +1825,7 @@ async exportToPDF(): Promise<void> {
             },
             error: () => {
               resolve('');
-            }
+            },
           });
         } else if (fid) {
           resolve(fid);
@@ -1733,32 +1841,41 @@ async exportToPDF(): Promise<void> {
     this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
   }
 
-private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): void {
-  const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
-  if (!printWindow) {
-    this.notification.showError('تعذر فتح نافذة الطباعة');
-    return;
-  }
+  private generateCardsPrint(
+    employees: EmployeeListItem[],
+    imageUrls: string[],
+  ): void {
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=800,height=800,scrollbars=yes',
+    );
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
+    }
 
-  const today = new Date().toLocaleDateString('ar-EG');
-  let cardsHtml = '';
-  const logoPath = 'assets/images/simpleLogo.jpeg';
+    const today = new Date().toLocaleDateString('ar-EG');
+    let cardsHtml = '';
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
-  employees.forEach((employee, index) => {
-    const imageUrl = imageUrls[index] || '';
-    const genderDisplay = employee.gender?.title || '-';
-    const employeeTypeDisplay = employee.employeeType?.title || '-';
-    const isActive = employee.isActive;
-    const hireDate = employee.hireDate || '-';
+    employees.forEach((employee, index) => {
+      const imageUrl = imageUrls[index] || '';
+      const genderDisplay = employee.gender?.title || '-';
+      const employeeTypeDisplay = employee.employeeType?.title || '-';
+      const isActive = employee.isActive;
+      const hireDate = employee.hireDate || '-';
 
-    // Conditional photo section - only show if image exists
-    const photoSection = imageUrl ? `
+      // Conditional photo section - only show if image exists
+      const photoSection = imageUrl
+        ? `
       <div class="thermal-photo">
         <img src="${imageUrl}" alt="${this.escapeHtml(employee.fullName)}">
       </div>
-    ` : '';
+    `
+        : '';
 
-    cardsHtml += `
+      cardsHtml += `
       <div class="card-wrapper">
         <div class="thermal-card">
           <!-- Watermark on Card -->
@@ -1835,9 +1952,9 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
         </div>
       </div>
     `;
-  });
+    });
 
-  printWindow.document.write(`
+    printWindow.document.write(`
     <!DOCTYPE html>
     <html dir="rtl">
     <head>
@@ -2177,7 +2294,7 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
       <script>
         window.onload = function() {
           setTimeout(function() {
-            const employees = ${JSON.stringify(employees.map(e => e.nationalId))};
+            const employees = ${JSON.stringify(employees.map((e) => e.nationalId))};
             employees.forEach(function(nationalId, index) {
               try {
                 JsBarcode('#barcode-' + index, nationalId || '000000', {
@@ -2201,8 +2318,8 @@ private generateCardsPrint(employees: EmployeeListItem[], imageUrls: string[]): 
     </body>
     </html>
   `);
-  printWindow.document.close();
-}
+    printWindow.document.close();
+  }
   private escapeHtml(str: string | null | undefined): string {
     if (!str) return '';
     return str
