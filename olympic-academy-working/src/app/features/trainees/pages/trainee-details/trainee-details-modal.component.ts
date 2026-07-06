@@ -1367,7 +1367,7 @@ export class TraineeDetailsModalComponent
           <div class="thermal-card">
             <!-- Watermark -->
             <div class="card-watermark">
-              <img src="assets/images/mainLogo.jpeg" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+              <img src="assets/images/simpleLogo.jpeg" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
             </div>
             <div class="card-watermark-text">الأكاديمية الأولمبية</div>
             

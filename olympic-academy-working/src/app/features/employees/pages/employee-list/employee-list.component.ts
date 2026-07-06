@@ -1268,7 +1268,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         <!-- Watermark - Behind content -->
         <div class="watermark-wrapper">
           <div class="watermark-container">
-            <img src="assets/images/mainLogoSvg.svg" alt="الأكاديمية الأولمبية">
+            <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية">
           </div>
           <div class="watermark-text">الأكاديمية الأولمبية</div>
         </div>
@@ -1857,7 +1857,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const today = new Date().toLocaleDateString('ar-EG');
     let cardsHtml = '';
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     employees.forEach((employee, index) => {
       const imageUrl = imageUrls[index] || '';

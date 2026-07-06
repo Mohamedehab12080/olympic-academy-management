@@ -975,7 +975,7 @@ openDetailsModal(transaction: SalaryIncentiveVTO): void {
 private printSalaryReceipt(transaction: SalaryIncentiveVTO, contactNumber: string): void {
   const today = new Date().toLocaleDateString('ar-EG');
   const transactionNumber = `TRX-${transaction.id}`;
-  const logoPath = 'assets/images/mainLogo.jpeg';
+  const logoPath = 'assets/images/simpleLogo.jpeg';
   const academyName = 'الأكاديمية الأولمبية';
   const currentYear = new Date().getFullYear();
   

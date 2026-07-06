@@ -1185,7 +1185,7 @@ export class EnrollmentDetailsModalComponent
 
       const e = this.enrollment;
       const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
-      const logoPath = 'assets/images/mainLogo.jpeg';
+      const logoPath = 'assets/images/simpleLogo.jpeg';
       const academyName = 'الأكاديمية الأولمبية';
       const currentYear = new Date().getFullYear();
 
