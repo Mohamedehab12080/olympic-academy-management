@@ -512,6 +512,15 @@
 				</plugin>
 
 				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<configuration>
+						<classifier>exec</classifier>
+						<mainClass>service/ms/olympic/olympic-academy-management</mainClass>
+					</configuration>
+				</plugin>
+
+				<plugin>
 					<groupId>org.liquibase</groupId>
 					<artifactId>liquibase-maven-plugin</artifactId>
 					<version>${liquibase.version}</version>
