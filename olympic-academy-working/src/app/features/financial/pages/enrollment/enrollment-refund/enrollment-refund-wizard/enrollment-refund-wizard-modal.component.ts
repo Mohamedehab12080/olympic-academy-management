@@ -28,7 +28,7 @@ interface EnrollmentOption extends SelectOption {
     startDate: string;
     finalSubscriptionValue: number;
     remainedSubscriptionValue: number;
-    totalPaidAmount: number; // This is what the trainee actually paid
+    totalPaidAmount: number;
   };
 }
 
@@ -63,6 +63,7 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
   refundId?: number;
   isLoading = false;
   isSubmitting = false;
+  isDataLoading = false;
   
   // Data collections
   enrollments: any[] = [];
@@ -76,9 +77,13 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
   
   // Selected data for display
   selectedEnrollment: any = null;
-  maxRefundableAmount: number = 0; // Maximum amount that can be refunded (total paid)
-  totalPaidAmount: number = 0; // Total amount the trainee has paid
-  previouslyRefundedAmount: number = 0; // Track previously refunded amount for edit mode
+  maxRefundableAmount: number = 0;
+  totalPaidAmount: number = 0;
+  previouslyRefundedAmount: number = 0;
+  
+  // Pre-filled enrollment ID
+  prefilledEnrollmentId: number | null = null;
+  prefillAmount: number | null = null;
   
   // Wizard steps
   currentStep = 0;
@@ -99,6 +104,8 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
   ) {
     this.refundId = data?.refundId;
     this.isEditMode = !!this.refundId;
+    this.prefilledEnrollmentId = data?.enrollmentId || null;
+    this.prefillAmount = data?.prefillAmount || null;
     
     this.refundForm = this.fb.group({
       enrollmentId: [null, Validators.required],
@@ -118,11 +125,21 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
 
   ngOnInit() {
     this.loadSelectOptions();
-    this.loadEnrollments();
     this.loadPaymentMethods();
     
     if (this.isEditMode) {
       this.loadRefundData();
+    } else if (this.prefilledEnrollmentId) {
+      // If we have a pre-filled enrollment ID, skip the enrollment selection step
+      this.loadEnrollments(() => {
+        this.refundForm.patchValue({ enrollmentId: this.prefilledEnrollmentId });
+        this.onEnrollmentSelect();
+        // Mark step 0 as completed and go to step 1
+        this.steps[0].completed = true;
+        this.currentStep = 1;
+      });
+    } else {
+      this.loadEnrollments();
     }
     
     // Subscribe to amount refunded changes
@@ -138,8 +155,8 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
     }));
   }
 
-  loadEnrollments() {
-    this.isLoading = true;
+  loadEnrollments(callback?: () => void) {
+    this.isDataLoading = true;
     this.enrollmentService.getAllEnrollmentsDetailsByFilter().subscribe({
       next: (res: any) => {
         this.enrollments = res.items || [];
@@ -158,11 +175,12 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
             }
           };
         });
-        this.isLoading = false;
+        this.isDataLoading = false;
+        if (callback) callback();
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل التسجيلات');
-        this.isLoading = false;
+        this.isDataLoading = false;
       }
     });
   }
@@ -198,10 +216,8 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
           note: res.note
         });
         
-        // Fetch fresh enrollment data
         this.fetchFreshEnrollmentData(res.enrollment?.id, res.amountRefunded);
         
-        // Mark steps as completed for edit mode
         this.steps.forEach(step => step.completed = true);
         this.currentStep = 3;
         
@@ -215,14 +231,13 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
   }
 
   fetchFreshEnrollmentData(enrollmentId: number, currentRefundAmount?: number) {
-    this.isLoading = true;
+    this.isDataLoading = true;
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
         const finalValue = enrollment.finalSubscriptionValue || 0;
         const remainedValue = enrollment.remainedSubscriptionValue || 0;
         const totalPaid = finalValue - remainedValue;
         
-        // Get all previous refunds for this enrollment (excluding current if editing)
         this.financialService.getAllEnrollmentRefundsByFilter({ enrollmentId: enrollmentId }).subscribe({
           next: (refundsRes: any) => {
             let totalRefunded = 0;
@@ -232,7 +247,6 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
                 .reduce((sum: number, r: any) => sum + (r.amountRefunded || 0), 0);
             }
             
-            // Available for refund = total paid - already refunded
             const availableForRefund = totalPaid - totalRefunded;
             this.maxRefundableAmount = Math.max(0, availableForRefund);
             
@@ -247,14 +261,29 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
               availableForRefund: this.maxRefundableAmount
             };
             
+            // FIX: Proper null/undefined handling for amountToRefund
+            let amountToRefund: number | null = null;
+            
+            if (this.isEditMode && currentRefundAmount !== undefined) {
+              amountToRefund = currentRefundAmount;
+            } else if (this.prefillAmount !== null) {
+              amountToRefund = Math.min(this.prefillAmount, this.maxRefundableAmount);
+            }
+            
+            // Calculate remaining after refund
+            let remainingAfterRefund = this.maxRefundableAmount;
+            if (amountToRefund !== null) {
+              remainingAfterRefund = this.maxRefundableAmount - amountToRefund;
+            }
+            
             this.refundForm.patchValue({ 
               finalSubscriptionValue: finalValue,
               remainedSubscriptionValue: remainedValue,
               totalPaidAmount: totalPaid,
               previouslyRefunded: totalRefunded,
               availableForRefund: this.maxRefundableAmount,
-              amountRefunded: this.isEditMode ? currentRefundAmount : null,
-              remainingAfterRefund: this.isEditMode ? (this.maxRefundableAmount - (currentRefundAmount || 0)) : this.maxRefundableAmount
+              amountRefunded: amountToRefund,
+              remainingAfterRefund: Math.max(0, remainingAfterRefund)
             });
             
             // Set max validation for amount refunded
@@ -268,17 +297,25 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
               amountRefundedControl.updateValueAndValidity();
             }
             
-            this.isLoading = false;
+            // FIX: Auto-set refund status if amount equals available
+            if (amountToRefund !== null && amountToRefund > 0 && amountToRefund === this.maxRefundableAmount) {
+              const completedStatus = this.refundStatuses.find(s => s.id === 4);
+              if (completedStatus) {
+                this.refundForm.get('refundStatusObj')?.setValue(completedStatus);
+              }
+            }
+            
+            this.isDataLoading = false;
           },
           error: () => {
-            this.isLoading = false;
+            this.isDataLoading = false;
           }
         });
       },
       error: (err) => {
         console.error('Error fetching enrollment:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
-        this.isLoading = false;
+        this.isDataLoading = false;
       }
     });
   }
@@ -301,7 +338,7 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
       return;
     }
     
-    this.isLoading = true;
+    this.isDataLoading = true;
     
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
@@ -309,7 +346,6 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
         const remainedValue = enrollment.remainedSubscriptionValue || 0;
         const totalPaid = finalValue - remainedValue;
         
-        // Get all previous refunds for this enrollment
         this.financialService.getAllEnrollmentRefundsByFilter({ enrollmentId: enrollmentId }).subscribe({
           next: (refundsRes: any) => {
             let totalRefunded = 0;
@@ -341,7 +377,6 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
               remainingAfterRefund: this.maxRefundableAmount
             });
             
-            // Set max validation for amount refunded
             const amountRefundedControl = this.refundForm.get('amountRefunded');
             if (amountRefundedControl) {
               amountRefundedControl.setValidators([
@@ -352,17 +387,17 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
               amountRefundedControl.updateValueAndValidity();
             }
             
-            this.isLoading = false;
+            this.isDataLoading = false;
           },
           error: () => {
-            this.isLoading = false;
+            this.isDataLoading = false;
           }
         });
       },
       error: (err) => {
         console.error('Error fetching enrollment:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
-        this.isLoading = false;
+        this.isDataLoading = false;
       }
     });
   }
@@ -371,7 +406,6 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
     const availableForRefund = this.refundForm.get('availableForRefund')?.value || 0;
     const amountRefunded = this.refundForm.get('amountRefunded')?.value || 0;
     
-    // Validate that refund amount doesn't exceed available
     if (amountRefunded > availableForRefund && availableForRefund > 0) {
       this.refundForm.get('amountRefunded')?.setErrors({ exceedsAvailable: true });
       this.notification.showWarning(`المبلغ المسترد لا يمكن أن يتجاوز المبلغ المتاح للاسترداد (${availableForRefund} جم)`);
@@ -383,15 +417,12 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
     const remainingAfterRefund = availableForRefund - amountRefunded;
     this.refundForm.get('remainingAfterRefund')?.setValue(Math.max(0, remainingAfterRefund));
     
-    // Auto-set refund status based on amount
     if (amountRefunded > 0 && remainingAfterRefund === 0) {
-      // Full refund of available amount
       const completedStatus = this.refundStatuses.find(s => s.id === 4);
       if (completedStatus) {
         this.refundForm.get('refundStatusObj')?.setValue(completedStatus);
       }
     } else if (amountRefunded > 0 && remainingAfterRefund > 0) {
-      // Partial refund
       const pendingStatus = this.refundStatuses.find(s => s.id === 1);
       if (pendingStatus) {
         this.refundForm.get('refundStatusObj')?.setValue(pendingStatus);
@@ -432,7 +463,7 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
         const availableForRefund = this.refundForm.get('availableForRefund')?.value;
         return this.refundForm.get('amountRefunded')?.valid === true && 
                this.refundForm.get('refundDate')?.valid === true &&
-               amountRefunded <= availableForRefund;
+               (amountRefunded || 0) <= (availableForRefund || 0);
       case 2:
         return this.refundForm.get('paymentMethodId')?.valid === true && 
                this.refundForm.get('refundStatusObj')?.valid === true;
@@ -495,16 +526,15 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
     }
 
     const amountRefunded = this.refundForm.get('amountRefunded')?.value;
-    const availableForRefund = this.refundForm.get('availableForRefund')?.value;
+    const availableForRefund = this.refundForm.get('availableForRefund')?.value || 0;
     
-    if (amountRefunded > availableForRefund && availableForRefund > 0) {
+    if ((amountRefunded || 0) > availableForRefund && availableForRefund > 0) {
       this.notification.showWarning(`المبلغ المسترد لا يمكن أن يتجاوز المبلغ المتاح للاسترداد (${availableForRefund} جم)`);
       return;
     }
 
     const refundStatusObj = this.refundForm.get('refundStatusObj')?.value;
     
-    // Convert to enum string expected by backend
     let refundStatusEnum = null;
     if (refundStatusObj) {
       switch(refundStatusObj.id) {
@@ -527,7 +557,7 @@ export class EnrollmentRefundWizardModalComponent implements OnInit {
     
     const refundData = {
       enrollmentId: this.refundForm.get('enrollmentId')?.value,
-      amountRefunded: amountRefunded,
+      amountRefunded: amountRefunded || 0,
       refundDate: this.refundForm.get('refundDate')?.value,
       paymentMethodId: this.refundForm.get('paymentMethodId')?.value,
       status: refundStatusEnum,

@@ -6,19 +6,18 @@ import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.place.api.repository.PlaceReportRepository;
 import bs.service.place.api.repository.PlaceRepository;
 import bs.service.place.api.service.PlaceService;
 import bs.service.place.core.mapper.PlaceMapper;
 import bs.service.place.model.entity.Place;
 import bs.service.place.model.filter.PlaceSearchFilter;
-import bs.service.place.model.generated.PlaceDTO;
-import bs.service.place.model.generated.PlaceListItem;
-import bs.service.place.model.generated.PlaceResultSet;
-import bs.service.place.model.generated.PlaceVTO;
+import bs.service.place.model.generated.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static bs.service.place.model.enums.PlaceErrors.PLACE_NOT_FOUND;
@@ -30,6 +29,7 @@ public class PlaceServiceImpl implements PlaceService {
 
     private final PlaceRepository placeRepository;
     private final PlaceMapper placeMapper;
+    private final PlaceReportRepository placeReportRepository;
 
     @Override
     @Transactional
@@ -67,10 +67,13 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public PlaceVTO getPlaceById(Integer placeId) {
+    public PlaceVTO getPlaceById(Integer placeId, LocalDate createdOnFrom, LocalDate createdOnTo) {
         Place place = placeRepository.selectById(placeId)
                 .orElseThrow(() -> new BusinessException(PLACE_NOT_FOUND, placeId));
-        return placeMapper.toPlaceVTO(place);
+        PlaceReportVTO placeReportVTO=placeReportRepository.getPlaceReport(placeId,createdOnFrom,createdOnTo);
+        PlaceVTO placeVTO=placeMapper.toPlaceVTO(place);
+        placeVTO.setPlaceReport(placeReportVTO);
+        return placeVTO;
     }
 
     @Override

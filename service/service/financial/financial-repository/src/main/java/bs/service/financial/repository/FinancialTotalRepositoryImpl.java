@@ -5,10 +5,16 @@ import bs.service.financial.model.generated.FinancialTotalVTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Repository
@@ -19,36 +25,54 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
     private EntityManager entityManager;
 
     @Override
+    @Transactional(readOnly = true)
     public FinancialTotalVTO findFinancialTotalVTO(LocalDate from, LocalDate to) {
         log.info("Calculating financial totals from: {} to: {}", from, to);
 
         FinancialTotalVTO vto = new FinancialTotalVTO();
 
         try {
-            // 1. Get salary and incentives
-            vto.setTotalSalary(getTotalSalary(from, to));
-            vto.setTotalAdvance(getTotalAdvances(from, to));
-            vto.setTotalIncentives(getTotalIncentives(from, to));
+            // Execute optimized single query with subqueries
+            Map<String, Object> results = executeAllQueries(from, to);
 
-            // 2. Get rent payments
-            vto.setTotalPlacesRent(getTotalRent(from, to));
+            // Log results for debugging
+            log.debug("Financial report results: {}", results);
 
-            // 3. Get enrollment payments
-            vto.setTotalEnrollmentPayments(getTotalEnrollmentPayments(from, to));
-            vto.setTotalEnrollmentRefunds(getTotalEnrollmentRefund(from, to));
+            // Set all values from results map
+            vto.setTotalSalary(getIntValue(results, "totalSalary"));
+            vto.setTotalAdvance(getIntValue(results, "totalAdvance"));
+            vto.setTotalIncentives(getIntValue(results, "totalIncentives"));
+            vto.setTotalPlacesRent(getIntValue(results, "totalRent"));
+            vto.setTotalEnrollmentPayments(getIntValue(results, "totalEnrollmentPayments"));
+            vto.setTotalEnrollmentRefunds(getIntValue(results, "totalEnrollmentRefunds"));
+            vto.setTotalExpenses(getIntValue(results, "totalExpenses"));
+            vto.setActiveEnrollmentsCount(getIntValue(results, "activeEnrollments"));
+            vto.setInactiveEnrollmentsCount(getIntValue(results, "inactiveEnrollments"));
+            vto.setActiveCoursesCount(getIntValue(results, "activeCourses"));
+            vto.setInactiveCoursesCount(getIntValue(results, "inactiveCourses"));
+            vto.setActiveTraineesCount(getIntValue(results, "activeTrainees"));
+            vto.setInactiveTraineesCount(getIntValue(results, "inactiveTrainees"));
+            vto.setActiveEmployeesCount(getIntValue(results, "activeEmployees"));
+            vto.setInactiveEmployeesCount(getIntValue(results, "inactiveEmployees"));
 
-            // 4. Get expenses
-            vto.setTotalExpenses(getTotalExpenses(from, to));
-
-            // 5. Get counts
-            vto.setActiveEnrollmentsCount(getActiveEnrollmentsCount(from, to));
-            vto.setInactiveEnrollmentsCount(getInactiveEnrollmentsCount(from, to));
-            vto.setActiveCoursesCount(getActiveCoursesCount(from, to));
-            vto.setInactiveCoursesCount(getInactiveCoursesCount(from, to));
-            vto.setActiveTraineesCount(getActiveTraineesCount(from, to));
-            vto.setInactiveTraineesCount(getInactiveTraineesCount(from, to));
-            vto.setActiveEmployeesCount(getActiveEmployeesCount(from, to));
-            vto.setInactiveEmployeesCount(getInactiveEmployeesCount(from, to));
+            // Log summary
+            log.info("=== FINANCIAL REPORT TOTALS ===");
+            log.info("Total Salary: {}", vto.getTotalSalary());
+            log.info("Total Advances: {}", vto.getTotalAdvance());
+            log.info("Total Incentives: {}", vto.getTotalIncentives());
+            log.info("Total Rent: {}", vto.getTotalPlacesRent());
+            log.info("Total Enrollment Payments: {}", vto.getTotalEnrollmentPayments());
+            log.info("Total Enrollment Refunds: {}", vto.getTotalEnrollmentRefunds());
+            log.info("Total Expenses: {}", vto.getTotalExpenses());
+            log.info("Active Enrollments: {}", vto.getActiveEnrollmentsCount());
+            log.info("Inactive Enrollments: {}", vto.getInactiveEnrollmentsCount());
+            log.info("Active Courses: {}", vto.getActiveCoursesCount());
+            log.info("Inactive Courses: {}", vto.getInactiveCoursesCount());
+            log.info("Active Trainees: {}", vto.getActiveTraineesCount());
+            log.info("Inactive Trainees: {}", vto.getInactiveTraineesCount());
+            log.info("Active Employees: {}", vto.getActiveEmployeesCount());
+            log.info("Inactive Employees: {}", vto.getInactiveEmployeesCount());
+            log.info("=================================");
 
         } catch (Exception e) {
             log.error("Error calculating financial totals for period: {} to {}", from, to, e);
@@ -58,235 +82,268 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         return vto;
     }
 
-    private int getTotalSalary(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(si.amount_withdrawn), 0)
-            FROM oa_salary_incentive si
-            WHERE si.is_deleted = 0
-              AND si.salary_transaction_type = 1
-              AND (:startDate IS NULL OR si.withdraw_date >= :startDate)
-              AND (:endDate IS NULL OR si.withdraw_date <= :endDate)
-        """;
+    /**
+     * Execute all financial report queries in a SINGLE SQL statement using subqueries
+     * This reduces network round-trips from 15 to 1
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> executeAllQueries(LocalDate from, LocalDate to) {
+        // Convert dates to LocalDateTime for comparison
+        LocalDateTime fromDateTime = from != null ? from.atStartOfDay() : null;
+        LocalDateTime toDateTime = to != null ? to.atTime(LocalTime.MAX) : null;
+
+        String sql = buildDynamicQuery(fromDateTime, toDateTime);
+
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
+
+        // Set parameters only if they are provided
+        if (fromDateTime != null) {
+            query.setParameter("fromDate", fromDateTime);
+        }
+        if (toDateTime != null) {
+            query.setParameter("toDate", toDateTime);
+        }
+
+        Object[] result = (Object[]) query.getSingleResult();
+
+        Map<String, Object> results = new HashMap<>();
+        results.put("totalSalary", result[0]);
+        results.put("totalAdvance", result[1]);
+        results.put("totalIncentives", result[2]);
+        results.put("totalRent", result[3]);
+        results.put("totalEnrollmentPayments", result[4]);
+        results.put("totalEnrollmentRefunds", result[5]);
+        results.put("totalExpenses", result[6]);
+        results.put("activeEnrollments", result[7]);
+        results.put("inactiveEnrollments", result[8]);
+        results.put("activeCourses", result[9]);
+        results.put("inactiveCourses", result[10]);
+        results.put("activeTrainees", result[11]);
+        results.put("inactiveTrainees", result[12]);
+        results.put("activeEmployees", result[13]);
+        results.put("inactiveEmployees", result[14]);
+
+        return results;
     }
 
-    private int getTotalIncentives(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(si.amount_withdrawn), 0)
-            FROM oa_salary_incentive si
-            WHERE si.is_deleted = 0
-              AND si.salary_transaction_type IN (2, 3)
-              AND (:startDate IS NULL OR si.withdraw_date >= :startDate)
-              AND (:endDate IS NULL OR si.withdraw_date <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
+    /**
+     * Build dynamic SQL query with optional date filters
+     */
+    private String buildDynamicQuery(LocalDateTime fromDateTime, LocalDateTime toDateTime) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT ");
+
+        // 1. Total Salary (transaction_type = 1)
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(amount_withdrawn)");
+        sql.append("        FROM oa_salary_incentive");
+        sql.append("        WHERE salary_transaction_type = 1");
+        sql.append("          AND is_deleted = 0");
+        if (fromDateTime != null) {
+            sql.append("          AND withdraw_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND withdraw_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_salary, ");
+
+        // 2. Total Advances (transaction_type = 4)
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(amount_withdrawn)");
+        sql.append("        FROM oa_salary_incentive");
+        sql.append("        WHERE salary_transaction_type = 4");
+        sql.append("          AND is_deleted = 0");
+        if (fromDateTime != null) {
+            sql.append("          AND withdraw_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND withdraw_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_advance, ");
+
+        // 3. Total Incentives (transaction_type IN (2,3))
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(amount_withdrawn)");
+        sql.append("        FROM oa_salary_incentive");
+        sql.append("        WHERE salary_transaction_type IN (2, 3)");
+        sql.append("          AND is_deleted = 0");
+        if (fromDateTime != null) {
+            sql.append("          AND withdraw_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND withdraw_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_incentives, ");
+
+        // 4. Total Rent
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(payed_amount)");
+        sql.append("        FROM oa_place_rent_payment");
+        sql.append("        WHERE is_deleted = 0");
+        if (fromDateTime != null) {
+            sql.append("          AND payment_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND payment_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_rent, ");
+
+        // 5. Total Enrollment Payments
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(ep.paid_amount)");
+        sql.append("        FROM oa_enrollment_payment ep");
+        sql.append("        INNER JOIN oa_enrollment enr ON ep.enrollment_id = enr.id");
+        sql.append("        WHERE ep.is_deleted = 0");
+        sql.append("          AND ep.payment_status IN (1, 2, 6)");
+        if (fromDateTime != null) {
+            sql.append("          AND ep.payment_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND ep.payment_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_enrollment_payments, ");
+
+        // 6. Total Enrollment Refunds
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(er.amount_refunded)");
+        sql.append("        FROM oa_enrollment_refund er");
+        sql.append("        INNER JOIN oa_enrollment enr ON er.enrollment_id = enr.id");
+        sql.append("        WHERE er.is_deleted = 0");
+        sql.append("          AND er.refund_status IN (2, 4)");
+        sql.append("          AND enr.payment_status = 4");
+        if (fromDateTime != null) {
+            sql.append("          AND er.refund_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND er.refund_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_enrollment_refunds, ");
+
+        // 7. Total Expenses
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(amount_expensed)");
+        sql.append("        FROM oa_expense");
+        sql.append("        WHERE is_deleted = 0");
+        if (fromDateTime != null) {
+            sql.append("          AND expense_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND expense_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_expenses, ");
+
+        // 8. Active Enrollments Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_enrollment");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 1");
+        sql.append("       AND enrollment_status IN (1, 2)");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS active_enrollments, ");
+
+        // 9. Inactive Enrollments Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_enrollment");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 0");
+        sql.append("       AND enrollment_status != 2");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS inactive_enrollments, ");
+
+        // 10. Active Courses Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_course");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 1");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS active_courses, ");
+
+        // 11. Inactive Courses Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_course");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 0");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS inactive_courses, ");
+
+        // 12. Active Trainees Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_trainee");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 1");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS active_trainees, ");
+
+        // 13. Inactive Trainees Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_trainee");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 0");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS inactive_trainees, ");
+
+        // 14. Active Employees Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_employee");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 1");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS active_employees, ");
+
+        // 15. Inactive Employees Count
+        sql.append("    (SELECT COUNT(*)");
+        sql.append("     FROM oa_employee");
+        sql.append("     WHERE is_deleted = 0");
+        sql.append("       AND is_active = 0");
+        if (fromDateTime != null) {
+            sql.append("       AND created_on >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("       AND created_on <= :toDate");
+        }
+        sql.append("    ) AS inactive_employees");
+
+        return sql.toString();
     }
 
-    private int getTotalAdvances(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(si.amount_withdrawn), 0)
-            FROM oa_salary_incentive si
-            WHERE si.is_deleted = 0
-              AND si.salary_transaction_type = 4
-              AND (:startDate IS NULL OR si.withdraw_date >= :startDate)
-              AND (:endDate IS NULL OR si.withdraw_date <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getTotalRent(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(prp.payed_amount), 0)
-            FROM oa_place_rent_payment prp
-            WHERE prp.is_deleted = 0
-              AND (:startDate IS NULL OR prp.payment_date >= :startDate)
-              AND (:endDate IS NULL OR prp.payment_date <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getTotalEnrollmentPayments(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(ep.paid_amount), 0)
-            FROM oa_enrollment_payment ep
-            INNER JOIN oa_enrollment enr ON ep.enrollment_id = enr.id
-            WHERE ep.is_deleted = 0
-              AND enr.payment_status IN (1,2,6)
-              AND enr.is_active = 1
-              AND enr.enrollment_status IN (1,2)
-              AND (:startDate IS NULL OR ep.payment_date >= :startDate)
-              AND (:endDate IS NULL OR ep.payment_date <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getTotalEnrollmentRefund(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(er.amount_refunded), 0)
-            FROM oa_enrollment_refund er
-            INNER JOIN oa_enrollment enr ON er.enrollment_id = enr.id
-            WHERE er.is_deleted = 0
-              AND er.refund_status IN (2,4)
-              AND enr.payment_status = 4
-              AND enr.is_active = 1
-              AND enr.enrollment_status = 3
-              AND (:startDate IS NULL OR er.refund_date >= :startDate)
-              AND (:endDate IS NULL OR er.refund_date <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getTotalExpenses(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COALESCE(SUM(e.amount_expensed), 0)
-            FROM oa_expense e
-            WHERE e.is_deleted = 0
-              AND (:startDate IS NULL OR e.expense_date >= :startDate)
-              AND (:endDate IS NULL OR e.expense_date <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getActiveEnrollmentsCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT en.id)
-            FROM oa_enrollment en
-            WHERE en.enrollment_status IN (1,2)
-              AND en.is_deleted = 0
-              AND en.is_active = 1
-              AND (:startDate IS NULL OR en.created_on >= :startDate)
-              AND (:endDate IS NULL OR en.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getInactiveEnrollmentsCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT en.id)
-            FROM oa_enrollment en
-            WHERE en.enrollment_status != 2
-              AND en.is_deleted = 0
-              AND en.is_active = 0
-              AND (:startDate IS NULL OR en.created_on >= :startDate)
-              AND (:endDate IS NULL OR en.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getActiveCoursesCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT c.id)
-            FROM oa_course c
-            WHERE c.is_active = 1
-              AND c.is_deleted = 0
-              AND (:startDate IS NULL OR c.created_on >= :startDate)
-              AND (:endDate IS NULL OR c.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getInactiveCoursesCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT c.id)
-            FROM oa_course c
-            WHERE c.is_active = 0
-              AND c.is_deleted = 0
-              AND (:startDate IS NULL OR c.created_on >= :startDate)
-              AND (:endDate IS NULL OR c.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getActiveTraineesCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT t.id)
-            FROM oa_trainee t
-            WHERE t.is_active = 1
-              AND t.is_deleted = 0
-              AND (:startDate IS NULL OR t.created_on >= :startDate)
-              AND (:endDate IS NULL OR t.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getInactiveTraineesCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT t.id)
-            FROM oa_trainee t
-            WHERE t.is_active = 0
-              AND t.is_deleted = 0
-              AND (:startDate IS NULL OR t.created_on >= :startDate)
-              AND (:endDate IS NULL OR t.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getActiveEmployeesCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT emp.id)
-            FROM oa_employee emp
-            WHERE emp.is_active = 1
-              AND emp.is_deleted = 0
-              AND (:startDate IS NULL OR emp.created_on >= :startDate)
-              AND (:endDate IS NULL OR emp.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
-    }
-
-    private int getInactiveEmployeesCount(LocalDate from, LocalDate to) {
-        String sql = """
-            SELECT COUNT(DISTINCT emp.id)
-            FROM oa_employee emp
-            WHERE emp.is_active = 0
-              AND emp.is_deleted = 0
-              AND (:startDate IS NULL OR emp.created_on >= :startDate)
-              AND (:endDate IS NULL OR emp.created_on <= :endDate)
-        """;
-        Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("startDate", from);
-        query.setParameter("endDate", to);
-        return ((Number) query.getSingleResult()).intValue();
+    private int getIntValue(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        return value != null ? ((Number) value).intValue() : 0;
     }
 }

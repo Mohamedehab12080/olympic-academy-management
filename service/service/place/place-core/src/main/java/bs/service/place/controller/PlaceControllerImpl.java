@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDate;
+
 @Controller
 @AllArgsConstructor
 public class PlaceControllerImpl implements PlaceController {
@@ -50,8 +52,8 @@ public class PlaceControllerImpl implements PlaceController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<PlaceVTO> _getPlaceById(Integer placeId) {
-        PlaceVTO result = placeService.getPlaceById(placeId);
+    public ResponseEntity<PlaceVTO> _getPlaceById(Integer placeId, LocalDate createdOnFrom, LocalDate createdOnTo) {
+        PlaceVTO result = placeService.getPlaceById(placeId,createdOnFrom,createdOnTo);
         return ResponseEntity.ok(result);
     }
 

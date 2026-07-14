@@ -494,7 +494,7 @@ export class FinancialReportComponent implements OnInit {
 
   getNetProfit(): number {
     if (!this.financialTotals) return 0;
-    return this.getTotalRevenue() - this.getTotalExpenses() - this.getTotalEnrollmentRefunds();
+    return this.getTotalRevenue() - this.getTotalExpenses();
   }
 
   exportToExcel() {

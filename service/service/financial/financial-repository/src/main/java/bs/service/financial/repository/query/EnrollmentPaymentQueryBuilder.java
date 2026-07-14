@@ -45,9 +45,9 @@ public class EnrollmentPaymentQueryBuilder extends AbstractQueryBuilderV2<Enroll
             qbConditions.add(QBCondition.builder().placeHolder("paymentMethodId").value(filters.getPaymentMethodId())
                     .condition("item.paymentMethod.id = :PH").build());
 
-        if (filters.getStatus() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("status").value(filters.getStatus())
-                    .condition("item.status = :PH").build());
+        if (filters.getStatuses() != null && !filters.getStatuses().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("statuses").value(filters.getStatuses())
+                    .condition("item.paymentStatus IN :PH").build());
 
         if (filters.getPaymentDateFrom() != null)
             qbConditions.add(QBCondition.builder().placeHolder("paymentDateFrom").value(filters.getPaymentDateFrom())

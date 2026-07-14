@@ -108,6 +108,8 @@ paths:
       operationId: getPlaceById
       parameters:
         - $ref: '#/components/parameters/PPPlaceId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
       responses:
         '200':
           description: OK
@@ -392,6 +394,8 @@ components:
         remainedValue:
           type: integer
           format: int32
+        placeReport:
+          $ref: '#/components/schemas/PlaceReportVTO'
         address:
           type: string
         phoneNumber:
@@ -406,6 +410,16 @@ components:
           format: date-time
         lastModifiedBy:
           $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    PlaceReportVTO:
+      type: object
+      properties:
+        totalPayed:
+          type: integer
+          format: int32
+        totalGained:
+          type: integer
+          format: int32
 
     PlaceResultSet:
       type: object

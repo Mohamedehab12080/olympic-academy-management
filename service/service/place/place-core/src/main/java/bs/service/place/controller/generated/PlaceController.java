@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -121,6 +123,10 @@ public interface PlaceController {
      *
      * @param placeId
      *            (required)
+     * @param createdOnFrom
+     *            (optional)
+     * @param createdOnTo
+     *            (optional)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
@@ -132,7 +138,9 @@ public interface PlaceController {
     @RequestMapping(method = RequestMethod.GET, value = "/places/{placeId}", produces = { "application/json" })
 
     ResponseEntity<PlaceVTO> _getPlaceById(
-            @Parameter(name = "placeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("placeId") Integer placeId);
+            @Parameter(name = "placeId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("placeId") Integer placeId,
+            @Parameter(name = "createdOnFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnFrom,
+            @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo);
 
     /**
      * PUT /places/{placeId} : Update Place By Id

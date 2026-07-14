@@ -7,11 +7,13 @@ import bs.service.place.model.generated.PlaceDTO;
 import bs.service.place.model.generated.PlaceResultSet;
 import bs.service.place.model.generated.PlaceVTO;
 
+import java.time.LocalDate;
+
 public interface PlaceService {
     NewRecordVTO createPlace(PlaceDTO placeDTO);
     NewRecordVTO updatePlace(Integer placeId, PlaceDTO placeDTO);
     void deletePlaceById(Integer placeId);
-    PlaceVTO getPlaceById(Integer placeId);
+    PlaceVTO getPlaceById(Integer placeId, LocalDate createdOnFrom,LocalDate createdOnTo);
     PlaceResultSet getAllPlacesByFilter(String quickSearch, Integer pageNum, Integer pageSize,
                                         OrderDirections orderDir, String orderBy);
     LookupResultSet getAllPlacesLookup();

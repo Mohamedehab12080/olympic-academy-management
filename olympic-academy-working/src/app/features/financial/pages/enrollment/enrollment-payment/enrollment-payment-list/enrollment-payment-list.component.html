@@ -292,23 +292,31 @@
               </span>
             </td>
           </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-            <td mat-cell *matCellDef="let p">
-              <div class="action-buttons">
-                <button mat-icon-button color="primary" (click)="viewPayment(p.id)" matTooltip="عرض التفاصيل">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button mat-icon-button color="accent" (click)="editPayment(p.id)" matTooltip="تعديل">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="deletePayment(p)" matTooltip="حذف">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </td>
-          </ng-container>
+          
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
+              <td mat-cell *matCellDef="let p">
+                <div class="action-buttons">
+                  <button mat-icon-button color="primary" (click)="viewPayment(p.id)" matTooltip="عرض التفاصيل">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button color="accent" (click)="editPayment(p.id)" matTooltip="تعديل">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <!-- ✅ NEW REFUND BUTTON -->
+                  <button mat-icon-button 
+                          color="warn" 
+                          (click)="openRefundWizard(p)" 
+                          matTooltip="استرداد"
+                          [disabled]="p.paymentStatus?.id === 4 || p.paymentStatus?.id === 5 || !p.paidAmount">
+                    <mat-icon>money_off</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deletePayment(p)" matTooltip="حذف">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>

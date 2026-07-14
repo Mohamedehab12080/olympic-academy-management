@@ -28,8 +28,8 @@ export class PlaceService {
     return this.api.get('/places/details', params);
   }
 
-  getPlaceById(id: number): Observable<PlaceVTO> {
-    return this.api.get(`/places/${id}`);
+  getPlaceById(id: number,params?: any): Observable<PlaceVTO> {
+    return this.api.get(`/places/${id}`,params);
   }
 
   updatePlace(id: number, data: PlaceDTO): Observable<NewRecordVTO> {

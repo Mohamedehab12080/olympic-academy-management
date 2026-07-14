@@ -33,6 +33,8 @@ public class PlaceVTO implements Serializable {
 
     private Integer remainedValue;
 
+    private PlaceReportVTO placeReport;
+
     private String address;
 
     private String phoneNumber;
@@ -129,6 +131,27 @@ public class PlaceVTO implements Serializable {
 
     public void setRemainedValue(Integer remainedValue) {
         this.remainedValue = remainedValue;
+    }
+
+    public PlaceVTO placeReport(PlaceReportVTO placeReport) {
+        this.placeReport = placeReport;
+        return this;
+    }
+
+    /**
+     * Get placeReport
+     *
+     * @return placeReport
+     */
+    @Valid
+    @Schema(name = "placeReport", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("placeReport")
+    public PlaceReportVTO getPlaceReport() {
+        return placeReport;
+    }
+
+    public void setPlaceReport(PlaceReportVTO placeReport) {
+        this.placeReport = placeReport;
     }
 
     public PlaceVTO address(String address) {
@@ -269,6 +292,7 @@ public class PlaceVTO implements Serializable {
         return Objects.equals(this.id, placeVTO.id) && Objects.equals(this.title, placeVTO.title)
                 && Objects.equals(this.rentValue, placeVTO.rentValue)
                 && Objects.equals(this.remainedValue, placeVTO.remainedValue)
+                && Objects.equals(this.placeReport, placeVTO.placeReport)
                 && Objects.equals(this.address, placeVTO.address)
                 && Objects.equals(this.phoneNumber, placeVTO.phoneNumber)
                 && Objects.equals(this.createdOn, placeVTO.createdOn)
@@ -279,8 +303,8 @@ public class PlaceVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, rentValue, remainedValue, address, phoneNumber, createdOn, createdBy,
-                lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, title, rentValue, remainedValue, placeReport, address, phoneNumber, createdOn,
+                createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -291,6 +315,7 @@ public class PlaceVTO implements Serializable {
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    rentValue: ").append(toIndentedString(rentValue)).append("\n");
         sb.append("    remainedValue: ").append(toIndentedString(remainedValue)).append("\n");
+        sb.append("    placeReport: ").append(toIndentedString(placeReport)).append("\n");
         sb.append("    address: ").append(toIndentedString(address)).append("\n");
         sb.append("    phoneNumber: ").append(toIndentedString(phoneNumber)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");

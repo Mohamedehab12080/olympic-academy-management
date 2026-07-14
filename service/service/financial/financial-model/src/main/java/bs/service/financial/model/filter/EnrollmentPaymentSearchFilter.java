@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @SuperBuilder
@@ -22,8 +23,9 @@ public class EnrollmentPaymentSearchFilter extends SearchFilter<EnrollmentPaymen
     private String traineeNationalId;
     private Integer enrollmentId;
     private Integer courseId;
+    private List<Integer> coursesId;
     private Integer paymentMethodId;
-    private Integer status;
+    private List<Integer> statuses;
     private LocalDate paymentDateFrom;
     private LocalDate paymentDateTo;
 

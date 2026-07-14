@@ -1,6 +1,5 @@
 package bs.service.financial.model.entity.place;
 
-import bs.lib.common.model.enums.PaymentStatus;
 import bs.service.financial.model.entity.PaymentMethod;
 import bs.service.place.model.entity.Place;
 import bs.service.user.model.entity.User;

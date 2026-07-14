@@ -1480,16 +1480,15 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getTotalRevenue(): number {
     if (!this.data) return 0;
-    return (this.data.totalEnrollmentPayments || 0) + 
-           (this.data.totalIncentives || 0)
-          }
+    return (this.data.totalEnrollmentPayments || 0)
+  }
 
   getTotalExpenses(): number {
     if (!this.data) return 0;
     return (this.data.totalSalary || 0) + 
-           (this.data.totalAdvance || 0) + 
+           (this.data.totalAdvance || 0) +
+           (this.data.totalIncentives || 0) + 
            (this.data.totalExpenses || 0)+
-           (this.data.totalEnrollmentRefunds || 0)+
            (this.data.totalPlacesRent || 0);
   }
 

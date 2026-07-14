@@ -47,6 +47,8 @@ import {
 } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { EnrollmentPaymentDetailsModalComponent } from '../enrollment-payment-details/enrollment-payment-details-modal.component';
 import { EnrollmentPaymentWizardModalComponent } from '../enrollment-payment-wizard/enrollment-payment-wizard-modal.component';
+import {EnrollmentRefundWizardModalComponent} from '../../enrollment-refund/enrollment-refund-wizard/enrollment-refund-wizard-modal.component';
+
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT
 // ============================================================================
@@ -1862,6 +1864,53 @@ export class EnrollmentPaymentListComponent
     }
   }
 
+  // ==========================================================================
+// REFUND ACTION
+// ==========================================================================
+
+/**
+ * Open refund wizard for a specific enrollment payment
+ * Auto-selects the enrollment for refund
+ */
+openRefundWizard(payment: any): void {
+  if (!payment?.enrollment?.id) {
+    this.notification.showWarning('لا يمكن استرداد هذه الدفعة - بيانات التسجيل غير مكتملة');
+    return;
+  }
+
+  // Check if payment can be refunded
+  if (payment.paymentStatus?.id === 4) {
+    this.notification.showWarning('هذه الدفعة مستردة بالفعل');
+    return;
+  }
+
+  if (payment.paymentStatus?.id === 5) {
+    this.notification.showWarning('هذه الدفعة ملغية');
+    return;
+  }
+
+  // Check if there's an amount to refund
+  if (!payment.paidAmount || payment.paidAmount <= 0) {
+    this.notification.showWarning('لا يوجد مبلغ مستحق للاسترداد');
+    return;
+  }
+
+  const dialogRef = this.dialog.open(EnrollmentRefundWizardModalComponent, {
+    data: { 
+      enrollmentId: payment.enrollment.id,
+      prefillAmount: payment.paidAmount // Pre-fill the refund amount
+    },
+    width: '800px',
+    maxWidth: '90vw'
+  });
+
+  dialogRef.afterClosed().subscribe((result) => {
+    if (result) {
+      this.loadData(); // Refresh the list after refund
+      this.notification.showSuccess('تم عملية الاسترداد بنجاح');
+    }
+  });
+}
   // Add this helper method to read the SVG file
   private async getSvgContent(): Promise<string> {
     try {
