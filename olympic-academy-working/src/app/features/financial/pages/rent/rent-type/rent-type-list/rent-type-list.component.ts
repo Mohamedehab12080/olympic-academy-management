@@ -256,7 +256,7 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
             ${tableRows}
           </tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>

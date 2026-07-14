@@ -723,7 +723,7 @@ export class CourseDetailsModalComponent {
         <div class="course-container">
           <div class="header">
             <h1>بيانات الدورة التدريبية</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
+            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           <div class="course-details">
             <div><strong>رقم الدورة:</strong> #${this.course.id}</div>
@@ -766,7 +766,7 @@ export class CourseDetailsModalComponent {
             <div class="signature-box"><div class="signature-line"></div><div>توقيع المدير الأكاديمي</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>

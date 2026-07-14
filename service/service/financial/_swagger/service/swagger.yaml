@@ -347,6 +347,7 @@ paths:
       summary: Retrieve list of place rent payments
       operationId: getAllPlaceRentPaymentsByFilter
       parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '#/components/parameters/QPPlaceId'
         - $ref: '#/components/parameters/QPRentTypeId'
         - $ref: '#/components/parameters/QPPaymentMethodId'
@@ -1944,6 +1945,9 @@ components:
           type: integer
           format: int32
         totalEnrollmentPayments:
+          type: integer
+          format: int32
+        totalEnrollmentRefunds:
           type: integer
           format: int32
         totalExpenses:

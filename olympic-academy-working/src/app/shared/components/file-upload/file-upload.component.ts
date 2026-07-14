@@ -39,8 +39,8 @@ import { NotificationService } from '../../../core/services/notification.service
         <div *ngIf="!uploading && !fid">
           <mat-icon class="upload-icon">cloud_upload</mat-icon>
           <p>{{ label || 'اضغط أو اسحب الملف هنا للرفع' }}</p>
-          <small *ngIf="acceptedTypesDisplay">{{ acceptedTypesDisplay }}</small>
-          <small *ngIf="maxSizeMB">الحد الأقصى: {{ maxSizeMB }} MB</small>
+          <small *ngIf="acceptedTypes && acceptedTypes !== '*/*' && acceptedTypes !== ''">{{ acceptedTypesDisplay }}</small>
+          <small *ngIf="maxSizeMB > 0">الحد الأقصى: {{ maxSizeMB }} MB</small>
         </div>
 
         <div *ngIf="uploading" class="upload-progress">
@@ -162,8 +162,8 @@ import { NotificationService } from '../../../core/services/notification.service
 export class FileUploadComponent implements ControlValueAccessor, OnInit {
   @Input() domainId!: FileDomain;
   @Input() label: string = '';
-  @Input() acceptedTypes: string = 'image/jpeg,image/png,image/jpg,image/webp';
-  @Input() maxSizeMB: number = 10;
+  @Input() acceptedTypes: string = '*/*'; // ✅ Change default to accept all
+  @Input() maxSizeMB: number = 0; // ✅ Default to 0 = no limit
   @Input() showMetadata: boolean = true;
   @Output() fileUploaded = new EventEmitter<string>();
   @Output() fileRemoved = new EventEmitter<void>();
@@ -182,6 +182,9 @@ export class FileUploadComponent implements ControlValueAccessor, OnInit {
   private onTouched: any = () => {};
 
   get acceptedTypesDisplay(): string {
+    if (!this.acceptedTypes || this.acceptedTypes === '*/*') {
+      return 'جميع أنواع الملفات';
+    }
     const types = this.acceptedTypes.split(',');
     const display = types.map(t => {
       if (t.includes('image')) return 'صور';
@@ -239,21 +242,10 @@ export class FileUploadComponent implements ControlValueAccessor, OnInit {
   }
 
   uploadFile(file: File): void {
-    // Validate file type
-    const allowedTypesArray = this.acceptedTypes.split(',').map(t => t.trim());
-    if (!FileService.isValidFileType(file, allowedTypesArray)) {
-      console.error('Invalid file type:', file.type, 'Allowed:', allowedTypesArray);
-      this.notification.showError(`نوع الملف غير مدعوم. الأنواع المدعومة: ${this.acceptedTypesDisplay}`);
-      return;
-    }
-
-    // Validate file size
-    if (!FileService.isValidFileSize(file, this.maxSizeMB)) {
-      console.error('File too large:', file.size, 'Max:', this.maxSizeMB * 1024 * 1024);
-      this.notification.showError(`حجم الملف يتجاوز الحد الأقصى (${this.maxSizeMB} MB)`);
-      return;
-    }
-
+    // ✅ SKIP ALL FRONTEND VALIDATIONS - Let backend handle everything
+    // No file type validation
+    // No file size validation
+    
     this.uploading = true;
     this.uploadProgress = 0;
     this.fileName = file.name;
@@ -283,13 +275,11 @@ export class FileUploadComponent implements ControlValueAccessor, OnInit {
         let errorMessage = 'فشل رفع الملف';
         
         if (error.error) {
-          // Check if error follows ErrorVTO format with messageEn
           if (error.error.messageEn) {
             errorMessage = error.error.messageEn;
           } else if (error.error.message) {
             errorMessage = error.error.message;
           } else if (typeof error.error === 'string') {
-            // Try to parse if it's a JSON string
             try {
               const parsedError = JSON.parse(error.error);
               if (parsedError.messageEn) {

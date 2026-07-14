@@ -50,6 +50,8 @@ import { ENROLLMENT_STATUSES } from '../../../../core/models/enrollment.model';
 import { EnrollmentDetailsModalComponent } from './../enrollment-details/enrollment-details-modal.component';
 import { EnrollmentWizardModalComponent } from './../enrollment-wizard/enrollment-wizard-modal.component';
 import { ConstantService } from '../../../../core/services/constant.service';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import * as JsBarcode from 'jsbarcode';
 
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT - ENHANCED FOR CARD PRINTING
@@ -752,6 +754,7 @@ export class EnrollmentListComponent
   dataSource = new MatTableDataSource<EnrollmentListItem>([]);
   allEnrollments: EnrollmentListItem[] = [];
   isLoading = false;
+  
 
   // ========== PAGINATION ==========
   totalItems: number = 0;
@@ -800,6 +803,9 @@ export class EnrollmentListComponent
   quickSearch: string = '';
 
   @ViewChild(MatSort) sort!: MatSort;
+
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   // Add these enum mapping constants at the top of your component
   private readonly ENROLLMENT_STATUS_MAP: { [key: number]: string } = {
@@ -854,6 +860,7 @@ export class EnrollmentListComponent
     return this.allEnrollments.filter((item) => item.isActive === false).length;
   }
 
+
   constructor(
     private enrollmentService: EnrollmentService,
     private traineeService: TraineeService,
@@ -871,6 +878,7 @@ export class EnrollmentListComponent
     this.loadLookupData();
     this.loadEnrollments();
     this.loadSelectOptions();
+    this.setupSearchDebounce(); 
   }
 
   ngAfterViewInit() {
@@ -878,13 +886,30 @@ export class EnrollmentListComponent
   }
 
   ngOnDestroy(): void {
-    this.traineeImageUrls.forEach((url) => {
-      if (url && url.startsWith('blob:')) {
-        URL.revokeObjectURL(url);
-      }
+  this.destroy$.next();
+  this.destroy$.complete();
+  
+  this.traineeImageUrls.forEach((url) => {
+    if (url && url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  });
+  this.traineeImageUrls.clear();
+}
+
+private setupSearchDebounce(): void {
+  this.searchSubject
+    .pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    )
+    .subscribe((searchValue: string) => {
+      this.quickSearch = searchValue;
+      this.currentPage = 0;
+      this.loadEnrollments();
     });
-    this.traineeImageUrls.clear();
-  }
+}
 
   loadSelectOptions() {
     // Enrollment Status options - use numeric IDs but send string enums
@@ -1110,8 +1135,9 @@ export class EnrollmentListComponent
     }
 
     if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
-    if (this.quickSearch) params.quickSearch = this.quickSearch;
-
+    if (this.quickSearch && this.quickSearch.trim().length > 0) {
+      params.quickSearch = this.quickSearch.trim();
+    }
     // ===== PAGINATION =====
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
@@ -1193,12 +1219,9 @@ export class EnrollmentListComponent
     this.loadEnrollments();
   }
 
-  applyQuickSearch(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.quickSearch = value;
-    this.currentPage = 0;
-    this.loadEnrollments();
-  }
+applyQuickSearch(value: string) {
+  this.searchSubject.next(value);
+}
 
   resetFilters() {
     this.filters = {
@@ -1406,700 +1429,264 @@ export class EnrollmentListComponent
     });
   }
 
-  private generateEnrollmentCards(
-    enrollments: EnrollmentListItem[],
-    imageUrls: string[],
-  ): void {
-    const printWindow = window.open(
-      '',
-      '_blank',
-      'width=800,height=800,scrollbars=yes',
-    );
-    if (!printWindow) {
-      this.notification.showError('تعذر فتح نافذة الطباعة');
-      return;
+private generateEnrollmentCards(
+  enrollments: EnrollmentListItem[],
+  imageUrls: string[],
+): void {
+  const printWindow = window.open(
+    '',
+    '_blank',
+    'width=800,height=800,scrollbars=yes',
+  );
+  if (!printWindow) {
+    this.notification.showError('تعذر فتح نافذة الطباعة');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ar-EG');
+  const currentYear = new Date().getFullYear();
+  let cardsHtml = '';
+  const logoPath = 'assets/images/simpleLogo.jpeg';
+  const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+  const academyAddress = 'الفيوم - حي الجامعة';
+
+  // ✅ Import JsBarcode at the top of your file: import * as JsBarcode from 'jsbarcode';
+
+  enrollments.forEach((enrollment, index) => {
+    const imageUrl = imageUrls[index] || '';
+    const traineeName = this.getTraineeName(enrollment.trainee);
+    const courseTitle = enrollment.course?.title || '-';
+    const trainerTitle = enrollment.trainer?.title || '-';
+    const startDate = enrollment.startDate || '-';
+    const endDate = enrollment.endDate || '-';
+    const amount = enrollment.finalSubscriptionValue || 0;
+    const remaining = enrollment.remainedSubscriptionValue || 0;
+    const isActive = enrollment.isActive;
+    const enrollmentStatus = enrollment.enrollmentStatus?.title || '-';
+    const paymentStatus = enrollment.paymentStatus?.title || '-';
+
+    // ✅ Generate barcode image using JsBarcode (same as details modal)
+    let barcodeImage = '';
+    try {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 200;
+      tempCanvas.height = 40;
+
+      const barcodeValue = enrollment.trainee?.nationalId || enrollment.id || '000000';
+
+      JsBarcode(tempCanvas, String(barcodeValue), {
+        format: 'CODE128',
+        lineColor: '#000000',
+        width: 1.5,
+        height: 40,
+        displayValue: true,
+        fontSize: 10,
+        font: 'monospace',
+        textAlign: 'center',
+        margin: 5
+      });
+
+      barcodeImage = tempCanvas.toDataURL('image/png');
+    } catch (e) {
+      console.error('Barcode generation error:', e);
+      barcodeImage = '';
     }
 
-    const today = new Date().toLocaleDateString('ar-EG');
-    const currentYear = new Date().getFullYear();
-    let cardsHtml = '';
-    const logoPath = 'assets/images/simpleLogo.jpeg';
-    const academyName = 'الأكاديمية الأولمبية';
-    const academyAddress = 'الفيوم - حي الجامعة';
+    // ✅ Use barcode image or fallback
+    const barcodeHtml = barcodeImage
+      ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
+      : `<span style="font-family:monospace;font-size:12px;color:#000;">${enrollment.trainee?.nationalId || enrollment.id}</span>`;
 
-    // Get contact number from constant service (id = 1)
-    let contactNumber = '01069911181'; // Default fallback
+    // ✅ Only show photo section if imageUrl exists and is not empty
+    const hasImage = imageUrl && imageUrl.trim() !== '';
+    const photoSection = hasImage
+      ? `
+    <div class="card-photo">
+      <img src="${imageUrl}" alt="${traineeName}" onerror="this.style.display='none'">
+    </div>
+  `
+      : '';
 
-    // We'll use the constant from the service, but we need to fetch it first
-    // Since this is called from printEnrollmentCards, we'll pass it as a parameter
-    // For now, we'll use the value passed from the parent method
-
-    enrollments.forEach((enrollment, index) => {
-      const imageUrl = imageUrls[index] || '';
-      const traineeName = this.getTraineeName(enrollment.trainee);
-      const courseTitle = enrollment.course?.title || '-';
-      const trainerTitle = enrollment.trainer?.title || '-';
-      const startDate = enrollment.startDate || '-';
-      const endDate = enrollment.endDate || '-';
-      const amount = enrollment.finalSubscriptionValue || 0;
-      const remaining = enrollment.remainedSubscriptionValue || 0;
-      const isActive = enrollment.isActive;
-      const enrollmentStatus = enrollment.enrollmentStatus?.title || '-';
-      const paymentStatus = enrollment.paymentStatus?.title || '-';
-
-      cardsHtml += `
-      <div class="card-wrapper">
-        <div class="card">
-          <!-- Watermark (transparent background) -->
-          <div class="card-watermark">
-            <img src="${logoPath}" alt="${academyName}">
-          </div>
-          <div class="card-watermark-text">${academyName}</div>
-          
-          <!-- Card Content -->
-          <div class="card-content">
-            <!-- Logo at top - Colored and visible -->
-            <div class="card-logo-section">
-              <img src="${logoPath}" alt="${academyName}" class="card-logo-image">
-              <div class="card-logo-text">
-                <span class="academy-name">${academyName}</span>
-                <span class="card-title">بطاقة تسجيل متدرب</span>
-              </div>
+    cardsHtml += `
+    <div class="card-wrapper">
+      <div class="card">
+        <!-- Watermark -->
+        <div class="card-watermark">
+          <img src="${logoPath}" alt="${academyName}">
+        </div>
+        <div class="card-watermark-text">${academyName}</div>
+        
+        <div class="card-content">
+          <!-- Logo Section -->
+          <div class="card-logo-section">
+            <img src="${logoPath}" alt="${academyName}" class="card-logo-image">
+            <div class="card-logo-text">
+              <span class="academy-name">${academyName}</span>
+              <span class="card-title">✦ بطاقة تسجيل متدرب ✦</span>
             </div>
-            
-            <div class="card-body">
-              <div class="card-photo">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${traineeName}">` : '<div class="placeholder-photo">📷</div>'}
-              </div>
-              <div class="card-info">
-                <div class="card-name">${traineeName}</div>
-                <div class="card-id">رقم التسجيل: ${enrollment.id}</div>
-                <div class="card-details">
-                  <div class="detail-row">
-                    <span class="detail-label">الدورة:</span>
-                    <span class="detail-value">${courseTitle}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">المدرب:</span>
-                    <span class="detail-value">${trainerTitle}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">تاريخ البدء:</span>
-                    <span class="detail-value">${startDate}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">تاريخ الانتهاء:</span>
-                    <span class="detail-value">${endDate}</span>
-                  </div>
-                  <div class="detail-row amount-row">
-                    <span class="detail-label">💰 القيمة:</span>
-                    <span class="detail-value amount">${amount.toLocaleString()} جم</span>
-                  </div>
-                  <div class="detail-row remaining-row">
-                    <span class="detail-label">💳 المتبقي:</span>
-                    <span class="detail-value remaining ${remaining === 0 ? 'zero' : ''}">${remaining.toLocaleString()} جم</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">الحالة:</span>
-                    <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">حالة التسجيل:</span>
-                    <span class="detail-value">${enrollmentStatus}</span>
-                  </div>
-                  <div class="detail-row">
-                    <span class="detail-label">حالة الدفع:</span>
-                    <span class="detail-value">${paymentStatus}</span>
-                  </div>
+          </div>
+          
+          <!-- ✅ Photo - Only shown if image exists -->
+          <div class="card-body">
+            ${photoSection}
+            <div class="card-info">
+              <div class="card-name">${traineeName}</div>
+              <div class="card-id">رقم التسجيل: ${enrollment.id}</div>
+              <div class="card-details">
+                <div class="detail-row">
+                  <span class="detail-label">الدورة:</span>
+                  <span class="detail-value">${courseTitle}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">المدرب:</span>
+                  <span class="detail-value">${trainerTitle}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">تاريخ البدء:</span>
+                  <span class="detail-value">${startDate}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">تاريخ الانتهاء:</span>
+                  <span class="detail-value">${endDate}</span>
+                </div>
+                <div class="detail-row amount-row">
+                  <span class="detail-label">💰 القيمة:</span>
+                  <span class="detail-value amount">${amount.toLocaleString()} جم</span>
+                </div>
+                <div class="detail-row remaining-row">
+                  <span class="detail-label">💳 المتبقي:</span>
+                  <span class="detail-value remaining ${remaining === 0 ? 'zero' : ''}">${remaining.toLocaleString()} جم</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">الحالة:</span>
+                  <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">حالة التسجيل:</span>
+                  <span class="detail-value">${enrollmentStatus}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">حالة الدفع:</span>
+                  <span class="detail-value">${paymentStatus}</span>
                 </div>
               </div>
             </div>
-            <div class="card-footer">
-              <div class="card-barcode">
-                <svg id="barcode-${index}" class="barcode-svg"></svg>
-              </div>
-              <div class="card-signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">توقيع المتدرب</div>
-              </div>
-              <div class="card-signature">
-                <div class="signature-line"></div>
-                <div class="signature-label">ختم الأكاديمية</div>
-              </div>
+          </div>
+          
+          <!-- Footer with Barcode -->
+          <div class="card-footer">
+            <div class="card-barcode">
+              ${barcodeHtml}
             </div>
-            
-            <!-- ===== ACADEMY INFO - Smallest size ===== -->
-            <div class="card-academy-info">
-              <span class="academy-name-small">🏛️ ${academyName}</span>
-              <span class="separator-dot">•</span>
-              <span class="academy-address">📍 ${academyAddress}</span>
-              <span class="separator-dot">•</span>
-              <span class="academy-phone">📞 ${this.academyContactNumber || '01069911181'}</span>
+            <div class="card-signature">
+              <div class="signature-line"></div>
+              <div class="signature-label">توقيع المتدرب</div>
             </div>
-            
-            <!-- ===== ISSUE DATE ===== -->
-            <div class="card-issue-date">📅 تاريخ الإصدار: ${today}</div>
-            
-            <!-- ===== POWERED BY - Bottom Left ===== -->
-            <div class="card-powered-by">
-              <span class="company-name">⚡ CoreStack Solutions</span>
-              <span class="separator">|</span>
-              <span class="company-phone">📱 01069911181</span>
-              <span class="separator">|</span>
-              <span class="copyright">© ${currentYear}</span>
+            <div class="card-signature">
+              <div class="signature-line"></div>
+              <div class="signature-label">ختم الأكاديمية</div>
             </div>
+          </div>
+          
+          <!-- Academy Info -->
+          <div class="card-academy-info">
+            <span class="academy-name-small">🏛️ ${academyName}</span>
+            <span class="separator-dot">•</span>
+            <span class="academy-address">📍 ${academyAddress}</span>
+            <span class="separator-dot">•</span>
+            <span class="academy-phone">📞 ${this.academyContactNumber || '01069911181'}</span>
+          </div>
+          
+          <!-- Issue Date -->
+          <div class="card-issue-date">📅 تاريخ الإصدار: ${today}</div>
+          
+          <!-- Powered By -->
+          <div class="card-powered-by">
+            <span class="company-name">⚡ CoreStack Solutions</span>
+            <span class="separator">|</span>
+            <span class="company-phone">📱 01069911181</span>
+            <span class="separator">|</span>
+            <span class="copyright">© ${currentYear}</span>
           </div>
         </div>
       </div>
-    `;
-    });
+    </div>
+  `;
+  });
 
-    printWindow.document.write(`
-    <!DOCTYPE html>
-    <html dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <title>بطاقات التسجيلات</title>
-      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-      <style>
-        * { 
-          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
+  printWindow.document.write(`
+  <!DOCTYPE html>
+  <html dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <title>بطاقات التسجيلات</title>
+    <style>
+      * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+      .card-wrapper { display: inline-block; margin: 4px; }
+      .card { width: 280px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px 14px; position: relative; }
+      .card-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); opacity: 0.06; pointer-events: none; z-index: 0; }
+      .card-watermark img { width: 100px; height: auto; }
+      .card-watermark-text { position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 20px; font-weight: 900; color: #0f3460; opacity: 0.04; white-space: nowrap; z-index: 0; }
+      .card-content { position: relative; z-index: 1; }
+      .card-logo-section { display: flex; align-items: center; gap: 12px; padding: 8px 0; margin-bottom: 6px; border-bottom: 2px solid #0f3460; }
+      .card-logo-image { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: white; padding: 2px; }
+      .card-logo-text .academy-name { font-size: 13px; font-weight: 700; color: #0f3460; }
+      .card-logo-text .card-title { font-size: 9px; color: #64748b; }
+      .card-body { display: flex; gap: 10px; margin-bottom: 8px; }
+      .card-photo { flex-shrink: 0; }
+      .card-photo img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #0f3460; }
+      .card-info { flex: 1; }
+      .card-name { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+      .card-id { font-size: 8px; color: #64748b; }
+      .card-details { font-size: 9px; }
+      .detail-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #f1f5f9; }
+      .detail-label { color: #64748b; }
+      .detail-value { color: #1e293b; font-weight: 500; }
+      .detail-value.amount { color: #0f3460; font-weight: 700; }
+      .detail-value.remaining { color: #d97706; font-weight: 600; }
+      .detail-value.remaining.zero { color: #10b981; }
+      .detail-value.status.active { color: #10b981; }
+      .detail-value.status.inactive { color: #ef4444; }
+      .amount-row { background: #f0f4f8; border-radius: 4px; padding: 2px 4px; }
+      .remaining-row { background: #fffbeb; border-radius: 4px; padding: 2px 4px; }
+      .card-footer { border-top: 2px solid #0f3460; padding-top: 6px; margin-top: 4px; text-align: center; }
+      .card-barcode img { max-width: 100%; height: 30px; }
+      .card-barcode span { font-size: 12px; font-family: monospace; color: #000; }
+      .card-signature { display: inline-block; width: 44%; text-align: center; }
+      .signature-line { border-top: 1px solid #94a3b8; margin: 3px 0 2px; }
+      .signature-label { font-size: 7px; color: #94a3b8; }
+      .card-academy-info { text-align: center; font-size: 6px; color: #94a3b8; margin-top: 4px; padding-top: 3px; border-top: 1px solid #f1f5f9; }
+      .card-academy-info .academy-name-small { color: #0f3460; font-weight: 600; }
+      .card-academy-info .academy-address { color: #64748b; }
+      .card-academy-info .academy-phone { color: #0f3460; font-weight: 500; }
+      .card-academy-info .separator-dot { color: #d1d5db; margin: 0 3px; }
+      .card-issue-date { text-align: center; font-size: 6px; color: #94a3b8; margin-top: 2px; padding-top: 2px; border-top: 1px dashed #e2e8f0; }
+      .card-powered-by { text-align: left; font-size: 5px; color: #94a3b8; margin-top: 2px; padding-top: 2px; border-top: 1px solid #f1f5f9; direction: ltr; }
+      .card-powered-by .company-name { color: #8b5cf6; font-weight: 700; }
+      .card-powered-by .separator { color: #e5e7eb; margin: 0 2px; }
+      .no-print { text-align: center; margin-top: 20px; width: 100%; }
+      .no-print button { padding: 12px 30px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+      @media print { .no-print { display: none; } .card { page-break-inside: avoid; } }
+      /* ✅ Ensure barcode images print properly */
+      @media print {
+        .card-barcode img {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
-        
-        @media print {
-          body { 
-            margin: 0; 
-            padding: 4px; 
-            background: white; 
-          }
-          .no-print { display: none; }
-          .card-wrapper { 
-            page-break-after: avoid;
-            display: inline-block;
-            width: 50%;
-            padding: 3px;
-          }
-          .card {
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-            border-radius: 4px !important;
-            min-height: 260px;
-            padding: 8px 10px;
-          }
-          .card-watermark {
-            opacity: 0.08 !important;
-          }
-          .card-watermark img {
-            width: 80px !important;
-          }
-          .card-watermark-text {
-            font-size: 16px !important;
-            opacity: 0.04 !important;
-          }
-          .card-logo-section {
-            padding: 4px 0 !important;
-            margin-bottom: 4px !important;
-          }
-          .card-logo-image {
-            width: 40px !important;
-            height: 40px !important;
-          }
-          .card-logo-text .academy-name {
-            font-size: 11px !important;
-          }
-          .card-logo-text .card-title {
-            font-size: 7px !important;
-          }
-          .card-body {
-            gap: 6px;
-            margin-bottom: 4px;
-          }
-          .card-photo img, .placeholder-photo {
-            width: 45px !important;
-            height: 45px !important;
-          }
-          .card-name {
-            font-size: 10px !important;
-          }
-          .card-id {
-            font-size: 7px !important;
-          }
-          .card-details {
-            font-size: 7px !important;
-          }
-          .detail-row {
-            padding: 1px 0;
-          }
-          .card-footer {
-            padding-top: 4px;
-            margin-top: 2px;
-          }
-          .card-barcode svg {
-            height: 20px !important;
-          }
-          .card-signature {
-            width: 42%;
-          }
-          .signature-label {
-            font-size: 5px !important;
-          }
-          .signature-line {
-            margin: 2px 0;
-          }
-          .card-academy-info {
-            font-size: 5px !important;
-          }
-          .card-issue-date {
-            font-size: 5px !important;
-          }
-          .card-powered-by {
-            font-size: 4px !important;
-          }
-          .card-powered-by .company-name {
-            font-size: 4.5px !important;
-          }
-          .card-logo-image {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-        
-        @media screen {
-          body { 
-            margin: 0; 
-            padding: 20px; 
-            background: #f0f2f5; 
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            justify-content: center;
-          }
-          .card-wrapper { 
-            flex: 0 0 auto;
-            margin: 0;
-          }
-        }
-        
-        .card-wrapper {
-          display: inline-block;
-        }
-        
-        .card {
-          width: 100%;
-          max-width: 280px;
-          min-width: 220px;
-          height: auto;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
-          direction: rtl;
-          padding: 12px 14px;
-          position: relative;
-        }
-        
-        /* ===== WATERMARK - Transparent background ===== */
-        .card-watermark {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
-          opacity: 0.06;
-          pointer-events: none;
-          z-index: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 100%;
-        }
-        
-        .card-watermark img {
-          width: 100px;
-          height: auto;
-          filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
-          opacity: 0.8;
-        }
-        
-        .card-watermark-text {
-          position: absolute;
-          top: 56%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
-          font-size: 20px;
-          font-weight: 900;
-          color: #0f3460;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          white-space: nowrap;
-          opacity: 0.04;
-          pointer-events: none;
-          z-index: 0;
-          text-shadow: 0 2px 10px rgba(15, 52, 96, 0.1);
-        }
-        
-        /* ===== CARD CONTENT - Above watermark ===== */
-        .card-content {
-          position: relative;
-          z-index: 1;
-        }
-        
-        /* ===== LOGO AT TOP - Colored and visible ===== */
-        .card-logo-section {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 8px 0;
-          margin-bottom: 6px;
-          border-bottom: 2px solid #0f3460;
-        }
-        
-        .card-logo-image {
-          width: 48px;
-          height: 48px;
-          object-fit: contain;
-          border-radius: 8px;
-          flex-shrink: 0;
-          background: white;
-          padding: 2px;
-        }
-        
-        .card-logo-text {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-        
-        .card-logo-text .academy-name {
-          font-size: 13px;
-          font-weight: 700;
-          color: #0f3460;
-          line-height: 1.2;
-        }
-        
-        .card-logo-text .card-title {
-          font-size: 9px;
-          color: #64748b;
-          font-weight: 500;
-        }
-        
-        .card-body {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 8px;
-        }
-        
-        .card-photo {
-          flex-shrink: 0;
-        }
-        
-        .card-photo img {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #0f3460;
-        }
-        
-        .placeholder-photo {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 28px;
-          color: white;
-        }
-        
-        .card-info {
-          flex: 1;
-          min-width: 0;
-        }
-        
-        .card-name {
-          font-size: 13px;
-          font-weight: 700;
-          color: #1a1a2e;
-          margin-bottom: 2px;
-        }
-        
-        .card-id {
-          font-size: 8px;
-          color: #64748b;
-          margin-bottom: 2px;
-        }
-        
-        .card-details {
-          font-size: 9px;
-        }
-        
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 2px 0;
-          border-bottom: 1px dashed #f1f5f9;
-        }
-        
-        .detail-label {
-          color: #64748b;
-        }
-        
-        .detail-value {
-          color: #1e293b;
-          font-weight: 500;
-        }
-        
-        .detail-value.amount {
-          color: #0f3460;
-          font-weight: 700;
-        }
-        
-        .detail-value.remaining {
-          color: #d97706;
-          font-weight: 600;
-        }
-        
-        .detail-value.remaining.zero {
-          color: #10b981;
-        }
-        
-        .detail-value.status.active {
-          color: #10b981;
-        }
-        
-        .detail-value.status.inactive {
-          color: #ef4444;
-        }
-        
-        .amount-row {
-          background: #f0f4f8;
-          border-radius: 4px;
-          padding: 2px 4px;
-        }
-        
-        .remaining-row {
-          background: #fffbeb;
-          border-radius: 4px;
-          padding: 2px 4px;
-        }
-        
-        .card-footer {
-          border-top: 2px solid #0f3460;
-          padding-top: 6px;
-          margin-top: 4px;
-        }
-        
-        .card-barcode {
-          text-align: center;
-          margin-bottom: 6px;
-        }
-        
-        .card-barcode svg {
-          max-width: 100%;
-          height: 30px;
-        }
-        
-        .card-signature {
-          display: inline-block;
-          width: 44%;
-          text-align: center;
-          vertical-align: top;
-        }
-        
-        .card-signature:last-child {
-          margin-right: 5%;
-        }
-        
-        .signature-line {
-          border-top: 1px solid #94a3b8;
-          margin: 3px 0 2px;
-        }
-        
-        .signature-label {
-          font-size: 7px;
-          color: #94a3b8;
-        }
-        
-        /* ===== ACADEMY INFO - Smallest size ===== */
-        .card-academy-info {
-          text-align: center;
-          font-size: 6px;
-          color: #94a3b8;
-          margin-top: 4px;
-          padding-top: 3px;
-          border-top: 1px solid #f1f5f9;
-        }
-        
-        .card-academy-info .academy-name-small {
-          color: #0f3460;
-          font-weight: 600;
-        }
-        
-        .card-academy-info .academy-address {
-          color: #64748b;
-        }
-        
-        .card-academy-info .academy-phone {
-          color: #0f3460;
-          font-weight: 500;
-        }
-        
-        .card-academy-info .separator-dot {
-          color: #d1d5db;
-          margin: 0 3px;
-          font-weight: 700;
-        }
-        
-        .card-issue-date {
-          text-align: center;
-          font-size: 6px;
-          color: #94a3b8;
-          margin-top: 2px;
-          padding-top: 2px;
-          border-top: 1px dashed #e2e8f0;
-        }
-        
-        /* ===== POWERED BY - Bottom Left ===== */
-        .card-powered-by {
-          text-align: left;
-          font-size: 5px;
-          color: #94a3b8;
-          margin-top: 2px;
-          padding-top: 2px;
-          border-top: 1px solid #f1f5f9;
-          direction: ltr;
-        }
-        
-        .card-powered-by .company-name {
-          color: #8b5cf6;
-          font-weight: 700;
-          font-size: 5.5px;
-        }
-        
-        .card-powered-by .company-phone {
-          color: #94a3b8;
-          font-weight: 500;
-        }
-        
-        .card-powered-by .separator {
-          color: #e5e7eb;
-          margin: 0 2px;
-        }
-        
-        .card-powered-by .copyright {
-          color: #d1d5db;
-        }
-        
-        @media print {
-          .card-academy-info {
-            font-size: 5px !important;
-          }
-          .card-academy-info .academy-name-small {
-            font-size: 5px !important;
-          }
-          .card-academy-info .academy-address {
-            font-size: 5px !important;
-          }
-          .card-academy-info .academy-phone {
-            font-size: 5px !important;
-          }
-          .card-academy-info .separator-dot {
-            margin: 0 2px !important;
-          }
-          .card-issue-date {
-            font-size: 5px !important;
-          }
-          .card-powered-by {
-            font-size: 4px !important;
-            text-align: left !important;
-          }
-          .card-powered-by .company-name {
-            font-size: 4.5px !important;
-          }
-          .card-powered-by .company-phone {
-            font-size: 4px !important;
-          }
-          .card-powered-by .separator {
-            margin: 0 1.5px !important;
-          }
-          .card-powered-by .copyright {
-            font-size: 4px !important;
-          }
-        }
-        
-        @media (max-width: 600px) {
-          .card {
-            max-width: 100%;
-          }
-          .card-watermark img {
-            width: 80px !important;
-          }
-          .card-watermark-text {
-            font-size: 16px !important;
-          }
-          .card-logo-image {
-            width: 36px !important;
-            height: 36px !important;
-          }
-          .card-logo-text .academy-name {
-            font-size: 11px !important;
-          }
-          .card-photo img, .placeholder-photo {
-            width: 50px !important;
-            height: 50px !important;
-          }
-          .card-academy-info {
-            font-size: 5px !important;
-          }
-          .card-powered-by {
-            font-size: 4.5px !important;
-          }
-          .card-powered-by .company-name {
-            font-size: 5px !important;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      ${cardsHtml}
-      <div class="no-print" style="text-align: center; margin-top: 20px; width: 100%;">
-        <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🖨️ طباعة / حفظ كـ PDF</button>
-      </div>
-      <script>
-        window.onload = function() {
-          setTimeout(function() {
-            const enrollments = ${JSON.stringify(enrollments.map((e) => e.trainee?.nationalId || e.id))};
-            enrollments.forEach(function(id, index) {
-              try {
-                JsBarcode('#barcode-' + index, id || '000000', {
-                  format: 'CODE128',
-                  lineColor: '#000000',
-                  width: 1,
-                  height: 25,
-                  displayValue: true,
-                  fontSize: 7,
-                  font: 'monospace',
-                  textAlign: 'center',
-                  margin: 1
-                });
-              } catch(e) {
-                console.error('Barcode error for index', index, e);
-              }
-            });
-          }, 300);
-        };
-      <\/script>
-    </body>
-    </html>
-  `);
-    printWindow.document.close();
-  }
+      }
+    </style>
+  </head>
+  <body>
+    ${cardsHtml}
+    <div class="no-print">
+      <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
+    </div>
+    <!-- ✅ No JavaScript needed - barcodes are pre-generated as images -->
+  </body>
+  </html>
+`);
+  printWindow.document.close();
+}
 
   // ==========================================================================
   // EXPORT FUNCTIONS WITH PAGE SELECTION
@@ -2414,9 +2001,9 @@ export class EnrollmentListComponent
           <!-- Watermark -->
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="watermark-logo">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="watermark-logo">
             </div>
-            <div class="watermark-text">الأكاديمية الأولمبية</div>
+            <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
           </div>
           
           <div class="content">
@@ -2489,7 +2076,7 @@ export class EnrollmentListComponent
             </table>
             
             <div class="footer">
-              الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${dataToPrint.length} تسجيل
+               الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} تسجيل
             </div>
           </div>
         </div>

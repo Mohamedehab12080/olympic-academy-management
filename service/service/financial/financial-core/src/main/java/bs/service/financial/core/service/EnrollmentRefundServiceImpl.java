@@ -52,6 +52,7 @@ public class EnrollmentRefundServiceImpl implements EnrollmentRefundService {
         enrollment.setPaymentStatus(PaymentStatus.REFUNDED.id);
         enrollment.setEnrollmentStatus(EnrollmentStatus.CANCELLED.id);
         enrollment.setRemainedSubscriptionValue(enrollmentRefundDTO.getAmountRefunded()-paidAmount);
+        enrollment.setIsActive(false);
         enrollmentRepository.update(enrollment);
 
         return NewRecordVTO.builder().id(refund.getId()).build();

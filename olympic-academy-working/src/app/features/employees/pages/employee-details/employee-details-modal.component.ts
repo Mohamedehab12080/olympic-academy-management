@@ -1123,41 +1123,42 @@ export class EmployeeDetailsModalComponent
     this.dialogRef.close({ action: 'delete', employee: this.employee });
   }
 
-  printEmployeeCard(): void {
-    this.generateBarcode();
-    setTimeout(() => {
-      const barcodeImage =
-        this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
-      const printWindow = window.open('', '_blank', 'width=350,height=500');
-      if (!printWindow) {
-        this.notification.showError('تعذر فتح نافذة الطباعة');
-        return;
-      }
+printEmployeeCard(): void {
+  this.generateBarcode();
+  setTimeout(() => {
+    const barcodeImage =
+      this.barcodeCanvas?.nativeElement?.toDataURL('image/png') || '';
+    const printWindow = window.open('', '_blank', 'width=350,height=500');
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
+    }
 
-      const t = this.employee;
-      const imagePreviewUrl = this.imageUrl || '';
-      const today = new Date().toLocaleDateString('ar-EG');
-      const genderDisplay = t.gender?.title || '-';
-      const employeeTypeDisplay = t.employeeType?.title || '-';
-      const departmentsText =
-        this.trainerDepartments
-          .map((d: any) => d.department?.title || d.title)
-          .join(', ') || '-';
-      const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
+    const t = this.employee;
+    // ✅ Check if image exists
+    const hasImage = this.imageUrl && this.imageUrl.trim() !== '';
+    const imagePreviewUrl = this.imageUrl || '';
+    const today = new Date().toLocaleDateString('ar-EG');
+    const genderDisplay = t.gender?.title || '-';
+    const employeeTypeDisplay = t.employeeType?.title || '-';
+    const departmentsText =
+      this.trainerDepartments
+        .map((d: any) => d.department?.title || d.title)
+        .join(', ') || '-';
+    const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
 
-      // Use the main logo for both header and watermark
-      const logoPath = 'assets/images/simpleLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
-      // Conditional photo section - only show if image exists
-      const photoSection = imagePreviewUrl
-        ? `
-      <div class="thermal-photo">
-        <img src="${imagePreviewUrl}" alt="${this.escapeHtml(t.fullName)}">
-      </div>
-    `
-        : '';
+    // ✅ Photo section - only shown if image exists
+    const photoSection = hasImage
+      ? `
+    <div class="thermal-photo">
+      <img src="${imagePreviewUrl}" alt="${this.escapeHtml(t.fullName)}" onerror="this.style.display='none'">
+    </div>
+  `
+      : ''; // ← Completely hidden when no image
 
-      printWindow.document.write(`
+    printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
       <head>
@@ -1201,7 +1202,7 @@ export class EmployeeDetailsModalComponent
             flex-shrink: 0;
           }
           
-          /* ===== ENHANCED WATERMARK - Larger and more visible ===== */
+          /* ===== WATERMARK ===== */
           .card-watermark {
             position: absolute;
             top: 50%;
@@ -1248,7 +1249,7 @@ export class EmployeeDetailsModalComponent
             width: 100%;
           }
           
-          /* ===== ENHANCED LOGO SECTION - Larger and more prominent ===== */
+          /* ===== LOGO SECTION ===== */
           .card-logo-section {
             display: flex;
             align-items: center;
@@ -1293,7 +1294,7 @@ export class EmployeeDetailsModalComponent
             letter-spacing: 0.5px;
           }
           
-          /* Compact Photo */
+          /* ===== PHOTO - Only shown if image exists ===== */
           .thermal-photo { 
             text-align: center; 
             margin-bottom: 1mm; 
@@ -1307,7 +1308,7 @@ export class EmployeeDetailsModalComponent
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           }
           
-          /* Compact Name & ID */
+          /* ===== NAME & ID ===== */
           .thermal-name { 
             font-size: 11px; 
             font-weight: 700; 
@@ -1325,14 +1326,13 @@ export class EmployeeDetailsModalComponent
             letter-spacing: 0.5px;
           }
           
-          /* Compact Divider */
           .thermal-divider { 
             border-top: 1px dashed #e5e7eb; 
             margin: 0.8mm 0; 
             opacity: 0.6;
           }
           
-          /* Compact Table */
+          /* ===== TABLE ===== */
           .thermal-table { 
             width: 100%; 
             font-size: 7px; 
@@ -1369,7 +1369,7 @@ export class EmployeeDetailsModalComponent
             color: #ef4444; 
           }
           
-          /* Compact Barcode */
+          /* ===== BARCODE ===== */
           .thermal-barcode { 
             text-align: center; 
             margin: 0.8mm 0; 
@@ -1388,7 +1388,7 @@ export class EmployeeDetailsModalComponent
             letter-spacing: 1.5px;
           }
           
-          /* Compact Footer */
+          /* ===== FOOTER ===== */
           .thermal-footer { 
             display: flex; 
             justify-content: space-between; 
@@ -1411,7 +1411,6 @@ export class EmployeeDetailsModalComponent
             padding-top: 3mm; 
           }
           
-          /* ===== COPYRIGHT / DEVELOPMENT CREDIT - Centered at bottom of page ===== */
           .credit-wrapper {
             width: 100%;
             text-align: center;
@@ -1493,19 +1492,19 @@ export class EmployeeDetailsModalComponent
       <body>
         <!-- ===== CARD ===== -->
         <div class="thermal-card">
-          <!-- ===== ENHANCED WATERMARK - Larger logo and text ===== -->
+          <!-- ===== WATERMARK ===== -->
           <div class="card-watermark">
-            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
           </div>
-          <div class="card-watermark-text">الأكاديمية الأولمبية</div>
+          <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
           
           <!-- ===== CONTENT ===== -->
           <div class="card-content">
-            <!-- ===== ENHANCED LOGO AT TOP - Larger and more professional ===== -->
+            <!-- ===== LOGO AT TOP ===== -->
             <div class="card-logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
               <div class="card-logo-text">
-                <span class="academy-name">🏛️ الأكاديمية الأولمبية</span>
+                <span class="academy-name">🏛️  الأكاديمية الأولمبية لعلوم الرياضة</span>
                 <span class="card-type">✦ بطاقة هوية موظف ✦</span>
               </div>
             </div>
@@ -1569,7 +1568,7 @@ export class EmployeeDetailsModalComponent
           </div>
         </div>
         
-        <!-- ===== COPYRIGHT CREDIT - At the very bottom of the page ===== -->
+        <!-- ===== COPYRIGHT CREDIT ===== -->
         <div class="credit-wrapper">
           <span class="credit-text">powered by CoreStack Solutions | 01069911181</span>
         </div>
@@ -1587,9 +1586,9 @@ export class EmployeeDetailsModalComponent
       </body>
       </html>
     `);
-      printWindow.document.close();
-    }, 300);
-  }
+    printWindow.document.close();
+  }, 300);
+}
 
   // ==================== Print Complete Profile (ملف) ====================
   printProfileDocument(): void {
@@ -1814,7 +1813,7 @@ export class EmployeeDetailsModalComponent
         <body>
           <div class="header">
             <h1>📋 ملف الموظف</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
+            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           
           <div class="profile-details">
@@ -1900,7 +1899,7 @@ export class EmployeeDetailsModalComponent
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
 
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
           
           <div class="no-print" style="text-align:center;margin-top:12px;">
             <button onclick="window.print();" style="padding:8px 24px;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">🖨️ طباعة / حفظ كـ PDF</button>

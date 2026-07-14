@@ -352,7 +352,7 @@ import * as JsBarcode from 'jsbarcode';
     <div id="thermalPrint" style="display: none;">
       <div class="thermal-card">
         <div class="thermal-header">
-          <div class="thermal-title">الأكاديمية الأولمبية</div>
+          <div class="thermal-title"> الأكاديمية الأولمبية لعلوم الرياضة</div>
           <div class="thermal-subtitle">بطاقة تسجيل متدرب</div>
         </div>
         <div class="thermal-divider"></div>
@@ -1169,27 +1169,40 @@ export class EnrollmentDetailsModalComponent
     });
   }
 
-  private openPrintWindow(contactNumber: string): void {
-    setTimeout(() => {
-      const barcodeImage =
-        this.barcodeCanvas.nativeElement.toDataURL('image/png');
-      const printWindow = window.open(
-        '',
-        '_blank',
-        'width=350,height=500,scrollbars=no,menubar=no,toolbar=no,status=no',
-      );
-      if (!printWindow) {
-        this.notification.showError('تعذر فتح نافذة الطباعة');
-        return;
-      }
+private openPrintWindow(contactNumber: string): void {
+  setTimeout(() => {
+    const barcodeImage =
+      this.barcodeCanvas.nativeElement.toDataURL('image/png');
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=350,height=500,scrollbars=no,menubar=no,toolbar=no,status=no',
+    );
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
+    }
 
-      const e = this.enrollment;
-      const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
-      const logoPath = 'assets/images/simpleLogo.jpeg';
-      const academyName = 'الأكاديمية الأولمبية';
-      const currentYear = new Date().getFullYear();
+    const e = this.enrollment;
+    const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+    const currentYear = new Date().getFullYear();
 
-      printWindow.document.write(`
+    // ✅ Check if image exists
+    const hasImage = this.traineeImageUrl && this.traineeImageUrl.trim() !== '';
+    const imageUrl = this.traineeImageUrl || '';
+
+    // ✅ Photo section - only shown if image exists
+    const photoSection = hasImage
+      ? `
+    <div class="thermal-photo">
+      <img src="${imageUrl}" alt="${e.trainee?.fullName}" onerror="this.style.display='none'">
+    </div>
+  `
+      : ''; // ← Completely hidden when no image
+
+    printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
       <head>
@@ -1332,6 +1345,7 @@ export class EnrollmentDetailsModalComponent
             margin: 0.5mm 0; 
           }
           
+          /* ===== PHOTO - Only shown if image exists ===== */
           .thermal-photo { 
             text-align: center; 
             margin-bottom: 0.5mm; 
@@ -1341,18 +1355,6 @@ export class EnrollmentDetailsModalComponent
             height: 30px; 
             border-radius: 50%; 
             object-fit: cover;
-            border: 1.5px solid #0f3460;
-          }
-          .thermal-photo .placeholder-photo {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: white;
             border: 1.5px solid #0f3460;
           }
           
@@ -1623,13 +1625,12 @@ export class EnrollmentDetailsModalComponent
               <img src="${logoPath}" alt="${academyName}" class="card-logo-image" onerror="this.style.display='none'">
               <div class="card-logo-text">
                 <span class="academy-name">${academyName}</span>
-                <span class="card-title">بطاقة تسجيل متدرب</span>
+                <span class="card-title">✦ بطاقة تسجيل متدرب ✦</span>
               </div>
             </div>
             
-            <div class="thermal-photo">
-              ${this.traineeImageUrl ? `<img src="${this.traineeImageUrl}" alt="${e.trainee?.fullName}" onerror="this.style.display='none'">` : '<div class="placeholder-photo">📷</div>'}
-            </div>
+            <!-- ✅ Photo - Only shown if image exists -->
+            ${photoSection}
             
             <div class="thermal-name">${e.trainee?.fullName || ''}</div>
             <div class="thermal-id">رقم التسجيل: ${e?.id || ''}</div>
@@ -1742,7 +1743,7 @@ export class EnrollmentDetailsModalComponent
       </body>
       </html>
     `);
-      printWindow.document.close();
-    }, 300);
-  }
+    printWindow.document.close();
+  }, 300);
+}
 }

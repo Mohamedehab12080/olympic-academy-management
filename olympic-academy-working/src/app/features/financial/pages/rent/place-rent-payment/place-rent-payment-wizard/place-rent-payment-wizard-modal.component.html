@@ -206,14 +206,17 @@
               </mat-error>
             </mat-form-field>
 
-            <!-- Rent Type -->
+            <!-- Rent Type - NOW REQUIRED -->
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>نوع الإيجار (اختياري)</mat-label>
+              <mat-label>نوع الإيجار *</mat-label>
               <mat-select formControlName="rentTypeId" placeholder="اختر نوع الإيجار">
                 <mat-option *ngFor="let type of rentTypeOptions" [value]="type.value">
                   {{ type.label }}
                 </mat-option>
               </mat-select>
+              <mat-error *ngIf="paymentForm.get('rentTypeId')?.hasError('required')">
+                نوع الإيجار مطلوب
+              </mat-error>
             </mat-form-field>
           </div>
 
@@ -333,7 +336,7 @@
                 <span class="info-label">طريقة الدفع:</span>
                 <span class="info-value">{{ getPaymentMethodLabel() }}</span>
               </div>
-              <div class="info-item" *ngIf="getRentTypeLabel() !== 'غير محدد'">
+              <div class="info-item">
                 <span class="info-label">نوع الإيجار:</span>
                 <span class="info-value">{{ getRentTypeLabel() }}</span>
               </div>
@@ -395,7 +398,7 @@
         color="primary" 
         *ngIf="currentStep === steps.length - 1" 
         (click)="onSubmit()" 
-        [disabled]="isSubmitting || !isPaymentAllowed()"
+        [disabled]="isSubmitting || !isPaymentAllowed() || !paymentForm.valid"
         class="submit-btn"
       >
         <mat-icon *ngIf="!isSubmitting">check</mat-icon>

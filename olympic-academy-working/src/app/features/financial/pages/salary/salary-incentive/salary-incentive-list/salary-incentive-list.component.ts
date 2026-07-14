@@ -845,7 +845,7 @@ openDetailsModal(transaction: SalaryIncentiveVTO): void {
     
     <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px;">
       <h1 style="margin: 0; font-size: 18px;">إيصال صرف</h1>
-      <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة الأكاديمية الأولمبية</p>
+      <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
     </div>
     
     <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
@@ -976,7 +976,7 @@ private printSalaryReceipt(transaction: SalaryIncentiveVTO, contactNumber: strin
   const today = new Date().toLocaleDateString('ar-EG');
   const transactionNumber = `TRX-${transaction.id}`;
   const logoPath = 'assets/images/simpleLogo.jpeg';
-  const academyName = 'الأكاديمية الأولمبية';
+  const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
   const currentYear = new Date().getFullYear();
   
   const getTypeColor = (typeId: number) => {
@@ -1782,7 +1782,7 @@ private printSalaryReceipt(transaction: SalaryIncentiveVTO, contactNumber: strin
             ${tableRows}
           </tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         <div class="no-print"><button class="print-btn" onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button></div>
       </body>
       </html>

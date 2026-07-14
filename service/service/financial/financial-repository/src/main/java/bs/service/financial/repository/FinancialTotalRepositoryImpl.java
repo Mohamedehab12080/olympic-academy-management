@@ -20,41 +20,38 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
 
     @Override
     public FinancialTotalVTO findFinancialTotalVTO(LocalDate from, LocalDate to) {
-        // Handle null dates
-        LocalDate startDate = (from != null) ? from : LocalDate.MIN; // If null, start from beginning of time
-        LocalDate endDate = (to != null) ? to : LocalDate.now(); // If null, use current date
-
-        log.info("Calculating financial totals from: {} to: {}", startDate, endDate);
+        log.info("Calculating financial totals from: {} to: {}", from, to);
 
         FinancialTotalVTO vto = new FinancialTotalVTO();
 
         try {
             // 1. Get salary and incentives
-            vto.setTotalSalary(getTotalSalary(startDate, endDate));
-            vto.setTotalAdvance(getTotalAdvances(startDate,endDate));
-            vto.setTotalIncentives(getTotalIncentives(startDate, endDate));
+            vto.setTotalSalary(getTotalSalary(from, to));
+            vto.setTotalAdvance(getTotalAdvances(from, to));
+            vto.setTotalIncentives(getTotalIncentives(from, to));
 
             // 2. Get rent payments
-            vto.setTotalPlacesRent(getTotalRent(startDate, endDate));
+            vto.setTotalPlacesRent(getTotalRent(from, to));
 
             // 3. Get enrollment payments
-            vto.setTotalEnrollmentPayments(getTotalEnrollmentPayments(startDate, endDate));
+            vto.setTotalEnrollmentPayments(getTotalEnrollmentPayments(from, to));
+            vto.setTotalEnrollmentRefunds(getTotalEnrollmentRefund(from, to));
 
             // 4. Get expenses
-            vto.setTotalExpenses(getTotalExpenses(startDate, endDate));
+            vto.setTotalExpenses(getTotalExpenses(from, to));
 
             // 5. Get counts
-            vto.setActiveEnrollmentsCount(getActiveEnrollmentsCount(startDate, endDate));
-            vto.setInactiveEnrollmentsCount(getInactiveEnrollmentsCount(startDate, endDate));
-            vto.setActiveCoursesCount(getActiveCoursesCount(startDate, endDate));
-            vto.setInactiveCoursesCount(getInactiveCoursesCount(startDate, endDate));
-            vto.setActiveTraineesCount(getActiveTraineesCount(startDate, endDate));
-            vto.setInactiveTraineesCount(getInactiveTraineesCount(startDate, endDate));
-            vto.setActiveEmployeesCount(getActiveEmployeesCount(startDate, endDate));
-            vto.setInactiveEmployeesCount(getInactiveEmployeesCount(startDate, endDate));
+            vto.setActiveEnrollmentsCount(getActiveEnrollmentsCount(from, to));
+            vto.setInactiveEnrollmentsCount(getInactiveEnrollmentsCount(from, to));
+            vto.setActiveCoursesCount(getActiveCoursesCount(from, to));
+            vto.setInactiveCoursesCount(getInactiveCoursesCount(from, to));
+            vto.setActiveTraineesCount(getActiveTraineesCount(from, to));
+            vto.setInactiveTraineesCount(getInactiveTraineesCount(from, to));
+            vto.setActiveEmployeesCount(getActiveEmployeesCount(from, to));
+            vto.setInactiveEmployeesCount(getInactiveEmployeesCount(from, to));
 
         } catch (Exception e) {
-            log.error("Error calculating financial totals for period: {} to {}", startDate, endDate, e);
+            log.error("Error calculating financial totals for period: {} to {}", from, to, e);
             throw new RuntimeException("Failed to calculate financial totals", e);
         }
 
@@ -65,9 +62,10 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(si.amount_withdrawn), 0)
             FROM oa_salary_incentive si
-            WHERE si.withdraw_date BETWEEN :startDate AND :endDate
+            WHERE si.is_deleted = 0
               AND si.salary_transaction_type = 1
-              AND si.is_deleted = 0
+              AND (:startDate IS NULL OR si.withdraw_date >= :startDate)
+              AND (:endDate IS NULL OR si.withdraw_date <= :endDate)
         """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
@@ -79,9 +77,10 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(si.amount_withdrawn), 0)
             FROM oa_salary_incentive si
-            WHERE si.withdraw_date BETWEEN :startDate AND :endDate
+            WHERE si.is_deleted = 0
               AND si.salary_transaction_type IN (2, 3)
-              AND si.is_deleted = 0
+              AND (:startDate IS NULL OR si.withdraw_date >= :startDate)
+              AND (:endDate IS NULL OR si.withdraw_date <= :endDate)
         """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
@@ -93,9 +92,10 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(si.amount_withdrawn), 0)
             FROM oa_salary_incentive si
-            WHERE si.withdraw_date BETWEEN :startDate AND :endDate
-              AND si.salary_transaction_type=4
-              AND si.is_deleted = 0
+            WHERE si.is_deleted = 0
+              AND si.salary_transaction_type = 4
+              AND (:startDate IS NULL OR si.withdraw_date >= :startDate)
+              AND (:endDate IS NULL OR si.withdraw_date <= :endDate)
         """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
@@ -107,8 +107,9 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(prp.payed_amount), 0)
             FROM oa_place_rent_payment prp
-            WHERE prp.payment_date BETWEEN :startDate AND :endDate 
-              AND prp.is_deleted = 0
+            WHERE prp.is_deleted = 0
+              AND (:startDate IS NULL OR prp.payment_date >= :startDate)
+              AND (:endDate IS NULL OR prp.payment_date <= :endDate)
         """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
@@ -118,15 +119,35 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
 
     private int getTotalEnrollmentPayments(LocalDate from, LocalDate to) {
         String sql = """
-        SELECT COALESCE(SUM(ep.paid_amount), 0)
-        FROM oa_enrollment_payment ep
-        INNER JOIN oa_enrollment enr ON ep.enrollment_id = enr.id
-        WHERE ep.payment_date BETWEEN :startDate AND :endDate
-          AND ep.is_deleted = 0
-          AND enr.payment_status IN (1,2,6)
-          AND enr.is_active=1
-          AND enr.enrollment_status IN (1,2)
-    """;
+            SELECT COALESCE(SUM(ep.paid_amount), 0)
+            FROM oa_enrollment_payment ep
+            INNER JOIN oa_enrollment enr ON ep.enrollment_id = enr.id
+            WHERE ep.is_deleted = 0
+              AND enr.payment_status IN (1,2,6)
+              AND enr.is_active = 1
+              AND enr.enrollment_status IN (1,2)
+              AND (:startDate IS NULL OR ep.payment_date >= :startDate)
+              AND (:endDate IS NULL OR ep.payment_date <= :endDate)
+        """;
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("startDate", from);
+        query.setParameter("endDate", to);
+        return ((Number) query.getSingleResult()).intValue();
+    }
+
+    private int getTotalEnrollmentRefund(LocalDate from, LocalDate to) {
+        String sql = """
+            SELECT COALESCE(SUM(er.amount_refunded), 0)
+            FROM oa_enrollment_refund er
+            INNER JOIN oa_enrollment enr ON er.enrollment_id = enr.id
+            WHERE er.is_deleted = 0
+              AND er.refund_status IN (2,4)
+              AND enr.payment_status = 4
+              AND enr.is_active = 1
+              AND enr.enrollment_status = 3
+              AND (:startDate IS NULL OR er.refund_date >= :startDate)
+              AND (:endDate IS NULL OR er.refund_date <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -137,9 +158,10 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COALESCE(SUM(e.amount_expensed), 0)
             FROM oa_expense e
-            WHERE e.expense_date BETWEEN :startDate AND :endDate\s
-              AND e.is_deleted = 0
-       \s""";
+            WHERE e.is_deleted = 0
+              AND (:startDate IS NULL OR e.expense_date >= :startDate)
+              AND (:endDate IS NULL OR e.expense_date <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -151,10 +173,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
             SELECT COUNT(DISTINCT en.id)
             FROM oa_enrollment en
             WHERE en.enrollment_status IN (1,2)
-              AND en.created_on BETWEEN :startDate AND :endDate\s
               AND en.is_deleted = 0
-              AND en.is_active=1
-       \s""";
+              AND en.is_active = 1
+              AND (:startDate IS NULL OR en.created_on >= :startDate)
+              AND (:endDate IS NULL OR en.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -165,10 +188,12 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT en.id)
             FROM oa_enrollment en
-            WHERE en.enrollment_status != 2\s
-              AND en.created_on BETWEEN :startDate AND :endDate\s
+            WHERE en.enrollment_status != 2
               AND en.is_deleted = 0
-       \s""";
+              AND en.is_active = 0
+              AND (:startDate IS NULL OR en.created_on >= :startDate)
+              AND (:endDate IS NULL OR en.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -179,10 +204,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT c.id)
             FROM oa_course c
-            WHERE c.is_active = 1\s
-              AND c.is_deleted = 0\s
-              AND c.created_on BETWEEN :startDate AND :endDate
-       \s""";
+            WHERE c.is_active = 1
+              AND c.is_deleted = 0
+              AND (:startDate IS NULL OR c.created_on >= :startDate)
+              AND (:endDate IS NULL OR c.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -193,9 +219,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT c.id)
             FROM oa_course c
-            WHERE (c.is_active = 0 AND c.is_deleted = 0)\s
-              AND c.created_on BETWEEN :startDate AND :endDate
-       \s""";
+            WHERE c.is_active = 0
+              AND c.is_deleted = 0
+              AND (:startDate IS NULL OR c.created_on >= :startDate)
+              AND (:endDate IS NULL OR c.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -206,10 +234,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT t.id)
             FROM oa_trainee t
-            WHERE t.is_active = 1\s
-              AND t.is_deleted = 0\s
-              AND t.created_on BETWEEN :startDate AND :endDate
-       \s""";
+            WHERE t.is_active = 1
+              AND t.is_deleted = 0
+              AND (:startDate IS NULL OR t.created_on >= :startDate)
+              AND (:endDate IS NULL OR t.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -220,9 +249,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT t.id)
             FROM oa_trainee t
-            WHERE (t.is_active = 0 AND t.is_deleted = 0)\s
-              AND t.created_on BETWEEN :startDate AND :endDate
-       \s""";
+            WHERE t.is_active = 0
+              AND t.is_deleted = 0
+              AND (:startDate IS NULL OR t.created_on >= :startDate)
+              AND (:endDate IS NULL OR t.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -233,10 +264,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT emp.id)
             FROM oa_employee emp
-            WHERE emp.is_active = 1\s
-              AND emp.is_deleted = 0\s
-              AND emp.created_on BETWEEN :startDate AND :endDate
-       \s""";
+            WHERE emp.is_active = 1
+              AND emp.is_deleted = 0
+              AND (:startDate IS NULL OR emp.created_on >= :startDate)
+              AND (:endDate IS NULL OR emp.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);
@@ -247,9 +279,11 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         String sql = """
             SELECT COUNT(DISTINCT emp.id)
             FROM oa_employee emp
-            WHERE (emp.is_active = 0 AND emp.is_deleted = 0)\s
-              AND emp.created_on BETWEEN :startDate AND :endDate
-       \s""";
+            WHERE emp.is_active = 0
+              AND emp.is_deleted = 0
+              AND (:startDate IS NULL OR emp.created_on >= :startDate)
+              AND (:endDate IS NULL OR emp.created_on <= :endDate)
+        """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", from);
         query.setParameter("endDate", to);

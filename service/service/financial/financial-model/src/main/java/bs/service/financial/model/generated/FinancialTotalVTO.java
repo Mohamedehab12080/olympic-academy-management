@@ -31,6 +31,8 @@ public class FinancialTotalVTO implements Serializable {
 
     private Integer totalEnrollmentPayments;
 
+    private Integer totalEnrollmentRefunds;
+
     private Integer totalExpenses;
 
     private Integer activeEnrollmentsCount;
@@ -152,6 +154,27 @@ public class FinancialTotalVTO implements Serializable {
 
     public void setTotalEnrollmentPayments(Integer totalEnrollmentPayments) {
         this.totalEnrollmentPayments = totalEnrollmentPayments;
+    }
+
+    public FinancialTotalVTO totalEnrollmentRefunds(Integer totalEnrollmentRefunds) {
+        this.totalEnrollmentRefunds = totalEnrollmentRefunds;
+        return this;
+    }
+
+    /**
+     * Get totalEnrollmentRefunds
+     *
+     * @return totalEnrollmentRefunds
+     */
+
+    @Schema(name = "totalEnrollmentRefunds", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalEnrollmentRefunds")
+    public Integer getTotalEnrollmentRefunds() {
+        return totalEnrollmentRefunds;
+    }
+
+    public void setTotalEnrollmentRefunds(Integer totalEnrollmentRefunds) {
+        this.totalEnrollmentRefunds = totalEnrollmentRefunds;
     }
 
     public FinancialTotalVTO totalExpenses(Integer totalExpenses) {
@@ -357,6 +380,7 @@ public class FinancialTotalVTO implements Serializable {
                 && Objects.equals(this.totalIncentives, financialTotalVTO.totalIncentives)
                 && Objects.equals(this.totalPlacesRent, financialTotalVTO.totalPlacesRent)
                 && Objects.equals(this.totalEnrollmentPayments, financialTotalVTO.totalEnrollmentPayments)
+                && Objects.equals(this.totalEnrollmentRefunds, financialTotalVTO.totalEnrollmentRefunds)
                 && Objects.equals(this.totalExpenses, financialTotalVTO.totalExpenses)
                 && Objects.equals(this.activeEnrollmentsCount, financialTotalVTO.activeEnrollmentsCount)
                 && Objects.equals(this.activeCoursesCount, financialTotalVTO.activeCoursesCount)
@@ -371,8 +395,9 @@ public class FinancialTotalVTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(totalSalary, totalAdvance, totalIncentives, totalPlacesRent, totalEnrollmentPayments,
-                totalExpenses, activeEnrollmentsCount, activeCoursesCount, activeTraineesCount, activeEmployeesCount,
-                inactiveEnrollmentsCount, inactiveCoursesCount, inactiveTraineesCount, inactiveEmployeesCount);
+                totalEnrollmentRefunds, totalExpenses, activeEnrollmentsCount, activeCoursesCount, activeTraineesCount,
+                activeEmployeesCount, inactiveEnrollmentsCount, inactiveCoursesCount, inactiveTraineesCount,
+                inactiveEmployeesCount);
     }
 
     @Override
@@ -384,6 +409,7 @@ public class FinancialTotalVTO implements Serializable {
         sb.append("    totalIncentives: ").append(toIndentedString(totalIncentives)).append("\n");
         sb.append("    totalPlacesRent: ").append(toIndentedString(totalPlacesRent)).append("\n");
         sb.append("    totalEnrollmentPayments: ").append(toIndentedString(totalEnrollmentPayments)).append("\n");
+        sb.append("    totalEnrollmentRefunds: ").append(toIndentedString(totalEnrollmentRefunds)).append("\n");
         sb.append("    totalExpenses: ").append(toIndentedString(totalExpenses)).append("\n");
         sb.append("    activeEnrollmentsCount: ").append(toIndentedString(activeEnrollmentsCount)).append("\n");
         sb.append("    activeCoursesCount: ").append(toIndentedString(activeCoursesCount)).append("\n");

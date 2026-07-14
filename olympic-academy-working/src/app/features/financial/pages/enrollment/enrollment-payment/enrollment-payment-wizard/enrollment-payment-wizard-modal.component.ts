@@ -1,6 +1,6 @@
-// enrollment-payment-wizard-modal.component.ts - FIXED TYPE ISSUE
+// enrollment-payment-wizard-modal.component.ts - COMPLETE VERSION
 
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -26,6 +26,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { EnrollmentService } from '../../../../../../core/services/enrollment.service';
@@ -36,6 +38,8 @@ import {
   SelectOption,
 } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { PAYMENT_STATUSES } from '../../../../../../core/models/common.model';
+import { Subject } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 
 interface EnrollmentOption extends SelectOption {
   enrollmentData?: {
@@ -46,6 +50,18 @@ interface EnrollmentOption extends SelectOption {
     remainedSubscriptionValue: number;
     totalPaidAmount?: number;
   };
+}
+
+interface PaymentResult {
+  id: number;
+  paidAmount: number;
+  remainedValue: number;
+  paymentDate: Date;
+  paymentMethodTitle: string;
+  paymentStatus: string | null;
+  paymentStatusTitle: string;
+  note: string;
+  traineeNationalId?: string;
 }
 
 @Component({
@@ -68,19 +84,27 @@ interface EnrollmentOption extends SelectOption {
     MatTooltipModule,
     MatStepperModule,
     MatDividerModule,
+    MatChipsModule,
+    MatBadgeModule,
     SearchableSelectComponent,
   ],
   templateUrl: './enrollment-payment-wizard-modal.component.html',
   styleUrls: ['./enrollment-payment-wizard-modal.component.css'],
 })
-export class EnrollmentPaymentWizardModalComponent implements OnInit {
+export class EnrollmentPaymentWizardModalComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
+  // ==========================================================================
+  // PUBLIC PROPERTIES
+  // ==========================================================================
+
   paymentForm: FormGroup;
   isEditMode = false;
   paymentId?: number;
   isLoading = false;
   isSubmitting = false;
   showSuccess = false;
-  paymentResult: any = null;
+  paymentResult: PaymentResult | null = null;
 
   // Data collections
   enrollments: any[] = [];
@@ -106,6 +130,32 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     { label: 'تأكيد', icon: 'check_circle', completed: false },
   ];
 
+  // ==========================================================================
+  // BARCODE SCANNING PROPERTIES
+  // ==========================================================================
+
+  @ViewChild('barcodeInput') barcodeInput!: ElementRef<HTMLInputElement>;
+  
+  showBarcodeScanner = false;
+  scannedtraineeNationalId: string = '';
+  isSearchingBytraineeNationalId = false;
+  filteredEnrollments: any[] = [];
+  private allEnrollments: any[] = [];
+  private barcodeBuffer: string = '';
+  private barcodeTimer: any = null;
+  private readonly BARCODE_TIMEOUT = 100; // ms between keystrokes for scanner detection
+  private readonly MIN_NATIONAL_ID_LENGTH = 2;
+
+  // ==========================================================================
+  // PRIVATE PROPERTIES
+  // ==========================================================================
+
+  private destroy$ = new Subject<void>();
+
+  // ==========================================================================
+  // CONSTRUCTOR
+  // ==========================================================================
+
   constructor(
     private fb: FormBuilder,
     private financialService: FinancialService,
@@ -113,7 +163,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     private notification: NotificationService,
     private reportService: ReportService,
     private dialogRef: MatDialogRef<EnrollmentPaymentWizardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.paymentId = data?.paymentId;
     this.isEditMode = !!this.paymentId;
@@ -132,7 +182,30 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  // ==========================================================================
+  // LIFECYCLE HOOKS
+  // ==========================================================================
+
+  ngOnInit(): void {
+    this.initializeComponent();
+  }
+
+  ngAfterViewInit(): void {
+    this.setupBarcodeInputListener();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.clearBarcodeTimer();
+    document.removeEventListener('keydown', this.handleKeydown.bind(this));
+  }
+
+  // ==========================================================================
+  // INITIALIZATION
+  // ==========================================================================
+
+  private initializeComponent(): void {
     this.loadSelectOptions();
     this.loadEnrollmentsList();
     this.loadPaymentMethods();
@@ -141,11 +214,52 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
       this.loadPaymentData();
     }
 
-    // Subscribe to paid amount changes
-    this.paymentForm.get('paidAmount')?.valueChanges.subscribe(() => {
-      this.calculateNewRemaining();
-    });
+    this.setupFormSubscriptions();
+    this.setupKeyboardListener();
   }
+
+  private setupFormSubscriptions(): void {
+    // Subscribe to paid amount changes
+    this.paymentForm
+      .get('paidAmount')
+      ?.valueChanges.pipe(
+        takeUntil(this.destroy$),
+        debounceTime(300),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.calculateNewRemaining();
+      });
+
+    // Subscribe to enrollment selection
+    this.paymentForm
+      .get('enrollmentId')
+      ?.valueChanges.pipe(
+        takeUntil(this.destroy$),
+        distinctUntilChanged(),
+        filter((value) => value !== null && value !== undefined)
+      )
+      .subscribe(() => {
+        this.onEnrollmentSelect();
+      });
+  }
+
+  private setupKeyboardListener(): void {
+    document.addEventListener('keydown', this.handleKeydown.bind(this));
+  }
+
+  private setupBarcodeInputListener(): void {
+    if (this.barcodeInput) {
+      // Listen for barcode scanner input via the input field
+      this.barcodeInput.nativeElement.addEventListener('focus', () => {
+        this.barcodeBuffer = '';
+      });
+    }
+  }
+
+  // ==========================================================================
+  // DATA LOADING
+  // ==========================================================================
 
   loadSelectOptions(): void {
     this.paymentStatusOptions = this.paymentStatuses.map((s) => ({
@@ -154,25 +268,13 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     }));
   }
 
-  loadEnrollmentsList() {
+  loadEnrollmentsList(): void {
     this.isLoading = true;
     this.enrollmentService.getAllEnrollmentsDetailsByFilter().subscribe({
       next: (res: any) => {
-        this.enrollments = res.items || [];
-        this.enrollmentOptions = this.enrollments.map((e: any) => ({
-          value: e.id,
-          label: `${e.trainee?.fullName || 'غير محدد'} - ${e.course?.title || 'غير محدد'}`,
-          enrollmentData: {
-            trainee: e.trainee,
-            course: e.course,
-            startDate: e.startDate,
-            finalSubscriptionValue: e.finalSubscriptionValue,
-            remainedSubscriptionValue: e.remainedSubscriptionValue || 0,
-            totalPaidAmount:
-              (e.finalSubscriptionValue || 0) -
-              (e.remainedSubscriptionValue || 0),
-          },
-        }));
+        this.allEnrollments = res.items || [];
+        this.enrollments = this.allEnrollments;
+        this.enrollmentOptions = this.mapEnrollmentsToOptions(this.allEnrollments);
         this.isLoading = false;
       },
       error: () => {
@@ -182,7 +284,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     });
   }
 
-  loadPaymentMethods() {
+  loadPaymentMethods(): void {
     this.financialService.getAllPaymentMethodsLookup().subscribe({
       next: (res: any) => {
         this.paymentMethods = res.list || [];
@@ -197,12 +299,12 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     });
   }
 
-  loadPaymentData() {
+  loadPaymentData(): void {
     this.isLoading = true;
     this.financialService.getEnrollmentPaymentById(this.paymentId!).subscribe({
       next: (res: any) => {
         const paymentStatusObj = this.paymentStatuses.find(
-          (s) => s.id === res.paymentStatus?.id,
+          (s) => s.id === res.paymentStatus?.id
         );
 
         this.paymentForm.patchValue({
@@ -219,12 +321,11 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
         this.fetchFreshEnrollmentData(
           res.enrollment?.id,
           res.paidAmount,
-          res.remainedValue,
+          res.remainedValue
         );
 
         this.steps.forEach((step) => (step.completed = true));
         this.currentStep = 3;
-
         this.isLoading = false;
       },
       error: () => {
@@ -234,11 +335,74 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     });
   }
 
+  // ==========================================================================
+  // ENROLLMENT SELECTION
+  // ==========================================================================
+
+  onEnrollmentSelect(): void {
+    const enrollmentId = this.paymentForm.get('enrollmentId')?.value;
+
+    if (!enrollmentId) {
+      this.clearEnrollmentSelection();
+      return;
+    }
+
+    this.isLoadingEnrollment = true;
+    this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
+      next: (enrollment: any) => {
+        this.processEnrollmentData(enrollment);
+        this.isLoadingEnrollment = false;
+        this.calculateNewRemaining();
+      },
+      error: (err) => {
+        console.error('Error fetching enrollment:', err);
+        this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
+        this.isLoadingEnrollment = false;
+      },
+    });
+  }
+
+  private processEnrollmentData(enrollment: any): void {
+    const realRemainingValue = enrollment.remainedSubscriptionValue || 0;
+    this.currentRemainingAmount = realRemainingValue;
+
+    this.selectedEnrollment = {
+      trainee: enrollment.trainee,
+      course: enrollment.course,
+      startDate: enrollment.startDate,
+      finalSubscriptionValue: enrollment.finalSubscriptionValue,
+      remainedSubscriptionValue: realRemainingValue,
+      totalPaidAmount:
+        (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
+    };
+
+    this.paymentForm.patchValue({
+      enrollmentValue: enrollment.finalSubscriptionValue,
+      totalPaidAmount:
+        (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
+      currentRemaining: realRemainingValue,
+      paidAmount: null,
+      newRemainingValue: null,
+    });
+  }
+
+  private clearEnrollmentSelection(): void {
+    this.selectedEnrollment = null;
+    this.currentRemainingAmount = 0;
+    this.paymentForm.patchValue({
+      enrollmentValue: null,
+      totalPaidAmount: null,
+      currentRemaining: null,
+      paidAmount: null,
+      newRemainingValue: null,
+    });
+  }
+
   fetchFreshEnrollmentData(
     enrollmentId: number,
     currentPaidAmount?: number,
-    currentRemainingValue?: number,
-  ) {
+    currentRemainingValue?: number
+  ): void {
     this.isLoadingEnrollment = true;
     this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
       next: (enrollment: any) => {
@@ -290,85 +454,229 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     });
   }
 
-  onEnrollmentSelect() {
-    const enrollmentId = this.paymentForm.get('enrollmentId')?.value;
+  // ==========================================================================
+  // BARCODE SCANNING
+  // ==========================================================================
 
-    if (!enrollmentId) {
-      this.selectedEnrollment = null;
-      this.currentRemainingAmount = 0;
-      this.paymentForm.patchValue({
-        enrollmentValue: null,
-        totalPaidAmount: null,
-        currentRemaining: null,
-        paidAmount: null,
-        newRemainingValue: null,
-      });
+  toggleBarcodeScanner(): void {
+    this.showBarcodeScanner = !this.showBarcodeScanner;
+    if (this.showBarcodeScanner) {
+      setTimeout(() => {
+        if (this.barcodeInput) {
+          this.barcodeInput.nativeElement.focus();
+          this.barcodeInput.nativeElement.value = '';
+          this.barcodeBuffer = '';
+        }
+      }, 100);
+    } else {
+      this.scannedtraineeNationalId = '';
+      this.barcodeBuffer = '';
+      if (this.barcodeInput) {
+        this.barcodeInput.nativeElement.value = '';
+      }
+    }
+  }
+
+  private handleKeydown(event: KeyboardEvent): void {
+    // Only process if scanner is open or we're actively scanning
+    if (!this.showBarcodeScanner) {
       return;
     }
 
-    this.isLoadingEnrollment = true;
+    // Ignore if focus is in the barcode input (handled separately)
+    if (event.target === this.barcodeInput?.nativeElement) {
+      return;
+    }
 
-    this.enrollmentService.getEnrollmentById(enrollmentId).subscribe({
-      next: (enrollment: any) => {
-        const realRemainingValue = enrollment.remainedSubscriptionValue || 0;
-        this.currentRemainingAmount = realRemainingValue;
+    // Ignore control keys
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+      return;
+    }
 
-        this.selectedEnrollment = {
-          trainee: enrollment.trainee,
-          course: enrollment.course,
-          startDate: enrollment.startDate,
-          finalSubscriptionValue: enrollment.finalSubscriptionValue,
-          remainedSubscriptionValue: realRemainingValue,
-          totalPaidAmount:
-            (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
-        };
+    // If Enter is pressed, process the barcode
+    if (event.key === 'Enter') {
+      this.processBarcodeBuffer();
+      return;
+    }
 
-        this.paymentForm.patchValue({
-          enrollmentValue: enrollment.finalSubscriptionValue,
-          totalPaidAmount:
-            (enrollment.finalSubscriptionValue || 0) - realRemainingValue,
-          currentRemaining: realRemainingValue,
-          paidAmount: null,
-          newRemainingValue: null,
-        });
+    // Ignore non-character keys
+    if (event.key.length !== 1) {
+      return;
+    }
 
-        this.isLoadingEnrollment = false;
-        this.calculateNewRemaining();
+    // Add character to buffer
+    this.barcodeBuffer += event.key;
+
+    // Clear timer and set new one
+    this.clearBarcodeTimer();
+    this.barcodeTimer = setTimeout(() => {
+      // If no new key pressed, process what we have
+      if (this.barcodeBuffer.length > 0) {
+        this.processBarcodeBuffer();
+      }
+    }, this.BARCODE_TIMEOUT);
+  }
+
+  private processBarcodeBuffer(): void {
+    const scannedValue = this.barcodeBuffer.trim();
+    this.barcodeBuffer = '';
+    this.clearBarcodeTimer();
+
+    if (scannedValue) {
+      this.handleScannedValue(scannedValue);
+    }
+  }
+
+  onBarcodeScanned(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const scannedValue = input.value.trim();
+
+    if (scannedValue) {
+      this.handleScannedValue(scannedValue);
+      
+      // Clear input after processing
+      setTimeout(() => {
+        if (this.barcodeInput) {
+          this.barcodeInput.nativeElement.value = '';
+        }
+      }, 10000);
+    }
+  }
+
+  private handleScannedValue(value: string): void {
+    // Check if it looks like a national ID (numeric, 14 digits)
+    const cleanValue = value.replace(/[^0-9]/g, '');
+    
+    if (cleanValue.length >= this.MIN_NATIONAL_ID_LENGTH) {
+      this.scannedtraineeNationalId = cleanValue;
+      this.searchEnrollmentsBytraineeNationalId(cleanValue);
+    } else {
+      this.notification.showWarning('الرجاء مسح باركود صحيح يحتوي على الرقم القومي');
+    }
+  }
+
+  private clearBarcodeTimer(): void {
+    if (this.barcodeTimer) {
+      clearTimeout(this.barcodeTimer);
+      this.barcodeTimer = null;
+    }
+  }
+
+  searchEnrollmentsBytraineeNationalId(traineeNationalId: string): void {
+    if (!traineeNationalId || traineeNationalId.length < this.MIN_NATIONAL_ID_LENGTH) {
+      this.notification.showWarning(
+        `الرجاء إدخال رقم قومي صحيح (${this.MIN_NATIONAL_ID_LENGTH} رقم)`
+      );
+      return;
+    }
+
+    this.isSearchingBytraineeNationalId = true;
+
+    const filterParams = {
+      traineeNationalId: traineeNationalId,
+      pageSize: 100,
+    };
+
+    this.enrollmentService.getAllEnrollmentsDetailsByFilter(filterParams).subscribe({
+      next: (res: any) => {
+        const enrollments = res.items || [];
+
+        if (enrollments.length === 0) {
+          this.notification.showWarning(
+            `لا توجد تسجيلات للرقم القومي: ${traineeNationalId}`
+          );
+          this.isSearchingBytraineeNationalId = false;
+          return;
+        }
+
+        this.filteredEnrollments = enrollments;
+        this.enrollmentOptions = this.mapEnrollmentsToOptions(enrollments);
+
+        // Show filtered count
+        this.notification.showSuccess(
+          `تم العثور على ${enrollments.length} تسجيل(ات) للرقم القومي: ${traineeNationalId}`
+        );
+
+        // Auto-select if only one found
+        if (enrollments.length === 1) {
+          this.paymentForm.patchValue({
+            enrollmentId: enrollments[0].id,
+          });
+          this.onEnrollmentSelect();
+        }
+
+        this.showBarcodeScanner = false;
+        this.isSearchingBytraineeNationalId = false;
       },
       error: (err) => {
-        console.error('Error fetching enrollment:', err);
-        this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
-        this.isLoadingEnrollment = false;
+        console.error('Error searching by national ID:', err);
+        this.notification.showError('حدث خطأ في البحث عن التسجيلات');
+        this.isSearchingBytraineeNationalId = false;
       },
     });
   }
 
-  calculateNewRemaining() {
-    const currentRemaining =
-      this.paymentForm.get('currentRemaining')?.value || 0;
+  resetEnrollmentFilter(): void {
+    this.scannedtraineeNationalId = '';
+    this.filteredEnrollments = [];
+    this.enrollmentOptions = this.mapEnrollmentsToOptions(this.allEnrollments);
+    this.paymentForm.patchValue({ enrollmentId: null });
+    this.selectedEnrollment = null;
+    this.currentRemainingAmount = 0;
+    this.notification.showInfo('تم إلغاء التصفية وعرض جميع التسجيلات');
+  }
+
+  private mapEnrollmentsToOptions(enrollments: any[]): EnrollmentOption[] {
+    return enrollments.map((e: any) => ({
+      value: e.id,
+      label: `${e.trainee?.fullName || 'غير محدد'} - ${e.course?.title || 'غير محدد'}`,
+      enrollmentData: {
+        trainee: e.trainee,
+        course: e.course,
+        startDate: e.startDate,
+        finalSubscriptionValue: e.finalSubscriptionValue,
+        remainedSubscriptionValue: e.remainedSubscriptionValue || 0,
+        totalPaidAmount:
+          (e.finalSubscriptionValue || 0) - (e.remainedSubscriptionValue || 0),
+      },
+    }));
+  }
+
+  // ==========================================================================
+  // CALCULATIONS
+  // ==========================================================================
+
+  calculateNewRemaining(): void {
+    const currentRemaining = this.paymentForm.get('currentRemaining')?.value || 0;
     const paidAmount = this.paymentForm.get('paidAmount')?.value || 0;
 
     if (paidAmount > currentRemaining && currentRemaining > 0) {
       this.paymentForm.get('paidAmount')?.setErrors({ exceedsRemaining: true });
       this.notification.showWarning(
-        'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي',
+        'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي'
       );
       return;
     } else {
       this.paymentForm.get('paidAmount')?.setErrors(null);
     }
 
-    const newRemaining = currentRemaining - paidAmount;
-    const finalNewRemaining = newRemaining >= 0 ? newRemaining : 0;
-    this.paymentForm.get('newRemainingValue')?.setValue(finalNewRemaining);
+    const newRemaining = Math.max(0, currentRemaining - paidAmount);
+    this.paymentForm.get('newRemainingValue')?.setValue(newRemaining);
 
-    // Auto-set payment status based on new remaining amount
-    if (finalNewRemaining === 0 && paidAmount > 0) {
+    this.autoSetPaymentStatus(paidAmount, currentRemaining, newRemaining);
+  }
+
+  private autoSetPaymentStatus(
+    paidAmount: number,
+    currentRemaining: number,
+    newRemaining: number
+  ): void {
+    if (newRemaining === 0 && paidAmount > 0) {
       const paidStatus = this.paymentStatuses.find((s) => s.id === 2);
       if (paidStatus) {
         this.paymentForm.get('paymentStatusObj')?.setValue(paidStatus);
       }
-    } else if (paidAmount > 0 && finalNewRemaining > 0) {
+    } else if (paidAmount > 0 && newRemaining > 0) {
       const partialStatus = this.paymentStatuses.find((s) => s.id === 6);
       if (partialStatus) {
         this.paymentForm.get('paymentStatusObj')?.setValue(partialStatus);
@@ -381,13 +689,17 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     }
   }
 
-  goToStep(step: number) {
+  // ==========================================================================
+  // STEP NAVIGATION
+  // ==========================================================================
+
+  goToStep(step: number): void {
     if (step <= this.currentStep || this.isStepValid(step - 1)) {
       this.currentStep = step;
     }
   }
 
-  nextStep() {
+  nextStep(): void {
     if (this.isStepValid(this.currentStep)) {
       this.steps[this.currentStep].completed = true;
       if (this.currentStep < this.steps.length - 1) {
@@ -399,7 +711,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     }
   }
 
-  previousStep() {
+  previousStep(): void {
     if (this.currentStep > 0) {
       this.currentStep--;
     }
@@ -409,15 +721,15 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     switch (step) {
       case 0:
         return this.paymentForm.get('enrollmentId')?.valid === true;
-      case 1:
+      case 1: {
         const paidAmount = this.paymentForm.get('paidAmount')?.value;
-        const currentRemaining =
-          this.paymentForm.get('currentRemaining')?.value;
+        const currentRemaining = this.paymentForm.get('currentRemaining')?.value;
         return (
           this.paymentForm.get('paidAmount')?.valid === true &&
           this.paymentForm.get('paymentDate')?.valid === true &&
           (paidAmount <= currentRemaining || currentRemaining === 0)
         );
+      }
       case 2:
         return (
           this.paymentForm.get('paymentMethodId')?.valid === true &&
@@ -428,7 +740,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     }
   }
 
-  markCurrentStepFieldsAsTouched() {
+  markCurrentStepFieldsAsTouched(): void {
     switch (this.currentStep) {
       case 0:
         this.paymentForm.get('enrollmentId')?.markAsTouched();
@@ -443,6 +755,10 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
         break;
     }
   }
+
+  // ==========================================================================
+  // GETTERS
+  // ==========================================================================
 
   getTotalAmount(): number {
     return this.paymentForm.get('paidAmount')?.value || 0;
@@ -467,15 +783,26 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     return method?.title || 'غير محدد';
   }
 
+  get hasFilteredResults(): boolean {
+    return this.filteredEnrollments.length > 0;
+  }
+
+  get filterInfo(): string {
+    if (this.scannedtraineeNationalId) {
+      return `معروض: ${this.filteredEnrollments.length} تسجيل للرقم القومي ${this.scannedtraineeNationalId}`;
+    }
+    return '';
+  }
+
   // ==========================================================================
   // RECEIPT PRINTING
   // ==========================================================================
 
-  printReceipt(paymentData: any, enrollmentData: any): void {
+  printReceipt(paymentData: PaymentResult, enrollmentData: any): void {
     const printWindow = window.open(
       '',
       '_blank',
-      'width=800,height=800,scrollbars=yes',
+      'width=800,height=800,scrollbars=yes'
     );
     if (!printWindow) {
       this.notification.showError('تعذر فتح نافذة الطباعة');
@@ -483,11 +810,9 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     }
 
     const receiptHtml = this.generateReceiptHTML(paymentData, enrollmentData);
-
     printWindow.document.write(receiptHtml);
     printWindow.document.close();
 
-    // Auto print after a short delay to ensure content is loaded
     setTimeout(() => {
       printWindow.print();
     }, 500);
@@ -495,18 +820,23 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     this.notification.showSuccess('تم فتح الإيصال للطباعة');
   }
 
-  // In the generateReceiptHTML method - UPDATED TO MATCH DETAILS MODAL
-  private generateReceiptHTML(paymentData: any, enrollmentData: any): string {
+  private generateReceiptHTML(paymentData: PaymentResult, enrollmentData: any): string {
     const statusColors: { [key: string]: string } = {
       PAID: '#d1fae5',
       PARTIAL: '#fef3c7',
       PENDING: '#e0e7ff',
+      FAILED: '#fecaca',
+      REFUNDED: '#e5e7eb',
+      CANCELLED: '#f3f4f6',
     };
 
     const statusTextColors: { [key: string]: string } = {
       PAID: '#065f46',
       PARTIAL: '#92400e',
       PENDING: '#3730a3',
+      FAILED: '#991b1b',
+      REFUNDED: '#4b5563',
+      CANCELLED: '#6b7280',
     };
 
     const paymentStatus = paymentData.paymentStatus || 'PENDING';
@@ -518,51 +848,31 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
     const totalPaid =
       (enrollmentData.finalSubscriptionValue || 0) - remainedValue;
 
-    // Format date properly
     const formatDate = (dateValue: any): string => {
       if (!dateValue) return '-';
-
       let dateObj: Date;
       if (typeof dateValue === 'string') {
         dateObj = new Date(dateValue);
       } else if (dateValue instanceof Date) {
         dateObj = dateValue;
-      } else if (
-        dateValue &&
-        typeof dateValue === 'object' &&
-        dateValue.toDate
-      ) {
-        dateObj = dateValue.toDate();
       } else {
         return '-';
       }
-
       if (isNaN(dateObj.getTime())) return '-';
-
-      const days = [
-        'الأحد',
-        'الإثنين',
-        'الثلاثاء',
-        'الأربعاء',
-        'الخميس',
-        'الجمعة',
-        'السبت',
-      ];
+      const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
       const dayName = days[dateObj.getDay()];
       const day = dateObj.getDate().toString().padStart(2, '0');
       const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
       const year = dateObj.getFullYear();
       const hours = dateObj.getHours().toString().padStart(2, '0');
       const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-
       return `${dayName}، ${day}/${month}/${year} - ${hours}:${minutes}`;
     };
 
-    // Format dates for display
     const paymentDateFormatted = formatDate(paymentData.paymentDate);
     const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
     const currentDateFormatted = formatDate(new Date());
-
+    const traineeNationalId = paymentData.traineeNationalId || enrollmentData.trainee?.traineeNationalId || '0000000000';
     const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     return `
@@ -573,416 +883,86 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
       <title>إيصال دفع #${paymentData.id}</title>
       <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
       <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        @page {
-          size: 80mm auto;
-          margin: 0mm;
-        }
-
-        html, body {
-          margin: 0;
-          padding: 0;
-          background: white;
-          width: 80mm;
-          min-width: 80mm;
-          max-width: 80mm;
-        }
-
-        .receipt-wrapper {
-          width: 80mm;
-          min-width: 80mm;
-          max-width: 80mm;
-          margin: 0;
-          padding: 0;
-          background: white;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .receipt {
-          width: 80mm;
-          min-width: 80mm;
-          max-width: 80mm;
-          margin: 0;
-          padding: 2.5mm 3mm 3mm 3mm;
-          background: white;
-          font-family: 'Arial', 'Tahoma', sans-serif;
-          font-size: 9pt;
-          line-height: 1.4;
-          color: #000000;
-          position: relative;
-          overflow: hidden;
-        }
-
-        /* ===== WATERMARK - Behind content ===== */
-        .receipt-watermark {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
-          opacity: 0.05;
-          pointer-events: none;
-          z-index: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 100%;
-        }
-        
-        .receipt-watermark img {
-          width: 100px;
-          height: auto;
-          object-fit: contain;
-          opacity: 0.9;
-        }
-        
-        .receipt-watermark-text {
-          position: absolute;
-          top: 56%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(0.8);
-          font-size: 20px;
-          font-weight: 900;
-          color: #2563eb;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          white-space: nowrap;
-          opacity: 0.03;
-          pointer-events: none;
-          z-index: 0;
-          text-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
-        }
-
-        /* ===== CONTENT - Above watermark ===== */
-        .receipt-content {
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ===== LOGO SECTION ===== */
-        .logo-section {
-          text-align: center;
-          padding: 1mm 0 1mm 0;
-          border-bottom: 2.5px solid #2563eb;
-          margin-bottom: 2mm;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-        
-        .logo-section img {
-          width: 36px;
-          height: 36px;
-          object-fit: contain;
-          border-radius: 50%;
-          border: 2px solid #2563eb;
-          padding: 2px;
-          background: white;
-        }
-        
-        .logo-section .academy-name {
-          font-size: 13pt;
-          font-weight: 700;
-          color: #1a1a2e;
-          display: block;
-        }
-        
-        .logo-section .receipt-type {
-          font-size: 7pt;
-          color: #2563eb;
-          font-weight: 600;
-          display: block;
-          margin-top: -1px;
-        }
-
-        .logo-text {
-          display: flex;
-          flex-direction: column;
-          line-height: 1.2;
-        }
-
-        /* ===== RECEIPT TITLE ===== */
-        .receipt-title {
-          text-align: center;
-          padding: 0.5mm 0 1.5mm 0;
-          border-bottom: 1px dashed #e5e7eb;
-          margin-bottom: 2mm;
-        }
-        .receipt-title h1 {
-          font-size: 14pt;
-          font-weight: 700;
-          color: #1e293b;
-          margin: 0;
-        }
-        .receipt-title .receipt-number {
-          font-size: 8pt;
-          color: #6b7280;
-          margin-top: 0.5mm;
-        }
-
-        /* ===== BODY ===== */
-        .receipt-body {
-          padding: 1mm 0;
-        }
-
-        .receipt-section {
-          margin-bottom: 2mm;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: 80mm auto; margin: 0mm; }
+        html, body { margin: 0; padding: 0; background: white; width: 80mm; min-width: 80mm; max-width: 80mm; }
+        .receipt-wrapper { width: 80mm; min-width: 80mm; max-width: 80mm; margin: 0; padding: 0; background: white; position: relative; overflow: hidden; }
+        .receipt { width: 80mm; min-width: 80mm; max-width: 80mm; margin: 0; padding: 2.5mm 3mm 3mm 3mm; background: white; font-family: 'Arial', 'Tahoma', sans-serif; font-size: 9pt; line-height: 1.4; color: #000000; position: relative; overflow: hidden; }
+        .receipt-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg) scale(1.6); opacity: 0.05; pointer-events: none; z-index: 0; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .receipt-watermark img { width: 100px; height: auto; object-fit: contain; opacity: 0.9; }
+        .receipt-watermark-text { position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg) scale(0.8); font-size: 20px; font-weight: 900; color: #2563eb; letter-spacing: 4px; text-transform: uppercase; white-space: nowrap; opacity: 0.03; pointer-events: none; z-index: 0; text-shadow: 0 2px 8px rgba(37, 99, 235, 0.1); }
+        .receipt-content { position: relative; z-index: 1; }
+        .logo-section { text-align: center; padding: 1mm 0 1mm 0; border-bottom: 2.5px solid #2563eb; margin-bottom: 2mm; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .logo-section img { width: 36px; height: 36px; object-fit: contain; border-radius: 50%; border: 2px solid #2563eb; padding: 2px; background: white; }
+        .logo-section .academy-name { font-size: 13pt; font-weight: 700; color: #1a1a2e; display: block; }
+        .logo-section .receipt-type { font-size: 7pt; color: #2563eb; font-weight: 600; display: block; margin-top: -1px; }
+        .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .receipt-title { text-align: center; padding: 0.5mm 0 1.5mm 0; border-bottom: 1px dashed #e5e7eb; margin-bottom: 2mm; }
+        .receipt-title h1 { font-size: 14pt; font-weight: 700; color: #1e293b; margin: 0; }
+        .receipt-title .receipt-number { font-size: 8pt; color: #6b7280; margin-top: 0.5mm; }
+        .receipt-body { padding: 1mm 0; }
+        .receipt-section { margin-bottom: 2mm; }
         .receipt-section:last-child { margin-bottom: 0; }
-
-        .section-title {
-          font-size: 8pt;
-          font-weight: 600;
-          color: #2563eb;
-          margin-bottom: 1mm;
-          padding-bottom: 0.5mm;
-          border-bottom: 0.5pt solid #eef2f6;
-        }
-
-        .info-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.5mm 0;
-          font-size: 8pt;
-          border-bottom: 0.3pt dashed #f1f5f9;
-        }
+        .section-title { font-size: 8pt; font-weight: 600; color: #2563eb; margin-bottom: 1mm; padding-bottom: 0.5mm; border-bottom: 0.5pt solid #eef2f6; }
+        .info-row { display: flex; justify-content: space-between; padding: 0.5mm 0; font-size: 8pt; border-bottom: 0.3pt dashed #f1f5f9; }
         .info-row:last-child { border-bottom: none; }
-
-        .info-row .label {
-          color: #6b7280;
-          flex-shrink: 0;
-        }
-        .info-row .value {
-          font-weight: 500;
-          color: #1e293b;
-          text-align: left;
-        }
-        .info-row .value.highlight {
-          color: #059669;
-          font-weight: 700;
-        }
-        .info-row .value.amount {
-          font-size: 10pt;
-        }
-        .info-row .value.danger {
-          color: #dc2626;
-          font-weight: 700;
-        }
-
-        .payment-details {
-          background: #f8fafc;
-          border-radius: 1mm;
-          padding: 1mm 2mm;
-          margin-top: 0.5mm;
-        }
-        .payment-details .info-row {
-          border-bottom-color: #e2e8f0;
-          padding: 0.3mm 0;
-        }
+        .info-row .label { color: #6b7280; flex-shrink: 0; }
+        .info-row .value { font-weight: 500; color: #1e293b; text-align: left; }
+        .info-row .value.highlight { color: #059669; font-weight: 700; }
+        .info-row .value.amount { font-size: 10pt; }
+        .info-row .value.danger { color: #dc2626; font-weight: 700; }
+        .payment-details { background: #f8fafc; border-radius: 1mm; padding: 1mm 2mm; margin-top: 0.5mm; }
+        .payment-details .info-row { border-bottom-color: #e2e8f0; padding: 0.3mm 0; }
         .payment-details .info-row:last-child { border-bottom: none; }
-
-        .status-badge {
-          display: inline-block;
-          padding: 0px 2mm;
-          border-radius: 3mm;
-          font-size: 7pt;
-          font-weight: 600;
-        }
-
-        .divider-line {
-          border: none;
-          border-top: 0.5pt dashed #e2e8f0;
-          margin: 1mm 0;
-        }
-
-        /* ===== BARCODE AT BOTTOM ===== */
-        .barcode-section {
-          text-align: center;
-          padding: 2mm 0 1mm 0;
-          border-top: 1px solid #e5e7eb;
-          margin-top: 2mm;
-        }
-        .barcode-container {
-          display: inline-block;
-          background: white;
-          padding: 0.5mm 1mm;
-          border: 0.5pt solid #e5e7eb;
-          border-radius: 1mm;
-        }
-        .barcode-container svg {
-          max-width: 100%;
-          height: 8mm;
-          display: block;
-        }
-        .barcode-container .barcode-label {
-          display: block;
-          font-size: 5pt;
-          color: #6b7280;
-          margin-top: 0.5mm;
-        }
-
-        .receipt-footer {
-          text-align: center;
-          padding: 1mm 0 0 0;
-          font-size: 6pt;
-          color: #94a3b8;
-        }
-
-        /* ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== */
-        .receipt-credit {
-          text-align: center;
-          font-size: 4.5px;
-          color: #1a1a2e;
-          font-weight: 500;
-          opacity: 0.6;
-          letter-spacing: 0.3px;
-          direction: ltr;
-          margin-top: 1mm;
-          padding-top: 0.5mm;
-          border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
-        }
-
-        .note-text {
-          font-size: 7pt;
-          color: #4b5563;
-        }
-
-        .print-btn-container {
-          text-align: center;
-          padding: 2mm 0;
-          background: white;
-        }
-        .print-btn {
-          padding: 1mm 4mm;
-          background: #2563eb;
-          color: white;
-          border: none;
-          border-radius: 1mm;
-          font-size: 8pt;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
+        .status-badge { display: inline-block; padding: 0px 2mm; border-radius: 3mm; font-size: 7pt; font-weight: 600; }
+        .divider-line { border: none; border-top: 0.5pt dashed #e2e8f0; margin: 1mm 0; }
+        .barcode-section { text-align: center; padding: 2mm 0 1mm 0; border-top: 1px solid #e5e7eb; margin-top: 2mm; }
+        .barcode-container { display: inline-block; background: white; padding: 0.5mm 1mm; border: 0.5pt solid #e5e7eb; border-radius: 1mm; }
+        .barcode-container svg { max-width: 100%; height: 8mm; display: block; }
+        .barcode-container .barcode-label { display: block; font-size: 5pt; color: #6b7280; margin-top: 0.5mm; }
+        .receipt-footer { text-align: center; padding: 1mm 0 0 0; font-size: 6pt; color: #94a3b8; }
+        .receipt-credit { text-align: center; font-size: 4.5px; color: #1a1a2e; font-weight: 500; opacity: 0.6; letter-spacing: 0.3px; direction: ltr; margin-top: 1mm; padding-top: 0.5mm; border-top: 0.5px dashed rgba(26, 26, 46, 0.15); }
+        .note-text { font-size: 7pt; color: #4b5563; }
+        .print-btn-container { text-align: center; padding: 2mm 0; background: white; }
+        .print-btn { padding: 1mm 4mm; background: #2563eb; color: white; border: none; border-radius: 1mm; font-size: 8pt; font-weight: 600; cursor: pointer; }
         @media print {
-          html, body {
-            width: 80mm !important;
-            min-width: 80mm !important;
-            max-width: 80mm !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          .receipt {
-            width: 80mm !important;
-            min-width: 80mm !important;
-            max-width: 80mm !important;
-            margin: 0 !important;
-            padding: 2mm 2.5mm 2.5mm 2.5mm !important;
-          }
-          .print-btn-container {
-            display: none !important;
-          }
-          .receipt-title,
-          .status-badge,
-          .payment-details,
-          .logo-section,
-          .receipt-watermark {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .logo-section img {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .receipt-watermark {
-            opacity: 0.06 !important;
-          }
-          .receipt-watermark img {
-            width: 90px !important;
-          }
-          .receipt-watermark-text {
-            font-size: 18px !important;
-            opacity: 0.04 !important;
-          }
-          .receipt-credit {
-            opacity: 0.5 !important;
-            color: #000000 !important;
-          }
-        }
-
-        @media (max-width: 60mm) {
-          html, body {
-            width: 58mm !important;
-            min-width: 58mm !important;
-            max-width: 58mm !important;
-          }
-          .receipt {
-            width: 58mm !important;
-            min-width: 58mm !important;
-            max-width: 58mm !important;
-            padding: 1.5mm 2mm 2mm 2mm !important;
-            font-size: 7pt !important;
-          }
-          .logo-section img { width: 28px !important; height: 28px !important; }
-          .logo-section .academy-name { font-size: 10pt !important; }
-          .logo-section .receipt-type { font-size: 5.5pt !important; }
-          .receipt-title h1 { font-size: 11pt !important; }
-          .receipt-body { padding: 0.5mm 0 !important; }
-          .section-title { font-size: 6.5pt !important; }
-          .info-row { font-size: 6.5pt !important; padding: 0.3mm 0 !important; }
-          .info-row .value.amount { font-size: 8pt !important; }
-          .payment-details { padding: 0.5mm 1mm !important; }
-          .status-badge { font-size: 5.5pt !important; padding: 0px 1mm !important; }
-          .barcode-container svg { height: 6mm !important; }
-          .barcode-container .barcode-label { font-size: 3.5pt !important; }
-          .note-text { font-size: 5.5pt !important; }
-          .receipt-footer { font-size: 4.5pt !important; }
-          .receipt-watermark img { width: 70px !important; }
-          .receipt-watermark-text { font-size: 14px !important; }
-          .receipt-credit { font-size: 3.5px !important; }
+          html, body { width: 80mm !important; min-width: 80mm !important; max-width: 80mm !important; margin: 0 !important; padding: 0 !important; }
+          .receipt { width: 80mm !important; min-width: 80mm !important; max-width: 80mm !important; margin: 0 !important; padding: 2mm 2.5mm 2.5mm 2.5mm !important; }
+          .print-btn-container { display: none !important; }
+          .receipt-title, .status-badge, .payment-details, .logo-section, .receipt-watermark { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .logo-section img { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .receipt-watermark { opacity: 0.06 !important; }
+          .receipt-watermark img { width: 90px !important; }
+          .receipt-watermark-text { font-size: 18px !important; opacity: 0.04 !important; }
+          .receipt-credit { opacity: 0.5 !important; color: #000000 !important; }
         }
       </style>
     </head>
     <body>
       <div class="receipt-wrapper">
         <div class="receipt">
-          <!-- ===== WATERMARK - Behind content ===== -->
           <div class="receipt-watermark">
-            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+            <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
           </div>
-          <div class="receipt-watermark-text">الأكاديمية الأولمبية</div>
-
-          <!-- ===== CONTENT ===== -->
+          <div class="receipt-watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
           <div class="receipt-content">
-            <!-- LOGO AND ACADEMY NAME -->
             <div class="logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
               <div class="logo-text">
-                <span class="academy-name">🏛️ الأكاديمية الأولمبية</span>
+                <span class="academy-name">🏛️ الأكاديمية الأولمبية لعلوم الرياضة</span>
                 <span class="receipt-type">✦ إيصال دفع ✦</span>
               </div>
             </div>
-
-            <!-- RECEIPT TITLE -->
             <div class="receipt-title">
               <h1>إيصال الدفع</h1>
               <div class="receipt-number">رقم الإيصال: #${paymentData.id || 'N/A'}</div>
             </div>
-
-            <!-- BODY -->
             <div class="receipt-body">
-              <!-- Enrollment Info -->
               <div class="receipt-section">
                 <div class="section-title">📚 معلومات التسجيل</div>
                 <div class="info-row">
                   <span class="label">المتدرب</span>
-                  <span class="value">${enrollmentData.trainee?.title || '-'}</span>
+                  <span class="value">${enrollmentData.trainee?.fullName || '-'}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">الدورة</span>
@@ -997,10 +977,7 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
                   <span class="value">${(enrollmentData.finalSubscriptionValue || 0).toLocaleString('ar-EG')} جم</span>
                 </div>
               </div>
-
               <hr class="divider-line">
-
-              <!-- Payment Details -->
               <div class="receipt-section">
                 <div class="section-title">💰 تفاصيل الدفعة</div>
                 <div class="payment-details">
@@ -1034,8 +1011,6 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
                   </div>
                 </div>
               </div>
-
-              <!-- Note -->
               ${
                 paymentData.note
                   ? `
@@ -1050,38 +1025,29 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
                   : ''
               }
             </div>
-
-            <!-- BARCODE AT BOTTOM -->
             <div class="barcode-section">
               <div class="barcode-container">
                 <svg id="barcode"></svg>
-                <span class="barcode-label">${paymentData.nationalId || enrollmentData.trainee?.nationalId || '0000000000'}</span>
+                <span class="barcode-label">${traineeNationalId}</span>
               </div>
             </div>
-
-            <!-- FOOTER -->
             <div class="receipt-footer">
-              <div>🏛️ الأكاديمية الأولمبية</div>
+              <div>🏛️ الأكاديمية الأولمبية لعلوم الرياضة</div>
               <div style="margin-top: 1px;">شكراً لثقتكم بنا</div>
               <div style="margin-top: 1px; font-size: 5pt;">${currentDateFormatted}</div>
             </div>
-
-            <!-- ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== -->
             <div class="receipt-credit">powered by CoreStack Solutions | 01069911181</div>
           </div>
         </div>
-
-        <!-- PRINT BUTTON -->
         <div class="print-btn-container">
           <button class="print-btn" onclick="window.print();">🖨️ طباعة</button>
         </div>
       </div>
-
       <script>
         window.onload = function() {
           setTimeout(function() {
             try {
-              JsBarcode('#barcode', '${paymentData.nationalId || enrollmentData.trainee?.nationalId || '0000000000'}', {
+              JsBarcode('#barcode', '${traineeNationalId}', {
                 format: 'CODE128',
                 lineColor: '#000000',
                 width: 1.5,
@@ -1101,17 +1067,17 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
       <\/script>
     </body>
     </html>
-  `;
+    `;
   }
 
   // ==========================================================================
-  // SUBMIT WITH RECEIPT OPTION
+  // SUBMIT
   // ==========================================================================
 
   onSubmit(): void {
     if (this.paymentForm.invalid) {
       this.notification.showWarning(
-        'يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة',
+        'يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة'
       );
       return;
     }
@@ -1121,39 +1087,13 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
 
     if (paidAmount > currentRemaining && currentRemaining > 0) {
       this.notification.showWarning(
-        'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي',
+        'المبلغ المدفوع لا يمكن أن يتجاوز المبلغ المتبقي'
       );
       return;
     }
 
     const paymentStatusObj = this.paymentForm.get('paymentStatusObj')?.value;
-
-    // FIXED: Explicitly type paymentStatusEnum as string | null
-    let paymentStatusEnum: string | null = null;
-    if (paymentStatusObj) {
-      switch (paymentStatusObj.id) {
-        case 1:
-          paymentStatusEnum = 'PENDING';
-          break;
-        case 2:
-          paymentStatusEnum = 'PAID';
-          break;
-        case 3:
-          paymentStatusEnum = 'FAILED';
-          break;
-        case 4:
-          paymentStatusEnum = 'REFUNDED';
-          break;
-        case 5:
-          paymentStatusEnum = 'CANCELLED';
-          break;
-        case 6:
-          paymentStatusEnum = 'PARTIAL';
-          break;
-        default:
-          paymentStatusEnum = 'PENDING';
-      }
-    }
+    const paymentStatusEnum = this.mapPaymentStatus(paymentStatusObj);
 
     const paymentData = {
       enrollmentId: this.paymentForm.get('enrollmentId')?.value,
@@ -1172,20 +1112,19 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
       this.isEditMode && this.paymentId
         ? this.financialService.updateEnrollmentPayment(
             this.paymentId,
-            paymentData as any,
+            paymentData as any
           )
         : this.financialService.createEnrollmentPayment(paymentData as any);
 
     serviceCall.subscribe({
       next: (response: any) => {
         this.notification.showSuccess(
-          this.isEditMode ? 'تم تحديث الدفعة بنجاح' : 'تم إضافة الدفعة بنجاح',
+          this.isEditMode ? 'تم تحديث الدفعة بنجاح' : 'تم إضافة الدفعة بنجاح'
         );
         this.isSubmitting = false;
 
-        // Store payment result for receipt
         this.paymentResult = {
-          id: response.id || this.paymentId,
+          id: response.id || this.paymentId || 0,
           paidAmount: paidAmount,
           remainedValue: this.getNewRemaining(),
           paymentDate: this.paymentForm.get('paymentDate')?.value,
@@ -1193,28 +1132,24 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
           paymentStatus: paymentStatusEnum,
           paymentStatusTitle: this.getPaymentStatusLabel(),
           note: this.paymentForm.get('note')?.value,
+          traineeNationalId: this.selectedEnrollment?.trainee?.traineeNationalId,
         };
 
-        // Show success with receipt option
         this.showSuccess = true;
-        this.currentStep = 3; // Stay on confirmation step
+        this.currentStep = 3;
+        this.notification.showSuccess('تمت العملية بنجاح! يمكنك طباعة الإيصال.');
 
-        // Show receipt print option
-        this.notification.showSuccess(
-          'تمت العملية بنجاح! يمكنك طباعة الإيصال.',
-        );
-
-        // Auto print receipt for new payments (not for edit)
         if (!this.isEditMode) {
           setTimeout(() => {
-            this.printReceipt(this.paymentResult, this.selectedEnrollment);
+            if (this.paymentResult) {
+              this.printReceipt(this.paymentResult, this.selectedEnrollment);
+            }
           }, 600);
         }
 
-        // Close dialog after a delay if user doesn't interact
         setTimeout(() => {
           this.dialogRef.close(true);
-        }, 10000); // Close after 10 seconds
+        }, 10000);
       },
       error: (err) => {
         console.error('Error:', err);
@@ -1222,12 +1157,29 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
           err.error?.messageEn ||
             (this.isEditMode
               ? 'حدث خطأ في تحديث الدفعة'
-              : 'حدث خطأ في إضافة الدفعة'),
+              : 'حدث خطأ في إضافة الدفعة')
         );
         this.isSubmitting = false;
       },
     });
   }
+
+  private mapPaymentStatus(statusObj: any): string | null {
+    if (!statusObj) return null;
+    const statusMap: { [key: number]: string } = {
+      1: 'PENDING',
+      2: 'PAID',
+      3: 'FAILED',
+      4: 'REFUNDED',
+      5: 'CANCELLED',
+      6: 'PARTIAL',
+    };
+    return statusMap[statusObj.id] || 'PENDING';
+  }
+
+  // ==========================================================================
+  // DIALOG ACTIONS
+  // ==========================================================================
 
   onCancel(): void {
     if (this.showSuccess) {
@@ -1236,10 +1188,6 @@ export class EnrollmentPaymentWizardModalComponent implements OnInit {
       this.dialogRef.close(false);
     }
   }
-
-  // ==========================================================================
-  // RECEIPT BUTTON ACTIONS
-  // ==========================================================================
 
   printReceiptFromSuccess(): void {
     if (this.paymentResult) {

@@ -12,4 +12,5 @@ public interface PlaceRentPaymentRepository {
     Optional<PlaceRentPayment> selectById(Integer id);
     List<PlaceRentPayment> selectAllByFilters(PlaceRentPaymentSearchFilter filters);
     Integer countAllByFilters(PlaceRentPaymentSearchFilter filters);
+    void deleteById(Integer paymentId);
 }

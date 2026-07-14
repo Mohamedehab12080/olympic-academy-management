@@ -44,6 +44,7 @@ import { EMPLOYEE_TYPES } from '../../../../core/models/employee.model';
 import { EmployeeDetailsModalComponent } from '../employee-details/employee-details-modal.component';
 import { EmployeeWizardModalComponent } from '../employee-form/employee-wizard-modal.component';
 import { ErrorVTO } from '../../../../core/models/common.model';
+import * as JsBarcode from 'jsbarcode';
 
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT
@@ -1268,9 +1269,9 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         <!-- Watermark - Behind content -->
         <div class="watermark-wrapper">
           <div class="watermark-container">
-            <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية">
+            <img src="assets/images/simpleLogoSvg.svg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
           </div>
-          <div class="watermark-text">الأكاديمية الأولمبية</div>
+          <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         
         <!-- Content - Above watermark -->
@@ -1336,7 +1337,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           </table>
           
           <div class="footer">
-            الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${dataToPrint.length} موظف
+             الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} موظف
           </div>
         </div>
       </div>
@@ -1841,485 +1842,504 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
   }
 
-  private generateCardsPrint(
-    employees: EmployeeListItem[],
-    imageUrls: string[],
-  ): void {
-    const printWindow = window.open(
-      '',
-      '_blank',
-      'width=800,height=800,scrollbars=yes',
-    );
-    if (!printWindow) {
-      this.notification.showError('تعذر فتح نافذة الطباعة');
-      return;
+private generateCardsPrint(
+  employees: EmployeeListItem[],
+  imageUrls: string[],
+): void {
+  const printWindow = window.open(
+    '',
+    '_blank',
+    'width=800,height=800,scrollbars=yes',
+  );
+  if (!printWindow) {
+    this.notification.showError('تعذر فتح نافذة الطباعة');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ar-EG');
+  let cardsHtml = '';
+  const logoPath = 'assets/images/simpleLogo.jpeg';
+
+  // ✅ Import JsBarcode at the top of your file: import * as JsBarcode from 'jsbarcode';
+
+  employees.forEach((employee, index) => {
+    const imageUrl = imageUrls[index] || '';
+    const genderDisplay = employee.gender?.title || '-';
+    const employeeTypeDisplay = employee.employeeType?.title || '-';
+    const isActive = employee.isActive;
+    const hireDate = employee.hireDate || '-';
+
+    // ✅ Generate barcode image using JsBarcode (same as details modal)
+    let barcodeImage = '';
+    try {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 200;
+      tempCanvas.height = 40;
+
+      JsBarcode(tempCanvas, employee.nationalId || '000000', {
+        format: 'CODE128',
+        lineColor: '#000000',
+        width: 1.5,
+        height: 40,
+        displayValue: true,
+        fontSize: 10,
+        font: 'monospace',
+        textAlign: 'center',
+        margin: 5
+      });
+
+      barcodeImage = tempCanvas.toDataURL('image/png');
+    } catch (e) {
+      console.error('Barcode generation error:', e);
+      barcodeImage = '';
     }
 
-    const today = new Date().toLocaleDateString('ar-EG');
-    let cardsHtml = '';
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    // ✅ Use barcode image or fallback
+    const barcodeHtml = barcodeImage
+      ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
+      : `<span style="font-family:monospace;font-size:12px;color:#000;">${employee.nationalId || ''}</span>`;
 
-    employees.forEach((employee, index) => {
-      const imageUrl = imageUrls[index] || '';
-      const genderDisplay = employee.gender?.title || '-';
-      const employeeTypeDisplay = employee.employeeType?.title || '-';
-      const isActive = employee.isActive;
-      const hireDate = employee.hireDate || '-';
+    // ✅ Conditional photo section - only show if image exists
+    const hasImage = imageUrl && imageUrl.trim() !== '';
+    const photoSection = hasImage
+      ? `
+    <div class="thermal-photo">
+      <img src="${imageUrl}" alt="${this.escapeHtml(employee.fullName)}" onerror="this.style.display='none'">
+    </div>
+  `
+      : '';
 
-      // Conditional photo section - only show if image exists
-      const photoSection = imageUrl
-        ? `
-      <div class="thermal-photo">
-        <img src="${imageUrl}" alt="${this.escapeHtml(employee.fullName)}">
-      </div>
-    `
-        : '';
-
-      cardsHtml += `
-      <div class="card-wrapper">
-        <div class="thermal-card">
-          <!-- Watermark on Card -->
-          <div class="card-watermark">
-            <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+    cardsHtml += `
+    <div class="card-wrapper">
+      <div class="thermal-card">
+        <!-- Watermark on Card -->
+        <div class="card-watermark">
+          <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+        </div>
+        <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+        
+        <div class="card-content">
+          <!-- Logo Section at Top -->
+          <div class="card-logo-section">
+            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
+            <div class="card-logo-text">
+              <span class="academy-name">🏛️  الأكاديمية الأولمبية لعلوم الرياضة</span>
+              <span class="card-type">✦ بطاقة هوية موظف ✦</span>
+            </div>
           </div>
-          <div class="card-watermark-text">الأكاديمية الأولمبية</div>
           
-          <div class="card-content">
-            <!-- Logo Section at Top -->
-            <div class="card-logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image">
-              <div class="card-logo-text">
-                <span class="academy-name">🏛️ الأكاديمية الأولمبية</span>
-                <span class="card-type">✦ بطاقة هوية موظف ✦</span>
-              </div>
-            </div>
-            
-            <!-- Photo - Only shown if image exists -->
-            ${photoSection}
-            
-            <!-- Name & ID -->
-            <div class="thermal-name">${this.escapeHtml(employee.fullName) || ''}</div>
-            <div class="thermal-id">🆔 ${employee.nationalId || ''}</div>
-            
-            <div class="thermal-divider"></div>
-            
-            <!-- Info Table -->
-            <table class="thermal-table">
-              <tr>
-                <td class="thermal-label">🧑 النوع</td>
-                <td class="thermal-value">${employeeTypeDisplay}</td>
-              </tr>
-              <tr>
-                <td class="thermal-label">👤 الجنس</td>
-                <td class="thermal-value">${genderDisplay}</td>
-              </tr>
-              <tr>
-                <td class="thermal-label">📅 التوظيف</td>
-                <td class="thermal-value">${hireDate}</td>
-              </tr>
-              <tr>
-                <td class="thermal-label">✓ الحالة</td>
-                <td class="thermal-value ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
-              </tr>
-            </table>
-            
-            <div class="thermal-divider"></div>
-            
-            <!-- Barcode -->
-            <div class="thermal-barcode">
-              <svg id="barcode-${index}" class="barcode-svg"></svg>
-              <div class="thermal-barcode-number">${employee.nationalId || ''}</div>
-            </div>
-            
-            <!-- Footer with Signatures -->
-            <div class="thermal-footer">
-              <div class="thermal-signature">
-                <div class="thermal-line"></div>
-                <div>توقيع الموظف</div>
-              </div>
-              <div class="thermal-signature">
-                <div class="thermal-line"></div>
-                <div>ختم الأكاديمية</div>
-              </div>
-            </div>
-            
-            <!-- Issue Date -->
-            <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
-            
-            <!-- ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== -->
-            <div class="card-credit">powered by CoreStack Solutions | 01069911181</div>
+          <!-- Photo - Only shown if image exists -->
+          ${photoSection}
+          
+          <!-- Name & ID -->
+          <div class="thermal-name">${this.escapeHtml(employee.fullName) || ''}</div>
+          <div class="thermal-id">🆔 ${employee.nationalId || ''}</div>
+          
+          <div class="thermal-divider"></div>
+          
+          <!-- Info Table -->
+          <table class="thermal-table">
+            <tr>
+              <td class="thermal-label">🧑 النوع</td>
+              <td class="thermal-value">${employeeTypeDisplay}</td>
+            </tr>
+            <tr>
+              <td class="thermal-label">👤 الجنس</td>
+              <td class="thermal-value">${genderDisplay}</td>
+            </tr>
+            <tr>
+              <td class="thermal-label">📅 التوظيف</td>
+              <td class="thermal-value">${hireDate}</td>
+            </tr>
+            <tr>
+              <td class="thermal-label">✓ الحالة</td>
+              <td class="thermal-value ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
+            </tr>
+          </table>
+          
+          <div class="thermal-divider"></div>
+          
+          <!-- Barcode -->
+          <div class="thermal-barcode">
+            ${barcodeHtml}
+            <div class="thermal-barcode-number">${employee.nationalId || ''}</div>
           </div>
+          
+          <!-- Footer with Signatures -->
+          <div class="thermal-footer">
+            <div class="thermal-signature">
+              <div class="thermal-line"></div>
+              <div>توقيع الموظف</div>
+            </div>
+            <div class="thermal-signature">
+              <div class="thermal-line"></div>
+              <div>ختم الأكاديمية</div>
+            </div>
+          </div>
+          
+          <!-- Issue Date -->
+          <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
+          
+          <!-- ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== -->
+          <div class="card-credit">powered by CoreStack Solutions | 01069911181</div>
         </div>
       </div>
-    `;
-    });
+    </div>
+  `;
+  });
 
-    printWindow.document.write(`
-    <!DOCTYPE html>
-    <html dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <title>بطاقات الموظفين</title>
-      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-      <style>
-        @page { 
-          size: 58mm auto; 
-          margin: 0mm; 
-        }
-        
-        * { 
-          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-        
+  printWindow.document.write(`
+  <!DOCTYPE html>
+  <html dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <title>بطاقات الموظفين</title>
+    <style>
+      @page { 
+        size: 58mm auto; 
+        margin: 0mm; 
+      }
+      
+      * { 
+        font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body { 
+        width: 58mm; 
+        margin: 0; 
+        padding: 0; 
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        min-height: 100vh;
+        padding-bottom: 2mm;
+      }
+      
+      .card-wrapper {
+        width: 100%;
+        max-width: 58mm;
+        margin: 0;
+        flex-shrink: 0;
+      }
+      
+      .thermal-card {
+        width: 100%;
+        max-width: 58mm;
+        margin: 0;
+        padding: 2.5mm 3mm 3.5mm 3mm;
+        background: white;
+        position: relative;
+        overflow: hidden;
+        direction: rtl;
+      }
+      
+      /* ===== WATERMARK - Behind content with logo ===== */
+      .card-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-25deg) scale(1.8);
+        opacity: 0.07;
+        pointer-events: none;
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+      
+      .card-watermark img {
+        width: 90px;
+        height: auto;
+        object-fit: contain;
+        opacity: 0.9;
+      }
+      
+      .card-watermark-text {
+        position: absolute;
+        top: 57%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
+        font-size: 18px;
+        font-weight: 900;
+        color: #f59e0b;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        opacity: 0.04;
+        pointer-events: none;
+        z-index: 0;
+        text-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+      }
+      
+      /* ===== CONTENT - Above watermark ===== */
+      .card-content {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+      }
+      
+      /* ===== LOGO SECTION AT TOP ===== */
+      .card-logo-section {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 2.5mm 0 2mm 0;
+        margin-bottom: 2mm;
+        border-bottom: 2.5px solid #f59e0b;
+        justify-content: center;
+        background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.05), transparent);
+        border-radius: 2px;
+      }
+      
+      .card-logo-image {
+        width: 34px;
+        height: 34px;
+        object-fit: contain;
+        border-radius: 50%;
+        background: white;
+        padding: 2px;
+        border: 2px solid #f59e0b;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+      }
+      
+      .card-logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      
+      .card-logo-text .academy-name {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a1a2e;
+        letter-spacing: 0.5px;
+      }
+      
+      .card-logo-text .card-type {
+        font-size: 7px;
+        color: #f59e0b;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Compact Photo */
+      .thermal-photo { 
+        text-align: center; 
+        margin-bottom: 1mm; 
+      }
+      .thermal-photo img { 
+        width: 36px; 
+        height: 36px; 
+        border-radius: 50%; 
+        object-fit: cover;
+        border: 2px solid #f59e0b;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      
+      /* Compact Name & ID */
+      .thermal-name { 
+        font-size: 11px; 
+        font-weight: 700; 
+        text-align: center; 
+        margin-bottom: 0.5mm; 
+        color: #1a1a2e;
+        line-height: 1.2;
+      }
+      .thermal-id { 
+        font-size: 8px; 
+        color: #64748b; 
+        text-align: center; 
+        margin-bottom: 0.8mm; 
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Divider */
+      .thermal-divider { 
+        border-top: 1px dashed #e5e7eb; 
+        margin: 0.8mm 0; 
+        opacity: 0.6;
+      }
+      
+      /* Info Table */
+      .thermal-table { 
+        width: 100%; 
+        font-size: 7px; 
+        margin-bottom: 0.8mm; 
+        border-collapse: collapse; 
+      }
+      .thermal-table tr { 
+        line-height: 1.3; 
+      }
+      .thermal-label { 
+        text-align: right; 
+        padding: 0.3mm 0.5mm; 
+        color: #64748b; 
+        width: 38%;
+        font-weight: 500;
+        font-size: 6.5px;
+      }
+      .thermal-value { 
+        text-align: left; 
+        padding: 0.3mm 0.5mm; 
+        font-weight: 600; 
+        width: 62%;
+        color: #1e293b;
+        font-size: 6.5px;
+      }
+      .thermal-value.status-active { 
+        color: #10b981; 
+      }
+      .thermal-value.status-inactive { 
+        color: #ef4444; 
+      }
+      
+      /* Barcode */
+      .thermal-barcode { 
+        text-align: center; 
+        margin: 0.8mm 0; 
+      }
+      .thermal-barcode img { 
+        max-width: 150px; 
+        height: 30px;
+      }
+      .thermal-barcode span {
+        font-size: 12px;
+        font-family: monospace;
+        color: #000;
+      }
+      .thermal-barcode-number { 
+        font-size: 8px; 
+        font-family: monospace; 
+        text-align: center; 
+        margin-top: 0.5mm; 
+        color: #f59e0b;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+      }
+      
+      /* Footer */
+      .thermal-footer { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start;
+        gap: 2mm; 
+        margin-top: 1.5mm; 
+        padding-top: 1.5mm;
+        border-top: 2px solid #f59e0b;
+      }
+      .thermal-signature { 
+        flex: 1; 
+        text-align: center; 
+        font-size: 5.5px; 
+        color: #94a3b8;
+      }
+      .thermal-line { 
+        border-top: 0.5px solid #94a3b8; 
+        margin-bottom: 0.3mm; 
+        padding-top: 3mm; 
+      }
+      
+      .thermal-issue-date {
+        text-align: center;
+        font-size: 6px;
+        color: #94a3b8;
+        margin-top: 0.8mm;
+        padding-top: 0.5mm;
+        border-top: 1px dashed #e5e7eb;
+      }
+      
+      /* ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== */
+      .card-credit {
+        text-align: center;
+        font-size: 4px;
+        color: #1a1a2e;
+        font-weight: 500;
+        opacity: 0.6;
+        letter-spacing: 0.3px;
+        direction: ltr;
+        margin-top: 0.5mm;
+        padding-top: 0.5mm;
+        border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
+      }
+      
+      @media print {
         body { 
-          width: 58mm; 
           margin: 0; 
           padding: 0; 
-          background: white;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          align-items: center;
-          min-height: 100vh;
-          padding-bottom: 2mm;
+          background: white; 
+          padding-bottom: 1.5mm;
         }
-        
-        .card-wrapper {
-          width: 100%;
-          max-width: 58mm;
-          margin: 0;
-          flex-shrink: 0;
-        }
-        
         .thermal-card {
-          width: 100%;
-          max-width: 58mm;
-          margin: 0;
-          padding: 2.5mm 3mm 3.5mm 3mm;
-          background: white;
-          position: relative;
-          overflow: hidden;
-          direction: rtl;
+          padding: 2mm 2.5mm 2.5mm 2.5mm;
+          border: none !important;
+          box-shadow: none !important;
         }
-        
-        /* ===== WATERMARK - Behind content with logo ===== */
         .card-watermark {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(1.8);
-          opacity: 0.07;
-          pointer-events: none;
-          z-index: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 100%;
+          opacity: 0.08 !important;
         }
-        
         .card-watermark img {
-          width: 90px;
-          height: auto;
-          object-fit: contain;
-          opacity: 0.9;
+          width: 80px !important;
         }
-        
         .card-watermark-text {
-          position: absolute;
-          top: 57%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
-          font-size: 18px;
-          font-weight: 900;
-          color: #f59e0b;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          white-space: nowrap;
-          opacity: 0.04;
-          pointer-events: none;
-          z-index: 0;
-          text-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+          font-size: 16px !important;
+          opacity: 0.05 !important;
         }
-        
-        /* ===== CONTENT - Above watermark ===== */
-        .card-content {
-          position: relative;
-          z-index: 1;
-          width: 100%;
-        }
-        
-        /* ===== LOGO SECTION AT TOP ===== */
-        .card-logo-section {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 2.5mm 0 2mm 0;
-          margin-bottom: 2mm;
-          border-bottom: 2.5px solid #f59e0b;
-          justify-content: center;
-          background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.05), transparent);
-          border-radius: 2px;
-        }
-        
         .card-logo-image {
-          width: 34px;
-          height: 34px;
-          object-fit: contain;
-          border-radius: 50%;
-          background: white;
-          padding: 2px;
-          border: 2px solid #f59e0b;
-          flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
-        
-        .card-logo-text {
-          display: flex;
-          flex-direction: column;
-          line-height: 1.2;
-        }
-        
-        .card-logo-text .academy-name {
-          font-size: 11px;
-          font-weight: 700;
-          color: #1a1a2e;
-          letter-spacing: 0.5px;
-        }
-        
-        .card-logo-text .card-type {
-          font-size: 7px;
-          color: #f59e0b;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-        }
-        
-        /* Compact Photo */
-        .thermal-photo { 
-          text-align: center; 
-          margin-bottom: 1mm; 
-        }
-        .thermal-photo img { 
-          width: 36px; 
-          height: 36px; 
-          border-radius: 50%; 
-          object-fit: cover;
-          border: 2px solid #f59e0b;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        /* Compact Name & ID */
-        .thermal-name { 
-          font-size: 11px; 
-          font-weight: 700; 
-          text-align: center; 
-          margin-bottom: 0.5mm; 
-          color: #1a1a2e;
-          line-height: 1.2;
-        }
-        .thermal-id { 
-          font-size: 8px; 
-          color: #64748b; 
-          text-align: center; 
-          margin-bottom: 0.8mm; 
-          font-weight: 500;
-          letter-spacing: 0.5px;
-        }
-        
-        /* Divider */
-        .thermal-divider { 
-          border-top: 1px dashed #e5e7eb; 
-          margin: 0.8mm 0; 
-          opacity: 0.6;
-        }
-        
-        /* Info Table */
-        .thermal-table { 
-          width: 100%; 
-          font-size: 7px; 
-          margin-bottom: 0.8mm; 
-          border-collapse: collapse; 
-        }
-        .thermal-table tr { 
-          line-height: 1.3; 
-        }
-        .thermal-label { 
-          text-align: right; 
-          padding: 0.3mm 0.5mm; 
-          color: #64748b; 
-          width: 38%;
-          font-weight: 500;
-          font-size: 6.5px;
-        }
-        .thermal-value { 
-          text-align: left; 
-          padding: 0.3mm 0.5mm; 
-          font-weight: 600; 
-          width: 62%;
-          color: #1e293b;
-          font-size: 6.5px;
-        }
-        .thermal-value.status-active { 
-          color: #10b981; 
-        }
-        .thermal-value.status-inactive { 
-          color: #ef4444; 
-        }
-        
-        /* Barcode */
-        .thermal-barcode { 
-          text-align: center; 
-          margin: 0.8mm 0; 
-        }
-        .thermal-barcode .barcode-svg { 
-          width: 100%; 
-          max-width: 150px; 
-          height: 30px;
-        }
-        .thermal-barcode-number { 
-          font-size: 8px; 
-          font-family: monospace; 
-          text-align: center; 
-          margin-top: 0.5mm; 
-          color: #f59e0b;
-          font-weight: 600;
-          letter-spacing: 1.5px;
-        }
-        
-        /* Footer */
-        .thermal-footer { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: flex-start;
-          gap: 2mm; 
-          margin-top: 1.5mm; 
-          padding-top: 1.5mm;
-          border-top: 2px solid #f59e0b;
-        }
-        .thermal-signature { 
-          flex: 1; 
-          text-align: center; 
-          font-size: 5.5px; 
-          color: #94a3b8;
-        }
-        .thermal-line { 
-          border-top: 0.5px solid #94a3b8; 
-          margin-bottom: 0.3mm; 
-          padding-top: 3mm; 
-        }
-        
-        .thermal-issue-date {
-          text-align: center;
-          font-size: 6px;
-          color: #94a3b8;
-          margin-top: 0.8mm;
-          padding-top: 0.5mm;
-          border-top: 1px dashed #e5e7eb;
-        }
-        
-        /* ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== */
         .card-credit {
-          text-align: center;
-          font-size: 4px;
-          color: #1a1a2e;
-          font-weight: 500;
-          opacity: 0.6;
-          letter-spacing: 0.3px;
-          direction: ltr;
-          margin-top: 0.5mm;
-          padding-top: 0.5mm;
-          border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
+          opacity: 0.5 !important;
+          color: #000000 !important;
         }
-        
-        @media print {
-          body { 
-            margin: 0; 
-            padding: 0; 
-            background: white; 
-            padding-bottom: 1.5mm;
-          }
-          .thermal-card {
-            padding: 2mm 2.5mm 2.5mm 2.5mm;
-            border: none !important;
-            box-shadow: none !important;
-          }
-          .card-watermark {
-            opacity: 0.08 !important;
-          }
-          .card-watermark img {
-            width: 80px !important;
-          }
-          .card-watermark-text {
-            font-size: 16px !important;
-            opacity: 0.05 !important;
-          }
-          .card-logo-image {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .card-credit {
-            opacity: 0.5 !important;
-            color: #000000 !important;
-          }
-          .no-print { 
-            display: none !important; 
-          }
+        .no-print { 
+          display: none !important; 
         }
-        
-        @media screen {
-          .thermal-card {
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            margin-bottom: 2px;
-          }
+        /* ✅ Ensure barcode images print properly */
+        .thermal-barcode img {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
-      </style>
-    </head>
-    <body>
-      ${cardsHtml}
+      }
       
-      <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; width: 100%; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
-        <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
-          🖨️ طباعة / PDF
-        </button>
-        <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
-          ✖ إغلاق
-        </button>
-      </div>
-      
-      <script>
-        window.onload = function() {
-          setTimeout(function() {
-            const employees = ${JSON.stringify(employees.map((e) => e.nationalId))};
-            employees.forEach(function(nationalId, index) {
-              try {
-                JsBarcode('#barcode-' + index, nationalId || '000000', {
-                  format: 'CODE128',
-                  lineColor: '#000000',
-                  width: 1.2,
-                  height: 25,
-                  displayValue: true,
-                  fontSize: 8,
-                  font: 'monospace',
-                  textAlign: 'center',
-                  margin: 2
-                });
-              } catch(e) {
-                console.error('Barcode error for index', index, e);
-              }
-            });
-          }, 300);
-        };
-      <\/script>
-    </body>
-    </html>
-  `);
-    printWindow.document.close();
-  }
+      @media screen {
+        .thermal-card {
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          margin-bottom: 2px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    ${cardsHtml}
+    
+    <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; width: 100%; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+      <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
+        🖨️ طباعة / PDF
+      </button>
+      <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+        ✖ إغلاق
+      </button>
+    </div>
+    
+    <!-- ✅ No JavaScript needed - barcodes are pre-generated as images -->
+  </body>
+  </html>
+`);
+  printWindow.document.close();
+}
+  
   private escapeHtml(str: string | null | undefined): string {
     if (!str) return '';
     return str

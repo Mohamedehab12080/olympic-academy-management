@@ -128,8 +128,8 @@ interface CourseAssignment {
                   <label class="upload-label">صورة الموظف</label>
                   <app-file-upload
                     [domainId]="FileDomain.EMPLOYEE"
-                    [acceptedTypes]="'image/jpeg,image/png,image/jpg'"
-                    [maxSizeMB]="2"
+                    [acceptedTypes]="''"
+                    [maxSizeMB]="10"
                     [label]="'اضغط لرفع صورة الموظف'"
                     (fileUploaded)="onImageUploaded($event)"
                     (fileRemoved)="onImageRemoved()">
@@ -1711,7 +1711,7 @@ export class EmployeeWizardModalComponent implements OnInit, OnDestroy {
         <div class="application-container">
           <div class="header">
             <h1>طلب توظيف</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
+            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           <div class="application-details">
             <div><strong>رقم الطلب:</strong> ${data.isNewEmployee ? 'جديد' : '#' + this.employeeId}</div>
@@ -1758,7 +1758,7 @@ export class EmployeeWizardModalComponent implements OnInit, OnDestroy {
             <div class="signature-box"><div class="signature-line"></div><div>توقيع مدير الموارد البشرية</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
@@ -1775,144 +1775,123 @@ export class EmployeeWizardModalComponent implements OnInit, OnDestroy {
   // SUBMIT METHODS
   // ============================================================
 
-  submitEmployee(): void {
-    if (this.basicInfoForm.invalid) {
-      this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح');
-      this.basicInfoForm.markAllAsTouched();
-      return;
-    }
-    
-    this.isSubmitting = true;
-    
-    const genderObj = this.basicInfoForm.get('gender')?.value;
-    const employeeTypeObj = this.basicInfoForm.get('employeeType')?.value;
-    const salaryTypeObj = this.financialForm.get('salaryType')?.value;
-    
-    const genderEnum = genderObj ? (genderObj.id === 1 ? 'MALE' : 'FEMALE') : null;
-    const employeeTypeEnum = employeeTypeObj ? (employeeTypeObj.id === 1 ? 'TRAINER' : 'MANAGER') : null;
-    
-    let salaryTypeEnum = null;
-    if (salaryTypeObj) {
-      switch(salaryTypeObj.id) {
-        case 1: salaryTypeEnum = 'MONTHLY'; break;
-        case 2: salaryTypeEnum = 'HOURLY'; break;
-        case 3: salaryTypeEnum = 'DAILY'; break;
-        case 4: salaryTypeEnum = 'PERCENTAGE'; break;
-        default: salaryTypeEnum = 'MONTHLY';
-      }
-    }
-    
-    const selectedDepartmentIds = this.getSelectedDepartments().map(d => d.id);
-    const selectedCourseIds = this.getSelectedCourses().map(c => c.id);
-    
-    if (this.isEditMode && this.employeeId) {
-      // ============================================================
-      // EDIT MODE
-      // ============================================================
-      
-      const employeeUpdateData: any = {
-        fullName: this.basicInfoForm.get('fullName')?.value,
-        nationalId: this.basicInfoForm.get('nationalId')?.value,
-        birthDate: this.basicInfoForm.get('birthDate')?.value,
-        gender: genderEnum,
-        employeeType: employeeTypeEnum,
-        salary: this.financialForm.get('salary')?.value ? Number(this.financialForm.get('salary')?.value) : null,
-        remainedSalary: this.financialForm.get('remainedSalary')?.value ? Number(this.financialForm.get('remainedSalary')?.value) : null,
-        salaryType: salaryTypeEnum,
-        hireDate: this.basicInfoForm.get('hireDate')?.value,
-        departmentIds: selectedDepartmentIds,
-        imageUrl: this.employeeImageFid,
-        isActive: this.basicInfoForm.get('isActive')?.value
-      };
-      
-      console.log('📤 Updating employee:', employeeUpdateData);
-      
-      this.employeeService.updateEmployee(this.employeeId, employeeUpdateData)
-        .pipe(finalize(() => {
-          this.isSubmitting = false;
-        }))
-        .subscribe({
-          next: () => {
-            console.log('✅ Employee updated successfully');
-            this.processContacts(this.employeeId!)
-              .then(() => {
-                console.log('✅ Contacts processed successfully');
-                this.handleDepartmentAssignments(this.employeeId!, this.departmentAssignments);
-              })
-              .catch((error) => {
-                console.error('❌ Error processing contacts:', error);
-                this.notification.showError('حدث خطأ في تحديث جهات الاتصال');
-                this.handleDepartmentAssignments(this.employeeId!, this.departmentAssignments);
-              });
-          },
-          error: (err) => {
-            console.error('❌ Update error:', err);
-            this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث الموظف');
-          }
-        });
-    } else {
-      // ============================================================
-      // CREATE MODE - Create employee first without contacts
-      // ============================================================
-      
-      // Remove contacts from the payload - they will be created separately
-      const formData: any = {
-        fullName: this.basicInfoForm.get('fullName')?.value,
-        nationalId: this.basicInfoForm.get('nationalId')?.value,
-        birthDate: this.basicInfoForm.get('birthDate')?.value,
-        gender: genderEnum,
-        employeeType: employeeTypeEnum,
-        salary: this.financialForm.get('salary')?.value ? Number(this.financialForm.get('salary')?.value) : null,
-        remainedSalary: this.financialForm.get('remainedSalary')?.value ? Number(this.financialForm.get('remainedSalary')?.value) : null,
-        salaryType: salaryTypeEnum,
-        hireDate: this.basicInfoForm.get('hireDate')?.value,
-        departmentIds: selectedDepartmentIds,
-        imageUrl: this.employeeImageFid
-      };
-      
-      console.log('📤 Creating employee (without contacts):', formData);
-      
-      this.employeeService.createEmployee(formData)
-        .pipe(finalize(() => {
-          this.isSubmitting = false;
-        }))
-        .subscribe({
-          next: (res: any) => {
-            const newEmployeeId = res.id;
-            console.log('✅ Employee created with ID:', newEmployeeId);
-            
-            // Now create contacts using the new employee ID
-            this.createContactsForEmployee(newEmployeeId)
-              .then(() => {
-                console.log('✅ All contacts created successfully');
-                
-                // Assign departments for the new employee
-                if (selectedDepartmentIds.length > 0) {
-                  this.assignDepartmentsToEmployee(newEmployeeId, selectedDepartmentIds);
-                }
-                
-                // Assign courses if trainer
-                if (this.isTrainer && selectedCourseIds.length > 0) {
-                  this.assignCoursesToEmployee(newEmployeeId, selectedCourseIds);
-                }
-                
-                this.notification.showSuccess('تم إضافة الموظف وجميع البيانات بنجاح');
-                this.dialogRef.close(true);
-              })
-              .catch((error) => {
-                console.error('❌ Error creating contacts:', error);
-                this.notification.showError('تم إضافة الموظف ولكن حدث خطأ في إضافة جهات الاتصال');
-                // Still close the dialog since employee was created
-                this.dialogRef.close(true);
-              });
-          },
-          error: (err) => {
-            console.error('❌ Create error:', err);
-            this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة الموظف');
-          }
-        });
+ submitEmployee(): void {
+  if (this.basicInfoForm.invalid) {
+    this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح');
+    this.basicInfoForm.markAllAsTouched();
+    return;
+  }
+  
+  this.isSubmitting = true;
+  
+  const genderObj = this.basicInfoForm.get('gender')?.value;
+  const employeeTypeObj = this.basicInfoForm.get('employeeType')?.value;
+  const salaryTypeObj = this.financialForm.get('salaryType')?.value;
+  
+  // Helper to format date
+  const formatDate = (date: any): string | null => {
+    if (!date) return null;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString().split('T')[0];
+  };
+  
+  const genderEnum = genderObj ? (genderObj.id === 1 ? 'MALE' : 'FEMALE') : null;
+  const employeeTypeEnum = employeeTypeObj ? (employeeTypeObj.id === 1 ? 'TRAINER' : 'MANAGER') : null;
+  
+  let salaryTypeEnum = null;
+  if (salaryTypeObj) {
+    switch(salaryTypeObj.id) {
+      case 1: salaryTypeEnum = 'MONTHLY'; break;
+      case 2: salaryTypeEnum = 'HOURLY'; break;
+      case 3: salaryTypeEnum = 'DAILY'; break;
+      case 4: salaryTypeEnum = 'PERCENTAGE'; break;
+      default: salaryTypeEnum = 'MONTHLY';
     }
   }
+  
+  const selectedDepartmentIds = this.getSelectedDepartments().map(d => d.id);
+  const selectedCourseIds = this.getSelectedCourses().map(c => c.id);
+  
+  // Build base data
+  const baseData: any = {
+    fullName: this.basicInfoForm.get('fullName')?.value?.trim(),
+    nationalId: this.basicInfoForm.get('nationalId')?.value?.trim(),
+    birthDate: formatDate(this.basicInfoForm.get('birthDate')?.value),
+    gender: genderEnum,
+    employeeType: employeeTypeEnum,
+    salary: this.financialForm.get('salary')?.value ? Number(this.financialForm.get('salary')?.value) : 0,
+    remainedSalary: this.financialForm.get('remainedSalary')?.value ? Number(this.financialForm.get('remainedSalary')?.value) : 0,
+    salaryType: salaryTypeEnum,
+    hireDate: formatDate(this.basicInfoForm.get('hireDate')?.value),
+    departmentIds: selectedDepartmentIds,
+    imageUrl: this.employeeImageFid
+  };
+
+  if (this.isEditMode && this.employeeId) {
+    // Edit mode
+    baseData.isActive = this.basicInfoForm.get('isActive')?.value;
+    
+    console.log('📤 Updating employee:', baseData);
+    
+    this.employeeService.updateEmployee(this.employeeId, baseData)
+      .pipe(finalize(() => { this.isSubmitting = false; }))
+      .subscribe({
+        next: () => {
+          console.log('✅ Employee updated successfully');
+          this.notification.showSuccess('تم تحديث الموظف بنجاح');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error('❌ Update error:', err);
+          this.handleError(err);
+        }
+      });
+  } else {
+    // Create mode
+    console.log('📤 Creating employee:', baseData);
+    
+    this.employeeService.createEmployee(baseData)
+      .pipe(finalize(() => { this.isSubmitting = false; }))
+      .subscribe({
+        next: (res: any) => {
+          console.log('✅ Employee created:', res);
+          this.notification.showSuccess('تم إضافة الموظف بنجاح');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error('❌ Create error:', err);
+          this.handleError(err);
+        }
+      });
+  }
+}
+
+private handleError(err: any): void {
+  this.isSubmitting = false;
+  
+  if (err.status === 400 && err.error) {
+    const error = err.error;
+    
+    // Check if it's an ErrorVTO
+    if (typeof error === 'object') {
+      let errorMessage = error.messageAr || error.messageEn || 'حدث خطأ';
+      
+      // Add field-specific errors
+      if (error.reqBodyErrors && error.reqBodyErrors.length > 0) {
+        errorMessage += '\n' + error.reqBodyErrors.join('\n');
+      }
+      
+      this.notification.showError(errorMessage);
+    } else {
+      this.notification.showError('حدث خطأ في معالجة الطلب - تحقق من البيانات المدخلة');
+    }
+  } else if (err.error?.messageEn) {
+    this.notification.showError(err.error.messageEn);
+  } else {
+    this.notification.showError('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى');
+  }
+}
 
   // ============================================================
   // ASSIGN DEPARTMENTS TO EMPLOYEE (Create Mode)

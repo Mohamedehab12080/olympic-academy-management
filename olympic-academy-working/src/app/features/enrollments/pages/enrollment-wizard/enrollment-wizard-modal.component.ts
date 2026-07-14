@@ -991,9 +991,9 @@ export class EnrollmentWizardModalComponent implements OnInit {
           <!-- Watermark -->
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
             </div>
-            <div class="watermark-text">الأكاديمية الأولمبية</div>
+            <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
           </div>
           
           ${data.isNewEnrollment ? '<div class="draft-watermark">مسودة</div>' : ''}
@@ -1001,10 +1001,10 @@ export class EnrollmentWizardModalComponent implements OnInit {
           <div class="content">
             <!-- Logo Section -->
             <div class="logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
               <div class="logo-text">
-                <span class="academy-name">الأكاديمية الأولمبية</span>
-                <span class="academy-sub">نظام إدارة الأكاديمية الأولمبية</span>
+                <span class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</span>
+                <span class="academy-sub">نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</span>
               </div>
             </div>
             
@@ -1081,7 +1081,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
             
             <!-- Footer -->
             <div class="footer">
-              <strong>🏛️ الأكاديمية الأولمبية</strong><br>
+              <strong>🏛️  الأكاديمية الأولمبية لعلوم الرياضة</strong><br>
               تم التصدير بواسطة النظام الآلي للأكاديمية الأولمبية
             </div>
           </div>

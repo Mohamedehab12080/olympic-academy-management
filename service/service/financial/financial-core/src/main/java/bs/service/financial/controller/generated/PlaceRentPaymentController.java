@@ -75,6 +75,8 @@ public interface PlaceRentPaymentController {
     /**
      * GET /place-rent-payments : Retrieve list of place rent payments
      *
+     * @param quickSearch
+     *            (optional)
      * @param placeId
      *            (optional)
      * @param rentTypeId
@@ -106,6 +108,7 @@ public interface PlaceRentPaymentController {
     @RequestMapping(method = RequestMethod.GET, value = "/place-rent-payments", produces = { "application/json" })
 
     ResponseEntity<PlaceRentPaymentResultSet> _getAllPlaceRentPaymentsByFilter(
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "placeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "placeId", required = false) Integer placeId,
             @Parameter(name = "rentTypeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "rentTypeId", required = false) Integer rentTypeId,
             @Parameter(name = "paymentMethodId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentMethodId", required = false) Integer paymentMethodId,

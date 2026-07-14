@@ -40,6 +40,7 @@ public class MainTotalRepositoryImpl implements MainTotalRepository {
             vto.setTotalIncentives(getTotalIncentives(yearOfDate));
             vto.setTotalPlacesRent(getTotalRent(yearOfDate));
             vto.setTotalEnrollmentPayments(getTotalEnrollmentPayments(yearOfDate));
+            vto.setTotalEnrollmentRefunds(getTotalEnrollmentRefunds(yearOfDate));
             vto.setTotalExpenses(getTotalExpenses(yearOfDate));
             vto.setActiveEnrollmentsCount(getActiveEnrollmentsCount(yearOfDate));
             vto.setInactiveEnrollmentsCount(getInactiveEnrollmentsCount(yearOfDate));
@@ -120,6 +121,23 @@ public class MainTotalRepositoryImpl implements MainTotalRepository {
           AND enr.payment_status IN (1,2,6)
           AND enr.is_active=1
           AND enr.enrollment_status IN (1,2)
+    """;
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("startDate", yearOfDate.atStartOfDay());
+        return ((Number) query.getSingleResult()).intValue();
+    }
+
+    private int getTotalEnrollmentRefunds(LocalDate yearOfDate) {
+        String sql = """
+        SELECT COALESCE(SUM(er.amount_refunded), 0)
+        FROM oa_enrollment_refund er
+        INNER JOIN oa_enrollment enr ON er.enrollment_id = enr.id
+        WHERE er.refund_date <= :startDate
+          AND er.is_deleted = 0
+          AND er.refund_status IN (2,4)
+          AND enr.payment_status =4
+          AND enr.is_active=1
+          AND enr.enrollment_status =3
     """;
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", yearOfDate.atStartOfDay());

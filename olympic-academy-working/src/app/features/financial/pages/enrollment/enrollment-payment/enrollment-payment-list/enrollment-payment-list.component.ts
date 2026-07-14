@@ -1382,7 +1382,7 @@ export class EnrollmentPaymentListComponent
           <div class="watermark-container">
             ${svgContent}
           </div>
-          <div class="watermark-text">الأكاديمية الأولمبية</div>
+          <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         
         <div class="content">
@@ -1443,7 +1443,7 @@ export class EnrollmentPaymentListComponent
           </table>
           
           <div class="footer">
-            الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${dataToPrint.length} دفعة
+             الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} دفعة
           </div>
         </div>
       </div>

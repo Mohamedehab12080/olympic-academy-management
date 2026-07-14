@@ -95,25 +95,25 @@
 		<pluginManagement>
 			<plugins>
 
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>${plugin.spring-boot-maven-plugin.version}</version>
+<!--				<plugin>-->
+<!--					<groupId>org.springframework.boot</groupId>-->
+<!--					<artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--					<version>${plugin.spring-boot-maven-plugin.version}</version>-->
 
-					<configuration>
-						<finalName>${jar.final.name}</finalName>
-						<outputDirectory>${deployment.folder.path}</outputDirectory>
-					</configuration>
+<!--					<configuration>-->
+<!--						<finalName>${jar.final.name}</finalName>-->
+<!--						<outputDirectory>${deployment.folder.path}</outputDirectory>-->
+<!--					</configuration>-->
 
-					<executions>
-						<execution>
-							<phase>package</phase>
-							<goals>
-								<goal>repackage</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
+<!--					<executions>-->
+<!--						<execution>-->
+<!--							<phase>package</phase>-->
+<!--							<goals>-->
+<!--								<goal>repackage</goal>-->
+<!--							</goals>-->
+<!--						</execution>-->
+<!--					</executions>-->
+<!--				</plugin>-->
 
 				<plugin>
 					<groupId>org.openapitools</groupId>
@@ -515,8 +515,9 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
 					<configuration>
-						<classifier>exec</classifier>
-						<mainClass>service/ms/olympic/olympic-academy-management</mainClass>
+						<mainClass>bs.service.ms.olympic.academy.OlympicAcademyManagement</mainClass>
+						<finalName>${jar.final.name}</finalName>
+						<outputDirectory>${deployment.folder.path}</outputDirectory>
 					</configuration>
 				</plugin>
 

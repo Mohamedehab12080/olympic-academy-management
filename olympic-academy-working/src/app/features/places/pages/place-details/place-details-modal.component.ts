@@ -481,7 +481,7 @@ export class PlaceDetailsModalComponent {
         <div class="container">
           <div class="header">
             <h1>تفاصيل الموقع</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
+            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           
           <div class="info-card">
@@ -529,7 +529,7 @@ export class PlaceDetailsModalComponent {
           ` : ''}
           
           <div class="footer">
-            تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>
+            تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة<br>
             هذا المستند معتمد ويحتوي على جميع بيانات الموقع
           </div>
           

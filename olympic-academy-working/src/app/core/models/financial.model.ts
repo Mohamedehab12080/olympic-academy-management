@@ -241,6 +241,7 @@ export interface FinancialTotalVTO {
   totalIncentives: number;
   totalPlacesRent: number;
   totalEnrollmentPayments: number;
+  totalEnrollmentRefunds: number;
   totalExpenses: number;
   activeEnrollmentsCount: number;
   activeCoursesCount: number;

@@ -10,7 +10,7 @@ import { Subscription, interval } from 'rxjs';
   template: '<router-outlet></router-outlet>'
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'نظام إدارة الأكاديمية الأولمبية';
+  title = 'نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة';
   private tokenCheckSubscription?: Subscription;
   private readonly TOKEN_CHECK_INTERVAL = 6000000; // Check every minute
 

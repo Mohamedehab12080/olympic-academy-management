@@ -241,7 +241,7 @@ export class SalaryDeductionListComponent implements OnInit, AfterViewInit {
         <div style="max-width: 100%;">
           <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border-radius: 10px;">
             <h1 style="margin: 0; font-size: 18px;">إيصال خصم</h1>
-            <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة الأكاديمية الأولمبية</p>
+            <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           
           <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
@@ -276,7 +276,7 @@ export class SalaryDeductionListComponent implements OnInit, AfterViewInit {
           </div>
           
           <div style="text-align: center; margin-top: 20px; padding: 10px; font-size: 9px; color: #9ca3af; border-top: 1px solid #e5e7eb;">
-            تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>
+            تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة<br>
             هذا المستند معتمد ويحتوي على جميع بيانات الخصم
           </div>
         </div>
@@ -360,7 +360,7 @@ export class SalaryDeductionListComponent implements OnInit, AfterViewInit {
       </head>
       <body>
         <div class="container">
-          <div class="header"><h1>إيصال خصم</h1><p>نظام إدارة الأكاديمية الأولمبية</p></div>
+          <div class="header"><h1>إيصال خصم</h1><p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p></div>
           <div class="deduction-details"><div><strong>رقم الإيصال:</strong> ${deductionNumber}</div><div><strong>تاريخ الإصدار:</strong> ${today}</div></div>
           <h2>👤 معلومات الموظف</h2>
           <div class="info-grid">
@@ -381,7 +381,7 @@ export class SalaryDeductionListComponent implements OnInit, AfterViewInit {
             <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">توقيع المحاسب</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
             <div class="signature-box"><div class="signature-line"></div><div style="font-size: 11px;">ختم الأكاديمية</div><div class="signature-date">التاريخ: ___ / ___ / _____</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية<br>هذا المستند معتمد ويحتوي على جميع بيانات الخصم</div>
+          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة<br>هذا المستند معتمد ويحتوي على جميع بيانات الخصم</div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 15px; padding: 10px;">
           <button onclick="window.print();" style="padding: 8px 20px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">🖨️ طباعة / حفظ كـ PDF</button>
@@ -554,7 +554,7 @@ export class SalaryDeductionListComponent implements OnInit, AfterViewInit {
             ${tableRows}
           </tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
