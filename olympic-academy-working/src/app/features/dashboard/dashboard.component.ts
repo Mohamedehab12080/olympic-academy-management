@@ -1,4 +1,5 @@
 // home.component.ts - Professional Dashboard with Enhanced UI/UX
+// Updated to support totalPlacesGained
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -573,6 +574,9 @@ import { NotificationService } from '../../core/services/notification.service';
     }
     .stat-icon-wrapper.rent {
       background: linear-gradient(135deg, var(--info), #0891b2);
+    }
+    .stat-icon-wrapper.placesGained {
+      background: linear-gradient(135deg, #10b981, #059669);
     }
     .stat-icon-wrapper.enrollment {
       background: linear-gradient(135deg, var(--success), #059669);
@@ -1356,12 +1360,23 @@ export class HomeComponent implements OnInit, OnDestroy {
         trend: 0
       },
       { 
-        label: 'إيجارات الأماكن', 
+        label: 'إيجارات الأماكن (مصروف)', 
         value: this.data.totalPlacesRent || 0, 
         icon: 'apartment', 
         iconClass: 'rent',
         cardType: 'financial',
         isCurrency: true,
+        valueClass: 'negative',
+        trend: 0
+      },
+      { 
+        label: 'إيجارات الأماكن (إيراد)', 
+        value: this.data.totalPlacesGained || 0, 
+        icon: 'trending_up', 
+        iconClass: 'placesGained',
+        cardType: 'financial',
+        isCurrency: true,
+        valueClass: 'positive',
         trend: 0
       },
       { 
@@ -1371,6 +1386,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         iconClass: 'enrollment',
         cardType: 'financial',
         isCurrency: true,
+        valueClass: 'positive',
         trend: 0
       },
       { 
@@ -1379,7 +1395,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         icon: 'money_off', 
         iconClass: 'enrollment',
         cardType: 'financial',
-        اجvalueClass: 'negative',
+        valueClass: 'negative',
         isCurrency: true,
         trend: 0
       },
@@ -1480,7 +1496,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getTotalRevenue(): number {
     if (!this.data) return 0;
-    return (this.data.totalEnrollmentPayments || 0)
+    return (this.data.totalEnrollmentPayments || 0) + (this.data.totalPlacesGained || 0);
   }
 
   getTotalExpenses(): number {
@@ -1488,7 +1504,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     return (this.data.totalSalary || 0) + 
            (this.data.totalAdvance || 0) +
            (this.data.totalIncentives || 0) + 
-           (this.data.totalExpenses || 0)+
+           (this.data.totalExpenses || 0) +
            (this.data.totalPlacesRent || 0);
   }
 
@@ -1567,13 +1583,14 @@ export class HomeComponent implements OnInit, OnDestroy {
           .print-header .date { font-size: 12px; opacity: 0.8; margin-top: 8px; }
           .print-section { margin-bottom: 20px; }
           .print-section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
-          .print-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
+          .print-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; margin-bottom: 20px; }
           .print-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
           .print-card { background: #f8fafc; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #e2e8f0; }
           .print-card .card-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
           .print-card .card-value { font-size: 18px; font-weight: 700; color: #0f172a; }
           .print-card .card-value.financial { color: #667eea; }
           .print-card .card-value.expense { color: #ef4444; }
+          .print-card .card-value.income { color: #10b981; }
           .print-card .card-value.active { color: #10b981; }
           .print-card .card-value.inactive { color: #991b1b; }
           .print-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #f1f5f9; border-radius: 8px; padding: 16px; margin-top: 12px; }
@@ -1582,7 +1599,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           .print-summary-item .summary-value { font-size: 18px; font-weight: 700; }
           .print-footer { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
           @media print { body { padding: 12px; } .no-print { display: none; } }
-          @media (max-width: 768px) { .print-grid { grid-template-columns: repeat(3, 1fr); } .print-grid-4 { grid-template-columns: repeat(2, 1fr); } .print-summary { grid-template-columns: repeat(2, 1fr); } }
+          @media (max-width: 768px) { .print-grid { grid-template-columns: repeat(4, 1fr); } .print-grid-4 { grid-template-columns: repeat(2, 1fr); } .print-summary { grid-template-columns: repeat(2, 1fr); } }
           @media (max-width: 480px) { .print-grid { grid-template-columns: repeat(2, 1fr); } }
         </style>
       </head>
@@ -1600,11 +1617,12 @@ export class HomeComponent implements OnInit, OnDestroy {
             <div class="print-card"><div class="card-label">إجمالي الرواتب</div><div class="card-value financial">${this.formatCurrency(this.data?.totalSalary || 0)}</div></div>
             <div class="print-card"><div class="card-label">إجمالي السلف</div><div class="card-value financial">${this.formatCurrency(this.data?.totalAdvance || 0)}</div></div>
             <div class="print-card"><div class="card-label">إجمالي الحوافز</div><div class="card-value financial">${this.formatCurrency(this.data?.totalIncentives || 0)}</div></div>
-            <div class="print-card"><div class="card-label">إيجارات الأماكن</div><div class="card-value financial">${this.formatCurrency(this.data?.totalPlacesRent || 0)}</div></div>
-            <div class="print-card"><div class="card-label">مدفوعات التسجيل</div><div class="card-value financial">${this.formatCurrency(this.data?.totalEnrollmentPayments || 0)}</div></div>
-            <div class="print-card"><div class="card-label">مصروفات اخري</div><div class="card-value expense">${this.formatCurrency(this.data?.totalExpenses || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إيجارات الأماكن (مصروف)</div><div class="card-value expense">${this.formatCurrency(this.data?.totalPlacesRent || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إيجارات الأماكن (إيراد)</div><div class="card-value income">${this.formatCurrency(this.data?.totalPlacesGained || 0)}</div></div>
+            <div class="print-card"><div class="card-label">مدفوعات التسجيل</div><div class="card-value income">${this.formatCurrency(this.data?.totalEnrollmentPayments || 0)}</div></div>
             <div class="print-card"><div class="card-label">استردادات التسجيل</div><div class="card-value expense">${this.formatCurrency(this.data?.totalEnrollmentRefunds || 0)}</div></div>
-            </div>
+            <div class="print-card"><div class="card-label">مصروفات اخري</div><div class="card-value expense">${this.formatCurrency(this.data?.totalExpenses || 0)}</div></div>
+          </div>
         </div>
 
         <div class="print-section">

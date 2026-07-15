@@ -352,6 +352,7 @@ paths:
         - $ref: '#/components/parameters/QPRentTypeId'
         - $ref: '#/components/parameters/QPPaymentMethodId'
         - $ref: '#/components/parameters/QPPaymentStatus'
+        - $ref: '#/components/parameters/QPRentTypeEffect'
         - $ref: '#/components/parameters/QPPaymentDateFrom'
         - $ref: '#/components/parameters/QPPaymentDateTo'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
@@ -1164,6 +1165,12 @@ components:
       schema:
         type: integer
         format: int32
+    QPRentTypeEffect:
+      name: rentTypeEffect
+      in: query
+      required: false
+      schema:
+        type: boolean
     QPRentTypeId:
       name: rentTypeId
       in: query
@@ -1394,6 +1401,8 @@ components:
           type: string
         description:
           type: string
+        effect:
+          type: boolean
 
     ExpenseTypeDTO:
       type: object
@@ -1594,6 +1603,8 @@ components:
           format: int32
         title:
           type: string
+        effect:
+          type: boolean
         description:
           type: string
         createdOn:
@@ -1638,7 +1649,7 @@ components:
           type: integer
           format: int32
         rentType:
-          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+          $ref: '#/components/schemas/RentTypeVTO'
         paymentDate:
           type: string
           format: date
@@ -1939,6 +1950,9 @@ components:
           type: integer
           format: int32
         totalIncentives:
+          type: integer
+          format: int32
+        totalPlacesGained:
           type: integer
           format: int32
         totalPlacesRent:

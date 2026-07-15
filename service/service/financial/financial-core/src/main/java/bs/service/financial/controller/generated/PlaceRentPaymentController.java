@@ -85,6 +85,8 @@ public interface PlaceRentPaymentController {
      *            (optional)
      * @param status
      *            (optional)
+     * @param rentTypeEffect
+     *            (optional)
      * @param paymentDateFrom
      *            (optional)
      * @param paymentDateTo
@@ -113,6 +115,7 @@ public interface PlaceRentPaymentController {
             @Parameter(name = "rentTypeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "rentTypeId", required = false) Integer rentTypeId,
             @Parameter(name = "paymentMethodId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentMethodId", required = false) Integer paymentMethodId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid PaymentStatus status,
+            @Parameter(name = "rentTypeEffect", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "rentTypeEffect", required = false) Boolean rentTypeEffect,
             @Parameter(name = "paymentDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate paymentDateFrom,
             @Parameter(name = "paymentDateTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paymentDateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate paymentDateTo,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,

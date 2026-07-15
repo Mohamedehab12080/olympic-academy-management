@@ -38,7 +38,7 @@ public class PlaceRentPaymentVTO implements Serializable {
 
     private Integer remainedAmount;
 
-    private LookupVTO rentType;
+    private RentTypeVTO rentType;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate paymentDate;
@@ -160,7 +160,7 @@ public class PlaceRentPaymentVTO implements Serializable {
         this.remainedAmount = remainedAmount;
     }
 
-    public PlaceRentPaymentVTO rentType(LookupVTO rentType) {
+    public PlaceRentPaymentVTO rentType(RentTypeVTO rentType) {
         this.rentType = rentType;
         return this;
     }
@@ -173,11 +173,11 @@ public class PlaceRentPaymentVTO implements Serializable {
     @Valid
     @Schema(name = "rentType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("rentType")
-    public LookupVTO getRentType() {
+    public RentTypeVTO getRentType() {
         return rentType;
     }
 
-    public void setRentType(LookupVTO rentType) {
+    public void setRentType(RentTypeVTO rentType) {
         this.rentType = rentType;
     }
 

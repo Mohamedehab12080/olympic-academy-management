@@ -43,6 +43,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
             vto.setTotalAdvance(getIntValue(results, "totalAdvance"));
             vto.setTotalIncentives(getIntValue(results, "totalIncentives"));
             vto.setTotalPlacesRent(getIntValue(results, "totalRent"));
+            vto.setTotalPlacesGained(getIntValue(results, "totalPlacesGained"));
             vto.setTotalEnrollmentPayments(getIntValue(results, "totalEnrollmentPayments"));
             vto.setTotalEnrollmentRefunds(getIntValue(results, "totalEnrollmentRefunds"));
             vto.setTotalExpenses(getIntValue(results, "totalExpenses"));
@@ -60,7 +61,8 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
             log.info("Total Salary: {}", vto.getTotalSalary());
             log.info("Total Advances: {}", vto.getTotalAdvance());
             log.info("Total Incentives: {}", vto.getTotalIncentives());
-            log.info("Total Rent: {}", vto.getTotalPlacesRent());
+            log.info("Total Rent (Expense): {}", vto.getTotalPlacesRent());
+            log.info("Total Places Gained (Income): {}", vto.getTotalPlacesGained());
             log.info("Total Enrollment Payments: {}", vto.getTotalEnrollmentPayments());
             log.info("Total Enrollment Refunds: {}", vto.getTotalEnrollmentRefunds());
             log.info("Total Expenses: {}", vto.getTotalExpenses());
@@ -84,7 +86,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
 
     /**
      * Execute all financial report queries in a SINGLE SQL statement using subqueries
-     * This reduces network round-trips from 15 to 1
+     * This reduces network round-trips from 16 to 1
      */
     @SuppressWarnings("unchecked")
     private Map<String, Object> executeAllQueries(LocalDate from, LocalDate to) {
@@ -111,23 +113,25 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         results.put("totalAdvance", result[1]);
         results.put("totalIncentives", result[2]);
         results.put("totalRent", result[3]);
-        results.put("totalEnrollmentPayments", result[4]);
-        results.put("totalEnrollmentRefunds", result[5]);
-        results.put("totalExpenses", result[6]);
-        results.put("activeEnrollments", result[7]);
-        results.put("inactiveEnrollments", result[8]);
-        results.put("activeCourses", result[9]);
-        results.put("inactiveCourses", result[10]);
-        results.put("activeTrainees", result[11]);
-        results.put("inactiveTrainees", result[12]);
-        results.put("activeEmployees", result[13]);
-        results.put("inactiveEmployees", result[14]);
+        results.put("totalPlacesGained", result[4]);
+        results.put("totalEnrollmentPayments", result[5]);
+        results.put("totalEnrollmentRefunds", result[6]);
+        results.put("totalExpenses", result[7]);
+        results.put("activeEnrollments", result[8]);
+        results.put("inactiveEnrollments", result[9]);
+        results.put("activeCourses", result[10]);
+        results.put("inactiveCourses", result[11]);
+        results.put("activeTrainees", result[12]);
+        results.put("inactiveTrainees", result[13]);
+        results.put("activeEmployees", result[14]);
+        results.put("inactiveEmployees", result[15]);
 
         return results;
     }
 
     /**
      * Build dynamic SQL query with optional date filters
+     * Includes totalPlacesGained (rent payments with effect = 1 - مدخل/إيراد)
      */
     private String buildDynamicQuery(LocalDateTime fromDateTime, LocalDateTime toDateTime) {
         StringBuilder sql = new StringBuilder();
@@ -176,20 +180,37 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ), 0) AS total_incentives, ");
 
-        // 4. Total Rent
+        // 4. Total Places Rent (effect = 0 - مخرج/مصروف)
         sql.append("    COALESCE((");
-        sql.append("        SELECT SUM(payed_amount)");
-        sql.append("        FROM oa_place_rent_payment");
-        sql.append("        WHERE is_deleted = 0");
+        sql.append("        SELECT SUM(prp.payed_amount)");
+        sql.append("        FROM oa_place_rent_payment prp");
+        sql.append("        INNER JOIN oa_rent_type rt ON prp.rent_type_id = rt.id");
+        sql.append("        WHERE prp.is_deleted = 0");
+        sql.append("          AND rt.effect = 0"); // effect = 0 means مخرج (Expense)
         if (fromDateTime != null) {
-            sql.append("          AND payment_date >= :fromDate");
+            sql.append("          AND prp.payment_date >= :fromDate");
         }
         if (toDateTime != null) {
-            sql.append("          AND payment_date <= :toDate");
+            sql.append("          AND prp.payment_date <= :toDate");
         }
         sql.append("    ), 0) AS total_rent, ");
 
-        // 5. Total Enrollment Payments
+        // 5. Total Places Gained (effect = 1 - مدخل/إيراد)
+        sql.append("    COALESCE((");
+        sql.append("        SELECT SUM(prp.payed_amount)");
+        sql.append("        FROM oa_place_rent_payment prp");
+        sql.append("        INNER JOIN oa_rent_type rt ON prp.rent_type_id = rt.id");
+        sql.append("        WHERE prp.is_deleted = 0");
+        sql.append("          AND rt.effect = 1"); // effect = 1 means مدخل (Income)
+        if (fromDateTime != null) {
+            sql.append("          AND prp.payment_date >= :fromDate");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND prp.payment_date <= :toDate");
+        }
+        sql.append("    ), 0) AS total_places_gained, ");
+
+        // 6. Total Enrollment Payments
         sql.append("    COALESCE((");
         sql.append("        SELECT SUM(ep.paid_amount)");
         sql.append("        FROM oa_enrollment_payment ep");
@@ -204,7 +225,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ), 0) AS total_enrollment_payments, ");
 
-        // 6. Total Enrollment Refunds
+        // 7. Total Enrollment Refunds
         sql.append("    COALESCE((");
         sql.append("        SELECT SUM(er.amount_refunded)");
         sql.append("        FROM oa_enrollment_refund er");
@@ -220,7 +241,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ), 0) AS total_enrollment_refunds, ");
 
-        // 7. Total Expenses
+        // 8. Total Expenses
         sql.append("    COALESCE((");
         sql.append("        SELECT SUM(amount_expensed)");
         sql.append("        FROM oa_expense");
@@ -233,7 +254,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ), 0) AS total_expenses, ");
 
-        // 8. Active Enrollments Count
+        // 9. Active Enrollments Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_enrollment");
         sql.append("     WHERE is_deleted = 0");
@@ -247,7 +268,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS active_enrollments, ");
 
-        // 9. Inactive Enrollments Count
+        // 10. Inactive Enrollments Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_enrollment");
         sql.append("     WHERE is_deleted = 0");
@@ -261,7 +282,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS inactive_enrollments, ");
 
-        // 10. Active Courses Count
+        // 11. Active Courses Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_course");
         sql.append("     WHERE is_deleted = 0");
@@ -274,7 +295,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS active_courses, ");
 
-        // 11. Inactive Courses Count
+        // 12. Inactive Courses Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_course");
         sql.append("     WHERE is_deleted = 0");
@@ -287,7 +308,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS inactive_courses, ");
 
-        // 12. Active Trainees Count
+        // 13. Active Trainees Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_trainee");
         sql.append("     WHERE is_deleted = 0");
@@ -300,7 +321,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS active_trainees, ");
 
-        // 13. Inactive Trainees Count
+        // 14. Inactive Trainees Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_trainee");
         sql.append("     WHERE is_deleted = 0");
@@ -313,7 +334,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS inactive_trainees, ");
 
-        // 14. Active Employees Count
+        // 15. Active Employees Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_employee");
         sql.append("     WHERE is_deleted = 0");
@@ -326,7 +347,7 @@ public class FinancialTotalRepositoryImpl implements FinancialTotalRepository {
         }
         sql.append("    ) AS active_employees, ");
 
-        // 15. Inactive Employees Count
+        // 16. Inactive Employees Count
         sql.append("    (SELECT COUNT(*)");
         sql.append("     FROM oa_employee");
         sql.append("     WHERE is_deleted = 0");

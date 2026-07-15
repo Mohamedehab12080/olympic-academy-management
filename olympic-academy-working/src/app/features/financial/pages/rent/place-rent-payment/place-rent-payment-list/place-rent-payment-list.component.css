@@ -181,10 +181,88 @@
   cursor: not-allowed;
 }
 
+/* Effect Option Styles */
+.effect-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.effect-option mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+::ng-deep .mat-mdc-option .effect-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+::ng-deep .mat-mdc-option .effect-option mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Effect Chip Styles */
+.effect-container {
+  display: flex;
+  align-items: center;
+}
+
+.effect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 12px;
+  min-height: 28px;
+  border: none !important;
+}
+
+.effect-chip .chip-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.effect-chip.effect-income {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.effect-chip.effect-income .chip-icon {
+  color: #10b981;
+}
+
+.effect-chip.effect-expense {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.effect-chip.effect-expense .chip-icon {
+  color: #ef4444;
+}
+
+.effect-chip.effect-neutral {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.effect-chip.effect-neutral .chip-icon {
+  color: #6b7280;
+}
+
 /* Statistics Cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   padding: 24px 28px;
   background: #f8fafc;
@@ -227,6 +305,22 @@
   opacity: 1;
 }
 
+.stat-card.info::before {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.stat-card.warning::before {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.stat-card.income::before {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.stat-card.expense::before {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
 .stat-icon {
   width: 48px;
   height: 48px;
@@ -249,6 +343,16 @@
 .stat-card.warning .stat-icon {
   background: #fffbeb;
   color: #d97706;
+}
+
+.stat-card.income .stat-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.stat-card.expense .stat-icon {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .stat-info {
@@ -279,6 +383,14 @@
 
 .stat-card.warning .stat-info h3 {
   color: #d97706;
+}
+
+.stat-card.income .stat-info h3 {
+  color: #059669;
+}
+
+.stat-card.expense .stat-info h3 {
+  color: #dc2626;
 }
 
 /* Loading State */
@@ -335,8 +447,9 @@
 
 .table-stats {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .stat-badge {
@@ -345,7 +458,7 @@
   gap: 4px;
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -357,6 +470,16 @@
 .stat-badge.total-remaining {
   background: #fffbeb;
   color: #d97706;
+}
+
+.stat-badge.income-badge {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.stat-badge.expense-badge {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 /* Table Wrapper */
@@ -389,7 +512,7 @@
 /* Data Table */
 .data-table {
   width: 100%;
-  min-width: 900px;
+  min-width: 1100px;
 }
 
 .data-table .mat-header-cell {
@@ -411,7 +534,6 @@
 }
 
 .data-row {
-  cursor: pointer;
   transition: all 0.2s;
 }
 
@@ -480,10 +602,6 @@
 
 .action-buttons button.mat-primary {
   color: #2563eb !important;
-}
-
-.action-buttons button.mat-accent {
-  color: #d97706 !important;
 }
 
 .action-buttons button.mat-warn {
@@ -561,46 +679,6 @@
   gap: 4px;
 }
 
-.pagination-btn {
-  width: 40px;
-  height: 40px;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  background: white;
-  color: #475569;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background: #8b5cf6;
-  color: white;
-  border-color: #8b5cf6;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pagination-btn:disabled:hover {
-  background: white;
-  color: #475569;
-  transform: none;
-  box-shadow: none;
-}
-
-.pagination-btn mat-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-}
-
 .page-indicator {
   font-size: 14px;
   font-weight: 600;
@@ -632,11 +710,6 @@
 .data-row:nth-child(3) { animation-delay: 0.06s; }
 .data-row:nth-child(4) { animation-delay: 0.08s; }
 .data-row:nth-child(5) { animation-delay: 0.10s; }
-.data-row:nth-child(6) { animation-delay: 0.12s; }
-.data-row:nth-child(7) { animation-delay: 0.14s; }
-.data-row:nth-child(8) { animation-delay: 0.16s; }
-.data-row:nth-child(9) { animation-delay: 0.18s; }
-.data-row:nth-child(10) { animation-delay: 0.20s; }
 
 @keyframes rowFadeIn {
   from {
@@ -667,21 +740,25 @@
   color: #8b5cf6 !important;
 }
 
-/* Chip Styles */
 .mat-mdc-chip {
   background-color: #f3f4f6 !important;
   font-size: 12px !important;
   min-height: 28px !important;
 }
 
-/* Loading Spinner Color */
 ::ng-deep .mat-progress-spinner circle,
 ::ng-deep .mat-spinner circle {
   stroke: #8b5cf6 !important;
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -773,7 +850,7 @@
   }
   
   .data-table {
-    min-width: 800px;
+    min-width: 900px;
   }
   
   .custom-paginator {
@@ -859,17 +936,6 @@
     font-size: 14px;
   }
   
-  .pagination-btn {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .pagination-btn mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-  
   .page-indicator {
     font-size: 12px;
     min-width: 80px;
@@ -881,6 +947,18 @@
   
   .items-range {
     font-size: 12px;
+  }
+  
+  .effect-chip {
+    font-size: 10px;
+    padding: 2px 10px;
+    min-height: 22px;
+  }
+  
+  .effect-chip .chip-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -939,5 +1017,10 @@
   
   .no-data-message {
     display: none !important;
+  }
+  
+  .effect-chip {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

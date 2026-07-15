@@ -24,6 +24,10 @@ public class RentType {
     @Basic
     private String title;
 
+    @Column(name = "effect")
+    @Basic
+    private Boolean effect;
+
     @Column(name = "description")
     @Basic
     private String description;

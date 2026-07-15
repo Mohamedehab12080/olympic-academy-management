@@ -10,9 +10,24 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
+
+export interface RentTypeDTO {
+  title: string;
+  description?: string;
+  effect: boolean;
+}
+
+export interface EffectOption {
+  value: boolean;
+  label: string;
+  icon: string;
+  color: string;
+}
 
 @Component({
   selector: 'app-rent-type-wizard-modal',
@@ -29,7 +44,9 @@ import { NotificationService } from '../../../../../../core/services/notificatio
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatDividerModule
+    MatDividerModule,
+    MatSelectModule,
+    MatChipsModule
   ],
   templateUrl: './rent-type-wizard-modal.component.html',
   styleUrls: ['./rent-type-wizard-modal.component.css']
@@ -41,6 +58,12 @@ export class RentTypeWizardModalComponent implements OnInit {
   isLoading = false;
   isSubmitting = false;
   typeName: string = '';
+  
+  // Effect options
+  effectOptions: EffectOption[] = [
+    { value: true, label: 'مدخل (إيراد)', icon: 'arrow_upward', color: '#10b981' },
+    { value: false, label: 'مخرج (مصروف)', icon: 'arrow_downward', color: '#ef4444' }
+  ];
 
   // Wizard steps
   currentStep = 0;
@@ -61,7 +84,8 @@ export class RentTypeWizardModalComponent implements OnInit {
     
     this.typeForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['']
+      description: [''],
+      effect: [true, Validators.required] // Default: true (مدخل)
     });
   }
 
@@ -77,7 +101,8 @@ export class RentTypeWizardModalComponent implements OnInit {
       next: (res: any) => {
         this.typeForm.patchValue({
           title: res.title,
-          description: res.description
+          description: res.description || '',
+          effect: res.effect !== undefined ? res.effect : true
         });
         this.typeName = res.title;
         
@@ -121,7 +146,8 @@ export class RentTypeWizardModalComponent implements OnInit {
   isStepValid(step: number): boolean {
     switch(step) {
       case 0:
-        return this.typeForm.get('title')?.valid === true;
+        return this.typeForm.get('title')?.valid === true && 
+               this.typeForm.get('effect')?.valid === true;
       default:
         return true;
     }
@@ -131,6 +157,7 @@ export class RentTypeWizardModalComponent implements OnInit {
     switch(this.currentStep) {
       case 0:
         this.typeForm.get('title')?.markAsTouched();
+        this.typeForm.get('effect')?.markAsTouched();
         break;
     }
   }
@@ -143,15 +170,43 @@ export class RentTypeWizardModalComponent implements OnInit {
     return this.typeForm.get('description')?.value || '';
   }
 
+  getEffect(): boolean {
+    return this.typeForm.get('effect')?.value !== undefined ? 
+           this.typeForm.get('effect')?.value : true;
+  }
+
+  getEffectLabel(): string {
+    const effect = this.getEffect();
+    const option = this.effectOptions.find(o => o.value === effect);
+    return option ? option.label : 'غير محدد';
+  }
+
+  getEffectIcon(): string {
+    const effect = this.getEffect();
+    const option = this.effectOptions.find(o => o.value === effect);
+    return option ? option.icon : 'help';
+  }
+
+  getEffectColor(): string {
+    const effect = this.getEffect();
+    const option = this.effectOptions.find(o => o.value === effect);
+    return option ? option.color : '#64748b';
+  }
+
+  getEffectClass(): string {
+    return this.getEffect() ? 'effect-income' : 'effect-expense';
+  }
+
   onSubmit(): void {
     if (this.typeForm.invalid) {
       this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
 
-    const typeData = {
+    const typeData: RentTypeDTO = {
       title: this.typeForm.get('title')?.value,
-      description: this.typeForm.get('description')?.value
+      description: this.typeForm.get('description')?.value || '',
+      effect: this.typeForm.get('effect')?.value
     };
 
     console.log('Submitting type data:', typeData);

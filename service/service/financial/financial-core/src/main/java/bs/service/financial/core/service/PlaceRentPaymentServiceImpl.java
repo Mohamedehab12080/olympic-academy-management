@@ -98,7 +98,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
 
     @Override
     public PlaceRentPaymentResultSet getAllPlaceRentPaymentsByFilter(String quickSearch,Integer placeId, Integer rentTypeId,
-                                                                     Integer paymentMethodId, PaymentStatus status,
+                                                                     Integer paymentMethodId, PaymentStatus status,Boolean effect,
                                                                      LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                                      Integer pageNum, Integer pageSize,
                                                                      OrderDirections orderDir, String orderBy) {
@@ -107,6 +107,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
                 .placeId(placeId)
                 .rentTypeId(rentTypeId)
                 .isDeleted(false)
+                .effect(effect)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)

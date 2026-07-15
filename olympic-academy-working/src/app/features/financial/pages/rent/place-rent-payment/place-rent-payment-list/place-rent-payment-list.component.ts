@@ -65,7 +65,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   // TABLE CONFIGURATION
   // ==========================================================================
 
-  displayedColumns: string[] = ['id', 'place', 'rentAmount', 'payedAmount', 'remainedAmount', 'paymentDate', 'paymentMethod', 'actions'];
+  displayedColumns: string[] = ['id', 'place', 'rentType', 'effect', 'rentAmount', 'payedAmount', 'remainedAmount', 'paymentDate', 'paymentMethod', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   allPayments: any[] = [];
   isLoading = false;
@@ -85,6 +85,13 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   placeOptions: SelectOption[] = [];
   rentTypeOptions: SelectOption[] = [];
   paymentMethodOptions: SelectOption[] = [];
+  
+  // Effect options for filter
+  effectOptions: any[] = [
+    { value: null, label: 'الكل', icon: 'filter_list', color: '#64748b' },
+    { value: true, label: 'مدخل (إيراد)', icon: 'arrow_upward', color: '#10b981' },
+    { value: false, label: 'مخرج (مصروف)', icon: 'arrow_downward', color: '#ef4444' }
+  ];
   
   // ==========================================================================
   // PAGINATION
@@ -114,6 +121,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   filters = {
     placeId: null as number | null,
     rentTypeId: null as number | null,
+    rentTypeEffect: null as boolean | null,
     paymentMethodId: null as number | null,
     paymentDateFrom: null as string | null,
     paymentDateTo: null as string | null
@@ -157,6 +165,27 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
 
   get totalPages(): number {
     return Math.ceil(this.totalRecords / this.pageSize);
+  }
+
+  // Income/Expense statistics
+  get incomeCount(): number {
+    return this.allPayments.filter(item => item.rentType?.effect === true).length;
+  }
+
+  get expenseCount(): number {
+    return this.allPayments.filter(item => item.rentType?.effect === false).length;
+  }
+
+  get incomeTotal(): number {
+    return this.allPayments
+      .filter(item => item.rentType?.effect === true)
+      .reduce((sum, item) => sum + (item.payedAmount || 0), 0);
+  }
+
+  get expenseTotal(): number {
+    return this.allPayments
+      .filter(item => item.rentType?.effect === false)
+      .reduce((sum, item) => sum + (item.payedAmount || 0), 0);
   }
 
   // ==========================================================================
@@ -367,6 +396,9 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     
     if (this.filters.placeId) params.placeId = this.filters.placeId;
     if (this.filters.rentTypeId) params.rentTypeId = this.filters.rentTypeId;
+    if (this.filters.rentTypeEffect !== null && this.filters.rentTypeEffect !== undefined) {
+      params.rentTypeEffect = this.filters.rentTypeEffect;
+    }
     if (this.filters.paymentMethodId) params.paymentMethodId = this.filters.paymentMethodId;
     if (this.filters.paymentDateFrom) params.paymentDateFrom = this.filters.paymentDateFrom;
     if (this.filters.paymentDateTo) params.paymentDateTo = this.filters.paymentDateTo;
@@ -410,6 +442,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     this.filters = {
       placeId: null,
       rentTypeId: null,
+      rentTypeEffect: null,
       paymentMethodId: null,
       paymentDateFrom: null,
       paymentDateTo: null
@@ -427,6 +460,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   hasActiveFilters(): boolean {
     return !!(this.filters.placeId || 
               this.filters.rentTypeId || 
+              this.filters.rentTypeEffect !== null || 
               this.filters.paymentMethodId || 
               this.filters.paymentDateFrom || 
               this.filters.paymentDateTo || 
@@ -437,11 +471,36 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     let count = 0;
     if (this.filters.placeId) count++;
     if (this.filters.rentTypeId) count++;
+    if (this.filters.rentTypeEffect !== null && this.filters.rentTypeEffect !== undefined) count++;
     if (this.filters.paymentMethodId) count++;
     if (this.filters.paymentDateFrom) count++;
     if (this.filters.paymentDateTo) count++;
     if (this.quickSearch) count++;
     return count;
+  }
+
+  // ==========================================================================
+  // EFFECT HELPER METHODS
+  // ==========================================================================
+
+  getEffectLabel(effect: boolean | undefined): string {
+    if (effect === undefined || effect === null) return '-';
+    return effect ? 'مدخل (إيراد)' : 'مخرج (مصروف)';
+  }
+
+  getEffectIcon(effect: boolean | undefined): string {
+    if (effect === undefined || effect === null) return 'help';
+    return effect ? 'arrow_upward' : 'arrow_downward';
+  }
+
+  getEffectClass(effect: boolean | undefined): string {
+    if (effect === undefined || effect === null) return 'effect-neutral';
+    return effect ? 'effect-income' : 'effect-expense';
+  }
+
+  getEffectColor(effect: boolean | undefined): string {
+    if (effect === undefined || effect === null) return '#64748b';
+    return effect ? '#10b981' : '#ef4444';
   }
 
   // ==========================================================================
@@ -505,6 +564,9 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const paymentNumber = `RENT-${payment.id}`;
+    const effectLabel = this.getEffectLabel(payment.rentType?.effect);
+    const effectIcon = payment.rentType?.effect ? '↑' : '↓';
+    const effectColor = this.getEffectColor(payment.rentType?.effect);
 
     const modalContainer = document.createElement('div');
     modalContainer.style.cssText = `
@@ -709,6 +771,17 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
           color: ${statusColor};
         }
         
+        .modal-receipt .effect-badge {
+          display: inline-block;
+          padding: 4px 14px;
+          border-radius: 30px;
+          font-size: 12px;
+          font-weight: 600;
+          background: ${effectColor}22;
+          color: ${effectColor};
+          border: 1px solid ${effectColor}44;
+        }
+        
         .modal-receipt .note-text {
           font-size: 12px;
           color: #4b5563;
@@ -838,6 +911,12 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
             <span class="value">${payment.rentType?.title || '-'}</span>
           </div>
           <div class="info-row">
+            <span class="label">التأثير المالي</span>
+            <span class="value">
+              <span class="effect-badge">${effectIcon} ${effectLabel}</span>
+            </span>
+          </div>
+          <div class="info-row">
             <span class="label">تاريخ الدفع</span>
             <span class="value">${new Date(payment.paymentDate).toLocaleDateString('ar-EG')}</span>
           </div>
@@ -955,6 +1034,10 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const isPaid = payment.remainedAmount === 0;
     const totalPaid = payment.payedAmount || 0;
     const remainedAmount = payment.remainedAmount || 0;
+    const effect = payment.rentType?.effect;
+    const effectLabel = this.getEffectLabel(effect);
+    const effectIcon = effect ? '↑' : '↓';
+    const effectColor = this.getEffectColor(effect);
 
     return {
       id: payment.id || '0000',
@@ -969,6 +1052,9 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
       statusColor: isPaid ? '#065f46' : '#92400e',
       statusBg: isPaid ? '#d1fae5' : '#fef3c7',
       paymentStatus: isPaid ? 'مدفوع بالكامل' : 'متبقي',
+      effectLabel: effectLabel,
+      effectIcon: effectIcon,
+      effectColor: effectColor,
       note: payment.note || '',
       currentDate: this.formatDate(new Date())
     };
@@ -1030,7 +1116,6 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     overflow: hidden;
   }
 
-  /* ===== WATERMARK - Behind content ===== */
   .receipt-watermark {
     position: absolute;
     top: 50%;
@@ -1070,13 +1155,11 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     text-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
   }
 
-  /* ===== CONTENT - Above watermark ===== */
   .receipt-content {
     position: relative;
     z-index: 1;
   }
 
-  /* ===== LOGO SECTION ===== */
   .logo-section {
     text-align: center;
     padding: 1mm 0 1mm 0;
@@ -1119,7 +1202,6 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     line-height: 1.2;
   }
 
-  /* ===== RECEIPT TITLE ===== */
   .receipt-title {
     text-align: center;
     padding: 0.5mm 0 1.5mm 0;
@@ -1138,7 +1220,6 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     margin-top: 0.5mm;
   }
 
-  /* ===== BODY ===== */
   .receipt-body {
     padding: 1mm 0;
   }
@@ -1206,6 +1287,14 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     font-size: 7pt;
     font-weight: 600;
   }
+  
+  .effect-badge {
+    display: inline-block;
+    padding: 0px 2mm;
+    border-radius: 3mm;
+    font-size: 7pt;
+    font-weight: 600;
+  }
 
   .divider-line {
     border: none;
@@ -1222,7 +1311,6 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     margin-top: 2mm;
   }
 
-  /* ===== COPYRIGHT CREDIT - Inside receipt at bottom ===== */
   .receipt-credit {
     text-align: center;
     font-size: 4.5px;
@@ -1277,6 +1365,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     }
     .receipt-title,
     .status-badge,
+    .effect-badge,
     .payment-details,
     .logo-section,
     .receipt-watermark {
@@ -1326,6 +1415,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     .info-row .value.amount { font-size: 8pt !important; }
     .payment-details { padding: 0.5mm 1mm !important; }
     .status-badge { font-size: 5.5pt !important; padding: 0px 1mm !important; }
+    .effect-badge { font-size: 5.5pt !important; padding: 0px 1mm !important; }
     .note-text { font-size: 5.5pt !important; }
     .receipt-footer { font-size: 4.5pt !important; }
     .receipt-watermark img { width: 70px !important; }
@@ -1372,6 +1462,14 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
           <div class="info-row">
             <span class="label">نوع الإيجار</span>
             <span class="value">${data.rentTypeTitle}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">التأثير المالي</span>
+            <span class="value">
+              <span class="effect-badge" style="background: ${data.effectColor}22; color: ${data.effectColor}; border: 1px solid ${data.effectColor}44; padding: 0px 2mm; border-radius: 3mm; font-size: 7pt; font-weight: 600;">
+                ${data.effectIcon} ${data.effectLabel}
+              </span>
+            </span>
           </div>
           <div class="info-row">
             <span class="label">تاريخ الدفع</span>
@@ -1473,6 +1571,8 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const exportData = this.allPayments.map((item, index) => ({
       '#': (this.currentPage * this.pageSize) + index + 1,
       'الموقع': item.place?.title || '-',
+      'نوع الإيجار': item.rentType?.title || '-',
+      'التأثير المالي': this.getEffectLabel(item.rentType?.effect),
       'قيمة الإيجار': item.rentAmount,
       'المبلغ المدفوع': item.payedAmount,
       'المبلغ المتبقي': item.remainedAmount,
@@ -1501,6 +1601,9 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
       const rentType = this.rentTypes.find(r => r.id === this.filters.rentTypeId);
       if (rentType) filterTexts.push(`نوع الإيجار: ${rentType.title}`);
     }
+    if (this.filters.rentTypeEffect !== null && this.filters.rentTypeEffect !== undefined) {
+      filterTexts.push(`التأثير المالي: ${this.getEffectLabel(this.filters.rentTypeEffect)}`);
+    }
     if (this.filters.paymentMethodId) {
       const paymentMethod = this.paymentMethods.find(p => p.id === this.filters.paymentMethodId);
       if (paymentMethod) filterTexts.push(`طريقة الدفع: ${paymentMethod.title}`);
@@ -1512,16 +1615,30 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const totalPayments = this.allPayments.length;
     const totalPayed = this.totalPayedAmount;
     const totalRemained = this.totalRemainedAmount;
+    const totalRent = this.totalRentAmount;
+    const fullyPaid = this.allPayments.filter(p => p.remainedAmount === 0).length;
+    const incomeTotal = this.incomeTotal;
+    const expenseTotal = this.expenseTotal;
 
     const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     let tableRows = '';
     this.allPayments.forEach((item: any, index: number) => {
       const remainedClass = item.remainedAmount === 0 ? 'color: #059669;' : 'color: #d97706; font-weight: bold;';
+      const effectColor = this.getEffectColor(item.rentType?.effect);
+      const effectLabel = this.getEffectLabel(item.rentType?.effect);
+      const effectIcon = item.rentType?.effect ? '↑' : '↓';
+      
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${index + 1}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${item.place?.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${item.rentType?.title || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
+            <span style="background: ${effectColor}; color: white; border-radius: 16px; padding: 4px 12px; display: inline-block; font-weight: 600; font-size: 11px;">
+              ${effectIcon} ${effectLabel}
+            </span>
+          </td>
           <td style="text-align: center; padding: 8px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 700; color: #1a1a2e;">${item.rentAmount.toLocaleString('ar-EG')} جم</td>
           <td style="text-align: center; padding: 8px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: bold; color: #10b981; font-size: 11px; background: transparent;">
             ${item.payedAmount.toLocaleString('ar-EG')} جم
@@ -1745,7 +1862,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
           
           .totals-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(7, 1fr);
             gap: 5px;
             margin-bottom: 8px;
           }
@@ -1821,6 +1938,30 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
             color: #059669;
           }
           
+          .total-card.total-income {
+            background: rgba(209, 250, 229, 0.85);
+            border-color: rgba(110, 231, 183, 0.5);
+          }
+          .total-card.total-income .total-value {
+            color: #059669;
+          }
+          
+          .total-card.total-expense {
+            background: rgba(254, 226, 226, 0.85);
+            border-color: rgba(248, 113, 113, 0.5);
+          }
+          .total-card.total-expense .total-value {
+            color: #dc2626;
+          }
+          
+          .total-card.total-rent {
+            background: rgba(243, 232, 255, 0.85);
+            border-color: rgba(196, 181, 253, 0.5);
+          }
+          .total-card.total-rent .total-value {
+            color: #7c3aed;
+          }
+          
           table {
             width: 100%;
             border-collapse: collapse;
@@ -1874,7 +2015,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
               font-size: 30px !important;
             }
             .totals-grid {
-              grid-template-columns: repeat(2, 1fr);
+              grid-template-columns: repeat(4, 1fr);
               gap: 4px;
             }
             .total-card {
@@ -1930,24 +2071,32 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
             
             <div class="totals-grid">
               <div class="total-card total-all">
-                <span class="total-icon">📋</span>
                 <span class="total-value">${totalPayments}</span>
                 <span class="total-label">عدد الدفعات</span>
               </div>
+              <div class="total-card total-rent">
+                <span class="total-value">${totalRent.toLocaleString('ar-EG')} جم</span>
+                <span class="total-label">إجمالي الإيجار</span>
+              </div>
               <div class="total-card total-amount">
-                <span class="total-icon">💰</span>
                 <span class="total-value">${totalPayed.toLocaleString('ar-EG')} جم</span>
                 <span class="total-label">إجمالي المدفوع</span>
               </div>
               <div class="total-card total-remaining">
-                <span class="total-icon">📊</span>
                 <span class="total-value">${totalRemained.toLocaleString('ar-EG')} جم</span>
                 <span class="total-label">إجمالي المتبقي</span>
               </div>
               <div class="total-card total-payments">
-                <span class="total-icon">💳</span>
-                <span class="total-value">${this.allPayments.filter(p => p.remainedAmount === 0).length}</span>
+                <span class="total-value">${fullyPaid}</span>
                 <span class="total-label">مدفوع بالكامل</span>
+              </div>
+              <div class="total-card total-income">
+                <span class="total-value">${incomeTotal.toLocaleString('ar-EG')} جم</span>
+                <span class="total-label">إجمالي الإيرادات</span>
+              </div>
+              <div class="total-card total-expense">
+                <span class="total-value">${expenseTotal.toLocaleString('ar-EG')} جم</span>
+                <span class="total-label">إجمالي المصروفات</span>
               </div>
             </div>
             
@@ -1955,12 +2104,14 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
               <thead>
                 <tr>
                   <th style="width: 4%;">#</th>
-                  <th style="width: 20%;">الموقع</th>
-                  <th style="width: 14%;">قيمة الإيجار</th>
-                  <th style="width: 14%;">المدفوع</th>
-                  <th style="width: 14%;">المتبقي</th>
-                  <th style="width: 14%;">تاريخ الدفع</th>
-                  <th style="width: 14%;">طريقة الدفع</th>
+                  <th style="width: 16%;">الموقع</th>
+                  <th style="width: 12%;">نوع الإيجار</th>
+                  <th style="width: 12%;">التأثير</th>
+                  <th style="width: 10%;">قيمة الإيجار</th>
+                  <th style="width: 10%;">المدفوع</th>
+                  <th style="width: 10%;">المتبقي</th>
+                  <th style="width: 12%;">تاريخ الدفع</th>
+                  <th style="width: 10%;">طريقة الدفع</th>
                 </tr>
               </thead>
               <tbody>

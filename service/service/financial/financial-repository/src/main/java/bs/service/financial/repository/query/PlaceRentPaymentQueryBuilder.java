@@ -29,6 +29,10 @@ public class PlaceRentPaymentQueryBuilder extends AbstractQueryBuilderV2<PlaceRe
             qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
                     .condition("item.isDeleted = :PH").build());
 
+        if (filters.getEffect() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("effect").value(filters.getEffect())
+                    .condition("item.rentType.effect = :PH").build());
+
         if (filters.getPlaceId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("placeId").value(filters.getPlaceId())
                     .condition("item.place.id = :PH").build());

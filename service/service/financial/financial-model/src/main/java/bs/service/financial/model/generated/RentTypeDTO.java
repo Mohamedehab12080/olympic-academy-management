@@ -25,6 +25,8 @@ public class RentTypeDTO implements Serializable {
 
     private String description;
 
+    private Boolean effect;
+
     public RentTypeDTO title(String title) {
         this.title = title;
         return this;
@@ -67,6 +69,27 @@ public class RentTypeDTO implements Serializable {
         this.description = description;
     }
 
+    public RentTypeDTO effect(Boolean effect) {
+        this.effect = effect;
+        return this;
+    }
+
+    /**
+     * Get effect
+     *
+     * @return effect
+     */
+
+    @Schema(name = "effect", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("effect")
+    public Boolean getEffect() {
+        return effect;
+    }
+
+    public void setEffect(Boolean effect) {
+        this.effect = effect;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -77,12 +100,13 @@ public class RentTypeDTO implements Serializable {
         }
         RentTypeDTO rentTypeDTO = (RentTypeDTO) o;
         return Objects.equals(this.title, rentTypeDTO.title)
-                && Objects.equals(this.description, rentTypeDTO.description);
+                && Objects.equals(this.description, rentTypeDTO.description)
+                && Objects.equals(this.effect, rentTypeDTO.effect);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, description);
+        return Objects.hash(title, description, effect);
     }
 
     @Override
@@ -91,6 +115,7 @@ public class RentTypeDTO implements Serializable {
         sb.append("class RentTypeDTO {\n");
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    description: ").append(toIndentedString(description)).append("\n");
+        sb.append("    effect: ").append(toIndentedString(effect)).append("\n");
         sb.append("}");
         return sb.toString();
     }

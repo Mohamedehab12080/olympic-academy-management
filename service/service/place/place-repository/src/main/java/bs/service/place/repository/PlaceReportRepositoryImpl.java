@@ -40,13 +40,20 @@ public class PlaceReportRepositoryImpl implements PlaceReportRepository {
         try {
             Map<String, Object> results = executePlaceReportQuery(placeId, fromDateTime, toDateTime);
 
+            // totalPayed = Rent payments with effect = 0 (مخرج/مصروف)
+            // totalGained = (Rent payments with effect = 1) + (Enrollment payments using this place)
+            int totalPayed = getIntValue(results, "totalPayed");
+            int totalRentGained = getIntValue(results, "totalRentGained");
+            int totalEnrollmentGained = getIntValue(results, "totalEnrollmentGained");
+            int totalGained = totalRentGained + totalEnrollmentGained;
+
             PlaceReportVTO vto = PlaceReportVTO.builder()
-                    .totalPayed(getIntValue(results, "totalPayed"))
-                    .totalGained(getIntValue(results, "totalGained"))
+                    .totalPayed(totalPayed)
+                    .totalGained(totalGained)
                     .build();
 
-            log.info("Place report calculated: placeId={}, totalPayed={}, totalGained={}",
-                    placeId, vto.getTotalPayed(), vto.getTotalGained());
+            log.info("Place report calculated: placeId={}, totalPayed={}, totalGained={} (Rent: {}, Enrollment: {})",
+                    placeId, totalPayed, totalGained, totalRentGained, totalEnrollmentGained);
 
             return vto;
 
@@ -82,7 +89,8 @@ public class PlaceReportRepositoryImpl implements PlaceReportRepository {
 
         Map<String, Object> results = new HashMap<>();
         results.put("totalPayed", result[0]);
-        results.put("totalGained", result[1]);
+        results.put("totalRentGained", result[1]);
+        results.put("totalEnrollmentGained", result[2]);
 
         return results;
     }
@@ -95,12 +103,16 @@ public class PlaceReportRepositoryImpl implements PlaceReportRepository {
 
         sql.append("SELECT ");
 
-        // Total Payed: Sum of all rent payments for this place
+        // ================================================================
+        // 1. Total Payed: Rent payments with effect = 0 (مخرج/مصروف)
+        // ================================================================
         sql.append("    COALESCE(( ");
         sql.append("        SELECT SUM(prp.payed_amount) ");
         sql.append("        FROM oa_place_rent_payment prp ");
+        sql.append("        INNER JOIN oa_rent_type rt ON prp.rent_type_id = rt.id ");
         sql.append("        WHERE prp.place_id = :placeId ");
         sql.append("          AND prp.is_deleted = 0 ");
+        sql.append("          AND rt.effect = 0 "); // effect = 0 means مخرج (Expense)
 
         if (fromDateTime != null) {
             sql.append("          AND prp.payment_date >= :fromDate ");
@@ -111,19 +123,41 @@ public class PlaceReportRepositoryImpl implements PlaceReportRepository {
 
         sql.append("    ), 0) AS total_payed, ");
 
-        // Total Gained: Sum of enrollment payments for courses using this place
+        // ================================================================
+        // 2. Total Rent Gained: Rent payments with effect = 1 (مدخل/إيراد)
+        // ================================================================
+        sql.append("    COALESCE(( ");
+        sql.append("        SELECT SUM(prp.payed_amount) ");
+        sql.append("        FROM oa_place_rent_payment prp ");
+        sql.append("        INNER JOIN oa_rent_type rt ON prp.rent_type_id = rt.id ");
+        sql.append("        WHERE prp.place_id = :placeId ");
+        sql.append("          AND prp.is_deleted = 0 ");
+        sql.append("          AND rt.effect = 1 "); // effect = 1 means مدخل (Income)
+
+        if (fromDateTime != null) {
+            sql.append("          AND prp.payment_date >= :fromDate ");
+        }
+        if (toDateTime != null) {
+            sql.append("          AND prp.payment_date <= :toDate ");
+        }
+
+        sql.append("    ), 0) AS total_rent_gained, ");
+
+        // ================================================================
+        // 3. Total Enrollment Gained: Enrollment payments using this place
+        // ================================================================
         sql.append("    COALESCE(( ");
         sql.append("        SELECT SUM(ep.paid_amount) ");
         sql.append("        FROM oa_enrollment_payment ep ");
         sql.append("        WHERE ep.is_deleted = 0 ");
-        sql.append("          AND ep.payment_status IN (2, 6) ");  // 2 = Completed, 6 = Partial
+        sql.append("          AND ep.payment_status IN (2, 6) "); // 2 = Completed, 6 = Partial
         sql.append("          AND EXISTS ( ");
         sql.append("              SELECT 1 ");
         sql.append("              FROM oa_enrollment enr ");
         sql.append("              WHERE enr.id = ep.enrollment_id ");
-        sql.append("                AND enr.is_active = 1 ");        // ACTIVE ONLY!
+        sql.append("                AND enr.is_active = 1 "); // Active only!
         sql.append("                AND enr.is_deleted = 0 ");
-        sql.append("                AND enr.enrollment_status NOT IN (3, 4) ");  // Not Cancelled or Refunded
+        sql.append("                AND enr.enrollment_status NOT IN (3, 4) "); // Not Cancelled or Refunded
         sql.append("                AND enr.course_id IN ( ");
         sql.append("                    SELECT DISTINCT cs.course_id ");
         sql.append("                    FROM oa_course_session cs ");
@@ -139,11 +173,14 @@ public class PlaceReportRepositoryImpl implements PlaceReportRepository {
             sql.append("          AND ep.payment_date <= :toDate ");
         }
 
-        sql.append("    ), 0) AS total_gained ");
+        sql.append("    ), 0) AS total_enrollment_gained ");
 
         return sql.toString();
     }
 
+    /**
+     * Safely get integer value from results map
+     */
     private int getIntValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
         return value != null ? ((Number) value).intValue() : 0;
