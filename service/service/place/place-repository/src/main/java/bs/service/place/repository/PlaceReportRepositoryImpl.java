@@ -155,9 +155,9 @@ public class PlaceReportRepositoryImpl implements PlaceReportRepository {
         sql.append("              SELECT 1 ");
         sql.append("              FROM oa_enrollment enr ");
         sql.append("              WHERE enr.id = ep.enrollment_id ");
-        sql.append("                AND enr.is_active = 1 "); // Active only!
         sql.append("                AND enr.is_deleted = 0 ");
-        sql.append("                AND enr.enrollment_status NOT IN (3, 4) "); // Not Cancelled or Refunded
+        sql.append("                AND enr.enrollment_status != 3 "); // Not Cancelled
+        sql.append("                AND enr.payment_status NOT IN (3, 4,5) "); // Not FAILED or Cancelled or Refunded
         sql.append("                AND enr.course_id IN ( ");
         sql.append("                    SELECT DISTINCT cs.course_id ");
         sql.append("                    FROM oa_course_session cs ");

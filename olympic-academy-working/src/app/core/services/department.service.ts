@@ -28,8 +28,12 @@ export class DepartmentService {
     return this.api.get('/departments', params);
   }
 
-  getDepartmentById(id: number): Observable<DepartmentVTO> {
-    return this.api.get(`/departments/${id}`);
+  getDepartmentById(id: number,params?:any): Observable<DepartmentVTO> {
+    return this.api.get(`/departments/${id}`,params);
+  }
+
+  getDepartmentSimpleById(id: number): Observable<DepartmentVTO> {
+    return this.api.get(`/departments/simple/${id}`);
   }
 
   updateDepartment(id: number, data: DepartmentDTO): Observable<NewRecordVTO> {

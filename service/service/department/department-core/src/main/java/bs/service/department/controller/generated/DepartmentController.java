@@ -24,7 +24,6 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +52,24 @@ public interface DepartmentController {
 
     ResponseEntity<NewRecordVTO> _createDepartment(
             @Parameter(name = "DepartmentDTO", description = "", required = true) @Valid @RequestBody DepartmentDTO departmentDTO);
+
+    /**
+     * DELETE /departments/{departmentId} : Delete department
+     *
+     * @param departmentId
+     *            (required)
+     *
+     * @return No Content (status code 204) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "deleteDepartment", summary = "Delete department", tags = { "Department" }, responses = {
+            @ApiResponse(responseCode = "204", description = "No Content"),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/departments/{departmentId}", produces = {
+            "application/json" })
+
+    ResponseEntity<Void> _deleteDepartment(
+            @Parameter(name = "departmentId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("departmentId") Integer departmentId);
 
     /**
      * GET /departments : Retrieve list of Departments
@@ -101,6 +118,10 @@ public interface DepartmentController {
      *
      * @param departmentId
      *            (required)
+     * @param createdOnFrom
+     *            (optional)
+     * @param createdOnTo
+     *            (optional)
      *
      * @return OK (status code 200) or Bad Request (status code 400)
      */
@@ -113,6 +134,27 @@ public interface DepartmentController {
             "application/json" })
 
     ResponseEntity<DepartmentVTO> _getDepartment(
+            @Parameter(name = "departmentId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("departmentId") Integer departmentId,
+            @Parameter(name = "createdOnFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnFrom,
+            @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo);
+
+    /**
+     * GET /departments/simple/{departmentId} : Retrieve department by Id
+     *
+     * @param departmentId
+     *            (required)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "getDepartmentById", summary = "Retrieve department by Id", tags = {
+            "Department" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = DepartmentVTO.class)) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.GET, value = "/departments/simple/{departmentId}", produces = {
+            "application/json" })
+
+    ResponseEntity<DepartmentVTO> _getDepartmentById(
             @Parameter(name = "departmentId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("departmentId") Integer departmentId);
 
     /**

@@ -7,6 +7,7 @@ import bs.service.employee.model.filter.EmployeeSearchFilter;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,12 +26,32 @@ public class EmployeeQueryBuilder extends AbstractQueryBuilderV2<Employee, Emplo
             qbConditions.add(QBCondition.builder().placeHolder("fullName").value("%" + filters.getQuickSearchQuery() + "%")
                     .condition("(LOWER(item.fullName) LIKE LOWER(:PH) OR item.nationalId LIKE :PH)").build());
 
+
+        if (filters.getRemainedSalary() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("remainedSalary").value(filters.getRemainedSalary())
+                    .condition("item.remainedSalary <= :PH").build());
+
+        if(filters.getLastModifiedOnFrom() !=null )
+            qbConditions.add(QBCondition.builder().placeHolder("lastModifiedOnFrom").value(filters.getLastModifiedOnFrom().atStartOfDay())
+                    .condition("item.lastModifiedOn >= :PH").build());
+
+
+        if(filters.getLastModifiedOnTo() !=null )
+            qbConditions.add(QBCondition.builder().placeHolder("lastModifiedOnTo").value(filters.getLastModifiedOnTo().atTime(LocalTime.MAX))
+                    .condition("item.lastModifiedOn <= :PH").build());
+
+
+        if (filters.getIsMonthlyUpdated() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isMonthlyUpdated").value(filters.getIsMonthlyUpdated())
+                    .condition("item.isMonthlyUpdated = :PH").build());
+
         if (filters.getCreatedOnFrom() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("createdOnFrom").value(filters.getCreatedOnFrom())
+            qbConditions.add(QBCondition.builder().placeHolder("CreatedOnFrom").value(filters.getCreatedOnFrom().atStartOfDay())
                     .condition("item.createdOn >= :PH").build());
 
+
         if (filters.getCreatedOnTo() != null)
-            qbConditions.add(QBCondition.builder().placeHolder("createdOnTo").value(filters.getCreatedOnTo())
+            qbConditions.add(QBCondition.builder().placeHolder("CreatedOnTo").value(filters.getCreatedOnTo().atTime(LocalTime.MAX))
                     .condition("item.createdOn <= :PH").build());
 
         if (filters.getHireDateFrom() != null)

@@ -1,4 +1,8 @@
-/* Main Container */
+/* employee-list.component.css */
+
+/* ============================================ */
+/* MAIN CONTAINER */
+/* ============================================ */
 .employees-container {
   padding: 24px;
   max-width: 1400px;
@@ -14,7 +18,9 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Header Section */
+/* ============================================ */
+/* HEADER SECTION */
+/* ============================================ */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -49,7 +55,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Filters Card */
+/* ============================================ */
+/* FILTERS SECTION */
+/* ============================================ */
 .filters-card {
   padding: 20px 24px;
   background: white;
@@ -80,6 +88,29 @@
   min-width: 150px;
 }
 
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  min-width: 150px;
+  flex: 1;
+}
+
+.filter-toggle .toggle-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+::ng-deep .mat-slide-toggle.mat-primary.mat-checked .mat-slide-toggle-thumb {
+  background-color: #f59e0b !important;
+}
+
+::ng-deep .mat-slide-toggle.mat-primary.mat-checked .mat-slide-toggle-bar {
+  background-color: rgba(245, 158, 11, 0.5) !important;
+}
+
 .filter-actions {
   display: flex;
   gap: 12px;
@@ -101,7 +132,6 @@
   transform: translateY(-1px);
 }
 
-/* Cards Button */
 .cards-btn {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
   color: white !important;
@@ -118,11 +148,13 @@
   color: #9ca3af !important;
 }
 
-/* Statistics Cards */
+/* ============================================ */
+/* STATISTICS CARDS - Updated */
+/* ============================================ */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
   padding: 24px;
   background: #f9fafb;
 }
@@ -172,7 +204,17 @@
   color: #3b82f6;
 }
 
-/* Loading State */
+.stat-card.purple .stat-info h3 {
+  color: #8b5cf6;
+}
+
+.stat-card.gold .stat-info h3 {
+  color: #d97706;
+}
+
+/* ============================================ */
+/* LOADING STATE */
+/* ============================================ */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -187,7 +229,9 @@
   font-size: 14px;
 }
 
-/* Table Section */
+/* ============================================ */
+/* TABLE SECTION */
+/* ============================================ */
 .table-section {
   padding: 0 24px 24px 24px;
 }
@@ -217,6 +261,31 @@
   height: 18px;
 }
 
+.table-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stat-badge.total-salary {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stat-badge.total-remained {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
 .table-wrapper {
   overflow-x: auto;
   border-radius: 12px;
@@ -226,20 +295,20 @@
 
 .data-table {
   width: 100%;
-  min-width: 900px;
+  min-width: 1200px;
 }
 
 .data-table .mat-header-cell {
   background: #f8fafc;
   color: #1e293b;
   font-weight: 700;
-  font-size: 13px;
-  padding: 14px 12px;
+  font-size: 12px;
+  padding: 14px 10px;
   border-bottom: 2px solid #e2e8f0;
 }
 
 .data-table .mat-cell {
-  padding: 12px 12px;
+  padding: 10px 10px;
   font-size: 13px;
   color: #334155;
   border-bottom: 1px solid #f1f5f9;
@@ -264,7 +333,9 @@
   text-decoration: underline;
 }
 
-/* Image Column Styles */
+/* ============================================ */
+/* IMAGE COLUMN */
+/* ============================================ */
 .image-cell {
   width: 60px;
   text-align: center !important;
@@ -292,12 +363,9 @@
   color: #9ca3af;
 }
 
-.mat-column-image {
-  text-align: center;
-  width: 70px;
-}
-
-/* Type Badge */
+/* ============================================ */
+/* TYPE BADGE */
+/* ============================================ */
 .type-badge {
   display: inline-block;
   padding: 4px 14px;
@@ -316,7 +384,9 @@
   color: #92400e;
 }
 
-/* Gender Info */
+/* ============================================ */
+/* GENDER INFO */
+/* ============================================ */
 .gender-info {
   display: flex;
   align-items: center;
@@ -330,7 +400,9 @@
   color: #94a3b8;
 }
 
-/* Date Info */
+/* ============================================ */
+/* DATE INFO */
+/* ============================================ */
 .date-info {
   display: flex;
   align-items: center;
@@ -344,28 +416,40 @@
   color: #94a3b8;
 }
 
-/* Departments List */
-.departments-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+/* ============================================ */
+/* AMOUNT & REMAINING VALUES */
+/* ============================================ */
+.amount-value {
+  font-weight: 700;
+  color: #0f3460;
+  font-size: 14px;
 }
 
-.dept-chip {
+.remaining-value {
+  font-weight: 600;
+  color: #d97706;
+}
+
+.remaining-value.zero {
+  color: #10b981;
+}
+
+/* ============================================ */
+/* PERIOD BADGE */
+/* ============================================ */
+.period-badge {
   display: inline-block;
-  background: #f1f5f9;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 16px;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #f1f5f9;
   color: #475569;
 }
 
-.no-data-text {
-  color: #9ca3af;
-  font-style: italic;
-}
-
-/* Status Badge */
+/* ============================================ */
+/* STATUS BADGE */
+/* ============================================ */
 .status-badge {
   display: inline-block;
   padding: 4px 14px;
@@ -384,7 +468,9 @@
   color: #991b1b;
 }
 
-/* Action Buttons */
+/* ============================================ */
+/* ACTION BUTTONS */
+/* ============================================ */
 .action-buttons {
   display: flex;
   gap: 4px;
@@ -398,7 +484,9 @@
   transform: scale(1.1);
 }
 
-/* No Data Message */
+/* ============================================ */
+/* NO DATA MESSAGE */
+/* ============================================ */
 .no-data-message {
   text-align: center;
   padding: 60px;
@@ -418,8 +506,9 @@
   font-size: 16px;
 }
 
-/* ========== CUSTOM PAGINATION ========== */
-
+/* ============================================ */
+/* CUSTOM PAGINATION */
+/* ============================================ */
 .custom-pagination {
   display: flex;
   justify-content: space-between;
@@ -529,7 +618,9 @@
   font-weight: 500;
 }
 
-/* Animations */
+/* ============================================ */
+/* ANIMATIONS */
+/* ============================================ */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -541,10 +632,32 @@
   }
 }
 
-/* Responsive */
+/* ============================================ */
+/* RESPONSIVE - TABLET */
+/* ============================================ */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 1024px) {
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px 20px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-icon {
+    font-size: 32px;
+  }
+
+  .stat-info h3 {
+    font-size: 20px;
   }
 }
 
@@ -574,7 +687,8 @@
 
   .search-field,
   .filter-select,
-  .date-field {
+  .date-field,
+  .filter-toggle {
     width: 100%;
     min-width: 100%;
   }
@@ -590,20 +704,25 @@
   }
 
   .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     padding: 16px;
   }
 
   .stat-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   .stat-icon {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .stat-info h3 {
-    font-size: 22px;
+    font-size: 18px;
+  }
+
+  .stat-info p {
+    font-size: 12px;
   }
 
   .table-section {
@@ -614,6 +733,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .table-stats {
+    flex-wrap: wrap;
   }
 
   .custom-pagination {
@@ -639,7 +762,22 @@
 
 @media (max-width: 480px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    font-size: 24px;
+  }
+
+  .stat-info h3 {
+    font-size: 16px;
   }
 
   .pagination-btn {
@@ -672,9 +810,37 @@
   .records-info {
     font-size: 12px;
   }
+
+  .data-table {
+    min-width: 800px;
+  }
+
+  .data-table .mat-header-cell {
+    font-size: 10px;
+    padding: 8px 4px;
+  }
+
+  .data-table .mat-cell {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+
+  .status-badge,
+  .type-badge,
+  .period-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .amount-value,
+  .remaining-value {
+    font-size: 12px;
+  }
 }
 
-/* Print Styles */
+/* ============================================ */
+/* PRINT STYLES */
+/* ============================================ */
 @media print {
   .employees-container {
     padding: 0;
@@ -696,7 +862,8 @@
   .reset-btn,
   .export-btn,
   .action-buttons,
-  .filter-actions {
+  .filter-actions,
+  .filter-toggle {
     display: none !important;
   }
 
@@ -711,13 +878,15 @@
   }
 
   .type-badge,
-  .status-badge {
+  .status-badge,
+  .period-badge {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .stats-grid {
     background: #f9fafb;
+    grid-template-columns: repeat(6, 1fr) !important;
   }
 
   .stat-card {
@@ -725,6 +894,10 @@
   }
 
   .custom-pagination {
+    display: none !important;
+  }
+
+  .table-stats {
     display: none !important;
   }
 }

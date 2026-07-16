@@ -1914,7 +1914,7 @@ openRefundWizard(payment: any): void {
   // Add this helper method to read the SVG file
   private async getSvgContent(): Promise<string> {
     try {
-      const response = await fetch('assets/images/simpleLogoSvg.svg');
+      const response = await fetch('assets/images/mainLogoSvg.svg');
       const svgText = await response.text();
       return svgText;
     } catch (error) {

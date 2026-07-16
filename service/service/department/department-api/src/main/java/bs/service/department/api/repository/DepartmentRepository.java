@@ -14,4 +14,5 @@ public interface DepartmentRepository {
     List<Department> selectDepartmentByIdIn(List<Integer> ids);
     List<Department> selectAllByFilters(DepartmentSearchFilter filters);
     Integer countAllByFilters(DepartmentSearchFilter filters);
+    void deleteById(Integer id);
 }

@@ -50,6 +50,8 @@ public class EnrollmentListItem implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isAutoUpdate;
+
     public EnrollmentListItem id(Integer id) {
         this.id = id;
         return this;
@@ -281,6 +283,27 @@ public class EnrollmentListItem implements Serializable {
         this.isActive = isActive;
     }
 
+    public EnrollmentListItem isAutoUpdate(Boolean isAutoUpdate) {
+        this.isAutoUpdate = isAutoUpdate;
+        return this;
+    }
+
+    /**
+     * Get isAutoUpdate
+     *
+     * @return isAutoUpdate
+     */
+
+    @Schema(name = "isAutoUpdate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isAutoUpdate")
+    public Boolean getIsAutoUpdate() {
+        return isAutoUpdate;
+    }
+
+    public void setIsAutoUpdate(Boolean isAutoUpdate) {
+        this.isAutoUpdate = isAutoUpdate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -300,13 +323,14 @@ public class EnrollmentListItem implements Serializable {
                 && Objects.equals(this.paymentStatus, enrollmentListItem.paymentStatus)
                 && Objects.equals(this.finalSubscriptionValue, enrollmentListItem.finalSubscriptionValue)
                 && Objects.equals(this.remainedSubscriptionValue, enrollmentListItem.remainedSubscriptionValue)
-                && Objects.equals(this.isActive, enrollmentListItem.isActive);
+                && Objects.equals(this.isActive, enrollmentListItem.isActive)
+                && Objects.equals(this.isAutoUpdate, enrollmentListItem.isAutoUpdate);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, trainee, course, trainer, startDate, endDate, enrollmentStatus, paymentStatus,
-                finalSubscriptionValue, remainedSubscriptionValue, isActive);
+                finalSubscriptionValue, remainedSubscriptionValue, isActive, isAutoUpdate);
     }
 
     @Override
@@ -324,6 +348,7 @@ public class EnrollmentListItem implements Serializable {
         sb.append("    finalSubscriptionValue: ").append(toIndentedString(finalSubscriptionValue)).append("\n");
         sb.append("    remainedSubscriptionValue: ").append(toIndentedString(remainedSubscriptionValue)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isAutoUpdate: ").append(toIndentedString(isAutoUpdate)).append("\n");
         sb.append("}");
         return sb.toString();
     }

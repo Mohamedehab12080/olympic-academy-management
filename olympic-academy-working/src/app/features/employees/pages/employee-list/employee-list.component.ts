@@ -1,3 +1,5 @@
+// employee-list.component.ts
+
 import {
   Component,
   OnInit,
@@ -24,6 +26,7 @@ import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import {
   MatDialog,
   MatDialogModule,
@@ -595,19 +598,22 @@ export class ExportPageSelectDialogComponent {
 }
 
 // ============================================================================
-// MAIN EMPLOYEE LIST COMPONENT
+// MAIN EMPLOYEE LIST COMPONENT - UPDATED
 // ============================================================================
 
 interface EmployeeListItem {
   id: number;
   fullName: string;
   nationalId: string;
-  employeeType?: { id: number; title: string };
-  gender?: { id: number; title: string };
-  hireDate?: string;
-  departments?: { id: number; title: string }[];
+  imageUrl: string;
+  gender: { id: number; title: string };
+  employeeType: { id: number; title: string };
+  hireDate: string;
   isActive: boolean;
-  imageUrl?: string;
+  isMonthlyUpdated: boolean; // ✅ Added
+  updatePeriodInDays: number; // ✅ Added
+  salary: number; // ✅ Added
+  remainedSalary: number; // ✅ Added
 }
 
 @Component({
@@ -633,6 +639,7 @@ interface EmployeeListItem {
     MatTooltipModule,
     MatDialogModule,
     MatDividerModule,
+    MatSlideToggleModule, // ✅ Added for toggle
     SearchableSelectComponent,
   ],
   templateUrl: './employee-list.component.html',
@@ -641,6 +648,7 @@ interface EmployeeListItem {
 export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
 
+  // ✅ Updated columns to include new fields
   displayedColumns: string[] = [
     'index',
     'image',
@@ -649,7 +657,10 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     'employeeType',
     'gender',
     'hireDate',
-    'departments',
+    'salary',
+    'remainedSalary',
+    'isMonthlyUpdated',
+    'updatePeriodInDays',
     'status',
     'actions',
   ];
@@ -672,6 +683,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   searchText = '';
   employeeTypeFilter: string | null = null;
   statusFilter: boolean | null = null;
+  isMonthlyUpdatedFilter: boolean | null = null; // ✅ Added
   hireDateFrom: any = null;
   hireDateTo: any = null;
 
@@ -681,6 +693,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild(MatSort) sort!: MatSort;
 
+  // ✅ Statistics with new fields
   get trainerCount(): number {
     return this.allEmployees.filter((e) => e.employeeType?.id === 1).length;
   }
@@ -693,12 +706,20 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.allEmployees.filter((e) => e.isActive === true).length;
   }
 
-  get totalDepartments(): number {
-    const depts = new Set();
-    this.allEmployees.forEach((e) => {
-      e.departments?.forEach((d) => depts.add(d.id));
-    });
-    return depts.size;
+  get inactiveCount(): number {
+    return this.allEmployees.filter((e) => e.isActive === false).length;
+  }
+
+  get monthlyUpdatedCount(): number {
+    return this.allEmployees.filter((e) => e.isMonthlyUpdated === true).length;
+  }
+
+  get totalSalary(): number {
+    return this.allEmployees.reduce((sum, e) => sum + (e.salary || 0), 0);
+  }
+
+  get totalRemainedSalary(): number {
+    return this.allEmployees.reduce((sum, e) => sum + (e.remainedSalary || 0), 0);
   }
 
   constructor(
@@ -730,18 +751,19 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadSelectOptions(): void {
-    this.employeeTypeOptions = [
-      { value: null, label: 'الكل' },
-      { value: 'TRAINER', label: 'مدرب' },
-      { value: 'MANAGER', label: 'مدير' },
-    ];
+  this.employeeTypeOptions = [
+    { value: null, label: 'الكل' },
+    { value: 'TRAINER', label: 'مدرب' },
+    { value: 'MANAGER', label: 'مدير' },
+    { value: 'LECTURER', label: 'محاضر' },  // ✅ Added Lecturer
+  ];
 
-    this.statusOptions = [
-      { value: null, label: 'الكل' },
-      { value: true, label: 'نشط' },
-      { value: false, label: 'غير نشط' },
-    ];
-  }
+  this.statusOptions = [
+    { value: null, label: 'الكل' },
+    { value: true, label: 'نشط' },
+    { value: false, label: 'غير نشط' },
+  ];
+}
 
   private formatDateForBackend(date: any): string | null {
     if (!date) return null;
@@ -827,6 +849,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.searchText) params.quickSearch = this.searchText;
     if (this.employeeTypeFilter) params.employeeType = this.employeeTypeFilter;
     if (this.statusFilter !== null) params.isActive = this.statusFilter;
+    if (this.isMonthlyUpdatedFilter !== null) params.isMonthlyUpdated = this.isMonthlyUpdatedFilter; // ✅ Added
 
     if (this.hireDateFrom) {
       const formattedDate = this.formatDateForBackend(this.hireDateFrom);
@@ -958,6 +981,13 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadEmployees();
   }
 
+  // ✅ Added isMonthlyUpdated filter toggle
+  onMonthlyUpdatedChange(event: any): void {
+    this.isMonthlyUpdatedFilter = event.checked;
+    this.currentPage = 0;
+    this.loadEmployees();
+  }
+
   onDateFromChange(): void {
     this.currentPage = 0;
     this.loadEmployees();
@@ -972,9 +1002,17 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.searchText = '';
     this.employeeTypeFilter = null;
     this.statusFilter = null;
+    this.isMonthlyUpdatedFilter = null; // ✅ Reset
     this.hireDateFrom = null;
     this.hireDateTo = null;
     this.currentPage = 0;
+    
+    // Reset toggle
+    const toggle = document.querySelector('#monthlyUpdateToggle') as HTMLInputElement;
+    if (toggle) {
+      toggle.checked = false;
+    }
+    
     this.loadEmployees();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
@@ -1090,6 +1128,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.employeeTypeFilter)
         params.employeeType = this.employeeTypeFilter;
       if (this.statusFilter !== null) params.isActive = this.statusFilter;
+      if (this.isMonthlyUpdatedFilter !== null) params.isMonthlyUpdated = this.isMonthlyUpdatedFilter; // ✅ Added
 
       if (this.hireDateFrom) {
         const formattedDate = this.formatDateForBackend(this.hireDateFrom);
@@ -1158,8 +1197,10 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
         النوع: employee.employeeType?.title || '-',
         الجنس: employee.gender?.title || '-',
         'تاريخ التوظيف': employee.hireDate || '-',
-        الأقسام:
-          employee.departments?.map((d: any) => d.title).join(', ') || '-',
+        'الراتب': employee.salary || 0,
+        'الراتب المتبقي': employee.remainedSalary || 0,
+        'تحديث شهري': employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل',
+        'فترة التحديث (أيام)': employee.updatePeriodInDays || 0,
         الحالة: employee.isActive ? 'نشط' : 'غير نشط',
       }),
     );
@@ -1204,6 +1245,9 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.statusFilter !== null) {
       filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
     }
+    if (this.isMonthlyUpdatedFilter !== null) {
+      filterTexts.push(`تحديث شهري: ${this.isMonthlyUpdatedFilter ? 'مفعل' : 'غير مفعل'}`);
+    }
     if (this.hireDateFrom) {
       const formattedDate = this.formatDateForBackend(this.hireDateFrom);
       if (formattedDate) filterTexts.push(`من تاريخ التوظيف: ${formattedDate}`);
@@ -1224,9 +1268,12 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       (e) => e.employeeType?.id === 2,
     ).length;
     const totalActive = dataToPrint.filter((e) => e.isActive).length;
+    const totalMonthlyUpdated = dataToPrint.filter((e) => e.isMonthlyUpdated).length;
+    const totalSalary = dataToPrint.reduce((sum, e) => sum + (e.salary || 0), 0);
+    const totalRemainedSalary = dataToPrint.reduce((sum, e) => sum + (e.remainedSalary || 0), 0);
 
     // Split data into pages
-    const rowsPerPage = 20;
+    const rowsPerPage = 18;
     const pages: EmployeeListItem[][] = [];
     for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
       pages.push(dataToPrint.slice(i, i + rowsPerPage));
@@ -1242,13 +1289,14 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
           : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
 
+        const monthlyUpdatedStyle = employee.isMonthlyUpdated
+          ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+          : 'background: #f3f4f6; color: #6b7280; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
         const typeStyle =
           employee.employeeType?.id === 1
             ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
             : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-
-        const departmentsText =
-          employee.departments?.map((d: any) => d.title).join(', ') || '-';
 
         tableRows += `
         <tr>
@@ -1258,7 +1306,10 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${typeStyle}">${employee.employeeType?.title || '-'}</span></td>
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.gender?.title || '-'}</td>
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.hireDate || '-'}</td>
-          <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${this.escapeHtml(departmentsText)}</td>
+          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 700; color: #0f3460;">${(employee.salary || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 600; color: ${employee.remainedSalary === 0 ? '#10b981' : '#d97706'};">${(employee.remainedSalary || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${monthlyUpdatedStyle}">${employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل'}</span></td>
+          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.updatePeriodInDays || 0}</td>
           <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${statusStyle}">${employee.isActive ? 'نشط' : 'غير نشط'}</span></td>
         </tr>
       `;
@@ -1266,15 +1317,13 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
       allPagesHTML += `
       <div class="page-container">
-        <!-- Watermark - Behind content -->
         <div class="watermark-wrapper">
           <div class="watermark-container">
-            <img src="assets/images/simpleLogoSvg.svg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+            <img src="assets/images/mainLogo.jpeg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
           </div>
           <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         
-        <!-- Content - Above watermark -->
         <div class="content">
           <div class="header">
             <h1>📋 قائمة الموظفين</h1>
@@ -1308,10 +1357,15 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
               <span class="total-value">${totalActive}</span>
               <span class="total-label">نشطاء</span>
             </div>
-            <div class="total-card total-inactive">
-              <span class="total-icon">⛔</span>
-              <span class="total-value">${totalEmployees - totalActive}</span>
-              <span class="total-label">غير نشطاء</span>
+            <div class="total-card total-monthly-updated">
+              <span class="total-icon">🔄</span>
+              <span class="total-value">${totalMonthlyUpdated}</span>
+              <span class="total-label">تحديث شهري</span>
+            </div>
+            <div class="total-card total-salary">
+              <span class="total-icon">💰</span>
+              <span class="total-value">${totalSalary.toLocaleString('ar-EG')} جم</span>
+              <span class="total-label">إجمالي الرواتب</span>
             </div>
           </div>
           `
@@ -1321,14 +1375,17 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           <table>
             <thead>
               <tr>
-                <th style="width: 4%;">#</th>
-                <th style="width: 18%;">الاسم</th>
-                <th style="width: 14%;">رقم الهوية</th>
-                <th style="width: 12%;">النوع</th>
-                <th style="width: 10%;">الجنس</th>
-                <th style="width: 12%;">تاريخ التوظيف</th>
-                <th style="width: 18%;">الأقسام</th>
-                <th style="width: 12%;">الحالة</th>
+                <th style="width: 3%;">#</th>
+                <th style="width: 13%;">الاسم</th>
+                <th style="width: 10%;">رقم الهوية</th>
+                <th style="width: 9%;">النوع</th>
+                <th style="width: 8%;">الجنس</th>
+                <th style="width: 10%;">تاريخ التوظيف</th>
+                <th style="width: 10%;">الراتب</th>
+                <th style="width: 10%;">المتبقي</th>
+                <th style="width: 9%;">تحديث شهري</th>
+                <th style="width: 8%;">فترة التحديث</th>
+                <th style="width: 10%;">الحالة</th>
               </tr>
             </thead>
             <tbody>
@@ -1344,7 +1401,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     `;
     });
 
-    // Build the complete HTML with watermark behind content
     const printContainer = document.createElement('div');
     printContainer.style.direction = 'rtl';
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
@@ -1380,7 +1436,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           margin: 8mm;
         }
         
-        /* ===== PAGE CONTAINER ===== */
         .page-container {
           position: relative;
           width: 100%;
@@ -1394,7 +1449,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           page-break-after: auto;
         }
         
-        /* ===== WATERMARK - Properly sized in center ===== */
         .watermark-wrapper {
           position: absolute;
           top: 0;
@@ -1441,7 +1495,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           text-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
         }
         
-        /* ===== CONTENT - ABOVE WATERMARK ===== */
         .content {
           position: relative;
           z-index: 1;
@@ -1450,7 +1503,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           min-height: 100vh;
         }
         
-        /* ===== PRINT STYLES ===== */
         @media print {
           html, body {
             width: 100%;
@@ -1458,9 +1510,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
             margin: 0;
             padding: 0;
           }
-          .no-print { 
-            display: none !important; 
-          }
+          .no-print { display: none !important; }
           .page-container {
             min-height: 100vh !important;
             page-break-after: always !important;
@@ -1501,7 +1551,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          /* Make table rows transparent to show watermark */
           td {
             background: transparent !important;
             -webkit-print-color-adjust: exact !important;
@@ -1519,7 +1568,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         }
         
-        /* ===== HEADER ===== */
         .header {
           text-align: center;
           margin-bottom: 10px;
@@ -1542,7 +1590,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           opacity: 0.9;
         }
         
-        /* ===== FILTERS ===== */
         .filters {
           margin-bottom: 8px;
           padding: 6px 12px;
@@ -1555,10 +1602,9 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           color: #1e293b;
         }
         
-        /* ===== TOTALS ===== */
         .totals-grid {
           display: grid;
-          grid-template-columns: repeat(5, 1fr);
+          grid-template-columns: repeat(6, 1fr);
           gap: 5px;
           margin-bottom: 8px;
         }
@@ -1569,7 +1615,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           padding: 5px 8px;
           text-align: center;
           border: 1px solid rgba(229, 231, 235, 0.5);
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1635,15 +1680,22 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           color: #059669;
         }
         
-        .total-card.total-inactive {
-          background: rgba(254, 226, 226, 0.9);
-          border-color: rgba(252, 165, 165, 0.5);
+        .total-card.total-monthly-updated {
+          background: rgba(219, 234, 254, 0.9);
+          border-color: rgba(147, 197, 253, 0.5);
         }
-        .total-card.total-inactive .total-value {
-          color: #dc2626;
+        .total-card.total-monthly-updated .total-value {
+          color: #2563eb;
         }
         
-        /* ===== TABLE - Transparent background ===== */
+        .total-card.total-salary {
+          background: rgba(254, 243, 199, 0.9);
+          border-color: rgba(252, 211, 77, 0.5);
+        }
+        .total-card.total-salary .total-value {
+          color: #d97706;
+        }
+        
         table {
           width: 100%;
           border-collapse: collapse;
@@ -1669,21 +1721,16 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           font-size: 10px;
           background: transparent !important;
         }
-        
         tr {
           background: transparent !important;
         }
-        
         tbody {
           background: transparent !important;
         }
-        
-        /* Only apply alternating row colors for readability, but with transparency */
         tr:nth-child(even) td {
           background: rgba(250, 251, 252, 0.5) !important;
         }
         
-        /* ===== FOOTER ===== */
         .footer {
           text-align: center;
           margin-top: 8px;
@@ -1693,7 +1740,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
           border-top: 1px solid rgba(229, 231, 235, 0.3);
         }
         
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
           .watermark-container {
             width: 80% !important;
@@ -1739,10 +1785,8 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       </style>
     </head>
     <body>
-      <!-- All Pages with Watermarks Behind Content -->
       ${allPagesHTML}
       
-      <!-- Print Controls -->
       <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
         <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
           🖨️ طباعة / PDF
@@ -1783,7 +1827,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ==========================================================================
-  // PRINT EMPLOYEE CARDS WITH PAGE SELECTION
+  // PRINT EMPLOYEE CARDS
   // ==========================================================================
 
   async printEmployeeCards(): Promise<void> {
@@ -1814,7 +1858,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Collect all image URLs for the employees
     const employeeImagePromises = dataToPrint.map((employee) => {
       return new Promise<string>((resolve) => {
         const fid = employee.imageUrl;
@@ -1842,504 +1885,508 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
   }
 
-private generateCardsPrint(
-  employees: EmployeeListItem[],
-  imageUrls: string[],
-): void {
-  const printWindow = window.open(
-    '',
-    '_blank',
-    'width=800,height=800,scrollbars=yes',
-  );
-  if (!printWindow) {
-    this.notification.showError('تعذر فتح نافذة الطباعة');
-    return;
-  }
-
-  const today = new Date().toLocaleDateString('ar-EG');
-  let cardsHtml = '';
-  const logoPath = 'assets/images/simpleLogo.jpeg';
-
-  // ✅ Import JsBarcode at the top of your file: import * as JsBarcode from 'jsbarcode';
-
-  employees.forEach((employee, index) => {
-    const imageUrl = imageUrls[index] || '';
-    const genderDisplay = employee.gender?.title || '-';
-    const employeeTypeDisplay = employee.employeeType?.title || '-';
-    const isActive = employee.isActive;
-    const hireDate = employee.hireDate || '-';
-
-    // ✅ Generate barcode image using JsBarcode (same as details modal)
-    let barcodeImage = '';
-    try {
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 200;
-      tempCanvas.height = 40;
-
-      JsBarcode(tempCanvas, employee.nationalId || '000000', {
-        format: 'CODE128',
-        lineColor: '#000000',
-        width: 1.5,
-        height: 40,
-        displayValue: true,
-        fontSize: 10,
-        font: 'monospace',
-        textAlign: 'center',
-        margin: 5
-      });
-
-      barcodeImage = tempCanvas.toDataURL('image/png');
-    } catch (e) {
-      console.error('Barcode generation error:', e);
-      barcodeImage = '';
+  private generateCardsPrint(
+    employees: EmployeeListItem[],
+    imageUrls: string[],
+  ): void {
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=800,height=800,scrollbars=yes',
+    );
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
     }
 
-    // ✅ Use barcode image or fallback
-    const barcodeHtml = barcodeImage
-      ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
-      : `<span style="font-family:monospace;font-size:12px;color:#000;">${employee.nationalId || ''}</span>`;
+    const today = new Date().toLocaleDateString('ar-EG');
+    let cardsHtml = '';
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
-    // ✅ Conditional photo section - only show if image exists
-    const hasImage = imageUrl && imageUrl.trim() !== '';
-    const photoSection = hasImage
-      ? `
-    <div class="thermal-photo">
-      <img src="${imageUrl}" alt="${this.escapeHtml(employee.fullName)}" onerror="this.style.display='none'">
-    </div>
-  `
-      : '';
+    employees.forEach((employee, index) => {
+      const imageUrl = imageUrls[index] || '';
+      const genderDisplay = employee.gender?.title || '-';
+      const employeeTypeDisplay = employee.employeeType?.title || '-';
+      const isActive = employee.isActive;
+      const isMonthlyUpdated = employee.isMonthlyUpdated;
+      const hireDate = employee.hireDate || '-';
+      const salary = employee.salary || 0;
+      const remainedSalary = employee.remainedSalary || 0;
+      const updatePeriodInDays = employee.updatePeriodInDays || 0;
 
-    cardsHtml += `
-    <div class="card-wrapper">
-      <div class="thermal-card">
-        <!-- Watermark on Card -->
-        <div class="card-watermark">
-          <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
-        </div>
-        <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
-        
-        <div class="card-content">
-          <!-- Logo Section at Top -->
-          <div class="card-logo-section">
-            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
-            <div class="card-logo-text">
-              <span class="academy-name">🏛️  الأكاديمية الأولمبية لعلوم الرياضة</span>
-              <span class="card-type">✦ بطاقة هوية موظف ✦</span>
-            </div>
+      let barcodeImage = '';
+      try {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 200;
+        tempCanvas.height = 40;
+
+        JsBarcode(tempCanvas, employee.nationalId || '000000', {
+          format: 'CODE128',
+          lineColor: '#000000',
+          width: 1.5,
+          height: 40,
+          displayValue: true,
+          fontSize: 10,
+          font: 'monospace',
+          textAlign: 'center',
+          margin: 5
+        });
+
+        barcodeImage = tempCanvas.toDataURL('image/png');
+      } catch (e) {
+        console.error('Barcode generation error:', e);
+        barcodeImage = '';
+      }
+
+      const barcodeHtml = barcodeImage
+        ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
+        : `<span style="font-family:monospace;font-size:12px;color:#000;">${employee.nationalId || ''}</span>`;
+
+      const hasImage = imageUrl && imageUrl.trim() !== '';
+      const photoSection = hasImage
+        ? `
+      <div class="thermal-photo">
+        <img src="${imageUrl}" alt="${this.escapeHtml(employee.fullName)}" onerror="this.style.display='none'">
+      </div>
+    `
+        : '';
+
+      cardsHtml += `
+      <div class="card-wrapper">
+        <div class="thermal-card">
+          <div class="card-watermark">
+            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
           </div>
+          <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
           
-          <!-- Photo - Only shown if image exists -->
-          ${photoSection}
-          
-          <!-- Name & ID -->
-          <div class="thermal-name">${this.escapeHtml(employee.fullName) || ''}</div>
-          <div class="thermal-id">🆔 ${employee.nationalId || ''}</div>
-          
-          <div class="thermal-divider"></div>
-          
-          <!-- Info Table -->
-          <table class="thermal-table">
-            <tr>
-              <td class="thermal-label">🧑 النوع</td>
-              <td class="thermal-value">${employeeTypeDisplay}</td>
-            </tr>
-            <tr>
-              <td class="thermal-label">👤 الجنس</td>
-              <td class="thermal-value">${genderDisplay}</td>
-            </tr>
-            <tr>
-              <td class="thermal-label">📅 التوظيف</td>
-              <td class="thermal-value">${hireDate}</td>
-            </tr>
-            <tr>
-              <td class="thermal-label">✓ الحالة</td>
-              <td class="thermal-value ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
-            </tr>
-          </table>
-          
-          <div class="thermal-divider"></div>
-          
-          <!-- Barcode -->
-          <div class="thermal-barcode">
-            ${barcodeHtml}
-            <div class="thermal-barcode-number">${employee.nationalId || ''}</div>
-          </div>
-          
-          <!-- Footer with Signatures -->
-          <div class="thermal-footer">
-            <div class="thermal-signature">
-              <div class="thermal-line"></div>
-              <div>توقيع الموظف</div>
+          <div class="card-content">
+            <div class="card-logo-section">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
+              <div class="card-logo-text">
+                <span class="academy-name">🏛️  الأكاديمية الأولمبية لعلوم الرياضة</span>
+                <span class="card-type">✦ بطاقة هوية موظف ✦</span>
+              </div>
             </div>
-            <div class="thermal-signature">
-              <div class="thermal-line"></div>
-              <div>ختم الأكاديمية</div>
+            
+            ${photoSection}
+            
+            <div class="thermal-name">${this.escapeHtml(employee.fullName) || ''}</div>
+            <div class="thermal-id">🆔 ${employee.nationalId || ''}</div>
+            
+            <div class="thermal-divider"></div>
+            
+            <table class="thermal-table">
+              <tr>
+                <td class="thermal-label">🧑 النوع</td>
+                <td class="thermal-value">${employeeTypeDisplay}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">👤 الجنس</td>
+                <td class="thermal-value">${genderDisplay}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">📅 التوظيف</td>
+                <td class="thermal-value">${hireDate}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">💰 الراتب</td>
+                <td class="thermal-value amount">${salary.toLocaleString()} جم</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">💳 المتبقي</td>
+                <td class="thermal-value ${remainedSalary === 0 ? 'remaining-zero' : 'remaining'}">${remainedSalary.toLocaleString()} جم</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">🔄 تحديث شهري</td>
+                <td class="thermal-value ${isMonthlyUpdated ? 'status-active' : 'status-inactive'}">${isMonthlyUpdated ? '✅ مفعل' : '⛔ غير مفعل'}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">📆 فترة التحديث</td>
+                <td class="thermal-value">${updatePeriodInDays} يوم</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">✓ الحالة</td>
+                <td class="thermal-value ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
+              </tr>
+            </table>
+            
+            <div class="thermal-divider"></div>
+            
+            <div class="thermal-barcode">
+              ${barcodeHtml}
+              <div class="thermal-barcode-number">${employee.nationalId || ''}</div>
             </div>
+            
+            <div class="thermal-footer">
+              <div class="thermal-signature">
+                <div class="thermal-line"></div>
+                <div>توقيع الموظف</div>
+              </div>
+              <div class="thermal-signature">
+                <div class="thermal-line"></div>
+                <div>ختم الأكاديمية</div>
+              </div>
+            </div>
+            
+            <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
+            <div class="card-credit">powered by CoreStack Solutions | 01069911181</div>
           </div>
-          
-          <!-- Issue Date -->
-          <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
-          
-          <!-- ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== -->
-          <div class="card-credit">powered by CoreStack Solutions | 01069911181</div>
         </div>
       </div>
-    </div>
-  `;
-  });
+    `;
+    });
 
-  printWindow.document.write(`
-  <!DOCTYPE html>
-  <html dir="rtl">
-  <head>
-    <meta charset="UTF-8">
-    <title>بطاقات الموظفين</title>
-    <style>
-      @page { 
-        size: 58mm auto; 
-        margin: 0mm; 
-      }
-      
-      * { 
-        font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      
-      body { 
-        width: 58mm; 
-        margin: 0; 
-        padding: 0; 
-        background: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
-        min-height: 100vh;
-        padding-bottom: 2mm;
-      }
-      
-      .card-wrapper {
-        width: 100%;
-        max-width: 58mm;
-        margin: 0;
-        flex-shrink: 0;
-      }
-      
-      .thermal-card {
-        width: 100%;
-        max-width: 58mm;
-        margin: 0;
-        padding: 2.5mm 3mm 3.5mm 3mm;
-        background: white;
-        position: relative;
-        overflow: hidden;
-        direction: rtl;
-      }
-      
-      /* ===== WATERMARK - Behind content with logo ===== */
-      .card-watermark {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-25deg) scale(1.8);
-        opacity: 0.07;
-        pointer-events: none;
-        z-index: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-      }
-      
-      .card-watermark img {
-        width: 90px;
-        height: auto;
-        object-fit: contain;
-        opacity: 0.9;
-      }
-      
-      .card-watermark-text {
-        position: absolute;
-        top: 57%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
-        font-size: 18px;
-        font-weight: 900;
-        color: #f59e0b;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-        white-space: nowrap;
-        opacity: 0.04;
-        pointer-events: none;
-        z-index: 0;
-        text-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
-      }
-      
-      /* ===== CONTENT - Above watermark ===== */
-      .card-content {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-      }
-      
-      /* ===== LOGO SECTION AT TOP ===== */
-      .card-logo-section {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 2.5mm 0 2mm 0;
-        margin-bottom: 2mm;
-        border-bottom: 2.5px solid #f59e0b;
-        justify-content: center;
-        background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.05), transparent);
-        border-radius: 2px;
-      }
-      
-      .card-logo-image {
-        width: 34px;
-        height: 34px;
-        object-fit: contain;
-        border-radius: 50%;
-        background: white;
-        padding: 2px;
-        border: 2px solid #f59e0b;
-        flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
-      }
-      
-      .card-logo-text {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-      }
-      
-      .card-logo-text .academy-name {
-        font-size: 11px;
-        font-weight: 700;
-        color: #1a1a2e;
-        letter-spacing: 0.5px;
-      }
-      
-      .card-logo-text .card-type {
-        font-size: 7px;
-        color: #f59e0b;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-      }
-      
-      /* Compact Photo */
-      .thermal-photo { 
-        text-align: center; 
-        margin-bottom: 1mm; 
-      }
-      .thermal-photo img { 
-        width: 36px; 
-        height: 36px; 
-        border-radius: 50%; 
-        object-fit: cover;
-        border: 2px solid #f59e0b;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      }
-      
-      /* Compact Name & ID */
-      .thermal-name { 
-        font-size: 11px; 
-        font-weight: 700; 
-        text-align: center; 
-        margin-bottom: 0.5mm; 
-        color: #1a1a2e;
-        line-height: 1.2;
-      }
-      .thermal-id { 
-        font-size: 8px; 
-        color: #64748b; 
-        text-align: center; 
-        margin-bottom: 0.8mm; 
-        font-weight: 500;
-        letter-spacing: 0.5px;
-      }
-      
-      /* Divider */
-      .thermal-divider { 
-        border-top: 1px dashed #e5e7eb; 
-        margin: 0.8mm 0; 
-        opacity: 0.6;
-      }
-      
-      /* Info Table */
-      .thermal-table { 
-        width: 100%; 
-        font-size: 7px; 
-        margin-bottom: 0.8mm; 
-        border-collapse: collapse; 
-      }
-      .thermal-table tr { 
-        line-height: 1.3; 
-      }
-      .thermal-label { 
-        text-align: right; 
-        padding: 0.3mm 0.5mm; 
-        color: #64748b; 
-        width: 38%;
-        font-weight: 500;
-        font-size: 6.5px;
-      }
-      .thermal-value { 
-        text-align: left; 
-        padding: 0.3mm 0.5mm; 
-        font-weight: 600; 
-        width: 62%;
-        color: #1e293b;
-        font-size: 6.5px;
-      }
-      .thermal-value.status-active { 
-        color: #10b981; 
-      }
-      .thermal-value.status-inactive { 
-        color: #ef4444; 
-      }
-      
-      /* Barcode */
-      .thermal-barcode { 
-        text-align: center; 
-        margin: 0.8mm 0; 
-      }
-      .thermal-barcode img { 
-        max-width: 150px; 
-        height: 30px;
-      }
-      .thermal-barcode span {
-        font-size: 12px;
-        font-family: monospace;
-        color: #000;
-      }
-      .thermal-barcode-number { 
-        font-size: 8px; 
-        font-family: monospace; 
-        text-align: center; 
-        margin-top: 0.5mm; 
-        color: #f59e0b;
-        font-weight: 600;
-        letter-spacing: 1.5px;
-      }
-      
-      /* Footer */
-      .thermal-footer { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: flex-start;
-        gap: 2mm; 
-        margin-top: 1.5mm; 
-        padding-top: 1.5mm;
-        border-top: 2px solid #f59e0b;
-      }
-      .thermal-signature { 
-        flex: 1; 
-        text-align: center; 
-        font-size: 5.5px; 
-        color: #94a3b8;
-      }
-      .thermal-line { 
-        border-top: 0.5px solid #94a3b8; 
-        margin-bottom: 0.3mm; 
-        padding-top: 3mm; 
-      }
-      
-      .thermal-issue-date {
-        text-align: center;
-        font-size: 6px;
-        color: #94a3b8;
-        margin-top: 0.8mm;
-        padding-top: 0.5mm;
-        border-top: 1px dashed #e5e7eb;
-      }
-      
-      /* ===== COPYRIGHT CREDIT - INSIDE EACH CARD at the bottom ===== */
-      .card-credit {
-        text-align: center;
-        font-size: 4px;
-        color: #1a1a2e;
-        font-weight: 500;
-        opacity: 0.6;
-        letter-spacing: 0.3px;
-        direction: ltr;
-        margin-top: 0.5mm;
-        padding-top: 0.5mm;
-        border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
-      }
-      
-      @media print {
+    printWindow.document.write(`
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>بطاقات الموظفين</title>
+      <style>
+        @page { 
+          size: 58mm auto; 
+          margin: 0mm; 
+        }
+        
+        * { 
+          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        
         body { 
+          width: 58mm; 
           margin: 0; 
           padding: 0; 
-          background: white; 
-          padding-bottom: 1.5mm;
+          background: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          min-height: 100vh;
+          padding-bottom: 2mm;
         }
+        
+        .card-wrapper {
+          width: 100%;
+          max-width: 58mm;
+          margin: 0;
+          flex-shrink: 0;
+        }
+        
         .thermal-card {
-          padding: 2mm 2.5mm 2.5mm 2.5mm;
-          border: none !important;
-          box-shadow: none !important;
+          width: 100%;
+          max-width: 58mm;
+          margin: 0;
+          padding: 2.5mm 3mm 3.5mm 3mm;
+          background: white;
+          position: relative;
+          overflow: hidden;
+          direction: rtl;
         }
+        
         .card-watermark {
-          opacity: 0.08 !important;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(1.8);
+          opacity: 0.07;
+          pointer-events: none;
+          z-index: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
         }
+        
         .card-watermark img {
-          width: 80px !important;
+          width: 90px;
+          height: auto;
+          object-fit: contain;
+          opacity: 0.9;
         }
+        
         .card-watermark-text {
-          font-size: 16px !important;
-          opacity: 0.05 !important;
+          position: absolute;
+          top: 57%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
+          font-size: 18px;
+          font-weight: 900;
+          color: #f59e0b;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          opacity: 0.04;
+          pointer-events: none;
+          z-index: 0;
+          text-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
         }
+        
+        .card-content {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+        }
+        
+        .card-logo-section {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 2.5mm 0 2mm 0;
+          margin-bottom: 2mm;
+          border-bottom: 2.5px solid #f59e0b;
+          justify-content: center;
+          background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.05), transparent);
+          border-radius: 2px;
+        }
+        
         .card-logo-image {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+          width: 34px;
+          height: 34px;
+          object-fit: contain;
+          border-radius: 50%;
+          background: white;
+          padding: 2px;
+          border: 2px solid #f59e0b;
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
         }
+        
+        .card-logo-text {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+        }
+        
+        .card-logo-text .academy-name {
+          font-size: 11px;
+          font-weight: 700;
+          color: #1a1a2e;
+          letter-spacing: 0.5px;
+        }
+        
+        .card-logo-text .card-type {
+          font-size: 7px;
+          color: #f59e0b;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+        }
+        
+        .thermal-photo { 
+          text-align: center; 
+          margin-bottom: 1mm; 
+        }
+        .thermal-photo img { 
+          width: 36px; 
+          height: 36px; 
+          border-radius: 50%; 
+          object-fit: cover;
+          border: 2px solid #f59e0b;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .thermal-name { 
+          font-size: 11px; 
+          font-weight: 700; 
+          text-align: center; 
+          margin-bottom: 0.5mm; 
+          color: #1a1a2e;
+          line-height: 1.2;
+        }
+        .thermal-id { 
+          font-size: 8px; 
+          color: #64748b; 
+          text-align: center; 
+          margin-bottom: 0.8mm; 
+          font-weight: 500;
+          letter-spacing: 0.5px;
+        }
+        
+        .thermal-divider { 
+          border-top: 1px dashed #e5e7eb; 
+          margin: 0.8mm 0; 
+          opacity: 0.6;
+        }
+        
+        .thermal-table { 
+          width: 100%; 
+          font-size: 7px; 
+          margin-bottom: 0.8mm; 
+          border-collapse: collapse; 
+        }
+        .thermal-table tr { 
+          line-height: 1.3; 
+        }
+        .thermal-label { 
+          text-align: right; 
+          padding: 0.3mm 0.5mm; 
+          color: #64748b; 
+          width: 38%;
+          font-weight: 500;
+          font-size: 6.5px;
+        }
+        .thermal-value { 
+          text-align: left; 
+          padding: 0.3mm 0.5mm; 
+          font-weight: 600; 
+          width: 62%;
+          color: #1e293b;
+          font-size: 6.5px;
+        }
+        .thermal-value.amount { 
+          color: #0f3460; 
+          font-weight: 700; 
+        }
+        .thermal-value.remaining { 
+          color: #d97706; 
+          font-weight: 700; 
+        }
+        .thermal-value.remaining-zero { 
+          color: #10b981; 
+          font-weight: 700; 
+        }
+        .thermal-value.status-active { 
+          color: #10b981; 
+        }
+        .thermal-value.status-inactive { 
+          color: #ef4444; 
+        }
+        
+        .thermal-barcode { 
+          text-align: center; 
+          margin: 0.8mm 0; 
+        }
+        .thermal-barcode img { 
+          max-width: 150px; 
+          height: 30px;
+        }
+        .thermal-barcode span {
+          font-size: 12px;
+          font-family: monospace;
+          color: #000;
+        }
+        .thermal-barcode-number { 
+          font-size: 8px; 
+          font-family: monospace; 
+          text-align: center; 
+          margin-top: 0.5mm; 
+          color: #f59e0b;
+          font-weight: 600;
+          letter-spacing: 1.5px;
+        }
+        
+        .thermal-footer { 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: flex-start;
+          gap: 2mm; 
+          margin-top: 1.5mm; 
+          padding-top: 1.5mm;
+          border-top: 2px solid #f59e0b;
+        }
+        .thermal-signature { 
+          flex: 1; 
+          text-align: center; 
+          font-size: 5.5px; 
+          color: #94a3b8;
+        }
+        .thermal-line { 
+          border-top: 0.5px solid #94a3b8; 
+          margin-bottom: 0.3mm; 
+          padding-top: 3mm; 
+        }
+        
+        .thermal-issue-date {
+          text-align: center;
+          font-size: 6px;
+          color: #94a3b8;
+          margin-top: 0.8mm;
+          padding-top: 0.5mm;
+          border-top: 1px dashed #e5e7eb;
+        }
+        
         .card-credit {
-          opacity: 0.5 !important;
-          color: #000000 !important;
+          text-align: center;
+          font-size: 4px;
+          color: #1a1a2e;
+          font-weight: 500;
+          opacity: 0.6;
+          letter-spacing: 0.3px;
+          direction: ltr;
+          margin-top: 0.5mm;
+          padding-top: 0.5mm;
+          border-top: 0.5px dashed rgba(26, 26, 46, 0.15);
         }
-        .no-print { 
-          display: none !important; 
+        
+        @media print {
+          body { 
+            margin: 0; 
+            padding: 0; 
+            background: white; 
+            padding-bottom: 1.5mm;
+          }
+          .thermal-card {
+            padding: 2mm 2.5mm 2.5mm 2.5mm;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          .card-watermark {
+            opacity: 0.08 !important;
+          }
+          .card-watermark img {
+            width: 80px !important;
+          }
+          .card-watermark-text {
+            font-size: 16px !important;
+            opacity: 0.05 !important;
+          }
+          .card-logo-image {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .card-credit {
+            opacity: 0.5 !important;
+            color: #000000 !important;
+          }
+          .no-print { 
+            display: none !important; 
+          }
+          .thermal-barcode img {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
-        /* ✅ Ensure barcode images print properly */
-        .thermal-barcode img {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+        
+        @media screen {
+          .thermal-card {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 2px;
+          }
         }
-      }
+      </style>
+    </head>
+    <body>
+      ${cardsHtml}
       
-      @media screen {
-        .thermal-card {
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          margin-bottom: 2px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    ${cardsHtml}
-    
-    <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; width: 100%; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
-      <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
-        🖨️ طباعة / PDF
-      </button>
-      <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
-        ✖ إغلاق
-      </button>
-    </div>
-    
-    <!-- ✅ No JavaScript needed - barcodes are pre-generated as images -->
-  </body>
-  </html>
-`);
-  printWindow.document.close();
-}
-  
+      <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; width: 100%; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
+        <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
+          🖨️ طباعة / PDF
+        </button>
+        <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
+          ✖ إغلاق
+        </button>
+      </div>
+    </body>
+    </html>
+  `);
+    printWindow.document.close();
+  }
+
   private escapeHtml(str: string | null | undefined): string {
     if (!str) return '';
     return str

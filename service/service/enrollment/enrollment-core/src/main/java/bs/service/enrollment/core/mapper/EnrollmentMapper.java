@@ -77,6 +77,7 @@ public abstract class EnrollmentMapper {
     @Mapping(target = "enrollmentType.id", source = "enrollmentTypeId")
     @Mapping(target = "enrollmentStatus", source = "enrollmentStatus.id")
     @Mapping(target = "paymentStatus", source = "paymentStatus.id")
+    @Mapping(target = "isAutoUpdate", source="isAutoUpdate")
     public abstract Enrollment toEnrollment(EnrollmentDTO enrollmentDTO);
 
     // Entity to VTO - database stores Integer IDs

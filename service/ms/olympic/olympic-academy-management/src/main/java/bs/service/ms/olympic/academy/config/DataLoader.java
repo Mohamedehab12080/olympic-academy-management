@@ -1,5 +1,7 @@
 package bs.service.ms.olympic.academy.config;
 
+import bs.service.employee.api.service.EmployeeService;
+import bs.service.enrollment.api.service.EnrollmentService;
 import bs.service.user.api.repository.UserRepository;
 import bs.service.user.model.entity.User;
 import bs.service.user.model.enums.Role;
@@ -16,6 +18,8 @@ public class DataLoader implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmployeeService employeeService;
+    private final EnrollmentService enrollmentService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -23,6 +27,7 @@ public class DataLoader implements CommandLineRunner {
         createAdminIfNotExists();
         createDemoUserIfNotExists();
         printDefaultUsers();
+        runEmployeeSalaryUpdateIfEnabled();
     }
 
     private void createSuperAdminIfNotExists() {
@@ -127,5 +132,35 @@ public class DataLoader implements CommandLineRunner {
         log.info("💡 Tip: Regular users can register via the registration page.");
         log.info("   Activation email will be sent to their email address.");
         log.info("");
+    }
+
+    /**
+     * Run enrollments activation update on startup
+     */
+    private void runEnrollmentActivationUpdate() {
+        log.info("=".repeat(60));
+        log.info("🔄 Running enrollment activation update on startup...");
+        try {
+            enrollmentService.updateEnrollmentsActivation();
+            log.info("✅ Enrollment activation update completed successfully on startup");
+        } catch (Exception e) {
+            log.error("❌ Failed to update enrollment activation on startup", e);
+        }
+        log.info("=".repeat(60));
+    }
+
+    /**
+     * Run employee salary update on startup
+     */
+    private void runEmployeeSalaryUpdateIfEnabled() {
+        log.info("=".repeat(60));
+        log.info("🔄 Running employee salary update on startup...");
+        try {
+            employeeService.updateEmployeeSalary();
+            log.info("✅ Employee salary update completed successfully on startup");
+        } catch (Exception e) {
+            log.error("❌ Failed to update employee salaries on startup", e);
+        }
+        log.info("=".repeat(60));
     }
 }

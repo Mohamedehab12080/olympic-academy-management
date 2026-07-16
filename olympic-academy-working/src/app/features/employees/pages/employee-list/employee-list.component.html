@@ -1,3 +1,5 @@
+<!-- employee-list.component.html -->
+
 <div class="employees-container">
   <mat-card class="main-card">
     <!-- Header Section -->
@@ -56,6 +58,17 @@
             <mat-datepicker #hireDateToPicker></mat-datepicker>
           </mat-form-field>
 
+          <!-- ✅ Added isMonthlyUpdated Filter Toggle -->
+          <div class="filter-toggle">
+            <mat-slide-toggle 
+              id="monthlyUpdateToggle"
+              (change)="onMonthlyUpdatedChange($event)"
+              color="primary">
+              {{ isMonthlyUpdatedFilter === true ? 'مفعل' : isMonthlyUpdatedFilter === false ? 'غير مفعل' : 'الكل' }}
+            </mat-slide-toggle>
+            <span class="toggle-label">تحديث شهري</span>
+          </div>
+
           <div class="filter-actions">
             <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
               <mat-icon>refresh</mat-icon>
@@ -78,7 +91,7 @@
       </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Statistics Cards - Updated -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">👥</div>
@@ -108,6 +121,22 @@
           <p>نشطاء</p>
         </div>
       </div>
+      <!-- ✅ Added Monthly Updated Stat -->
+      <div class="stat-card purple">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-info">
+          <h3>{{ monthlyUpdatedCount }}</h3>
+          <p>تحديث شهري</p>
+        </div>
+      </div>
+      <!-- ✅ Added Total Salary Stat -->
+      <div class="stat-card gold">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h3>{{ totalSalary | currency:'EGP':'symbol':'1.0-0' }}</h3>
+          <p>إجمالي الرواتب</p>
+        </div>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -122,6 +151,10 @@
         <div class="records-count">
           <mat-icon>info</mat-icon>
           <span>عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} موظف</span>
+        </div>
+        <div class="table-stats">
+          <span class="stat-badge total-salary">💰 {{ totalSalary | currency:'EGP':'symbol':'1.0-0' }}</span>
+          <span class="stat-badge total-remained">💳 {{ totalRemainedSalary | currency:'EGP':'symbol':'1.0-0' }}</span>
         </div>
       </div>
 
@@ -197,14 +230,39 @@
             </td>
           </ng-container>
 
-          <!-- Departments Column -->
-          <ng-container matColumnDef="departments">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>الأقسام</th>
+          <!-- ✅ Salary Column -->
+          <ng-container matColumnDef="salary">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الراتب</th>
             <td mat-cell *matCellDef="let employee">
-              <div class="departments-list">
-                <span *ngFor="let d of employee.departments" class="dept-chip">{{ d.title }}</span>
-                <span *ngIf="!employee.departments?.length" class="no-data-text">-</span>
-              </div>
+              <span class="amount-value">{{ employee.salary | currency:'EGP':'symbol':'1.0-0' }}</span>
+            </td>
+          </ng-container>
+
+          <!-- ✅ Remained Salary Column -->
+          <ng-container matColumnDef="remainedSalary">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>المتبقي</th>
+            <td mat-cell *matCellDef="let employee">
+              <span class="remaining-value" [class.zero]="employee.remainedSalary === 0">
+                {{ employee.remainedSalary | currency:'EGP':'symbol':'1.0-0' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- ✅ isMonthlyUpdated Column -->
+          <ng-container matColumnDef="isMonthlyUpdated">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>تحديث شهري</th>
+            <td mat-cell *matCellDef="let employee">
+              <span class="status-badge" [class.active]="employee.isMonthlyUpdated" [class.inactive]="!employee.isMonthlyUpdated">
+                {{ employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- ✅ updatePeriodInDays Column -->
+          <ng-container matColumnDef="updatePeriodInDays">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>فترة التحديث</th>
+            <td mat-cell *matCellDef="let employee">
+              <span class="period-badge">{{ employee.updatePeriodInDays }} يوم</span>
             </td>
           </ng-container>
 

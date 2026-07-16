@@ -2,6 +2,7 @@ package bs.service.employee.api.service;
 
 import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.model.generated.AssignCourseDTO;
 import bs.service.employee.model.generated.TrainerCourseAssignmentResultSet;
 import bs.service.employee.model.generated.TrainerCourseResultSet;
 
@@ -13,7 +14,7 @@ public interface TrainerCourseService {
      * @param courseId The course ID to assign
      * @return NewRecordVTO with the assignment ID
      */
-    NewRecordVTO assignCourseToTrainer(Integer trainerId, Integer courseId);
+    NewRecordVTO assignCourseToTrainer(Integer trainerId, AssignCourseDTO assignCourseDTO);
 
     /**
      * Unassign a course from a trainer

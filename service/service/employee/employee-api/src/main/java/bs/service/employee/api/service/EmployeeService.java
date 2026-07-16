@@ -20,7 +20,7 @@ public interface EmployeeService {
     NewRecordVTO updateEmployee(Integer employeeId, EmployeeDTO employeeDTO);
     void deleteEmployeeById(Integer employeeId);
     EmployeeVTO getEmployeeById(Integer employeeId);
-    EmployeeResultSet getAllEmployees(String quickSearch, Boolean isActive,
+    EmployeeResultSet getAllEmployees(String quickSearch, Boolean isActive,Boolean isMonthlyUpdated,
                                       LocalDate createdOnFrom, LocalDate createdOnTo,
                                       LocalDate hireDateFrom, LocalDate hireDateTo,
                                       Gender gender, EmployeeTypes employeeType,
@@ -30,5 +30,7 @@ public interface EmployeeService {
     LookupResultSet getAllEmployeeTypesLookup();
     LookupResultSet getAllEmployeeAttendanceStatusLookup();
     LookupResultSet getAllTrainersLookup();
+
+    void updateEmployeeSalary();
 
 }

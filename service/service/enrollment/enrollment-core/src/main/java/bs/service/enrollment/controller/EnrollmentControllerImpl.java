@@ -38,9 +38,9 @@ public class EnrollmentControllerImpl implements EnrollmentController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsByFilter(String quickSearch, Boolean isActive, Integer traineeId,String traineeNationalId, Integer courseId,Integer trainerId, Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus, PaymentStatus paymentStatus, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo, LocalDate createdOnFrom, LocalDate createdOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,Boolean isAutoUpdate, Integer traineeId,String traineeNationalId, Integer courseId,Integer trainerId, Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus, PaymentStatus paymentStatus, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo, LocalDate createdOnFrom, LocalDate createdOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
         EnrollmentResultSet result = enrollmentService.getAllEnrollmentsByFilter(
-                quickSearch, isActive, traineeId,traineeNationalId, courseId,trainerId, enrollmentTypeId,
+                quickSearch, isActive,isAutoUpdate, traineeId,traineeNationalId, courseId,trainerId, enrollmentTypeId,
                 enrollmentStatus, paymentStatus, startDateFrom, startDateTo,
                 endDateFrom, endDateTo, createdOnFrom, createdOnTo,
                 pageNum, pageSize, orderDir, orderBy);
@@ -51,7 +51,7 @@ public class EnrollmentControllerImpl implements EnrollmentController {
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsDetailsByFilter(String quickSearch, Boolean isActive, Integer traineeId, String traineeNationalId, Integer courseId, Integer trainerId, Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus, PaymentStatus paymentStatus, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo, LocalDate createdOnFrom, LocalDate createdOnTo) {
         EnrollmentResultSet result = enrollmentService.getAllEnrollmentsByFilter(
-                quickSearch, isActive, traineeId,traineeNationalId, courseId,trainerId, enrollmentTypeId,
+                quickSearch, isActive,null, traineeId,traineeNationalId, courseId,trainerId, enrollmentTypeId,
                 enrollmentStatus, paymentStatus, startDateFrom, startDateTo,
                 endDateFrom, endDateTo, createdOnFrom, createdOnTo,
                 null, null, null, null);

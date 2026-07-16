@@ -41,6 +41,12 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
+    public void internalUpdate(Employee employee) {
+        employee.setLastModifiedOn(LocalDateTime.now());
+        employeeJPARepository.save(employee);
+    }
+
+    @Override
     public Optional<Employee> selectById(Integer id) {
         return employeeJPARepository.findById(id);
     }

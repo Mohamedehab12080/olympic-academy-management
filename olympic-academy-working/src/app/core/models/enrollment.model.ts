@@ -7,10 +7,11 @@ export interface EnrollmentStatus {
   title: string; // "قيد الانتظار", "مكتمل", "تم الإلغاء"
 }
 
-export const ENROLLMENT_STATUSES: EnrollmentStatus[] = [
+export const ENROLLMENT_STATUSES = [
   { id: 1, title: 'قيد الانتظار' },
   { id: 2, title: 'مكتمل' },
-  { id: 3, title: 'تم الإلغاء' }
+  { id: 3, title: 'ملغي' },
+  { id: 4, title: 'منتهي' }, // ✅ Make sure this exists
 ];
 
 // ==================== DTOs (sent to backend - use enum objects with id and title) ====================
@@ -35,6 +36,7 @@ export interface EnrollmentDTO {
   finalSubscriptionValue?: number;
   remainedSubscriptionValue?: number;
   isActive?:boolean;
+  isAutoUpdate?:boolean;
   note?: string;
 }
 
@@ -65,6 +67,7 @@ export interface EnrollmentVTO {
   remainedSubscriptionValue?: number;
   note?: string;
   isActive: boolean;
+  isAutoUpdate:boolean;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
@@ -90,6 +93,7 @@ export interface EnrollmentListItem {
   finalSubscriptionValue?: number;
   remainedSubscriptionValue?:number;
   isActive: boolean;
+  isAutoUpdate:boolean;
 }
 
 export interface EnrollmentTypeResultSet {

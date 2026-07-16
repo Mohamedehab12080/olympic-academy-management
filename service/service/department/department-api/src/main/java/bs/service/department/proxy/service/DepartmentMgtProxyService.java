@@ -6,4 +6,6 @@ public interface DepartmentMgtProxyService {
 
     DepartmentVTO getDepartmentDetails(Integer departmentId);
 
+    Boolean existsById(Integer departmentId);
+
 }

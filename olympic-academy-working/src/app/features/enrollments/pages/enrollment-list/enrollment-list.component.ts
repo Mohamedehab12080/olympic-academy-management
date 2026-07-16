@@ -693,6 +693,7 @@ interface EnrollmentListItem {
   startDate: string;
   endDate?: string;
   isActive: boolean;
+  isAutoUpdate: boolean; // ✅ Added isAutoUpdate field
   enrollmentStatus?: { id: number; title: string };
   paymentStatus?: { id: number; title: string };
   finalSubscriptionValue?: number;
@@ -735,7 +736,7 @@ export class EnrollmentListComponent
 
   academyContactNumber: string = '01069911181';
 
-  // Updated columns to include amount and remaining
+  // Updated columns to include isAutoUpdate
   displayedColumns: string[] = [
     'index',
     'image',
@@ -747,6 +748,7 @@ export class EnrollmentListComponent
     'amount',
     'remaining',
     'isActive',
+    'isAutoUpdate', // ✅ Added isAutoUpdate column
     'enrollmentStatus',
     'paymentStatus',
     'actions',
@@ -798,6 +800,7 @@ export class EnrollmentListComponent
     endDateFrom: null as string | null,
     endDateTo: null as string | null,
     isActive: null as boolean | null,
+    isAutoUpdate: null as boolean | null, // ✅ Added isAutoUpdate filter
   };
 
   quickSearch: string = '';
@@ -812,6 +815,7 @@ export class EnrollmentListComponent
     1: 'PENDING',
     2: 'COMPLETED',
     3: 'CANCELLED',
+    4: 'FINISHED'
   };
 
   private readonly PAYMENT_STATUS_MAP: { [key: number]: string } = {
@@ -822,6 +826,7 @@ export class EnrollmentListComponent
     5: 'CANCELLED',
     6: 'PARTIAL',
   };
+  
   // Statistics
   get totalAmount(): number {
     return this.allEnrollments.reduce(
@@ -847,6 +852,11 @@ export class EnrollmentListComponent
       .length;
   }
 
+  get finishedEnrollments(): number {
+    return this.allEnrollments.filter((item) => item.enrollmentStatus?.id === 4)
+      .length;
+  }
+
   get paidEnrollments(): number {
     return this.allEnrollments.filter((item) => item.paymentStatus?.id === 1)
       .length;
@@ -860,6 +870,13 @@ export class EnrollmentListComponent
     return this.allEnrollments.filter((item) => item.isActive === false).length;
   }
 
+  get isAutoUpdateCount(): number {
+    return this.allEnrollments.filter((item) => item.isAutoUpdate === true).length;
+  }
+
+  get isNotAutoUpdateCount(): number {
+    return this.allEnrollments.filter((item) => item.isAutoUpdate === false).length;
+  }
 
   constructor(
     private enrollmentService: EnrollmentService,
@@ -918,6 +935,7 @@ private setupSearchDebounce(): void {
       { value: 1, label: 'قيد الانتظار' },
       { value: 2, label: 'مكتمل' },
       { value: 3, label: 'ملغي' },
+      { value: 4, label: 'منتهي' },
     ];
 
     // Payment Status options - use numeric IDs but send string enums
@@ -1063,10 +1081,6 @@ private setupSearchDebounce(): void {
   // HELPER METHOD - FORMAT DATE FOR BACKEND
   // ==========================================================================
 
-  // ==========================================================================
-  // HELPER METHOD - FORMAT DATE FOR BACKEND
-  // ==========================================================================
-
   private formatDateForBackend(date: any): string | null {
     if (!date) return null;
 
@@ -1135,6 +1149,7 @@ private setupSearchDebounce(): void {
     }
 
     if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
+    if (this.filters.isAutoUpdate !== null) params.isAutoUpdate = this.filters.isAutoUpdate; // ✅ Added isAutoUpdate filter
     if (this.quickSearch && this.quickSearch.trim().length > 0) {
       params.quickSearch = this.quickSearch.trim();
     }
@@ -1219,9 +1234,16 @@ private setupSearchDebounce(): void {
     this.loadEnrollments();
   }
 
-applyQuickSearch(value: string) {
-  this.searchSubject.next(value);
-}
+  // ✅ Added isAutoUpdate filter toggle
+  toggleAutoUpdateFilter(event: any): void {
+    this.filters.isAutoUpdate = event.checked;
+    this.currentPage = 0;
+    this.loadEnrollments();
+  }
+
+  applyQuickSearch(value: string) {
+    this.searchSubject.next(value);
+  }
 
   resetFilters() {
     this.filters = {
@@ -1236,18 +1258,24 @@ applyQuickSearch(value: string) {
       endDateFrom: null,
       endDateTo: null,
       isActive: null,
+      isAutoUpdate: null, // ✅ Reset isAutoUpdate filter
     };
     this.quickSearch = '';
     this.barcodeSearch = '';
     this.isBarcodeMode = false;
     this.currentPage = 0;
-    const toggle = document.querySelector('#activeToggle') as HTMLInputElement;
-    if (toggle) {
-      toggle.checked = false;
+    const activeToggle = document.querySelector('#activeToggle') as HTMLInputElement;
+    if (activeToggle) {
+      activeToggle.checked = false;
+    }
+    const autoUpdateToggle = document.querySelector('#autoUpdateToggle') as HTMLInputElement;
+    if (autoUpdateToggle) {
+      autoUpdateToggle.checked = false;
     }
     this.loadEnrollments();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
+  
   // ==========================================================================
   // SORTING EVENTS
   // ==========================================================================
@@ -1429,264 +1457,261 @@ applyQuickSearch(value: string) {
     });
   }
 
-private generateEnrollmentCards(
-  enrollments: EnrollmentListItem[],
-  imageUrls: string[],
-): void {
-  const printWindow = window.open(
-    '',
-    '_blank',
-    'width=800,height=800,scrollbars=yes',
-  );
-  if (!printWindow) {
-    this.notification.showError('تعذر فتح نافذة الطباعة');
-    return;
-  }
-
-  const today = new Date().toLocaleDateString('ar-EG');
-  const currentYear = new Date().getFullYear();
-  let cardsHtml = '';
-  const logoPath = 'assets/images/simpleLogo.jpeg';
-  const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
-  const academyAddress = 'الفيوم - حي الجامعة';
-
-  // ✅ Import JsBarcode at the top of your file: import * as JsBarcode from 'jsbarcode';
-
-  enrollments.forEach((enrollment, index) => {
-    const imageUrl = imageUrls[index] || '';
-    const traineeName = this.getTraineeName(enrollment.trainee);
-    const courseTitle = enrollment.course?.title || '-';
-    const trainerTitle = enrollment.trainer?.title || '-';
-    const startDate = enrollment.startDate || '-';
-    const endDate = enrollment.endDate || '-';
-    const amount = enrollment.finalSubscriptionValue || 0;
-    const remaining = enrollment.remainedSubscriptionValue || 0;
-    const isActive = enrollment.isActive;
-    const enrollmentStatus = enrollment.enrollmentStatus?.title || '-';
-    const paymentStatus = enrollment.paymentStatus?.title || '-';
-
-    // ✅ Generate barcode image using JsBarcode (same as details modal)
-    let barcodeImage = '';
-    try {
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 200;
-      tempCanvas.height = 40;
-
-      const barcodeValue = enrollment.trainee?.nationalId || enrollment.id || '000000';
-
-      JsBarcode(tempCanvas, String(barcodeValue), {
-        format: 'CODE128',
-        lineColor: '#000000',
-        width: 1.5,
-        height: 40,
-        displayValue: true,
-        fontSize: 10,
-        font: 'monospace',
-        textAlign: 'center',
-        margin: 5
-      });
-
-      barcodeImage = tempCanvas.toDataURL('image/png');
-    } catch (e) {
-      console.error('Barcode generation error:', e);
-      barcodeImage = '';
+  private generateEnrollmentCards(
+    enrollments: EnrollmentListItem[],
+    imageUrls: string[],
+  ): void {
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=800,height=800,scrollbars=yes',
+    );
+    if (!printWindow) {
+      this.notification.showError('تعذر فتح نافذة الطباعة');
+      return;
     }
 
-    // ✅ Use barcode image or fallback
-    const barcodeHtml = barcodeImage
-      ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
-      : `<span style="font-family:monospace;font-size:12px;color:#000;">${enrollment.trainee?.nationalId || enrollment.id}</span>`;
+    const today = new Date().toLocaleDateString('ar-EG');
+    const currentYear = new Date().getFullYear();
+    let cardsHtml = '';
+    const logoPath = 'assets/images/mainLogo.jpeg';
+    const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+    const academyAddress = 'الفيوم - حي الجامعة';
 
-    // ✅ Only show photo section if imageUrl exists and is not empty
-    const hasImage = imageUrl && imageUrl.trim() !== '';
-    const photoSection = hasImage
-      ? `
-    <div class="card-photo">
-      <img src="${imageUrl}" alt="${traineeName}" onerror="this.style.display='none'">
-    </div>
-  `
-      : '';
+    enrollments.forEach((enrollment, index) => {
+      const imageUrl = imageUrls[index] || '';
+      const traineeName = this.getTraineeName(enrollment.trainee);
+      const courseTitle = enrollment.course?.title || '-';
+      const trainerTitle = enrollment.trainer?.title || '-';
+      const startDate = enrollment.startDate || '-';
+      const endDate = enrollment.endDate || '-';
+      const amount = enrollment.finalSubscriptionValue || 0;
+      const remaining = enrollment.remainedSubscriptionValue || 0;
+      const isActive = enrollment.isActive;
+      const isAutoUpdate = enrollment.isAutoUpdate; // ✅ Added
+      const enrollmentStatus = enrollment.enrollmentStatus?.title || '-';
+      const paymentStatus = enrollment.paymentStatus?.title || '-';
 
-    cardsHtml += `
-    <div class="card-wrapper">
-      <div class="card">
-        <!-- Watermark -->
-        <div class="card-watermark">
-          <img src="${logoPath}" alt="${academyName}">
-        </div>
-        <div class="card-watermark-text">${academyName}</div>
-        
-        <div class="card-content">
-          <!-- Logo Section -->
-          <div class="card-logo-section">
-            <img src="${logoPath}" alt="${academyName}" class="card-logo-image">
-            <div class="card-logo-text">
-              <span class="academy-name">${academyName}</span>
-              <span class="card-title">✦ بطاقة تسجيل متدرب ✦</span>
-            </div>
+      let barcodeImage = '';
+      try {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 200;
+        tempCanvas.height = 40;
+
+        const barcodeValue = enrollment.trainee?.nationalId || enrollment.id || '000000';
+
+        JsBarcode(tempCanvas, String(barcodeValue), {
+          format: 'CODE128',
+          lineColor: '#000000',
+          width: 1.5,
+          height: 40,
+          displayValue: true,
+          fontSize: 10,
+          font: 'monospace',
+          textAlign: 'center',
+          margin: 5
+        });
+
+        barcodeImage = tempCanvas.toDataURL('image/png');
+      } catch (e) {
+        console.error('Barcode generation error:', e);
+        barcodeImage = '';
+      }
+
+      const barcodeHtml = barcodeImage
+        ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
+        : `<span style="font-family:monospace;font-size:12px;color:#000;">${enrollment.trainee?.nationalId || enrollment.id}</span>`;
+
+      const hasImage = imageUrl && imageUrl.trim() !== '';
+      const photoSection = hasImage
+        ? `
+      <div class="card-photo">
+        <img src="${imageUrl}" alt="${traineeName}" onerror="this.style.display='none'">
+      </div>
+    `
+        : '';
+
+      cardsHtml += `
+      <div class="card-wrapper">
+        <div class="card">
+          <!-- Watermark -->
+          <div class="card-watermark">
+            <img src="${logoPath}" alt="${academyName}">
           </div>
+          <div class="card-watermark-text">${academyName}</div>
           
-          <!-- ✅ Photo - Only shown if image exists -->
-          <div class="card-body">
-            ${photoSection}
-            <div class="card-info">
-              <div class="card-name">${traineeName}</div>
-              <div class="card-id">رقم التسجيل: ${enrollment.id}</div>
-              <div class="card-details">
-                <div class="detail-row">
-                  <span class="detail-label">الدورة:</span>
-                  <span class="detail-value">${courseTitle}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">المدرب:</span>
-                  <span class="detail-value">${trainerTitle}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">تاريخ البدء:</span>
-                  <span class="detail-value">${startDate}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">تاريخ الانتهاء:</span>
-                  <span class="detail-value">${endDate}</span>
-                </div>
-                <div class="detail-row amount-row">
-                  <span class="detail-label">💰 القيمة:</span>
-                  <span class="detail-value amount">${amount.toLocaleString()} جم</span>
-                </div>
-                <div class="detail-row remaining-row">
-                  <span class="detail-label">💳 المتبقي:</span>
-                  <span class="detail-value remaining ${remaining === 0 ? 'zero' : ''}">${remaining.toLocaleString()} جم</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">الحالة:</span>
-                  <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">حالة التسجيل:</span>
-                  <span class="detail-value">${enrollmentStatus}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">حالة الدفع:</span>
-                  <span class="detail-value">${paymentStatus}</span>
+          <div class="card-content">
+            <!-- Logo Section -->
+            <div class="card-logo-section">
+              <img src="${logoPath}" alt="${academyName}" class="card-logo-image">
+              <div class="card-logo-text">
+                <span class="academy-name">${academyName}</span>
+                <span class="card-title">✦ بطاقة تسجيل متدرب ✦</span>
+              </div>
+            </div>
+            
+            <div class="card-body">
+              ${photoSection}
+              <div class="card-info">
+                <div class="card-name">${traineeName}</div>
+                <div class="card-id">رقم التسجيل: ${enrollment.id}</div>
+                <div class="card-details">
+                  <div class="detail-row">
+                    <span class="detail-label">الدورة:</span>
+                    <span class="detail-value">${courseTitle}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">المدرب:</span>
+                    <span class="detail-value">${trainerTitle}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">تاريخ البدء:</span>
+                    <span class="detail-value">${startDate}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">تاريخ الانتهاء:</span>
+                    <span class="detail-value">${endDate}</span>
+                  </div>
+                  <div class="detail-row amount-row">
+                    <span class="detail-label">💰 القيمة:</span>
+                    <span class="detail-value amount">${amount.toLocaleString()} جم</span>
+                  </div>
+                  <div class="detail-row remaining-row">
+                    <span class="detail-label">💳 المتبقي:</span>
+                    <span class="detail-value remaining ${remaining === 0 ? 'zero' : ''}">${remaining.toLocaleString()} جم</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">الحالة:</span>
+                    <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">تحديث تلقائي:</span>
+                    <span class="detail-value status ${isAutoUpdate ? 'active' : 'inactive'}">${isAutoUpdate ? 'مفعل' : 'غير مفعل'}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">حالة التسجيل:</span>
+                    <span class="detail-value">${enrollmentStatus}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">حالة الدفع:</span>
+                    <span class="detail-value">${paymentStatus}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          
-          <!-- Footer with Barcode -->
-          <div class="card-footer">
-            <div class="card-barcode">
-              ${barcodeHtml}
+            
+            <!-- Footer with Barcode -->
+            <div class="card-footer">
+              <div class="card-barcode">
+                ${barcodeHtml}
+              </div>
+              <div class="card-signature">
+                <div class="signature-line"></div>
+                <div class="signature-label">توقيع المتدرب</div>
+              </div>
+              <div class="card-signature">
+                <div class="signature-line"></div>
+                <div class="signature-label">ختم الأكاديمية</div>
+              </div>
             </div>
-            <div class="card-signature">
-              <div class="signature-line"></div>
-              <div class="signature-label">توقيع المتدرب</div>
+            
+            <!-- Academy Info -->
+            <div class="card-academy-info">
+              <span class="academy-name-small">🏛️ ${academyName}</span>
+              <span class="separator-dot">•</span>
+              <span class="academy-address">📍 ${academyAddress}</span>
+              <span class="separator-dot">•</span>
+              <span class="academy-phone">📞 ${this.academyContactNumber || '01069911181'}</span>
             </div>
-            <div class="card-signature">
-              <div class="signature-line"></div>
-              <div class="signature-label">ختم الأكاديمية</div>
+            
+            <!-- Issue Date -->
+            <div class="card-issue-date">📅 تاريخ الإصدار: ${today}</div>
+            
+            <!-- Powered By -->
+            <div class="card-powered-by">
+              <span class="company-name">⚡ CoreStack Solutions</span>
+              <span class="separator">|</span>
+              <span class="company-phone">📱 01069911181</span>
+              <span class="separator">|</span>
+              <span class="copyright">© ${currentYear}</span>
             </div>
-          </div>
-          
-          <!-- Academy Info -->
-          <div class="card-academy-info">
-            <span class="academy-name-small">🏛️ ${academyName}</span>
-            <span class="separator-dot">•</span>
-            <span class="academy-address">📍 ${academyAddress}</span>
-            <span class="separator-dot">•</span>
-            <span class="academy-phone">📞 ${this.academyContactNumber || '01069911181'}</span>
-          </div>
-          
-          <!-- Issue Date -->
-          <div class="card-issue-date">📅 تاريخ الإصدار: ${today}</div>
-          
-          <!-- Powered By -->
-          <div class="card-powered-by">
-            <span class="company-name">⚡ CoreStack Solutions</span>
-            <span class="separator">|</span>
-            <span class="company-phone">📱 01069911181</span>
-            <span class="separator">|</span>
-            <span class="copyright">© ${currentYear}</span>
           </div>
         </div>
       </div>
-    </div>
-  `;
-  });
+    `;
+    });
 
-  printWindow.document.write(`
-  <!DOCTYPE html>
-  <html dir="rtl">
-  <head>
-    <meta charset="UTF-8">
-    <title>بطاقات التسجيلات</title>
-    <style>
-      * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
-      .card-wrapper { display: inline-block; margin: 4px; }
-      .card { width: 280px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px 14px; position: relative; }
-      .card-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); opacity: 0.06; pointer-events: none; z-index: 0; }
-      .card-watermark img { width: 100px; height: auto; }
-      .card-watermark-text { position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 20px; font-weight: 900; color: #0f3460; opacity: 0.04; white-space: nowrap; z-index: 0; }
-      .card-content { position: relative; z-index: 1; }
-      .card-logo-section { display: flex; align-items: center; gap: 12px; padding: 8px 0; margin-bottom: 6px; border-bottom: 2px solid #0f3460; }
-      .card-logo-image { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: white; padding: 2px; }
-      .card-logo-text .academy-name { font-size: 13px; font-weight: 700; color: #0f3460; }
-      .card-logo-text .card-title { font-size: 9px; color: #64748b; }
-      .card-body { display: flex; gap: 10px; margin-bottom: 8px; }
-      .card-photo { flex-shrink: 0; }
-      .card-photo img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #0f3460; }
-      .card-info { flex: 1; }
-      .card-name { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-      .card-id { font-size: 8px; color: #64748b; }
-      .card-details { font-size: 9px; }
-      .detail-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #f1f5f9; }
-      .detail-label { color: #64748b; }
-      .detail-value { color: #1e293b; font-weight: 500; }
-      .detail-value.amount { color: #0f3460; font-weight: 700; }
-      .detail-value.remaining { color: #d97706; font-weight: 600; }
-      .detail-value.remaining.zero { color: #10b981; }
-      .detail-value.status.active { color: #10b981; }
-      .detail-value.status.inactive { color: #ef4444; }
-      .amount-row { background: #f0f4f8; border-radius: 4px; padding: 2px 4px; }
-      .remaining-row { background: #fffbeb; border-radius: 4px; padding: 2px 4px; }
-      .card-footer { border-top: 2px solid #0f3460; padding-top: 6px; margin-top: 4px; text-align: center; }
-      .card-barcode img { max-width: 100%; height: 30px; }
-      .card-barcode span { font-size: 12px; font-family: monospace; color: #000; }
-      .card-signature { display: inline-block; width: 44%; text-align: center; }
-      .signature-line { border-top: 1px solid #94a3b8; margin: 3px 0 2px; }
-      .signature-label { font-size: 7px; color: #94a3b8; }
-      .card-academy-info { text-align: center; font-size: 6px; color: #94a3b8; margin-top: 4px; padding-top: 3px; border-top: 1px solid #f1f5f9; }
-      .card-academy-info .academy-name-small { color: #0f3460; font-weight: 600; }
-      .card-academy-info .academy-address { color: #64748b; }
-      .card-academy-info .academy-phone { color: #0f3460; font-weight: 500; }
-      .card-academy-info .separator-dot { color: #d1d5db; margin: 0 3px; }
-      .card-issue-date { text-align: center; font-size: 6px; color: #94a3b8; margin-top: 2px; padding-top: 2px; border-top: 1px dashed #e2e8f0; }
-      .card-powered-by { text-align: left; font-size: 5px; color: #94a3b8; margin-top: 2px; padding-top: 2px; border-top: 1px solid #f1f5f9; direction: ltr; }
-      .card-powered-by .company-name { color: #8b5cf6; font-weight: 700; }
-      .card-powered-by .separator { color: #e5e7eb; margin: 0 2px; }
-      .no-print { text-align: center; margin-top: 20px; width: 100%; }
-      .no-print button { padding: 12px 30px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
-      @media print { .no-print { display: none; } .card { page-break-inside: avoid; } }
-      /* ✅ Ensure barcode images print properly */
-      @media print {
-        .card-barcode img {
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+    printWindow.document.write(`
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>بطاقات التسجيلات</title>
+      <style>
+        * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        .card-wrapper { display: inline-block; margin: 4px; }
+        .card { width: 280px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px 14px; position: relative; }
+        .card-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); opacity: 0.06; pointer-events: none; z-index: 0; }
+        .card-watermark img { width: 100px; height: auto; }
+        .card-watermark-text { position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 20px; font-weight: 900; color: #0f3460; opacity: 0.04; white-space: nowrap; z-index: 0; }
+        .card-content { position: relative; z-index: 1; }
+        .card-logo-section { display: flex; align-items: center; gap: 12px; padding: 8px 0; margin-bottom: 6px; border-bottom: 2px solid #0f3460; }
+        .card-logo-image { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: white; padding: 2px; }
+        .card-logo-text .academy-name { font-size: 13px; font-weight: 700; color: #0f3460; }
+        .card-logo-text .card-title { font-size: 9px; color: #64748b; }
+        .card-body { display: flex; gap: 10px; margin-bottom: 8px; }
+        .card-photo { flex-shrink: 0; }
+        .card-photo img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #0f3460; }
+        .card-info { flex: 1; }
+        .card-name { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+        .card-id { font-size: 8px; color: #64748b; }
+        .card-details { font-size: 9px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #f1f5f9; }
+        .detail-label { color: #64748b; }
+        .detail-value { color: #1e293b; font-weight: 500; }
+        .detail-value.amount { color: #0f3460; font-weight: 700; }
+        .detail-value.remaining { color: #d97706; font-weight: 600; }
+        .detail-value.remaining.zero { color: #10b981; }
+        .detail-value.status.active { color: #10b981; }
+        .detail-value.status.inactive { color: #ef4444; }
+        .amount-row { background: #f0f4f8; border-radius: 4px; padding: 2px 4px; }
+        .remaining-row { background: #fffbeb; border-radius: 4px; padding: 2px 4px; }
+        .card-footer { border-top: 2px solid #0f3460; padding-top: 6px; margin-top: 4px; text-align: center; }
+        .card-barcode img { max-width: 100%; height: 30px; }
+        .card-barcode span { font-size: 12px; font-family: monospace; color: #000; }
+        .card-signature { display: inline-block; width: 44%; text-align: center; }
+        .signature-line { border-top: 1px solid #94a3b8; margin: 3px 0 2px; }
+        .signature-label { font-size: 7px; color: #94a3b8; }
+        .card-academy-info { text-align: center; font-size: 6px; color: #94a3b8; margin-top: 4px; padding-top: 3px; border-top: 1px solid #f1f5f9; }
+        .card-academy-info .academy-name-small { color: #0f3460; font-weight: 600; }
+        .card-academy-info .academy-address { color: #64748b; }
+        .card-academy-info .academy-phone { color: #0f3460; font-weight: 500; }
+        .card-academy-info .separator-dot { color: #d1d5db; margin: 0 3px; }
+        .card-issue-date { text-align: center; font-size: 6px; color: #94a3b8; margin-top: 2px; padding-top: 2px; border-top: 1px dashed #e2e8f0; }
+        .card-powered-by { text-align: left; font-size: 5px; color: #94a3b8; margin-top: 2px; padding-top: 2px; border-top: 1px solid #f1f5f9; direction: ltr; }
+        .card-powered-by .company-name { color: #8b5cf6; font-weight: 700; }
+        .card-powered-by .separator { color: #e5e7eb; margin: 0 2px; }
+        .no-print { text-align: center; margin-top: 20px; width: 100%; }
+        .no-print button { padding: 12px 30px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        @media print { .no-print { display: none; } .card { page-break-inside: avoid; } }
+        @media print {
+          .card-barcode img {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
-      }
-    </style>
-  </head>
-  <body>
-    ${cardsHtml}
-    <div class="no-print">
-      <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
-    </div>
-    <!-- ✅ No JavaScript needed - barcodes are pre-generated as images -->
-  </body>
-  </html>
-`);
-  printWindow.document.close();
-}
+      </style>
+    </head>
+    <body>
+      ${cardsHtml}
+      <div class="no-print">
+        <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
+      </div>
+    </body>
+    </html>
+  `);
+    printWindow.document.close();
+  }
 
   // ==========================================================================
   // EXPORT FUNCTIONS WITH PAGE SELECTION
@@ -1752,6 +1777,8 @@ private generateEnrollmentCards(
       if (this.filters.endDateTo) params.endDateTo = this.filters.endDateTo;
       if (this.filters.isActive !== null)
         params.isActive = this.filters.isActive;
+      if (this.filters.isAutoUpdate !== null) // ✅ Added isAutoUpdate to fetch
+        params.isAutoUpdate = this.filters.isAutoUpdate;
       if (this.quickSearch) params.quickSearch = this.quickSearch;
 
       params.pageNum = page;
@@ -1814,6 +1841,7 @@ private generateEnrollmentCards(
       'القيمة النهائية': item.finalSubscriptionValue,
       المتبقي: item.remainedSubscriptionValue,
       الحالة: item.isActive ? 'نشط' : 'غير نشط',
+      'تحديث تلقائي': item.isAutoUpdate ? 'مفعل' : 'غير مفعل', // ✅ Added to Excel
       'حالة التسجيل': item.enrollmentStatus?.title,
       'حالة الدفع': item.paymentStatus?.title,
     }));
@@ -1889,6 +1917,9 @@ private generateEnrollmentCards(
     if (this.filters.isActive !== null) {
       filterTexts.push(`الحالة: ${this.filters.isActive ? 'نشط' : 'غير نشط'}`);
     }
+    if (this.filters.isAutoUpdate !== null) {
+      filterTexts.push(`تحديث تلقائي: ${this.filters.isAutoUpdate ? 'مفعل' : 'غير مفعل'}`);
+    }
     if (this.filters.startDateFrom)
       filterTexts.push(`من تاريخ البدء: ${this.filters.startDateFrom}`);
     if (this.filters.startDateTo)
@@ -1914,6 +1945,9 @@ private generateEnrollmentCards(
     const totalInactive = dataToPrint.filter(
       (item) => item.isActive === false,
     ).length;
+    const totalAutoUpdate = dataToPrint.filter(
+      (item) => item.isAutoUpdate === true,
+    ).length;
     const totalRemaining = dataToPrint.reduce(
       (sum, item) => sum + (item.remainedSubscriptionValue || 0),
       0,
@@ -1928,8 +1962,8 @@ private generateEnrollmentCards(
 
     let allPagesHTML = '';
 
-    // Use simpleLogo.jpeg for watermark
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    // Use mainLogo.jpeg for watermark
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
     pages.forEach((pageData: EnrollmentListItem[], pageIndex: number) => {
       let tableRows = '';
@@ -1938,6 +1972,10 @@ private generateEnrollmentCards(
         const activeStyle = item.isActive
           ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
           : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
+        const autoUpdateStyle = item.isAutoUpdate
+          ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+          : 'background: #f3f4f6; color: #6b7280; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
 
         let enrollmentStatusStyle = '';
         const statusId = item.enrollmentStatus?.id;
@@ -1950,6 +1988,9 @@ private generateEnrollmentCards(
         } else if (statusId === 3) {
           enrollmentStatusStyle =
             'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+        } else if (statusId === 4) { 
+          enrollmentStatusStyle =
+            'background: #f3e8ff; color: #6d28d9; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
         } else {
           enrollmentStatusStyle =
             'background: #f3f4f6; color: #6b7280; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
@@ -1985,6 +2026,9 @@ private generateEnrollmentCards(
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 600; color: ${item.remainedSubscriptionValue === 0 ? '#10b981' : '#d97706'};">${(item.remainedSubscriptionValue || 0).toLocaleString('ar-EG')} جم</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
               <span style="${activeStyle}">${item.isActive ? 'نشط' : 'غير نشط'}</span>
+            </td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
+              <span style="${autoUpdateStyle}">${item.isAutoUpdate ? 'مفعل' : 'غير مفعل'}</span>
             </td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">
               <span style="${enrollmentStatusStyle}">${item.enrollmentStatus?.title || '-'}</span>
@@ -2049,6 +2093,11 @@ private generateEnrollmentCards(
                 <span class="total-value">${totalInactive}</span>
                 <span class="total-label">غير نشط</span>
               </div>
+              <div class="total-card total-auto-update">
+                <span class="total-icon">🔄</span>
+                <span class="total-value">${totalAutoUpdate}</span>
+                <span class="total-label">تحديث تلقائي</span>
+              </div>
             </div>
             `
                 : ''
@@ -2057,15 +2106,16 @@ private generateEnrollmentCards(
             <table>
               <thead>
                 <tr>
-                  <th style="width: 4%;">#</th>
-                  <th style="width: 16%;">المتدرب</th>
-                  <th style="width: 14%;">الدورة</th>
-                  <th style="width: 12%;">المدرب</th>
-                  <th style="width: 10%;">تاريخ البدء</th>
-                  <th style="width: 10%;">تاريخ الانتهاء</th>
-                  <th style="width: 10%;">القيمة</th>
-                  <th style="width: 10%;">المتبقي</th>
-                  <th style="width: 8%;">الحالة</th>
+                  <th style="width: 3%;">#</th>
+                  <th style="width: 14%;">المتدرب</th>
+                  <th style="width: 12%;">الدورة</th>
+                  <th style="width: 10%;">المدرب</th>
+                  <th style="width: 9%;">تاريخ البدء</th>
+                  <th style="width: 9%;">تاريخ الانتهاء</th>
+                  <th style="width: 9%;">القيمة</th>
+                  <th style="width: 9%;">المتبقي</th>
+                  <th style="width: 7%;">الحالة</th>
+                  <th style="width: 7%;">تحديث تلقائي</th>
                   <th style="width: 10%;">حالة التسجيل</th>
                   <th style="width: 10%;">حالة الدفع</th>
                 </tr>
@@ -2293,7 +2343,7 @@ private generateEnrollmentCards(
           
           .totals-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(7, 1fr);
             gap: 5px;
             margin-bottom: 8px;
           }
@@ -2384,6 +2434,14 @@ private generateEnrollmentCards(
           .total-card.total-inactive .total-value {
             color: #dc2626;
           }
+
+          .total-card.total-auto-update {
+            background: rgba(219, 234, 254, 0.85);
+            border-color: rgba(147, 197, 253, 0.5);
+          }
+          .total-card.total-auto-update .total-value {
+            color: #2563eb;
+          }
           
           table {
             width: 100%;
@@ -2438,7 +2496,7 @@ private generateEnrollmentCards(
               font-size: 30px !important;
             }
             .totals-grid {
-              grid-template-columns: repeat(3, 1fr);
+              grid-template-columns: repeat(4, 1fr);
               gap: 4px;
             }
             .total-card {
@@ -2461,7 +2519,7 @@ private generateEnrollmentCards(
           
           @media (max-width: 480px) {
             .totals-grid {
-              grid-template-columns: repeat(2, 1fr);
+              grid-template-columns: repeat(3, 1fr);
             }
             .watermark-wrapper {
               width: 80% !important;
@@ -2510,7 +2568,7 @@ private generateEnrollmentCards(
       }, 500);
       this.isLoading = false;
       this.notification.showSuccess(
-        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+        `تم فتح الت rapport - ${dataToPrint.length} سجل`,
       );
     }
   }
@@ -2529,6 +2587,7 @@ private generateEnrollmentCards(
       1: 'active',
       2: 'completed',
       3: 'cancelled',
+      4: 'finished',
     };
     return classes[statusId] || 'active';
   }
@@ -2539,5 +2598,14 @@ private generateEnrollmentCards(
 
   getActiveStatusText(isActive: boolean): string {
     return isActive ? 'نشط' : 'غير نشط';
+  }
+
+  // ✅ Added isAutoUpdate helper methods
+  getAutoUpdateStatusClass(isAutoUpdate: boolean): string {
+    return isAutoUpdate ? 'auto-update-active' : 'auto-update-inactive';
+  }
+
+  getAutoUpdateStatusText(isAutoUpdate: boolean): string {
+    return isAutoUpdate ? 'مفعل' : 'غير مفعل';
   }
 }

@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   passwordStrength = 0;
   passwordStrengthText = '';
   currentYear = new Date().getFullYear();
-  logoPath = 'assets/images/simpleLogo.jpeg';
+  logoPath = 'assets/images/mainLogo.jpeg';
   
   private destroy$ = new Subject<void>();
 

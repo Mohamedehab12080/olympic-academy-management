@@ -77,13 +77,14 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+ // Clear session on expiration
   clearSessionOnExpiration(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.isAuthenticatedValue = false;
     this.currentUserValue = null;
   }
-
+  
   getToken(): string | null {
     return localStorage.getItem('token');
   }
@@ -108,16 +109,27 @@ export class AuthService {
     }
   }
 
-  // Check if token is expired
+ // Check if token is expired
   isTokenExpired(token?: string): boolean {
     const checkToken = token || this.getToken();
     if (!checkToken) return true;
     
     try {
-      const payload = JSON.parse(atob(checkToken.split('.')[1]));
+      const parts = checkToken.split('.');
+      if (parts.length !== 3) return true;
+      
+      // Handle base64 URL decoding
+      const payload = JSON.parse(atob(parts[1]));
+      
+      if (!payload.exp) return true;
+      
       const expirationDate = new Date(payload.exp * 1000);
-      return expirationDate < new Date();
+      const now = new Date();
+      
+      // Check if token is expired with a small buffer (5 seconds)
+      return expirationDate.getTime() < now.getTime() - 5000;
     } catch (error) {
+      console.error('Error checking token expiration:', error);
       return true;
     }
   }
@@ -128,9 +140,16 @@ export class AuthService {
     if (!token) return null;
     
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      
+      const payload = JSON.parse(atob(parts[1]));
+      
+      if (!payload.exp) return null;
+      
       return new Date(payload.exp * 1000);
     } catch (error) {
+      console.error('Error getting token expiration time:', error);
       return null;
     }
   }

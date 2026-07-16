@@ -80,6 +80,8 @@ public interface EnrollmentController {
      *            (optional)
      * @param isActive
      *            (optional)
+     * @param isAutoUpdate
+     *            (optional)
      * @param traineeId
      *            (optional)
      * @param traineeNationalId
@@ -127,6 +129,7 @@ public interface EnrollmentController {
     ResponseEntity<EnrollmentResultSet> _getAllEnrollmentsByFilter(
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
+            @Parameter(name = "isAutoUpdate", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isAutoUpdate", required = false) Boolean isAutoUpdate,
             @Parameter(name = "traineeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeId", required = false) Integer traineeId,
             @Parameter(name = "traineeNationalId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "traineeNationalId", required = false) String traineeNationalId,
             @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,

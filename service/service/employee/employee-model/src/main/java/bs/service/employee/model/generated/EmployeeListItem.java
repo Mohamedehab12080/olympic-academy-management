@@ -9,8 +9,6 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import org.hibernate.validator.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -44,8 +42,13 @@ public class EmployeeListItem implements Serializable {
 
     private Boolean isActive;
 
-    @Valid
-    private List<@Valid LookupVTO> departments = new ArrayList<>();
+    private Boolean isMonthlyUpdated;
+
+    private Integer updatePeriodInDays;
+
+    private Integer salary;
+
+    private Integer remainedSalary;
 
     public EmployeeListItem id(Integer id) {
         this.id = id;
@@ -215,33 +218,88 @@ public class EmployeeListItem implements Serializable {
         this.isActive = isActive;
     }
 
-    public EmployeeListItem departments(List<@Valid LookupVTO> departments) {
-        this.departments = departments;
-        return this;
-    }
-
-    public EmployeeListItem addDepartmentsItem(LookupVTO departmentsItem) {
-        if (this.departments == null) {
-            this.departments = new ArrayList<>();
-        }
-        this.departments.add(departmentsItem);
+    public EmployeeListItem isMonthlyUpdated(Boolean isMonthlyUpdated) {
+        this.isMonthlyUpdated = isMonthlyUpdated;
         return this;
     }
 
     /**
-     * Get departments
+     * Get isMonthlyUpdated
      *
-     * @return departments
+     * @return isMonthlyUpdated
      */
-    @Valid
-    @Schema(name = "departments", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("departments")
-    public List<@Valid LookupVTO> getDepartments() {
-        return departments;
+
+    @Schema(name = "isMonthlyUpdated", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isMonthlyUpdated")
+    public Boolean getIsMonthlyUpdated() {
+        return isMonthlyUpdated;
     }
 
-    public void setDepartments(List<@Valid LookupVTO> departments) {
-        this.departments = departments;
+    public void setIsMonthlyUpdated(Boolean isMonthlyUpdated) {
+        this.isMonthlyUpdated = isMonthlyUpdated;
+    }
+
+    public EmployeeListItem updatePeriodInDays(Integer updatePeriodInDays) {
+        this.updatePeriodInDays = updatePeriodInDays;
+        return this;
+    }
+
+    /**
+     * Get updatePeriodInDays
+     *
+     * @return updatePeriodInDays
+     */
+
+    @Schema(name = "updatePeriodInDays", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("updatePeriodInDays")
+    public Integer getUpdatePeriodInDays() {
+        return updatePeriodInDays;
+    }
+
+    public void setUpdatePeriodInDays(Integer updatePeriodInDays) {
+        this.updatePeriodInDays = updatePeriodInDays;
+    }
+
+    public EmployeeListItem salary(Integer salary) {
+        this.salary = salary;
+        return this;
+    }
+
+    /**
+     * Get salary
+     *
+     * @return salary
+     */
+
+    @Schema(name = "salary", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("salary")
+    public Integer getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Integer salary) {
+        this.salary = salary;
+    }
+
+    public EmployeeListItem remainedSalary(Integer remainedSalary) {
+        this.remainedSalary = remainedSalary;
+        return this;
+    }
+
+    /**
+     * Get remainedSalary
+     *
+     * @return remainedSalary
+     */
+
+    @Schema(name = "remainedSalary", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("remainedSalary")
+    public Integer getRemainedSalary() {
+        return remainedSalary;
+    }
+
+    public void setRemainedSalary(Integer remainedSalary) {
+        this.remainedSalary = remainedSalary;
     }
 
     @Override
@@ -260,12 +318,16 @@ public class EmployeeListItem implements Serializable {
                 && Objects.equals(this.hireDate, employeeListItem.hireDate)
                 && Objects.equals(this.imageUrl, employeeListItem.imageUrl)
                 && Objects.equals(this.isActive, employeeListItem.isActive)
-                && Objects.equals(this.departments, employeeListItem.departments);
+                && Objects.equals(this.isMonthlyUpdated, employeeListItem.isMonthlyUpdated)
+                && Objects.equals(this.updatePeriodInDays, employeeListItem.updatePeriodInDays)
+                && Objects.equals(this.salary, employeeListItem.salary)
+                && Objects.equals(this.remainedSalary, employeeListItem.remainedSalary);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, gender, employeeType, hireDate, imageUrl, isActive, departments);
+        return Objects.hash(id, fullName, nationalId, gender, employeeType, hireDate, imageUrl, isActive,
+                isMonthlyUpdated, updatePeriodInDays, salary, remainedSalary);
     }
 
     @Override
@@ -280,7 +342,10 @@ public class EmployeeListItem implements Serializable {
         sb.append("    hireDate: ").append(toIndentedString(hireDate)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
-        sb.append("    departments: ").append(toIndentedString(departments)).append("\n");
+        sb.append("    isMonthlyUpdated: ").append(toIndentedString(isMonthlyUpdated)).append("\n");
+        sb.append("    updatePeriodInDays: ").append(toIndentedString(updatePeriodInDays)).append("\n");
+        sb.append("    salary: ").append(toIndentedString(salary)).append("\n");
+        sb.append("    remainedSalary: ").append(toIndentedString(remainedSalary)).append("\n");
         sb.append("}");
         return sb.toString();
     }

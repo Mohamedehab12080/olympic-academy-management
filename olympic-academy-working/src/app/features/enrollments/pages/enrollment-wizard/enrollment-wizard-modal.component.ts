@@ -1,3 +1,5 @@
+// enrollment-wizard-modal.component.ts
+
 import {
   Component,
   OnInit,
@@ -158,11 +160,13 @@ export class EnrollmentWizardModalComponent implements OnInit {
       discountPercentage: [null],
       finalSubscriptionValue: [{ value: null, disabled: true }],
       isActive: [true],
+      isAutoUpdate: [false], // ✅ Added isAutoUpdate field
       note: [''],
     });
   }
 
   ngOnInit(): void {
+    console.log('Enrollment Statuses:', ENROLLMENT_STATUSES);
     this.loadLookupData();
     this.loadPaymentMethods();
 
@@ -180,6 +184,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
       this.selectPreSelectedTrainee();
     }
   }
+  
 
   selectPreSelectedTrainee(): void {
     if (this.trainees.length > 0 && this.preSelectedTraineeId) {
@@ -319,6 +324,10 @@ export class EnrollmentWizardModalComponent implements OnInit {
     }
   }
 
+  get allEnrollmentStatuses() {
+  return this.enrollmentStatuses;
+}
+
   openAddEnrollmentTypeDialog(): void {
     const dialogRef = this.dialog.open(AddEnrollmentTypeDialogComponent, {
       width: '500px',
@@ -356,130 +365,144 @@ export class EnrollmentWizardModalComponent implements OnInit {
     });
   }
 
-  loadEnrollmentData(): void {
-    this.isLoading = true;
-    this.enrollmentService.getEnrollmentById(this.enrollmentId!).subscribe({
-      next: (enrollment: any) => {
-        console.log('📋 Loading enrollment data:', enrollment);
+loadEnrollmentData(): void {
+  this.isLoading = true;
+  this.enrollmentService.getEnrollmentById(this.enrollmentId!).subscribe({
+    next: (enrollment: any) => {
+      console.log('📋 Loading enrollment data:', enrollment);
 
-        // ---- STEP 1: Trainee ----
-        const traineeId = enrollment.trainee?.id;
-        if (traineeId) {
-          this.step1Form.patchValue({ traineeId: traineeId });
-          this.selectedTrainee =
-            this.trainees.find((t) => t.id === traineeId) || null;
-          if (this.selectedTrainee && this.selectedTrainee.imageUrl) {
-            this.loadTraineeImage(this.selectedTrainee);
-          }
+      // ---- STEP 1: Trainee ----
+      const traineeId = enrollment.trainee?.id;
+      if (traineeId) {
+        this.step1Form.patchValue({ traineeId: traineeId });
+        this.selectedTrainee =
+          this.trainees.find((t) => t.id === traineeId) || null;
+        if (this.selectedTrainee && this.selectedTrainee.imageUrl) {
+          this.loadTraineeImage(this.selectedTrainee);
         }
+      }
 
-        // ---- STEP 2: Course ----
-        const courseId = enrollment.course?.id;
-        if (courseId) {
-          this.step2Form.patchValue({ courseId: courseId });
-          this.selectedCourse =
-            this.courses.find((c) => c.id === courseId) || null;
-          if (this.selectedCourse) {
-            this.setDateValidators();
-          }
+      // ---- STEP 2: Course ----
+      const courseId = enrollment.course?.id;
+      if (courseId) {
+        this.step2Form.patchValue({ courseId: courseId });
+        this.selectedCourse =
+          this.courses.find((c) => c.id === courseId) || null;
+        if (this.selectedCourse) {
+          this.setDateValidators();
         }
+      }
 
-        // ---- STEP 3: Trainer ----
-        const trainerId = enrollment.trainer?.id;
-        if (trainerId) {
-          this.step3Form.patchValue({ trainerId: trainerId });
+      // ---- STEP 3: Trainer ----
+      const trainerId = enrollment.trainer?.id;
+      if (trainerId) {
+        this.step3Form.patchValue({ trainerId: trainerId });
+      }
+
+      // ---- STEP 4: Enrollment Details ----
+      let enrollmentStatusObj = null;
+      if (enrollment.enrollmentStatus) {
+        const statusValue =
+          typeof enrollment.enrollmentStatus === 'string'
+            ? enrollment.enrollmentStatus
+            : enrollment.enrollmentStatus.title ||
+              enrollment.enrollmentStatus;
+
+        // ✅ Added FINISHED (4) mapping
+        switch (statusValue) {
+          case 'PENDING':
+          case 'قيد الانتظار':
+            enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 1);
+            break;
+          case 'COMPLETED':
+          case 'مكتمل':
+            enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 2);
+            break;
+          case 'CANCELLED':
+          case 'ملغي':
+            enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 3);
+            break;
+          case 'FINISHED':
+          case 'منتهي':
+            enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 4);
+            break;
+          default:
+            enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 1);
         }
+      }
 
-        // ---- STEP 4: Enrollment Details ----
-        let enrollmentStatusObj = null;
-        if (enrollment.enrollmentStatus) {
-          const statusValue =
-            typeof enrollment.enrollmentStatus === 'string'
-              ? enrollment.enrollmentStatus
-              : enrollment.enrollmentStatus.title ||
-                enrollment.enrollmentStatus;
+      let paymentStatusObj = null;
+      if (enrollment.paymentStatus) {
+        const statusValue =
+          typeof enrollment.paymentStatus === 'string'
+            ? enrollment.paymentStatus
+            : enrollment.paymentStatus.title || enrollment.paymentStatus;
 
-          switch (statusValue) {
-            case 'PENDING':
-            case 'قيد الانتظار':
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 1);
-              break;
-            case 'COMPLETED':
-            case 'مكتمل':
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 2);
-              break;
-            case 'CANCELLED':
-            case 'ملغي':
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 3);
-              break;
-            default:
-              enrollmentStatusObj = ENROLLMENT_STATUSES.find((s) => s.id === 1);
-          }
+        const statusMap: { [key: string]: number } = {
+          PENDING: 1,
+          'قيد الانتظار': 1,
+          PAID: 2,
+          'تم الدفع': 2,
+          FAILED: 3,
+          فشل: 3,
+          REFUNDED: 4,
+          'تم استرداد المبلغ': 4,
+          CANCELLED: 5,
+          'تم الالغاء': 5,
+          PARTIAL: 6,
+          جزئي: 6,
+        };
+        const statusId = statusMap[statusValue];
+        if (statusId) {
+          paymentStatusObj = this.paymentStatuses.find(
+            (s) => s.id === statusId,
+          );
         }
+      }
 
-        let paymentStatusObj = null;
-        if (enrollment.paymentStatus) {
-          const statusValue =
-            typeof enrollment.paymentStatus === 'string'
-              ? enrollment.paymentStatus
-              : enrollment.paymentStatus.title || enrollment.paymentStatus;
+      let enrollmentTypeId = null;
+      if (enrollment.enrollmentType?.id) {
+        enrollmentTypeId = enrollment.enrollmentType.id;
+      }
 
-          const statusMap: { [key: string]: number } = {
-            PENDING: 1,
-            'قيد الانتظار': 1,
-            PAID: 2,
-            'تم الدفع': 2,
-            FAILED: 3,
-            فشل: 3,
-            REFUNDED: 4,
-            'تم استرداد المبلغ': 4,
-            CANCELLED: 5,
-            'تم الالغاء': 5,
-            PARTIAL: 6,
-            جزئي: 6,
-          };
-          const statusId = statusMap[statusValue];
-          if (statusId) {
-            paymentStatusObj = this.paymentStatuses.find(
-              (s) => s.id === statusId,
-            );
-          }
-        }
+      // ✅ FIX: Ensure isAutoUpdate is properly set with default false
+      const isActiveValue = enrollment.isActive !== undefined && enrollment.isActive !== null 
+        ? enrollment.isActive 
+        : true;
+      
+      const isAutoUpdateValue = enrollment.isAutoUpdate !== undefined && enrollment.isAutoUpdate !== null 
+        ? enrollment.isAutoUpdate 
+        : false;
 
-        let enrollmentTypeId = null;
-        if (enrollment.enrollmentType?.id) {
-          enrollmentTypeId = enrollment.enrollmentType.id;
-        }
+      this.enrollmentForm.patchValue({
+        enrollmentTypeId: enrollmentTypeId,
+        startDate: enrollment.startDate
+          ? new Date(enrollment.startDate)
+          : null,
+        endDate: enrollment.endDate ? new Date(enrollment.endDate) : null,
+        enrollmentStatus: enrollmentStatusObj,
+        paymentStatus: paymentStatusObj,
+        subscriptionValue: enrollment.subscriptionValue || null,
+        discountAmount: enrollment.discountAmount || null,
+        discountPercentage: enrollment.discountPercentage || null,
+        isActive: isActiveValue,
+        isAutoUpdate: isAutoUpdateValue, // ✅ Properly set with default false
+        note: enrollment.note || '',
+      });
 
-        this.enrollmentForm.patchValue({
-          enrollmentTypeId: enrollmentTypeId,
-          startDate: enrollment.startDate
-            ? new Date(enrollment.startDate)
-            : null,
-          endDate: enrollment.endDate ? new Date(enrollment.endDate) : null,
-          enrollmentStatus: enrollmentStatusObj,
-          paymentStatus: paymentStatusObj,
-          subscriptionValue: enrollment.subscriptionValue || null,
-          discountAmount: enrollment.discountAmount || null,
-          discountPercentage: enrollment.discountPercentage || null,
-          isActive:
-            enrollment.isActive !== undefined ? enrollment.isActive : true,
-          note: enrollment.note || '',
-        });
+      this.calculateFinalValue();
 
-        this.calculateFinalValue();
-
-        console.log('✅ Enrollment data loaded successfully');
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('❌ Error loading enrollment:', err);
-        this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
-        this.isLoading = false;
-      },
-    });
-  }
+      console.log('✅ Enrollment data loaded successfully');
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('❌ Error loading enrollment:', err);
+      this.notification.showError('حدث خطأ في تحميل بيانات التسجيل');
+      this.isLoading = false;
+    },
+  });
+}
 
   onCourseSelect(): void {
     const courseId = this.step2Form.get('courseId')?.value;
@@ -652,6 +675,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
       finalSubscriptionValue: this.enrollmentForm.get('finalSubscriptionValue')
         ?.value,
       isActive: this.enrollmentForm.get('isActive')?.value,
+      isAutoUpdate: this.enrollmentForm.get('isAutoUpdate')?.value, // ✅ Add to preview data
       note: this.enrollmentForm.get('note')?.value,
       isNewEnrollment: !this.isEditMode,
     };
@@ -660,7 +684,7 @@ export class EnrollmentWizardModalComponent implements OnInit {
   }
 
   private generatePrintDocument(data: any): void {
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const applicationNumber = data.isNewEnrollment
       ? `NEW-${Date.now()}`
@@ -676,6 +700,9 @@ export class EnrollmentWizardModalComponent implements OnInit {
     printContainer.style.backgroundColor = 'white';
     printContainer.style.position = 'relative';
     printContainer.style.width = '100%';
+
+    // ✅ Get auto update display text
+    const autoUpdateDisplay = data.isAutoUpdate ? 'مفعل' : 'غير مفعل';
 
     printContainer.innerHTML = `
       <!DOCTYPE html>
@@ -936,6 +963,26 @@ export class EnrollmentWizardModalComponent implements OnInit {
             background: #dbeafe;
             color: #1e40af;
           }
+          .status-badge.finished {
+            background: #f3e8ff;
+            color: #6d28d9;
+          }
+          .status-badge.completed {
+            background: #d1fae5;
+            color: #065f46;
+          }
+          .status-badge.cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+          .status-badge.active {
+            background: #d1fae5;
+            color: #065f46;
+          }
+          .status-badge.inactive {
+            background: #fee2e2;
+            color: #991b1b;
+          }
           
           .note-section {
             margin-top: 16px;
@@ -1055,10 +1102,26 @@ export class EnrollmentWizardModalComponent implements OnInit {
                   </span>
                 </span>
               </div>
-              <div class="info-item"><span class="info-label">حالة التسجيل</span><span class="info-value">${enrollmentStatusDisplay}</span></div>
+              <div class="info-item"><span class="info-label">حالة التسجيل</span>
+                <span class="info-value">
+                  <span class="status-badge ${data.enrollmentStatus?.id === 2 ? 'completed' : data.enrollmentStatus?.id === 1 ? 'pending' : data.enrollmentStatus?.id === 3 ? 'cancelled' : data.enrollmentStatus?.id === 4 ? 'finished' : ''}">
+                    ${enrollmentStatusDisplay}
+                  </span>
+                </span>
+              </div>
               <div class="info-item"><span class="info-label">حالة النشاط</span>
-                <span class="info-value" style="color: ${data.isActive !== undefined ? (data.isActive ? '#10b981' : '#ef4444') : '#10b981'}; font-weight: 600;">
-                  ${data.isActive !== undefined ? (data.isActive ? '✅ نشط' : '⛔ غير نشط') : '✅ نشط'}
+                <span class="info-value">
+                  <span class="status-badge ${data.isActive ? 'active' : 'inactive'}">
+                    ${data.isActive !== undefined ? (data.isActive ? '✅ نشط' : '⛔ غير نشط') : '✅ نشط'}
+                  </span>
+                </span>
+              </div>
+              <!-- ✅ Added isAutoUpdate field -->
+              <div class="info-item"><span class="info-label">تحديث تلقائي</span>
+                <span class="info-value">
+                  <span class="status-badge ${data.isAutoUpdate ? 'active' : 'inactive'}">
+                    ${data.isAutoUpdate ? '✅ مفعل' : '⛔ غير مفعل'}
+                  </span>
                 </span>
               </div>
             </div>
@@ -1135,130 +1198,139 @@ export class EnrollmentWizardModalComponent implements OnInit {
     }, 100);
   }
 
-  submitEnrollment(): void {
-    if (
-      this.step1Form.invalid ||
-      this.step2Form.invalid ||
-      this.step3Form.invalid
-    ) {
-      this.notification.showWarning(
-        'يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة',
-      );
-      return;
+submitEnrollment(): void {
+  if (
+    this.step1Form.invalid ||
+    this.step2Form.invalid ||
+    this.step3Form.invalid
+  ) {
+    this.notification.showWarning(
+      'يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة',
+    );
+    return;
+  }
+  if (this.enrollmentForm.invalid) {
+    this.notification.showWarning('يرجى التحقق من صحة التواريخ وحالة الدفع');
+    return;
+  }
+
+  this.isSubmitting = true;
+
+  const enrollmentStatusObj =
+    this.enrollmentForm.get('enrollmentStatus')?.value;
+  let enrollmentStatusEnum = null;
+  if (enrollmentStatusObj) {
+    // ✅ Added FINISHED (4) mapping
+    switch (enrollmentStatusObj.id) {
+      case 1:
+        enrollmentStatusEnum = 'PENDING';
+        break;
+      case 2:
+        enrollmentStatusEnum = 'COMPLETED';
+        break;
+      case 3:
+        enrollmentStatusEnum = 'CANCELLED';
+        break;
+      case 4:
+        enrollmentStatusEnum = 'FINISHED';
+        break;
+      default:
+        enrollmentStatusEnum = 'PENDING';
     }
-    if (this.enrollmentForm.invalid) {
-      this.notification.showWarning('يرجى التحقق من صحة التواريخ وحالة الدفع');
-      return;
-    }
+  }
 
-    this.isSubmitting = true;
-
-    const enrollmentStatusObj =
-      this.enrollmentForm.get('enrollmentStatus')?.value;
-    let enrollmentStatusEnum = null;
-    if (enrollmentStatusObj) {
-      switch (enrollmentStatusObj.id) {
-        case 1:
-          enrollmentStatusEnum = 'PENDING';
-          break;
-        case 2:
-          enrollmentStatusEnum = 'COMPLETED';
-          break;
-        case 3:
-          enrollmentStatusEnum = 'CANCELLED';
-          break;
-        default:
-          enrollmentStatusEnum = 'PENDING';
-      }
-    }
-
-    const paymentStatusObj = this.enrollmentForm.get('paymentStatus')?.value;
-    let paymentStatusEnum = null;
-    if (paymentStatusObj) {
-      const statusMap: { [key: number]: string } = {
-        1: 'PENDING',
-        2: 'PAID',
-        3: 'FAILED',
-        4: 'REFUNDED',
-        5: 'CANCELLED',
-        6: 'PARTIAL',
-      };
-      paymentStatusEnum = statusMap[paymentStatusObj.id] || 'PENDING';
-    }
-
-    const finalSubscriptionValue =
-      this.enrollmentForm.get('finalSubscriptionValue')?.value || 0;
-    const enrollmentTypeId = this.enrollmentForm.get('enrollmentTypeId')?.value;
-    const isActive =
-      this.enrollmentForm.get('isActive')?.value !== undefined
-        ? this.enrollmentForm.get('isActive')?.value
-        : true;
-
-    const enrollmentData = {
-      traineeId: this.step1Form.get('traineeId')?.value,
-      courseId: this.step2Form.get('courseId')?.value,
-      trainerId: this.step3Form.get('trainerId')?.value,
-      enrollmentTypeId:
-        enrollmentTypeId && enrollmentTypeId !== 'new'
-          ? Number(enrollmentTypeId)
-          : null,
-      startDate: this.enrollmentForm.get('startDate')?.value,
-      endDate: this.enrollmentForm.get('endDate')?.value,
-      enrollmentStatus: enrollmentStatusEnum,
-      paymentStatus: paymentStatusEnum,
-      subscriptionValue: this.enrollmentForm.get('subscriptionValue')?.value,
-      discountAmount: this.enrollmentForm.get('discountAmount')?.value,
-      discountPercentage: this.enrollmentForm.get('discountPercentage')?.value,
-      finalSubscriptionValue: finalSubscriptionValue,
-      remainedSubscriptionValue: finalSubscriptionValue,
-      isActive: isActive,
-      note: this.enrollmentForm.get('note')?.value,
+  const paymentStatusObj = this.enrollmentForm.get('paymentStatus')?.value;
+  let paymentStatusEnum = null;
+  if (paymentStatusObj) {
+    const statusMap: { [key: number]: string } = {
+      1: 'PENDING',
+      2: 'PAID',
+      3: 'FAILED',
+      4: 'REFUNDED',
+      5: 'CANCELLED',
+      6: 'PARTIAL',
     };
+    paymentStatusEnum = statusMap[paymentStatusObj.id] || 'PENDING';
+  }
 
-    console.log('Submitting enrollment data:', enrollmentData);
+  const finalSubscriptionValue =
+    this.enrollmentForm.get('finalSubscriptionValue')?.value || 0;
+  const enrollmentTypeId = this.enrollmentForm.get('enrollmentTypeId')?.value;
+  
+  // ✅ FIX: Ensure isActive is always a boolean (never null)
+  const isActiveValue = this.enrollmentForm.get('isActive')?.value;
+  const isActive = isActiveValue !== undefined && isActiveValue !== null ? isActiveValue : true;
+  
+  // ✅ FIX: Ensure isAutoUpdate is always a boolean (never null)
+  const isAutoUpdateValue = this.enrollmentForm.get('isAutoUpdate')?.value;
+  const isAutoUpdate = isAutoUpdateValue !== undefined && isAutoUpdateValue !== null ? isAutoUpdateValue : false;
 
-    if (this.isEditMode && this.enrollmentId) {
-      this.enrollmentService
-        .updateEnrollment(this.enrollmentId, enrollmentData as any)
-        .subscribe({
-          next: () => {
-            this.notification.showSuccess('تم تحديث التسجيل بنجاح');
-            if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
-              this.openPaymentModal(this.enrollmentId!, finalSubscriptionValue);
-            } else {
-              this.dialogRef.close(true);
-            }
-            this.isSubmitting = false;
-          },
-          error: (err) => {
-            console.error('Update error:', err);
-            this.notification.showError(
-              err.error?.messageEn || 'حدث خطأ في تحديث التسجيل',
-            );
-            this.isSubmitting = false;
-          },
-        });
-    } else {
-      this.enrollmentService.createEnrollment(enrollmentData as any).subscribe({
-        next: (res: any) => {
-          this.notification.showSuccess('تم إضافة التسجيل بنجاح');
+  const enrollmentData = {
+    traineeId: this.step1Form.get('traineeId')?.value,
+    courseId: this.step2Form.get('courseId')?.value,
+    trainerId: this.step3Form.get('trainerId')?.value,
+    enrollmentTypeId:
+      enrollmentTypeId && enrollmentTypeId !== 'new'
+        ? Number(enrollmentTypeId)
+        : null,
+    startDate: this.enrollmentForm.get('startDate')?.value,
+    endDate: this.enrollmentForm.get('endDate')?.value,
+    enrollmentStatus: enrollmentStatusEnum,
+    paymentStatus: paymentStatusEnum,
+    subscriptionValue: this.enrollmentForm.get('subscriptionValue')?.value,
+    discountAmount: this.enrollmentForm.get('discountAmount')?.value,
+    discountPercentage: this.enrollmentForm.get('discountPercentage')?.value,
+    finalSubscriptionValue: finalSubscriptionValue,
+    remainedSubscriptionValue: finalSubscriptionValue,
+    isActive: isActive, // ✅ Always a boolean
+    isAutoUpdate: isAutoUpdate, // ✅ Always a boolean (default: false)
+    note: this.enrollmentForm.get('note')?.value,
+  };
+
+  console.log('Submitting enrollment data:', enrollmentData);
+
+  if (this.isEditMode && this.enrollmentId) {
+    this.enrollmentService
+      .updateEnrollment(this.enrollmentId, enrollmentData as any)
+      .subscribe({
+        next: () => {
+          this.notification.showSuccess('تم تحديث التسجيل بنجاح');
           if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
-            this.openPaymentModal(res.id, finalSubscriptionValue);
+            this.openPaymentModal(this.enrollmentId!, finalSubscriptionValue);
           } else {
             this.dialogRef.close(true);
           }
           this.isSubmitting = false;
         },
         error: (err) => {
-          console.error('Create error:', err);
+          console.error('Update error:', err);
           this.notification.showError(
-            err.error?.messageEn || 'حدث خطأ في إضافة التسجيل',
+            err.error?.messageEn || 'حدث خطأ في تحديث التسجيل',
           );
           this.isSubmitting = false;
         },
       });
-    }
+  } else {
+    this.enrollmentService.createEnrollment(enrollmentData as any).subscribe({
+      next: (res: any) => {
+        this.notification.showSuccess('تم إضافة التسجيل بنجاح');
+        if (this.makePaymentDirectly && finalSubscriptionValue > 0) {
+          this.openPaymentModal(res.id, finalSubscriptionValue);
+        } else {
+          this.dialogRef.close(true);
+        }
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        console.error('Create error:', err);
+        this.notification.showError(
+          err.error?.messageEn || 'حدث خطأ في إضافة التسجيل',
+        );
+        this.isSubmitting = false;
+      },
+    });
   }
+}
 }
 
 // Dialog component for adding new enrollment type

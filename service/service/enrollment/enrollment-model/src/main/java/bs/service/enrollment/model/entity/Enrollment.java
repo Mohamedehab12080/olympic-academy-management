@@ -48,7 +48,10 @@ public class Enrollment {
     @Basic
     private LocalDate endDate;
 
-    
+    @Column(name = "is_auto_update")
+    @Basic
+    private Boolean isAutoUpdate;
+
     @Column(name = "enrollment_status")
     private Integer enrollmentStatus;
 

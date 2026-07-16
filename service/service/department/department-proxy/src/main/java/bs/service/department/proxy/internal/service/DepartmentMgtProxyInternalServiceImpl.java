@@ -13,6 +13,11 @@ public class DepartmentMgtProxyInternalServiceImpl implements DepartmentMgtProxy
 
     @Override
     public DepartmentVTO getDepartmentDetails(Integer departmentId) {
-        return departmentService.getDepartmentById(departmentId);
+        return departmentService.getDepartmentDetailsById(departmentId,null,null);
+    }
+
+    @Override
+    public Boolean existsById(Integer departmentId) {
+        return departmentService.existsById(departmentId);
     }
 }

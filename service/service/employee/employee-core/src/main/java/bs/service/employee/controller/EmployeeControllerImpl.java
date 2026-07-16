@@ -37,8 +37,8 @@ public class EmployeeControllerImpl implements EmployeeController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<EmployeeResultSet> _getAllEmployees(String quickSearch, Boolean isActive, LocalDate createdOnFrom, LocalDate createdOnTo, LocalDate hireDateFrom, LocalDate hireDateTo, Gender gender, EmployeeTypes employeeType, SalaryTypes salaryType, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
-        return ResponseEntity.ok(employeeService.getAllEmployees(quickSearch,isActive,createdOnFrom,createdOnTo,hireDateFrom,hireDateTo,gender,employeeType,salaryType,pageNum,pageSize,orderDir,orderBy));
+    public ResponseEntity<EmployeeResultSet> _getAllEmployees(String quickSearch, Boolean isActive,Boolean isMonthlyUpdated, LocalDate createdOnFrom, LocalDate createdOnTo, LocalDate hireDateFrom, LocalDate hireDateTo, Gender gender, EmployeeTypes employeeType, SalaryTypes salaryType, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+        return ResponseEntity.ok(employeeService.getAllEmployees(quickSearch,isActive,isMonthlyUpdated,createdOnFrom,createdOnTo,hireDateFrom,hireDateTo,gender,employeeType,salaryType,pageNum,pageSize,orderDir,orderBy));
     }
 
     @Override

@@ -61,6 +61,8 @@ public class EnrollmentVTO implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isAutoUpdate;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
 
@@ -407,6 +409,27 @@ public class EnrollmentVTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public EnrollmentVTO isAutoUpdate(Boolean isAutoUpdate) {
+        this.isAutoUpdate = isAutoUpdate;
+        return this;
+    }
+
+    /**
+     * Get isAutoUpdate
+     *
+     * @return isAutoUpdate
+     */
+
+    @Schema(name = "isAutoUpdate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isAutoUpdate")
+    public Boolean getIsAutoUpdate() {
+        return isAutoUpdate;
+    }
+
+    public void setIsAutoUpdate(Boolean isAutoUpdate) {
+        this.isAutoUpdate = isAutoUpdate;
+    }
+
     public EnrollmentVTO createdOn(LocalDateTime createdOn) {
         this.createdOn = createdOn;
         return this;
@@ -515,6 +538,7 @@ public class EnrollmentVTO implements Serializable {
                 && Objects.equals(this.remainedSubscriptionValue, enrollmentVTO.remainedSubscriptionValue)
                 && Objects.equals(this.note, enrollmentVTO.note)
                 && Objects.equals(this.isActive, enrollmentVTO.isActive)
+                && Objects.equals(this.isAutoUpdate, enrollmentVTO.isAutoUpdate)
                 && Objects.equals(this.createdOn, enrollmentVTO.createdOn)
                 && Objects.equals(this.createdBy, enrollmentVTO.createdBy)
                 && Objects.equals(this.lastModifiedOn, enrollmentVTO.lastModifiedOn)
@@ -525,7 +549,8 @@ public class EnrollmentVTO implements Serializable {
     public int hashCode() {
         return Objects.hash(id, trainee, course, trainer, enrollmentType, startDate, endDate, enrollmentStatus,
                 paymentStatus, subscriptionValue, discountAmount, discountPercentage, finalSubscriptionValue,
-                remainedSubscriptionValue, note, isActive, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+                remainedSubscriptionValue, note, isActive, isAutoUpdate, createdOn, createdBy, lastModifiedOn,
+                lastModifiedBy);
     }
 
     @Override
@@ -548,6 +573,7 @@ public class EnrollmentVTO implements Serializable {
         sb.append("    remainedSubscriptionValue: ").append(toIndentedString(remainedSubscriptionValue)).append("\n");
         sb.append("    note: ").append(toIndentedString(note)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isAutoUpdate: ").append(toIndentedString(isAutoUpdate)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("    lastModifiedOn: ").append(toIndentedString(lastModifiedOn)).append("\n");

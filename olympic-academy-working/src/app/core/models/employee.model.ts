@@ -10,7 +10,8 @@ export interface EmployeeType {
 
 export const EMPLOYEE_TYPES: EmployeeType[] = [
   { id: 1, title: 'مدرب' },
-  { id: 2, title: 'مدير' }
+  { id: 2, title: 'مدير' },
+  { id: 3, title: 'محاضر' }
 ];
 
 export interface EmployeeAttendanceStatus {
@@ -51,6 +52,8 @@ export interface EmployeeDTO {
   gender?: Gender;  // From common.model
   salary?: number;
   isActive?:boolean;
+  isMonthlyUpdated:boolean;
+  updatePeriodInDays: number;
   remainedSalary?: number;
   salaryType?: SalaryType;  // From common.model
   employeeType: EmployeeType;
@@ -108,6 +111,8 @@ export interface EmployeeVTO {
   imageUrl?: string;
   hireDate?: string;
   isActive: boolean;
+  isMonthlyUpdated:boolean;
+  updatePeriodInDays: number;
   departments: LookupVTO[];
   contacts: EmployeeContactVTO[];
   courses: LookupVTO[];
@@ -214,7 +219,10 @@ export interface EmployeeListItem {
   employeeType: LookupVTO;
   hireDate: string;
   isActive: boolean;
-  departments: LookupVTO[];
+  isMonthlyUpdated:boolean;
+  updatePeriodInDays: number;
+  salary: number;
+  remainedSalary: number;
 }
 
 export interface EmployeeAttendanceResultSet {
@@ -258,7 +266,8 @@ export interface DailyAttendanceReport {
 // ==================== DTOs for Assigning ====================
 
 export interface AssignCourseDTO {
-  courseId: number;
+  courseIdToBeAdded: number[];
+  courseIdToBeDeleted:number[];
 }
 
 export interface AssignDepartmentDTO {

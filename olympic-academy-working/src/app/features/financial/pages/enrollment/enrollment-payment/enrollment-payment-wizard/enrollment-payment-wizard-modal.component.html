@@ -74,7 +74,7 @@
           <div *ngIf="showBarcodeScanner" class="scanner-input-area" [class.active]="showBarcodeScanner">
             <div class="scanner-instructions">
               <mat-icon class="info-icon">info</mat-icon>
-              <span>قم بتوجيه الماسح الضوئي نحو الباركود أو أدخل الرقم القومي يدوياً</span>
+              <span>قم بتوجيه الماسح الضوئي نحو الباركود أو أدخل الرقم القومي يدوياً، ثم اضغط على زر "بحث" أو Enter</span>
             </div>
             
             <div class="scanner-input-wrapper">
@@ -84,16 +84,29 @@
                   #barcodeInput
                   matInput 
                   placeholder="أدخل الرقم القومي من الباركود" 
-                  (input)="onBarcodeScanned($event)"
+                  (keydown.enter)="onBarcodeSearch()"
                   [disabled]="isSearchingBytraineeNationalId"
                   autofocus>
                 <mat-icon matSuffix>qr_code_scanner</mat-icon>
-                <mat-hint>أدخل الرقم القومي الموجود على الباركود</mat-hint>
+                <mat-hint>أدخل الرقم القومي الموجود على الباركود ثم اضغط Enter أو زر البحث</mat-hint>
               </mat-form-field>
+              
+              <!-- ✅ SEARCH BUTTON - Manual search only -->
+              <button 
+                type="button" 
+                mat-raised-button 
+                color="primary" 
+                (click)="onBarcodeSearch()"
+                [disabled]="isSearchingBytraineeNationalId"
+                class="search-btn">
+                <mat-icon>search</mat-icon>
+                بحث
+              </button>
+              
               <button 
                 type="button" 
                 mat-stroked-button 
-                color="primary" 
+                color="warn" 
                 (click)="resetEnrollmentFilter()"
                 *ngIf="scannedtraineeNationalId"
                 class="reset-filter-btn">
@@ -407,11 +420,11 @@
               <div class="info-grid">
                 <div class="info-item">
                   <span class="info-label">الرقم القومي:</span>
-                  <span class="info-value">{{ selectedEnrollment?.trainee?.traineeNationalId || '-' }}</span>
+                  <span class="info-value">{{ selectedEnrollment?.trainee?.nationalId || '-' }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">المتدرب:</span>
-                  <span class="info-value">{{ selectedEnrollment?.trainee?.title }}</span>
+                  <span class="info-value">{{ selectedEnrollment?.trainee?.fullName }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">الدورة:</span>

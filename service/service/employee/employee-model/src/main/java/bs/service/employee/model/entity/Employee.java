@@ -45,6 +45,14 @@ public class Employee {
     @Basic
     private Integer salary;
 
+    @Column(name = "is_monthly_updated")
+    @Basic
+    private Boolean isMonthlyUpdated;
+
+    @Column(name = "update_period_in_days")
+    @Basic
+    private Integer updatePeriodInDays;
+
     @Column(name = "remained_salary")
     @Basic
     private Integer remainedSalary;

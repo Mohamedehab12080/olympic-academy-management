@@ -1054,7 +1054,7 @@ export class CourseSessionListComponent
         <div class="page-container">
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="assets/images/simpleLogoSvg.svg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+              <img src="assets/images/mainLogoSvg.svg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
             </div>
             <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
           </div>

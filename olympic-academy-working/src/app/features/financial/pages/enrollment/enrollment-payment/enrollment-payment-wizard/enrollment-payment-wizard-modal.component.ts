@@ -1,4 +1,4 @@
-// enrollment-payment-wizard-modal.component.ts - COMPLETE VERSION
+// enrollment-payment-wizard-modal.component.ts - COMPLETE FIXED VERSION
 
 import { Component, OnInit, Inject, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -39,7 +39,7 @@ import {
 } from '../../../../../../shared/components/searchable-select/searchable-select.component';
 import { PAYMENT_STATUSES } from '../../../../../../core/models/common.model';
 import { Subject } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
+import { takeUntil, distinctUntilChanged, filter } from 'rxjs/operators';
 
 interface EnrollmentOption extends SelectOption {
   enrollmentData?: {
@@ -141,10 +141,6 @@ export class EnrollmentPaymentWizardModalComponent
   isSearchingBytraineeNationalId = false;
   filteredEnrollments: any[] = [];
   private allEnrollments: any[] = [];
-  private barcodeBuffer: string = '';
-  private barcodeTimer: any = null;
-  private readonly BARCODE_TIMEOUT = 100; // ms between keystrokes for scanner detection
-  private readonly MIN_NATIONAL_ID_LENGTH = 2;
 
   // ==========================================================================
   // PRIVATE PROPERTIES
@@ -197,8 +193,6 @@ export class EnrollmentPaymentWizardModalComponent
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.clearBarcodeTimer();
-    document.removeEventListener('keydown', this.handleKeydown.bind(this));
   }
 
   // ==========================================================================
@@ -215,7 +209,6 @@ export class EnrollmentPaymentWizardModalComponent
     }
 
     this.setupFormSubscriptions();
-    this.setupKeyboardListener();
   }
 
   private setupFormSubscriptions(): void {
@@ -224,7 +217,6 @@ export class EnrollmentPaymentWizardModalComponent
       .get('paidAmount')
       ?.valueChanges.pipe(
         takeUntil(this.destroy$),
-        debounceTime(300),
         distinctUntilChanged()
       )
       .subscribe(() => {
@@ -244,15 +236,25 @@ export class EnrollmentPaymentWizardModalComponent
       });
   }
 
-  private setupKeyboardListener(): void {
-    document.addEventListener('keydown', this.handleKeydown.bind(this));
-  }
-
   private setupBarcodeInputListener(): void {
     if (this.barcodeInput) {
-      // Listen for barcode scanner input via the input field
-      this.barcodeInput.nativeElement.addEventListener('focus', () => {
-        this.barcodeBuffer = '';
+      // ✅ ONLY handle Enter key - NO automatic search on typing
+      this.barcodeInput.nativeElement.addEventListener('keydown', (event: KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          const value = this.barcodeInput.nativeElement.value.trim();
+          if (value.length > 0) {
+            this.searchEnrollmentsBytraineeNationalId(value);
+          } else {
+            this.notification.showWarning('الرجاء إدخال قيمة للبحث');
+          }
+        }
+      });
+
+      // ✅ Handle blur (when user clicks away or presses tab)
+      this.barcodeInput.nativeElement.addEventListener('blur', () => {
+        // Do NOT search on blur - only on Enter
+        // This prevents accidental searches
       });
     }
   }
@@ -455,7 +457,7 @@ export class EnrollmentPaymentWizardModalComponent
   }
 
   // ==========================================================================
-  // BARCODE SCANNING
+  // BARCODE SCANNING - MANUAL SEARCH ONLY
   // ==========================================================================
 
   toggleBarcodeScanner(): void {
@@ -465,115 +467,44 @@ export class EnrollmentPaymentWizardModalComponent
         if (this.barcodeInput) {
           this.barcodeInput.nativeElement.focus();
           this.barcodeInput.nativeElement.value = '';
-          this.barcodeBuffer = '';
+          this.scannedtraineeNationalId = '';
         }
       }, 100);
     } else {
       this.scannedtraineeNationalId = '';
-      this.barcodeBuffer = '';
       if (this.barcodeInput) {
         this.barcodeInput.nativeElement.value = '';
       }
     }
   }
 
-  private handleKeydown(event: KeyboardEvent): void {
-    // Only process if scanner is open or we're actively scanning
-    if (!this.showBarcodeScanner) {
-      return;
-    }
-
-    // Ignore if focus is in the barcode input (handled separately)
-    if (event.target === this.barcodeInput?.nativeElement) {
-      return;
-    }
-
-    // Ignore control keys
-    if (event.ctrlKey || event.altKey || event.metaKey) {
-      return;
-    }
-
-    // If Enter is pressed, process the barcode
-    if (event.key === 'Enter') {
-      this.processBarcodeBuffer();
-      return;
-    }
-
-    // Ignore non-character keys
-    if (event.key.length !== 1) {
-      return;
-    }
-
-    // Add character to buffer
-    this.barcodeBuffer += event.key;
-
-    // Clear timer and set new one
-    this.clearBarcodeTimer();
-    this.barcodeTimer = setTimeout(() => {
-      // If no new key pressed, process what we have
-      if (this.barcodeBuffer.length > 0) {
-        this.processBarcodeBuffer();
+  // ✅ Manual search - only called on Enter key press
+  onBarcodeSearch(): void {
+    if (this.barcodeInput) {
+      const value = this.barcodeInput.nativeElement.value.trim();
+      if (value.length > 0) {
+        this.searchEnrollmentsBytraineeNationalId(value);
+      } else {
+        this.notification.showWarning('الرجاء إدخال قيمة للبحث');
       }
-    }, this.BARCODE_TIMEOUT);
-  }
-
-  private processBarcodeBuffer(): void {
-    const scannedValue = this.barcodeBuffer.trim();
-    this.barcodeBuffer = '';
-    this.clearBarcodeTimer();
-
-    if (scannedValue) {
-      this.handleScannedValue(scannedValue);
     }
   }
 
-  onBarcodeScanned(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const scannedValue = input.value.trim();
-
-    if (scannedValue) {
-      this.handleScannedValue(scannedValue);
-      
-      // Clear input after processing
-      setTimeout(() => {
-        if (this.barcodeInput) {
-          this.barcodeInput.nativeElement.value = '';
-        }
-      }, 10000);
-    }
-  }
-
-  private handleScannedValue(value: string): void {
-    // Check if it looks like a national ID (numeric, 14 digits)
-    const cleanValue = value.replace(/[^0-9]/g, '');
-    
-    if (cleanValue.length >= this.MIN_NATIONAL_ID_LENGTH) {
-      this.scannedtraineeNationalId = cleanValue;
-      this.searchEnrollmentsBytraineeNationalId(cleanValue);
-    } else {
-      this.notification.showWarning('الرجاء مسح باركود صحيح يحتوي على الرقم القومي');
-    }
-  }
-
-  private clearBarcodeTimer(): void {
-    if (this.barcodeTimer) {
-      clearTimeout(this.barcodeTimer);
-      this.barcodeTimer = null;
-    }
-  }
-
+  // ✅ Manual search - only called on Enter key press
   searchEnrollmentsBytraineeNationalId(traineeNationalId: string): void {
-    if (!traineeNationalId || traineeNationalId.length < this.MIN_NATIONAL_ID_LENGTH) {
-      this.notification.showWarning(
-        `الرجاء إدخال رقم قومي صحيح (${this.MIN_NATIONAL_ID_LENGTH} رقم)`
-      );
+    if (!traineeNationalId || traineeNationalId.trim().length === 0) {
+      this.notification.showWarning('الرجاء إدخال قيمة للبحث');
+      return;
+    }
+
+    if (this.isSearchingBytraineeNationalId) {
       return;
     }
 
     this.isSearchingBytraineeNationalId = true;
 
     const filterParams = {
-      traineeNationalId: traineeNationalId,
+      traineeNationalId: traineeNationalId.trim(),
       pageSize: 100,
     };
 
@@ -592,12 +523,10 @@ export class EnrollmentPaymentWizardModalComponent
         this.filteredEnrollments = enrollments;
         this.enrollmentOptions = this.mapEnrollmentsToOptions(enrollments);
 
-        // Show filtered count
         this.notification.showSuccess(
           `تم العثور على ${enrollments.length} تسجيل(ات) للرقم القومي: ${traineeNationalId}`
         );
 
-        // Auto-select if only one found
         if (enrollments.length === 1) {
           this.paymentForm.patchValue({
             enrollmentId: enrollments[0].id,
@@ -605,6 +534,9 @@ export class EnrollmentPaymentWizardModalComponent
           this.onEnrollmentSelect();
         }
 
+        if (this.barcodeInput) {
+          this.barcodeInput.nativeElement.value = '';
+        }
         this.showBarcodeScanner = false;
         this.isSearchingBytraineeNationalId = false;
       },
@@ -623,6 +555,9 @@ export class EnrollmentPaymentWizardModalComponent
     this.paymentForm.patchValue({ enrollmentId: null });
     this.selectedEnrollment = null;
     this.currentRemainingAmount = 0;
+    if (this.barcodeInput) {
+      this.barcodeInput.nativeElement.value = '';
+    }
     this.notification.showInfo('تم إلغاء التصفية وعرض جميع التسجيلات');
   }
 
@@ -872,8 +807,8 @@ export class EnrollmentPaymentWizardModalComponent
     const paymentDateFormatted = formatDate(paymentData.paymentDate);
     const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
     const currentDateFormatted = formatDate(new Date());
-    const traineeNationalId = paymentData.traineeNationalId || enrollmentData.trainee?.traineeNationalId || '0000000000';
-    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+    const traineeNationalId = paymentData.traineeNationalId || enrollmentData.trainee?.nationalId || '0000000000';
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
 
     return `
     <!DOCTYPE html>
@@ -1132,7 +1067,7 @@ export class EnrollmentPaymentWizardModalComponent
           paymentStatus: paymentStatusEnum,
           paymentStatusTitle: this.getPaymentStatusLabel(),
           note: this.paymentForm.get('note')?.value,
-          traineeNationalId: this.selectedEnrollment?.trainee?.traineeNationalId,
+          traineeNationalId: this.selectedEnrollment?.trainee?.nationalId,
         };
 
         this.showSuccess = true;

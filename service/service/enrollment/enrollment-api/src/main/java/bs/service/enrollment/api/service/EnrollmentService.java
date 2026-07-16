@@ -16,7 +16,7 @@ public interface EnrollmentService {
     NewRecordVTO updateEnrollment(Integer enrollmentId, EnrollmentDTO enrollmentDTO);
     void deleteEnrollment(Integer enrollmentId);
     EnrollmentVTO getEnrollmentById(Integer enrollmentId);
-    EnrollmentResultSet getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,
+    EnrollmentResultSet getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,Boolean isAutoUpdate,
                                                   Integer traineeId,String traineeNationalId, Integer courseId,Integer trainerId,
                                                   Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus,
                                                   PaymentStatus paymentStatus, LocalDate startDateFrom,
@@ -26,4 +26,6 @@ public interface EnrollmentService {
                                                   OrderDirections orderDir, String orderBy);
 
     LookupResultSet getAllEnrollmentsLookup();
+
+    void updateEnrollmentsActivation();
 }

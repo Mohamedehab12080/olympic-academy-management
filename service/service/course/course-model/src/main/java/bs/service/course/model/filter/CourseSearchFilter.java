@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @SuperBuilder
@@ -16,6 +17,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CourseSearchFilter extends SearchFilter<CourseSearchFilter.OrderByAttributes> {
 
+    private List<Integer> courseIds;
+    private Integer departmentId;
     private String quickSearchQuery;
     private Integer courseType;
     private Boolean isActive;

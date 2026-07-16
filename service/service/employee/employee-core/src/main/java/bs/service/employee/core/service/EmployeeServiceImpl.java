@@ -28,11 +28,16 @@ import bs.service.employee.model.filter.TrainerCourseSearchFilter;
 import bs.service.employee.model.filter.TrainerDepartmentSearchFilter;
 import bs.service.employee.model.generated.*;
 import bs.service.file.api.service.FileService;
+import bs.service.file.model.entity.FlFile;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +46,7 @@ import java.util.stream.Collectors;
 
 import static bs.service.employee.model.enums.EmployeeErrors.*;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -52,7 +58,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final TrainerDepartmentRepository trainerDepartmentRepository;
     private final CourseSessionRepository courseSessionRepository;
     private final ValidateService validateService;
-
     @Override
     @Transactional
     public NewRecordVTO createEmployee(EmployeeDTO employeeDTO) {
@@ -83,7 +88,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeToUpdate.setCreatedOn(employee.getCreatedOn());
         employeeToUpdate.setCreatedBy(employee.getCreatedBy());
         employeeRepository.update(employeeToUpdate);
-        if(employeeDTO.getImageUrl()!=null){
+        if(employeeDTO.getImageUrl()!=null && !employeeDTO.getImageUrl().isEmpty()){
             fileService.updateFileUsage(EmployeeDomains.EMPLOYEE.id(),String.valueOf(employeeToUpdate.getId()), Collections.singletonList(employeeToUpdate.getImageUrl()));
         }
         return NewRecordVTO.builder().id(employeeId).build();
@@ -125,7 +130,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResultSet getAllEmployees(String quickSearch, Boolean isActive,
+    public EmployeeResultSet getAllEmployees(String quickSearch, Boolean isActive,Boolean isMonthlyUpdated,
                                              LocalDate createdOnFrom, LocalDate createdOnTo,
                                              LocalDate hireDateFrom, LocalDate hireDateTo,
                                              Gender gender, EmployeeTypes employeeType,
@@ -137,6 +142,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         EmployeeSearchFilter employeeSearchFilter = EmployeeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .isActive(isActive)
+                .isMonthlyUpdated(isMonthlyUpdated)
                 .createdOnFrom(createdOnFrom)
                 .createdOnTo(createdOnTo)
                 .hireDateFrom(hireDateFrom)
@@ -197,5 +203,53 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<Employee> employees=employeeRepository.selectAllByFilters(trainerSearchFilter);
         List<LookupVTO> lookupVTOS=employeeMapper.toLookupVTOs(employees);
         return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
+    }
+
+    @Override
+    public void updateEmployeeSalary() {
+        LocalDate today = LocalDate.now(ZoneId.of("Africa/Cairo"));
+        LocalDate monthAgo = today.minusMonths(1);
+        // Build filter to get active, non-deleted employees with zero remained salary
+        EmployeeSearchFilter trainerSearchFilter = EmployeeSearchFilter.builder()
+                .isActive(true)
+                .isDeleted(false)
+                .isMonthlyUpdated(true)
+                .lastModifiedOnFrom(monthAgo)
+                .lastModifiedOnTo(today)
+                .pagination(PaginationInfo.noPagination())
+                .build();
+
+        List<Employee> employees = employeeRepository.selectAllByFilters(trainerSearchFilter);
+        log.info("Month Ago : {} employees: {}",monthAgo,employees.size());
+
+        for (Employee employee : employees) {
+            LocalDateTime lastModified = employee.getLastModifiedOn();
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Africa/Cairo"));
+
+            // Calculate days between lastModifiedOn and now
+            long daysBetween = ChronoUnit.DAYS.between(lastModified, now)+1;
+            log.info("✅ Salary updated for employee ID: {}, Name: {}, Days elapsed: {}",
+                    employee.getId(),
+                    employee.getFullName(),
+                    daysBetween);
+            // Check if days elapsed equals the update period
+            if (employee.getUpdatePeriodInDays() != null &&
+                    daysBetween >= employee.getUpdatePeriodInDays()) {
+
+                // Update the salary (add salary to remainedSalary)
+                Integer currentSalary = employee.getSalary();
+                Integer currentRemained = employee.getRemainedSalary();
+
+                if (currentSalary != null && currentRemained != null) {
+                    employee.setRemainedSalary(currentRemained + currentSalary);
+                    employeeRepository.internalUpdate(employee);
+                    log.info("✅ Salary updated for employee ID: {}, Name: {}, Days elapsed: {}, Period: {}",
+                            employee.getId(),
+                            employee.getFullName(),
+                            daysBetween,
+                            employee.getUpdatePeriodInDays());
+                }
+            }
+        }
     }
 }

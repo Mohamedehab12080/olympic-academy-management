@@ -11,7 +11,9 @@ import java.time.LocalDate;
 public interface DepartmentService {
     NewRecordVTO create(DepartmentDTO departmentDTO);
     NewRecordVTO update(Integer departmentId,DepartmentDTO departmentDTO);
+    DepartmentVTO getDepartmentDetailsById(Integer id,LocalDate from, LocalDate to);
     DepartmentVTO getDepartmentById(Integer id);
+    Boolean existsById(Integer id);
     DepartmentResultSet selectAllDepartmentsByFilters(String quickSearch, LocalDate createdOnFrom, LocalDate createdOnTo, LocalDate lastModifiedOnFrom, LocalDate lastModifiedOnTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy);
     void deleteDepartmentById(Integer id);
     LookupResultSet getAllDepartments();

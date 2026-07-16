@@ -33,6 +33,14 @@ public class DepartmentVTO implements Serializable {
 
     private Boolean isActive;
 
+    private Integer totalCourses;
+
+    private Integer totalGained;
+
+    private Integer totalEnrollmentPayments;
+
+    private Integer totalStudents;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
 
@@ -125,6 +133,90 @@ public class DepartmentVTO implements Serializable {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public DepartmentVTO totalCourses(Integer totalCourses) {
+        this.totalCourses = totalCourses;
+        return this;
+    }
+
+    /**
+     * Get totalCourses
+     *
+     * @return totalCourses
+     */
+
+    @Schema(name = "totalCourses", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalCourses")
+    public Integer getTotalCourses() {
+        return totalCourses;
+    }
+
+    public void setTotalCourses(Integer totalCourses) {
+        this.totalCourses = totalCourses;
+    }
+
+    public DepartmentVTO totalGained(Integer totalGained) {
+        this.totalGained = totalGained;
+        return this;
+    }
+
+    /**
+     * Get totalGained
+     *
+     * @return totalGained
+     */
+
+    @Schema(name = "totalGained", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalGained")
+    public Integer getTotalGained() {
+        return totalGained;
+    }
+
+    public void setTotalGained(Integer totalGained) {
+        this.totalGained = totalGained;
+    }
+
+    public DepartmentVTO totalEnrollmentPayments(Integer totalEnrollmentPayments) {
+        this.totalEnrollmentPayments = totalEnrollmentPayments;
+        return this;
+    }
+
+    /**
+     * Get totalEnrollmentPayments
+     *
+     * @return totalEnrollmentPayments
+     */
+
+    @Schema(name = "totalEnrollmentPayments", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalEnrollmentPayments")
+    public Integer getTotalEnrollmentPayments() {
+        return totalEnrollmentPayments;
+    }
+
+    public void setTotalEnrollmentPayments(Integer totalEnrollmentPayments) {
+        this.totalEnrollmentPayments = totalEnrollmentPayments;
+    }
+
+    public DepartmentVTO totalStudents(Integer totalStudents) {
+        this.totalStudents = totalStudents;
+        return this;
+    }
+
+    /**
+     * Get totalStudents
+     *
+     * @return totalStudents
+     */
+
+    @Schema(name = "totalStudents", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalStudents")
+    public Integer getTotalStudents() {
+        return totalStudents;
+    }
+
+    public void setTotalStudents(Integer totalStudents) {
+        this.totalStudents = totalStudents;
     }
 
     public DepartmentVTO createdOn(LocalDateTime createdOn) {
@@ -223,6 +315,10 @@ public class DepartmentVTO implements Serializable {
         return Objects.equals(this.id, departmentVTO.id) && Objects.equals(this.title, departmentVTO.title)
                 && Objects.equals(this.description, departmentVTO.description)
                 && Objects.equals(this.isActive, departmentVTO.isActive)
+                && Objects.equals(this.totalCourses, departmentVTO.totalCourses)
+                && Objects.equals(this.totalGained, departmentVTO.totalGained)
+                && Objects.equals(this.totalEnrollmentPayments, departmentVTO.totalEnrollmentPayments)
+                && Objects.equals(this.totalStudents, departmentVTO.totalStudents)
                 && Objects.equals(this.createdOn, departmentVTO.createdOn)
                 && Objects.equals(this.createdBy, departmentVTO.createdBy)
                 && Objects.equals(this.lastModifiedOn, departmentVTO.lastModifiedOn)
@@ -231,7 +327,8 @@ public class DepartmentVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, isActive, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, title, description, isActive, totalCourses, totalGained, totalEnrollmentPayments,
+                totalStudents, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -242,6 +339,10 @@ public class DepartmentVTO implements Serializable {
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
         sb.append("    description: ").append(toIndentedString(description)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    totalCourses: ").append(toIndentedString(totalCourses)).append("\n");
+        sb.append("    totalGained: ").append(toIndentedString(totalGained)).append("\n");
+        sb.append("    totalEnrollmentPayments: ").append(toIndentedString(totalEnrollmentPayments)).append("\n");
+        sb.append("    totalStudents: ").append(toIndentedString(totalStudents)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("    lastModifiedOn: ").append(toIndentedString(lastModifiedOn)).append("\n");

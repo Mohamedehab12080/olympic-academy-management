@@ -22,9 +22,16 @@ public class DepartmentControllerImpl implements DepartmentController {
 
     @Override
     @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<DepartmentVTO> _getDepartment(Integer departmentId) {
+    public ResponseEntity<DepartmentVTO> _getDepartment(Integer departmentId,LocalDate createdOnFrom,LocalDate createdOnTo) {
+        return ResponseEntity.ok(departmentService.getDepartmentDetailsById(departmentId,createdOnFrom,createdOnTo));
+    }
+
+    @Override
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<DepartmentVTO> _getDepartmentById(Integer departmentId) {
         return ResponseEntity.ok(departmentService.getDepartmentById(departmentId));
     }
+
 
     @Override
     @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
@@ -36,6 +43,13 @@ public class DepartmentControllerImpl implements DepartmentController {
     @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _createDepartment(DepartmentDTO departmentDTO) {
         return ResponseEntity.ok(departmentService.create(departmentDTO));
+    }
+
+    @Override
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<Void> _deleteDepartment(Integer departmentId) {
+        departmentService.deleteDepartmentById(departmentId);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

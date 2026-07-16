@@ -109,6 +109,8 @@ paths:
       operationId: getDepartment
       parameters:
         - $ref: '#/components/parameters/PPDepartmentId'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
       responses:
         '200':
           description: OK
@@ -119,6 +121,36 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+    delete:
+      tags:
+        - Department
+      summary: Delete department
+      operationId: deleteDepartment
+      parameters:
+        - $ref: '#/components/parameters/PPDepartmentId'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /departments/simple/{departmentId}:
+    get:
+      tags:
+        - Department
+      summary: Retrieve department by Id
+      operationId: getDepartmentById
+      parameters:
+        - $ref: '#/components/parameters/PPDepartmentId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
 components:
   parameters:
@@ -153,6 +185,18 @@ components:
           type: string
         isActive:
           type: boolean
+        totalCourses:
+          type: integer
+          format: int32
+        totalGained:
+          type: integer
+          format: int32
+        totalEnrollmentPayments:
+          type: integer
+          format: int32
+        totalStudents:
+          type: integer
+          format: int32
         createdOn:
           type: string
           format: date-time

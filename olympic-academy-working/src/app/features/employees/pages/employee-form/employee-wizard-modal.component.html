@@ -1,0 +1,482 @@
+<div class="wizard-container" dir="rtl">
+  <!-- Header -->
+  <div class="wizard-header">
+    <div class="header-title">
+      <mat-icon>{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
+      <h2>{{ isEditMode ? 'تعديل موظف' : 'إضافة موظف جديد' }}</h2>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="printPreview()" matTooltip="معاينة الطباعة" *ngIf="!isLoading">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button mat-icon-button mat-dialog-close class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+  
+  <mat-divider></mat-divider>
+  
+  <!-- Scrollable Stepper Container -->
+  <div class="stepper-container">
+    <mat-stepper [linear]="true" #stepper class="custom-stepper">
+      
+      <!-- Step 1: Basic Information -->
+      <mat-step [stepControl]="basicInfoForm">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>person</mat-icon>
+            <span>المعلومات الأساسية</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <form [formGroup]="basicInfoForm">
+            <!-- Image Upload -->
+            <div class="image-upload-section">
+              <label class="upload-label">صورة الموظف</label>
+              <app-file-upload
+                [domainId]="FileDomain.EMPLOYEE"
+                [acceptedTypes]="''"
+                [maxSizeMB]="10"
+                [label]="'اضغط لرفع صورة الموظف'"
+                (fileUploaded)="onImageUploaded($event)"
+                (fileRemoved)="onImageRemoved()">
+              </app-file-upload>
+            </div>
+
+            <div class="form-grid">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>الاسم الكامل *</mat-label>
+                <input matInput formControlName="fullName" placeholder="أدخل الاسم الكامل">
+                <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('required')">الاسم مطلوب</mat-error>
+                <mat-error *ngIf="basicInfoForm.get('fullName')?.hasError('minlength')">الاسم يجب أن يكون على الأقل 3 أحرف</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>رقم الهوية *</mat-label>
+                <input matInput formControlName="nationalId" placeholder="أدخل رقم الهوية">
+                <mat-error *ngIf="basicInfoForm.get('nationalId')?.hasError('required')">رقم الهوية مطلوب</mat-error>
+                <mat-error *ngIf="basicInfoForm.get('nationalId')?.hasError('pattern')">رقم الهوية يجب أن يحتوي على أرقام فقط</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>تاريخ الميلاد</mat-label>
+                <input matInput [matDatepicker]="birthPicker" formControlName="birthDate" placeholder="اختر تاريخ الميلاد">
+                <mat-datepicker-toggle matSuffix [for]="birthPicker"></mat-datepicker-toggle>
+                <mat-datepicker #birthPicker></mat-datepicker>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>الجنس</mat-label>
+                <mat-select formControlName="gender">
+                  <mat-option [value]="null">اختر الجنس</mat-option>
+                  <mat-option *ngFor="let gender of genderOptions" [value]="gender.value">
+                    {{ gender.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>نوع الموظف *</mat-label>
+                <mat-select formControlName="employeeType">
+                  <mat-option [value]="null">اختر نوع الموظف</mat-option>
+                  <mat-option *ngFor="let type of employeeTypeOptions" [value]="type.value">
+                    {{ type.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="basicInfoForm.get('employeeType')?.hasError('required')">نوع الموظف مطلوب</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>تاريخ التوظيف</mat-label>
+                <input matInput [matDatepicker]="hirePicker" formControlName="hireDate" placeholder="اختر تاريخ التوظيف">
+                <mat-datepicker-toggle matSuffix [for]="hirePicker"></mat-datepicker-toggle>
+                <mat-datepicker #hirePicker></mat-datepicker>
+              </mat-form-field>
+
+              <!-- Status Toggle - Only visible in Edit Mode -->
+              <div class="full-width status-toggle" *ngIf="isEditMode">
+                <mat-slide-toggle 
+                  [color]="'primary'"
+                  [checked]="basicInfoForm.get('isActive')?.value"
+                  (change)="basicInfoForm.get('isActive')?.setValue($event.checked)">
+                  <div class="toggle-label">
+                    <mat-icon>account_circle</mat-icon>
+                    <span>حالة الموظف</span>
+                  </div>
+                  <div class="toggle-status" [class.active]="basicInfoForm.get('isActive')?.value">
+                    {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
+                  </div>
+                </mat-slide-toggle>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-raised-button color="primary" matStepperNext [disabled]="basicInfoForm.invalid">
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 2: Financial Information -->
+      <mat-step [stepControl]="financialForm">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>attach_money</mat-icon>
+            <span>المعلومات المالية</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <form [formGroup]="financialForm">
+            <div class="financial-cards">
+              <mat-card class="financial-card">
+                <mat-card-content>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>الراتب الأساسي</mat-label>
+                      <input matInput type="number" formControlName="salary" placeholder="أدخل الراتب">
+                      <span matSuffix>جم</span>
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="financial-card warning">
+                <mat-card-content>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>الراتب المتبقي</mat-label>
+                      <input matInput type="number" formControlName="remainedSalary" placeholder="أدخل الراتب المتبقي">
+                      <span matSuffix>جم</span>
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="financial-card info">
+                <mat-card-content>
+                  <div class="form-field">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>نوع الراتب</mat-label>
+                      <mat-select formControlName="salaryType">
+                        <mat-option [value]="null">اختر نوع الراتب</mat-option>
+                        <mat-option *ngFor="let type of salaryTypeOptions" [value]="type.value">
+                          {{ type.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Auto-Update Settings -->
+            <div class="auto-update-section">
+              <mat-card class="auto-update-card">
+                <mat-card-content>
+                  <div class="auto-update-grid">
+                    <!-- Monthly Updated Toggle -->
+                    <div class="auto-update-item">
+                      <mat-slide-toggle 
+                        [color]="'primary'"
+                        formControlName="isMonthlyUpdated"
+                        class="auto-update-toggle">
+                        <div class="toggle-label">
+                          <mat-icon>update</mat-icon>
+                          <span>تحديث شهري</span>
+                        </div>
+                      </mat-slide-toggle>
+                      <div class="toggle-status" [class.active]="financialForm.get('isMonthlyUpdated')?.value">
+                        {{ financialForm.get('isMonthlyUpdated')?.value ? 'مفعل' : 'غير مفعل' }}
+                      </div>
+                    </div>
+
+                    <!-- Update Period In Days -->
+                    <div class="auto-update-item">
+                      <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>فترة التحديث (بالأيام)</mat-label>
+                        <input matInput type="number" formControlName="updatePeriodInDays" placeholder="مثال: 30">
+                        <span matSuffix>يوم</span>
+                        <mat-hint>أدخل عدد الأيام بين كل تحديث</mat-hint>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" matStepperNext>
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 3: Departments Assignment -->
+      <mat-step [stepControl]="departmentsForm">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>business</mat-icon>
+            <span>الأقسام</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-header-icon">🏢</div>
+            <div class="step-header-text">
+              <h3>إسناد الأقسام</h3>
+              <p>اختر الأقسام التي سينتمي إليها الموظف</p>
+            </div>
+          </div>
+
+          <form [formGroup]="departmentsForm">
+            <div class="selection-grid">
+              <div *ngFor="let dept of departmentAssignments" class="selection-item">
+                <mat-checkbox 
+                  [checked]="dept.assigned"
+                  (change)="toggleDepartment(dept, $event.checked)"
+                  [disabled]="isSubmitting">
+                  {{ dept.title }}
+                </mat-checkbox>
+                <span class="assignment-status" *ngIf="isEditMode && dept.assigned && dept.assignmentId">
+                  <mat-icon class="assigned-icon">check_circle</mat-icon>
+                </span>
+              </div>
+            </div>
+            
+            <div class="selected-items" *ngIf="selectedDepartments.length > 0">
+              <label>الأقسام المختارة ({{ selectedDepartments.length }}):</label>
+              <div class="items-chips">
+                <mat-chip *ngFor="let dept of selectedDepartments" (removed)="removeDepartment(dept)">
+                  {{ dept.title }}
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip>
+              </div>
+            </div>
+            <div class="no-selection" *ngIf="selectedDepartments.length === 0">
+              <mat-icon>info</mat-icon>
+              <span>لم يتم اختيار أي قسم</span>
+            </div>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" matStepperNext>
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 4: Courses Assignment -->
+      <mat-step [stepControl]="coursesForm">
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>school</mat-icon>
+            <span>الدورات</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="step-header">
+            <div class="step-header-icon">📚</div>
+            <div class="step-header-text">
+              <h3>إسناد الدورات</h3>
+              <p>اختر الدورات التي سيدرسها الموظف</p>
+            </div>
+          </div>
+
+          <form [formGroup]="coursesForm">
+            <div class="selection-grid">
+              <div *ngFor="let course of courseAssignments" class="selection-item">
+                <mat-checkbox 
+                  [checked]="course.assigned"
+                  (change)="toggleCourse(course, $event.checked)"
+                  [disabled]="isSubmitting">
+                  {{ course.title }}
+                </mat-checkbox>
+                <span class="assignment-status" *ngIf="isEditMode && course.assigned && course.assignmentId">
+                  <mat-icon class="assigned-icon">check_circle</mat-icon>
+                </span>
+              </div>
+            </div>
+            
+            <div class="selected-items" *ngIf="selectedCourses.length > 0">
+              <label>الدورات المختارة ({{ selectedCourses.length }}):</label>
+              <div class="items-chips">
+                <mat-chip *ngFor="let course of selectedCourses" (removed)="removeCourse(course)">
+                  {{ course.title }}
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip>
+              </div>
+            </div>
+            <div class="no-selection" *ngIf="selectedCourses.length === 0">
+              <mat-icon>info</mat-icon>
+              <span>لم يتم اختيار أي دورة</span>
+            </div>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" matStepperNext>
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 5: Contacts -->
+      <mat-step>
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>contact_phone</mat-icon>
+            <span>جهات الاتصال</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <form [formGroup]="contactsForm">
+            <div formArrayName="contacts">
+              <div *ngFor="let contact of contactsArray.controls; let i=index" [formGroupName]="i" class="contact-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>نوع جهة الاتصال</mat-label>
+                  <mat-select formControlName="contactType">
+                    <mat-option [value]="null">اختر النوع</mat-option>
+                    <mat-option *ngFor="let type of contactTypeOptions" [value]="type.value">
+                      {{ type.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="contact.get('contactType')?.hasError('required')">النوع مطلوب</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="contact-value">
+                  <mat-label>القيمة</mat-label>
+                  <input matInput formControlName="contactValue" placeholder="مثال: 05xxxxxxxx أو example@email.com">
+                  <mat-error *ngIf="contact.get('contactValue')?.hasError('required')">القيمة مطلوبة</mat-error>
+                </mat-form-field>
+
+                <div class="contact-actions">
+                  <button mat-icon-button color="warn" (click)="removeContact(i)" type="button" matTooltip="حذف" [disabled]="contactsArray.length <= 1">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                  <span class="contact-status" *ngIf="isEditMode && contact.get('id')?.value">
+                    <mat-icon class="status-icon existing" matTooltip="جهة اتصال حالية">check_circle</mat-icon>
+                  </span>
+                  <span class="contact-status" *ngIf="isEditMode && !contact.get('id')?.value">
+                    <mat-icon class="status-icon new" matTooltip="جهة اتصال جديدة">add_circle</mat-icon>
+                  </span>
+                  <span class="contact-status" *ngIf="isEditMode && contact.get('id')?.value && contact.get('isModified')?.value">
+                    <mat-icon class="status-icon modified" matTooltip="تم التعديل">edit</mat-icon>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button mat-stroked-button type="button" (click)="addContact()" class="add-contact-btn">
+              <mat-icon>add</mat-icon> إضافة جهة اتصال
+            </button>
+          </form>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" matStepperNext>
+            التالي <mat-icon>arrow_back</mat-icon>
+          </button>
+        </div>
+      </mat-step>
+
+      <!-- Step 6: Summary & Submit -->
+      <mat-step>
+        <ng-template matStepLabel>
+          <div class="step-label">
+            <mat-icon>check_circle</mat-icon>
+            <span>تأكيد المعلومات</span>
+          </div>
+        </ng-template>
+        <div class="step-content">
+          <div class="summary-section">
+            <h3>مراجعة البيانات</h3>
+            
+            <mat-card class="summary-card">
+              <mat-card-title>المعلومات الأساسية</mat-card-title>
+              <div class="summary-grid">
+                <div><strong>الاسم:</strong> {{ basicInfoForm.get('fullName')?.value }}</div>
+                <div><strong>رقم الهوية:</strong> {{ basicInfoForm.get('nationalId')?.value }}</div>
+                <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
+                <div><strong>الجنس:</strong> {{ basicInfoForm.get('gender')?.value?.title || '-' }}</div>
+                <div><strong>نوع الموظف:</strong> {{ basicInfoForm.get('employeeType')?.value?.title || '-' }}</div>
+                <div><strong>تاريخ التوظيف:</strong> {{ basicInfoForm.get('hireDate')?.value | date:'dd/MM/yyyy' }}</div>
+                <div *ngIf="isEditMode"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
+              </div>
+            </mat-card>
+
+            <mat-card class="summary-card">
+              <mat-card-title>المعلومات المالية</mat-card-title>
+              <div class="summary-grid">
+                <div><strong>الراتب:</strong> {{ financialForm.get('salary')?.value | currency:'EGP' }}</div>
+                <div><strong>الراتب المتبقي:</strong> {{ financialForm.get('remainedSalary')?.value | currency:'EGP' }}</div>
+                <div><strong>نوع الراتب:</strong> {{ financialForm.get('salaryType')?.value?.title || '-' }}</div>
+                <div><strong>تحديث شهري:</strong> {{ financialForm.get('isMonthlyUpdated')?.value ? 'مفعل' : 'غير مفعل' }}</div>
+                <div><strong>فترة التحديث:</strong> {{ financialForm.get('updatePeriodInDays')?.value || 0 }} يوم</div>
+              </div>
+            </mat-card>
+
+            <mat-card class="summary-card" *ngIf="selectedDepartments.length > 0">
+              <mat-card-title>الأقسام ({{ selectedDepartments.length }})</mat-card-title>
+              <div class="items-chips">
+                <mat-chip *ngFor="let dept of selectedDepartments">{{ dept.title }}</mat-chip>
+              </div>
+            </mat-card>
+
+            <mat-card class="summary-card" *ngIf="selectedCourses.length > 0">
+              <mat-card-title>الدورات ({{ selectedCourses.length }})</mat-card-title>
+              <div class="items-chips">
+                <mat-chip *ngFor="let course of selectedCourses">{{ course.title }}</mat-chip>
+              </div>
+            </mat-card>
+
+            <mat-card class="summary-card" *ngIf="contactsList.length > 0">
+              <mat-card-title>جهات الاتصال ({{ contactsList.length }})</mat-card-title>
+              <div class="contacts-summary">
+                <div *ngFor="let contact of contactsList" class="summary-item">
+                  <strong>{{ contact.contactType?.title || 'جهة اتصال' }}:</strong> {{ contact.contactValue }}
+                  <span class="contact-action-badge" *ngIf="isEditMode && contact.id">
+                    <mat-icon class="existing-badge" matTooltip="موجود">check_circle</mat-icon>
+                  </span>
+                  <span class="contact-action-badge" *ngIf="isEditMode && !contact.id">
+                    <mat-icon class="new-badge" matTooltip="جديد">add_circle</mat-icon>
+                  </span>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_forward</mat-icon> السابق
+          </button>
+          <button mat-raised-button color="primary" (click)="submitEmployee()" [disabled]="isSubmitting">
+            <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+            <span *ngIf="!isSubmitting">{{ isEditMode ? 'تحديث' : 'تأكيد الإضافة' }}</span>
+          </button>
+          <button mat-stroked-button color="accent" (click)="printPreview()" [disabled]="isSubmitting">
+            <mat-icon>print</mat-icon>
+            معاينة الطباعة
+          </button>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>جاري التحميل...</p>
+  </div>
+</div>

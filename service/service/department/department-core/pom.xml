@@ -82,6 +82,18 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>bs.service.employee</groupId>
+            <artifactId>employee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.service.course</groupId>
+            <artifactId>course-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -1091,7 +1091,7 @@ printTraineeCard(): void {
     const today = new Date().toLocaleDateString('ar-EG');
     const genderDisplay = this.getGenderDisplay(t.gender);
     const academicYearDisplay = this.getAcademicYearDisplay(t.academicYear);
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
     const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
 
     // Photo section - only shown if image exists

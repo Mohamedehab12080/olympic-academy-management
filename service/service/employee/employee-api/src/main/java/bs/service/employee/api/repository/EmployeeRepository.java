@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface EmployeeRepository {
     Employee insert(Employee employee);
     Employee update(Employee employee);
+    void internalUpdate(Employee employee);
     Optional<Employee> selectById(Integer id);
     List<Employee> selectAllById(List<Integer> ids);
     List<Employee> selectAllByFilters(EmployeeSearchFilter filters);

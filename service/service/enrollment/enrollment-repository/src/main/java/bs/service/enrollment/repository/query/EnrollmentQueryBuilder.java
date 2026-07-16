@@ -29,6 +29,10 @@ public class EnrollmentQueryBuilder extends AbstractQueryBuilderV2<Enrollment, E
             qbConditions.add(QBCondition.builder().placeHolder("isActive").value(filters.getIsActive())
                     .condition("item.isActive = :PH").build());
 
+        if (filters.getIsAutoUpdate() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("isAutoUpdate").value(filters.getIsAutoUpdate())
+                    .condition("item.isAutoUpdate = :PH").build());
+
         if (filters.getIsDeleted() != null)
             qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
                     .condition("item.isDeleted = :PH").build());

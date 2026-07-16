@@ -105,7 +105,7 @@ export class DepartmentFormComponent implements OnInit {
 
   loadDepartment() {
     if (!this.departmentId) return;
-    this.departmentService.getDepartmentById(this.departmentId).subscribe({
+    this.departmentService.getDepartmentSimpleById(this.departmentId).subscribe({
       next: (department: any) => {
         this.departmentForm.patchValue({
           title: department.title,

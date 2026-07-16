@@ -115,6 +115,7 @@ paths:
       parameters:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '#/components/parameters/QPIsMonthlyUpdated'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
         - $ref: '#/components/parameters/QPHireDateFrom'
@@ -1026,6 +1027,12 @@ components:
       schema:
         type: string
         format: date
+    QPIsMonthlyUpdated:
+      name: isMonthlyUpdated
+      in: query
+      required: false
+      schema:
+        type: boolean
     QPHireDateTo:
       name: hireDateTo
       in: query
@@ -1237,6 +1244,11 @@ components:
           $ref: '#/components/schemas/EmployeeTypes'
         isActive:
           type: boolean
+        isMonthlyUpdated:
+          type: boolean
+        updatePeriodInDays:
+          type: integer
+          format: int32
         imageUrl:
           type: string
         hireDate:
@@ -1391,11 +1403,18 @@ components:
     AssignCourseDTO:
       type: object
       required:
-        - courseId
+        - courseIdToBeAdded
       properties:
-        courseId:
-          type: integer
-          format: int32
+        courseIdToBeAdded:
+          type: array
+          items:
+            type: integer
+            format: int32
+        courseIdToBeDeleted:
+          type: array
+          items:
+            type: integer
+            format: int32
 
     EmployeeLookupVTO:
       type: object
@@ -1452,6 +1471,11 @@ components:
           format: date
         isActive:
           type: boolean
+        isMonthlyUpdated:
+          type: boolean
+        updatePeriodInDays:
+          type: integer
+          format: int32
         departments:
           type: array
           items:
@@ -1607,10 +1631,17 @@ components:
           type: string
         isActive:
           type: boolean
-        departments:
-          type: array
-          items:
-            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        isMonthlyUpdated:
+          type: boolean
+        updatePeriodInDays:
+          type: integer
+          format: int32
+        salary:
+          type: integer
+          format: int32
+        remainedSalary:
+          type: integer
+          format: int32
 
     EmployeeContactResultSet:
       type: object
