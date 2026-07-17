@@ -561,7 +561,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const statusColor = isPaid ? '#065f46' : '#92400e';
     const statusBg = isPaid ? '#d1fae5' : '#fef3c7';
     const paymentStatus = isPaid ? 'مدفوع بالكامل' : 'متبقي';
-    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const paymentNumber = `RENT-${payment.id}`;
     const effectLabel = this.getEffectLabel(payment.rentType?.effect);
@@ -1061,7 +1061,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   }
 
   private buildRentReceiptHTML(data: any): string {
-    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
     
     return `
 <!DOCTYPE html>
@@ -1620,7 +1620,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const incomeTotal = this.incomeTotal;
     const expenseTotal = this.expenseTotal;
 
-    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
 
     let tableRows = '';
     this.allPayments.forEach((item: any, index: number) => {

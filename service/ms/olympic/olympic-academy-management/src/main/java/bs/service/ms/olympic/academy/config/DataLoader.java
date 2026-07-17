@@ -37,6 +37,9 @@ public class DataLoader implements CommandLineRunner {
     @Value("${spring.datasource.password}")
     private String password;
 
+    @Value("${backup.mysqldump.path:}")
+    private String mysqldumpPathConfig;
+
     private static final String BACKUP_PATH = "./backup";
     private static final String BACKUP_FILE = BACKUP_PATH + "/database_backup.sql";
     private static final int BACKUP_INTERVAL_DAYS = 30;
@@ -46,6 +49,10 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        log.info("=".repeat(60));
+        log.info("🚀 Starting Olympic Academy DataLoader...");
+        log.info("=".repeat(60));
+
         createSuperAdminIfNotExists();
         createAdminIfNotExists();
         createDemoUserIfNotExists();
@@ -53,11 +60,12 @@ public class DataLoader implements CommandLineRunner {
         runEmployeeSalaryUpdateIfEnabled();
         runEnrollmentActivationUpdate();
         performBackupIfNeeded();
+
+        log.info("=".repeat(60));
+        log.info("✅ DataLoader completed successfully!");
+        log.info("=".repeat(60));
     }
 
-    /**
-     * Create Super Admin user if not exists
-     */
     private void createSuperAdminIfNotExists() {
         String superAdminEmail = "mohamedehab12080@gmail.com";
 
@@ -85,9 +93,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Create Admin user if not exists
-     */
     private void createAdminIfNotExists() {
         String adminEmail = "m.ehab.rabea@gmail.com";
 
@@ -115,9 +120,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Create Demo User if not exists
-     */
     private void createDemoUserIfNotExists() {
         String demoUserEmail = "demo@travelplanner.com";
 
@@ -145,9 +147,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Print default users information
-     */
     private void printDefaultUsers() {
         log.info("");
         log.info("📋 ========== DEFAULT USERS ==========");
@@ -171,9 +170,6 @@ public class DataLoader implements CommandLineRunner {
         log.info("");
     }
 
-    /**
-     * Run enrollment activation update on startup
-     */
     private void runEnrollmentActivationUpdate() {
         log.info("=".repeat(60));
         log.info("🔄 Running enrollment activation update on startup...");
@@ -186,9 +182,6 @@ public class DataLoader implements CommandLineRunner {
         log.info("=".repeat(60));
     }
 
-    /**
-     * Run employee salary update on startup
-     */
     private void runEmployeeSalaryUpdateIfEnabled() {
         log.info("=".repeat(60));
         log.info("🔄 Running employee salary update on startup...");
@@ -203,12 +196,19 @@ public class DataLoader implements CommandLineRunner {
 
     // ==================== BACKUP METHODS ====================
 
-    /**
-     * Find mysqldump executable path on the system
-     */
     private String findMysqldumpPath() {
         if (mysqldumpPath != null) {
             return mysqldumpPath;
+        }
+
+        // Check configured path first
+        if (mysqldumpPathConfig != null && !mysqldumpPathConfig.isEmpty()) {
+            File file = new File(mysqldumpPathConfig);
+            if (file.exists()) {
+                mysqldumpPath = mysqldumpPathConfig;
+                log.info("✅ Found mysqldump at configured path: {}", mysqldumpPath);
+                return mysqldumpPath;
+            }
         }
 
         // Common installation paths on Windows
@@ -252,9 +252,6 @@ public class DataLoader implements CommandLineRunner {
         return null;
     }
 
-    /**
-     * Check if backup is needed and perform it
-     */
     private void performBackupIfNeeded() {
         log.info("=".repeat(60));
         log.info("📁 Checking database backup status...");
@@ -302,9 +299,6 @@ public class DataLoader implements CommandLineRunner {
         log.info("=".repeat(60));
     }
 
-    /**
-     * Calculate days since last backup
-     */
     private long daysSinceLastBackup(File backupFile) {
         long lastModified = backupFile.lastModified();
         long now = System.currentTimeMillis();
@@ -312,9 +306,6 @@ public class DataLoader implements CommandLineRunner {
         return diffInMillis / (1000 * 60 * 60 * 24);
     }
 
-    /**
-     * Get last backup timestamp
-     */
     private LocalDateTime getLastBackupTime(File backupFile) {
         long lastModified = backupFile.lastModified();
         return LocalDateTime.ofInstant(
@@ -323,9 +314,6 @@ public class DataLoader implements CommandLineRunner {
         );
     }
 
-    /**
-     * Create database backup
-     */
     private void createDatabaseBackup() {
         log.info("🔄 Creating database backup...");
         long startTime = System.currentTimeMillis();
@@ -361,9 +349,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Create backup directory if not exists
-     */
     private void createBackupDirectory() {
         File backupDir = new File(BACKUP_PATH);
         if (!backupDir.exists()) {
@@ -376,9 +361,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Delete old backup file
-     */
     private void deleteOldBackup() {
         File oldBackup = new File(BACKUP_FILE);
         if (oldBackup.exists()) {
@@ -389,9 +371,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Execute mysqldump command
-     */
     private boolean executeMysqlDump(String databaseName) {
         String mysqldump = findMysqldumpPath();
 
@@ -454,9 +433,6 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    /**
-     * Extract database name from JDBC URL
-     */
     private String extractDatabaseName(String url) {
         try {
             int lastSlash = url.lastIndexOf('/');

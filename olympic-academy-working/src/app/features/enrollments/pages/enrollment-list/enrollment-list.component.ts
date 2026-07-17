@@ -1474,7 +1474,7 @@ private setupSearchDebounce(): void {
     const today = new Date().toLocaleDateString('ar-EG');
     const currentYear = new Date().getFullYear();
     let cardsHtml = '';
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
     const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
     const academyAddress = 'الفيوم - حي الجامعة';
 
@@ -1962,8 +1962,8 @@ private setupSearchDebounce(): void {
 
     let allPagesHTML = '';
 
-    // Use simpleLogo.jpeg for watermark
-    const logoPath = 'assets/images/simpleLogo.jpeg';
+    // Use mainLogo.jpeg for watermark
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
     pages.forEach((pageData: EnrollmentListItem[], pageIndex: number) => {
       let tableRows = '';

@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   passwordStrength = 0;
   passwordStrengthText = '';
   currentYear = new Date().getFullYear();
-  logoPath = 'assets/images/simpleLogo.jpeg';
+  logoPath = 'assets/images/mainLogo.jpeg';
   
   private destroy$ = new Subject<void>();
 
@@ -68,16 +68,20 @@ export class LoginComponent implements OnInit, OnDestroy {
       rememberMe: [false]
     });
 
-    if (this.authService.isAuthenticated && !this.authService.isTokenExpired()) {
+    // Check if already authenticated
+    if (this.authService.isAuthenticated) {
+      console.log('🔐 Already authenticated, redirecting to dashboard...');
       this.router.navigate(['/dashboard']);
     }
   }
 
   ngOnInit(): void {
+    // Check for expired token
     if (this.authService.getToken() && this.authService.isTokenExpired()) {
       this.authService.clearSessionOnExpiration();
     }
 
+    // Password strength checker
     this.loginForm.get('password')?.valueChanges
       .pipe(
         debounceTime(300),
@@ -93,6 +97,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       });
 
+    // Load saved email
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       this.loginForm.patchValue({ email: savedEmail, rememberMe: true });
@@ -159,16 +164,49 @@ export class LoginComponent implements OnInit, OnDestroy {
       localStorage.removeItem('rememberedEmail');
     }
 
+    console.log('🔄 Attempting login for:', email);
+
     this.authService.login({ email, password }).subscribe({
       next: (response) => {
+        console.log('✅ Login successful! Response:', response);
+        
+        // Show success message
         this.notification.showSuccess(`مرحباً ${response.fullName || 'مستخدم'}!`);
+        
+        // Reset loading state
         this.isLoading = false;
-        this.router.navigate(['/dashboard']);
+        
+        // Navigate to dashboard with a small delay to ensure state is updated
+        setTimeout(() => {
+          console.log('🔀 Navigating to dashboard...');
+          console.log('🔄 Auth state - isAuthenticated:', this.authService.isAuthenticated);
+          console.log('🔄 Auth state - currentUser:', this.authService.currentUser);
+          
+          this.router.navigate(['/dashboard']).then((success) => {
+            if (success) {
+              console.log('✅ Navigation successful');
+            } else {
+              console.log('❌ Navigation failed');
+              // Fallback: try with skipLocationChange
+              this.router.navigate(['/dashboard'], { skipLocationChange: true }).then((s) => {
+                if (!s) {
+                  // Ultimate fallback
+                  window.location.href = '/dashboard';
+                }
+              });
+            }
+          }).catch((err) => {
+            console.error('❌ Navigation error:', err);
+            // Ultimate fallback
+            window.location.href = '/dashboard';
+          });
+        }, 300);
       },
       error: (error) => {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
         this.isLoading = false;
-        this.notification.showError(error.error?.messageEn || 'فشل تسجيل الدخول');
+        const errorMessage = error.error?.messageEn || error.error?.message || 'فشل تسجيل الدخول';
+        this.notification.showError(errorMessage);
       }
     });
   }

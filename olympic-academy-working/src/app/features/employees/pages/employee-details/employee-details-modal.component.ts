@@ -1138,7 +1138,7 @@ export class EmployeeDetailsModalComponent
           .join(', ') || '-';
       const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
 
-      const logoPath = 'assets/images/simpleLogo.jpeg';
+      const logoPath = 'assets/images/mainLogo.jpeg';
 
       const photoSection = hasImage
         ? `

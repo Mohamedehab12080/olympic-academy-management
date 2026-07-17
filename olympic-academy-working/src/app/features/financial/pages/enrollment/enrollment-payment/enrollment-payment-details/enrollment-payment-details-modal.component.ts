@@ -494,7 +494,7 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
   }
 
   private buildEnhancedReceiptHTML(data: any): string {
-    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
     
     return `
 <!DOCTYPE html>
