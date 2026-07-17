@@ -144,6 +144,7 @@ paths:
       parameters:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '#/components/parameters/QPIsAutoUpdate'
         - $ref: '#/components/parameters/QPTraineeId'
         - $ref: '#/components/parameters/QPTraineeNationalId'
         - $ref: '#/components/parameters/QPCourseId'
@@ -302,6 +303,12 @@ components:
       schema:
         type: integer
         format: int32
+    QPIsAutoUpdate:
+      name: isAutoUpdate
+      in: query
+      required: false
+      schema:
+        type: boolean
     QPCourseId:
       name: courseId
       in: query
@@ -465,6 +472,8 @@ components:
           format: int32
         isActive:
           type: boolean
+        isAutoUpdate:
+          type: boolean
         note:
           type: string
 
@@ -510,6 +519,8 @@ components:
         note:
           type: string
         isActive:
+          type: boolean
+        isAutoUpdate:
           type: boolean
         createdOn:
           type: string
@@ -562,4 +573,6 @@ components:
           type: integer
           format: int32
         isActive:
+          type: boolean
+        isAutoUpdate:
           type: boolean

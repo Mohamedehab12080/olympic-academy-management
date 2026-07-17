@@ -1,6 +1,6 @@
 // auth.guard.ts
 import { Injectable, inject } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
+import { Router, CanActivateFn, UrlTree } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -12,20 +12,18 @@ export class AuthGuardService {
     private notification: NotificationService
   ) {}
 
-  canActivate(): boolean {
+  canActivate(): boolean | UrlTree {
     // Check if user is authenticated
     if (!this.authService.isAuthenticated) {
       this.notification.showWarning('يرجى تسجيل الدخول أولاً');
-      this.router.navigate(['/login']);
-      return false;
+      return this.router.createUrlTree(['/login']);
     }
     
     // Check if token is expired
     if (this.authService.isTokenExpired()) {
       this.authService.clearSessionOnExpiration();
       this.notification.showError('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
-      this.router.navigate(['/login']);
-      return false;
+      return this.router.createUrlTree(['/login']);
     }
     
     return true;

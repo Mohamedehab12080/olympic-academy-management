@@ -106,7 +106,7 @@ public class EnrollmentPaymentServiceImpl implements EnrollmentPaymentService {
                 .isDeleted(false)
                 .traineeNationalId(traineeNationalId)
                 .paymentMethodId(paymentMethodId)
-                .status(status!=null?status.id:null)
+                .statuses(status!=null?List.of(status.id):List.of(1,2,6))
                 .paymentDateFrom(paymentDateFrom)
                 .paymentDateTo(paymentDateTo)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())

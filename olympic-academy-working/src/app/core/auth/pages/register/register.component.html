@@ -1,60 +1,173 @@
+<!-- register.component.html -->
+
 <div class="register-container">
-  <mat-card class="register-card">
-    <div class="register-header">
-      <mat-icon class="logo-icon">sports_score</mat-icon>
-      <h1>إنشاء حساب جديد</h1>
-      <p>سجل في الأكاديمية الأولمبية</p>
+  <!-- Animated Background -->
+  <div class="bg-animation">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+    <div class="bg-circle bg-circle-4"></div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="register-card">
+    <!-- Brand Section -->
+    <div class="brand-section">
+      <div class="logo-wrapper">
+        <div class="logo-ring">
+          <img 
+            src="{{ logoPath }}" 
+            alt="الأكاديمية الأولمبية لعلوم الرياضة" 
+            class="logo-image"
+            onerror="this.style.display='none'">
+        </div>
+      </div>
+      <h1 class="brand-title">إنشاء حساب جديد</h1>
+      <p class="brand-description">سجل في الأكاديمية الأولمبية لعلوم الرياضة</p>
     </div>
 
+    <!-- Form -->
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>الاسم الكامل</mat-label>
-        <input matInput formControlName="fullName">
-        <mat-icon matPrefix>person</mat-icon>
-        <mat-error *ngIf="registerForm.get('fullName')?.hasError('required')">الاسم الكامل مطلوب</mat-error>
-        <mat-error *ngIf="registerForm.get('fullName')?.hasError('minlength')">الاسم يجب أن يكون 3 أحرف على الأقل</mat-error>
-      </mat-form-field>
+      <!-- Full Name -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>الاسم الكامل</mat-label>
+          <input 
+            matInput 
+            formControlName="fullName" 
+            placeholder="أدخل الاسم الكامل"
+            autocomplete="name">
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="fullName?.invalid && fullName?.touched">
+            <span *ngIf="fullName?.hasError('required')">الاسم الكامل مطلوب</span>
+            <span *ngIf="fullName?.hasError('minlength')">الاسم يجب أن يكون 3 أحرف على الأقل</span>
+            <span *ngIf="fullName?.hasError('maxlength')">الاسم لا يمكن أن يتجاوز 50 حرفاً</span>
+          </mat-error>
+        </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>البريد الإلكتروني</mat-label>
-        <input matInput formControlName="email" type="email">
-        <mat-icon matPrefix>email</mat-icon>
-        <mat-error *ngIf="registerForm.get('email')?.hasError('required')">البريد الإلكتروني مطلوب</mat-error>
-        <mat-error *ngIf="registerForm.get('email')?.hasError('email')">بريد إلكتروني غير صحيح</mat-error>
-      </mat-form-field>
+      <!-- Email -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>البريد الإلكتروني</mat-label>
+          <input 
+            matInput 
+            formControlName="email" 
+            type="email" 
+            placeholder="example@domain.com"
+            autocomplete="email">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="email?.invalid && email?.touched">
+            <span *ngIf="email?.hasError('required')">البريد الإلكتروني مطلوب</span>
+            <span *ngIf="email?.hasError('email')">بريد إلكتروني غير صحيح</span>
+          </mat-error>
+        </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>كلمة المرور</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-        <mat-icon matPrefix>lock</mat-icon>
-        <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="cursor-pointer">
-          {{ hidePassword ? 'visibility_off' : 'visibility' }}
-        </mat-icon>
-        <mat-error *ngIf="registerForm.get('password')?.hasError('required')">كلمة المرور مطلوبة</mat-error>
-        <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">كلمة المرور يجب أن تكون 6 أحرف على الأقل</mat-error>
-      </mat-form-field>
+      <!-- Password -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>كلمة المرور</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="أدخل كلمة المرور"
+            autocomplete="new-password">
+          <mat-icon matPrefix>lock</mat-icon>
+          <mat-icon
+            matSuffix
+            (click)="togglePasswordVisibility()"
+            class="toggle-password"
+            [matTooltip]="hidePassword ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور'">
+            {{ hidePassword ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+          <mat-error *ngIf="password?.invalid && password?.touched">
+            <span *ngIf="password?.hasError('required')">كلمة المرور مطلوبة</span>
+            <span *ngIf="password?.hasError('minlength')">كلمة المرور يجب أن تكون 6 أحرف على الأقل</span>
+          </mat-error>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>تأكيد كلمة المرور</mat-label>
-        <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword">
-        <mat-icon matPrefix>verified</mat-icon>
-        <mat-icon matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" class="cursor-pointer">
-          {{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}
-        </mat-icon>
-        <mat-error *ngIf="registerForm.get('confirmPassword')?.hasError('required')">تأكيد كلمة المرور مطلوب</mat-error>
-        <mat-error *ngIf="registerForm.hasError('passwordMismatch')">كلمة المرور غير متطابقة</mat-error>
-      </mat-form-field>
+        <!-- Password Strength -->
+        <div class="password-strength" *ngIf="showPasswordStrength && password?.valid">
+          <div class="strength-bar">
+            <div class="strength-fill" 
+                 [style.width.%]="getPasswordStrengthWidth()"
+                 [style.background]="getPasswordStrengthColor()">
+            </div>
+          </div>
+          <div class="strength-info">
+            <span class="strength-label" [style.color]="getPasswordStrengthColor()">
+              {{ passwordStrengthText }}
+            </span>
+            <span class="strength-percent" [style.color]="getPasswordStrengthColor()">
+              {{ getPasswordStrengthWidth() | number:'1.0-0' }}%
+            </span>
+          </div>
+        </div>
+      </div>
 
-      <button mat-raised-button color="primary" type="submit" class="register-btn" [disabled]="isLoading">
-        <mat-icon *ngIf="!isLoading">person_add</mat-icon>
-        <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-        <span>{{ isLoading ? 'جاري التسجيل...' : 'تسجيل' }}</span>
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>تأكيد كلمة المرور</mat-label>
+          <input
+            matInput
+            [type]="hideConfirmPassword ? 'password' : 'text'"
+            formControlName="confirmPassword"
+            placeholder="أعد إدخال كلمة المرور"
+            autocomplete="new-password">
+          <mat-icon matPrefix>verified</mat-icon>
+          <mat-icon
+            matSuffix
+            (click)="toggleConfirmPasswordVisibility()"
+            class="toggle-password"
+            [matTooltip]="hideConfirmPassword ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور'">
+            {{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+          <mat-error *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+            <span *ngIf="confirmPassword?.hasError('required')">تأكيد كلمة المرور مطلوب</span>
+          </mat-error>
+          <mat-error *ngIf="registerForm.hasError('passwordMismatch') && confirmPassword?.touched">
+            كلمة المرور غير متطابقة
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        mat-raised-button
+        type="submit"
+        class="submit-btn"
+        [disabled]="isLoading">
+        <span class="btn-content">
+          <mat-icon *ngIf="!isLoading" class="btn-icon">person_add</mat-icon>
+          <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+          <span class="btn-text">{{ isLoading ? 'جاري التسجيل...' : 'تسجيل' }}</span>
+        </span>
       </button>
 
-      <div class="login-link">
-        <span>لديك حساب بالفعل؟</span>
-        <a routerLink="/login">تسجيل الدخول</a>
+      <!-- Login Link -->
+      <div class="login-section">
+        <span class="login-text">لديك حساب بالفعل؟</span>
+        <a routerLink="/login" class="login-link">تسجيل الدخول</a>
+        <span class="divider">|</span>
+        <a routerLink="/" class="home-link">
+          <mat-icon>home</mat-icon>
+          الرئيسية
+        </a>
+      </div>
+
+      <!-- Footer -->
+      <div class="register-footer">
+        <div class="footer-divider"></div>
+        <div class="footer-content">
+          <span class="copyright">&copy; {{ currentYear }} الأكاديمية الأولمبية لعلوم الرياضة</span>
+          <span class="dot">•</span>
+          <span class="powered-by">powered by CoreStack Solutions</span>
+          <span class="phone">📱 01069911181</span>
+        </div>
       </div>
     </form>
-  </mat-card>
+  </div>
 </div>

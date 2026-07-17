@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { DepartmentService } from '../../../../core/services/department.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-
+import { DepartmentDetailsModalComponent } from './../department-details/department-details-modal.component';
 @Component({
   selector: 'app-department-list',
   template: `
@@ -295,6 +295,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
       color: #991b1b;
     }
 
+    .custom-dialog-container .mat-dialog-container {
+      padding: 0;
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
     .status-icon {
       font-size: 14px;
       width: 14px;
@@ -364,6 +370,7 @@ export class DepartmentListComponent implements OnInit {
     private dialog: MatDialog
   ) {}
 
+  
   ngOnInit() {
     this.loadDepartments();
   }
@@ -407,8 +414,7 @@ export class DepartmentListComponent implements OnInit {
     const confirmMessage = `هل أنت متأكد من ${action} قسم "${department.title}"؟`;
     
     if (confirm(confirmMessage)) {
-      const updatedData = { ...department, isActive: !department.isActive };
-      this.departmentService.updateDepartment(department.id, updatedData).subscribe({
+      this.departmentService.deleteDepartment(department.id).subscribe({
         next: () => {
           this.notificationService.showSuccess(`تم ${action} القسم بنجاح`);
           this.loadDepartments();
@@ -420,8 +426,12 @@ export class DepartmentListComponent implements OnInit {
     }
   }
 
-  viewDepartment(department: any) {
-    // يمكن التوجيه إلى صفحة التفاصيل أو عرض معلومات إضافية
-    console.log('View department:', department);
-  }
+ viewDepartment(department: any) {
+  this.dialog.open(DepartmentDetailsModalComponent, {
+    width: '700px',
+    maxWidth: '95vw',
+    data: { departmentId: department.id },
+    panelClass: 'custom-dialog-container'
+  });
+}
 }

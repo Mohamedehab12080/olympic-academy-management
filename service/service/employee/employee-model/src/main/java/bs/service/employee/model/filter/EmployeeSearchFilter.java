@@ -17,6 +17,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class EmployeeSearchFilter extends SearchFilter<EmployeeSearchFilter.OrderByAttributes> {
 
+    private Boolean isMonthlyUpdated;
+    private Integer remainedSalary;
+    private LocalDate lastModifiedOnFrom;
+    private LocalDate lastModifiedOnTo;
     private String quickSearchQuery;
     private Boolean isActive;
     private Boolean isDeleted;

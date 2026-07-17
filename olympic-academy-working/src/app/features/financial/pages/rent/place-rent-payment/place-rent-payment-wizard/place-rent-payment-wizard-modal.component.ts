@@ -171,7 +171,7 @@ export class PlaceRentPaymentWizardModalComponent implements OnInit, OnDestroy {
       rentAmount: [{ value: null, disabled: true }],
       payedAmount: [null, [Validators.required, Validators.min(1)]],
       remainedAmount: [{ value: null, disabled: true }],
-      rentTypeId: [null],
+      rentTypeId: [null, Validators.required], // ✅ NOW REQUIRED
       paymentDate: [new Date(), Validators.required],
       paymentMethodId: [null, Validators.required],
       note: ['']
@@ -322,7 +322,7 @@ export class PlaceRentPaymentWizardModalComponent implements OnInit, OnDestroy {
               rentAmount: place.rentValue || 0,
               payedAmount: res.payedAmount,
               remainedAmount: res.remainedAmount,
-              rentTypeId: res.rentType?.id,
+              rentTypeId: res.rentType?.id || null, // Ensure null if not found
               paymentDate: new Date(res.paymentDate),
               paymentMethodId: res.paymentMethod?.id,
               note: res.note || ''
@@ -359,7 +359,7 @@ export class PlaceRentPaymentWizardModalComponent implements OnInit, OnDestroy {
               rentAmount: res.rentAmount || 0,
               payedAmount: res.payedAmount,
               remainedAmount: res.remainedAmount,
-              rentTypeId: res.rentType?.id,
+              rentTypeId: res.rentType?.id || null, // Ensure null if not found
               paymentDate: new Date(res.paymentDate),
               paymentMethodId: res.paymentMethod?.id,
               note: res.note || ''
@@ -519,6 +519,7 @@ export class PlaceRentPaymentWizardModalComponent implements OnInit, OnDestroy {
         const remainedRent = this.paymentForm.get('placeRemainedRent')?.value;
         return this.paymentForm.get('payedAmount')?.valid === true && 
                this.paymentForm.get('paymentDate')?.valid === true &&
+               this.paymentForm.get('rentTypeId')?.valid === true && // ✅ CHECK RENT TYPE VALIDATION
                payedAmount <= remainedRent;
       case 2:
         return this.paymentForm.get('paymentMethodId')?.valid === true;
@@ -535,6 +536,7 @@ export class PlaceRentPaymentWizardModalComponent implements OnInit, OnDestroy {
       case 1:
         this.paymentForm.get('payedAmount')?.markAsTouched();
         this.paymentForm.get('paymentDate')?.markAsTouched();
+        this.paymentForm.get('rentTypeId')?.markAsTouched(); // ✅ MARK RENT TYPE AS TOUCHED
         break;
       case 2:
         this.paymentForm.get('paymentMethodId')?.markAsTouched();
@@ -638,12 +640,19 @@ export class PlaceRentPaymentWizardModalComponent implements OnInit, OnDestroy {
   private buildPaymentData(): any {
     const paymentDate = this.paymentForm.get('paymentDate')?.value;
     
+    // Validate rentTypeId is present
+    const rentTypeId = this.paymentForm.get('rentTypeId')?.value;
+    if (!rentTypeId) {
+      this.notification.showError('نوع الإيجار مطلوب');
+      throw new Error('نوع الإيجار مطلوب');
+    }
+    
     return {
       placeId: this.paymentForm.get('placeId')?.value,
       rentAmount: this.paymentForm.get('rentAmount')?.value,
       payedAmount: this.paymentForm.get('payedAmount')?.value,
       remainedAmount: this.getRemainedAmount(),
-      rentTypeId: this.paymentForm.get('rentTypeId')?.value,
+      rentTypeId: rentTypeId,
       paymentDate: this.formatDate(paymentDate),
       paymentMethodId: this.paymentForm.get('paymentMethodId')?.value,
       note: this.paymentForm.get('note')?.value

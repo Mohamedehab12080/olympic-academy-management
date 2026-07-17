@@ -1,22 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <title>نظام إدارة الأكاديمية الأولمبية</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Cairo', sans-serif; }
-    body { margin: 0; background-color: #f3f4f6; }
-  </style>
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body class="mat-typography">
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    
+    <!-- ============================================
+         LOCAL FONTS (OFFLINE) - From assets/fonts/
+         ============================================ -->
+    
+    <!-- Material Icons - Local -->
+    <link rel="stylesheet" href="assets/fonts/material-icons/material-icons.css" />
+    
+    <!-- Cairo Font - Local -->
+    <link rel="stylesheet" href="assets/fonts/cairo/cairo.css" />
+    
+    <!-- ============================================
+         CDN FALLBACK (if local fails, cached after first load)
+         ============================================ -->
+    <link 
+      rel="stylesheet" 
+      href="https://fonts.googleapis.com/icon?family=Material+Icons" 
+      media="print" 
+      onload="this.media='all'" 
+    />
+    
+    <link 
+      rel="stylesheet" 
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" 
+      media="print" 
+      onload="this.media='all'" 
+    />
+    
+    <!-- ============================================
+         STYLES
+         ============================================ -->
+    <style>
+      /* Font family fallback */
+      * {
+        font-family: "Cairo", "Segoe UI", "Tahoma", sans-serif;
+      }
+      
+      body {
+        margin: 0;
+        background-color: #f3f4f6;
+      }
+
+      /* ==========================================
+         EMOJI FALLBACK - If fonts fail to load
+         ========================================== */
+      .material-icons {
+        font-family: 'Material Icons', 'Segoe UI', 'Arial', sans-serif;
+      }
+      
+      /* Material Icons emoji fallbacks */
+      .material-icons[data-icon="home"]::before { content: "🏠"; }
+      .material-icons[data-icon="dashboard"]::before { content: "📊"; }
+      .material-icons[data-icon="people"]::before { content: "👥"; }
+      .material-icons[data-icon="person"]::before { content: "👤"; }
+      .material-icons[data-icon="school"]::before { content: "🏫"; }
+      .material-icons[data-icon="book"]::before { content: "📚"; }
+      .material-icons[data-icon="analytics"]::before { content: "📈"; }
+      .material-icons[data-icon="payments"]::before { content: "💰"; }
+      .material-icons[data-icon="check_circle"]::before { content: "✅"; }
+      .material-icons[data-icon="warning"]::before { content: "⚠️"; }
+      .material-icons[data-icon="cancel"]::before { content: "❌"; }
+      .material-icons[data-icon="refresh"]::before { content: "🔄"; }
+      .material-icons[data-icon="print"]::before { content: "🖨️"; }
+      .material-icons[data-icon="settings"]::before { content: "⚙️"; }
+      .material-icons[data-icon="schedule"]::before { content: "⏰"; }
+      .material-icons[data-icon="event"]::before { content: "📅"; }
+      .material-icons[data-icon="arrow_upward"]::before { content: "⬆️"; }
+      .material-icons[data-icon="arrow_downward"]::before { content: "⬇️"; }
+      .material-icons[data-icon="trending_up"]::before { content: "📈"; }
+      .material-icons[data-icon="trending_down"]::before { content: "📉"; }
+      .material-icons[data-icon="group"]::before { content: "👥"; }
+      .material-icons[data-icon="person_off"]::before { content: "🚫👤"; }
+      .material-icons[data-icon="book_off"]::before { content: "🚫📚"; }
+      .material-icons[data-icon="assignment_off"]::before { content: "🚫📝"; }
+      .material-icons[data-icon="assignment"]::before { content: "📝"; }
+      .material-icons[data-icon="card_giftcard"]::before { content: "🎁"; }
+      .material-icons[data-icon="apartment"]::before { content: "🏢"; }
+      .material-icons[data-icon="money_off"]::before { content: "💸"; }
+      .material-icons[data-icon="currency_exchange"]::before { content: "💱"; }
+      .material-icons[data-icon="olympic"]::before { content: "🏅"; }
+      .material-icons[data-icon="more_vert"]::before { content: "⋮"; }
+      .material-icons[data-icon="file_download"]::before { content: "⬇️"; }
+      .material-icons[data-icon="dark_mode"]::before { content: "🌙"; }
+      .material-icons[data-icon="light_mode"]::before { content: "☀️"; }
+    </style>
+
+    <!-- ============================================
+         META TAGS
+         ============================================ -->
+    <meta name="theme-color" content="#667eea" />
+    <meta name="description" content="نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة" />
+  </head>
+  <body class="mat-typography">
+    <app-root></app-root>
+  </body>
 </html>

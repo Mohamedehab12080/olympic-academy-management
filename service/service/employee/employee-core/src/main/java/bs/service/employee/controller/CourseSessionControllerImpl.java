@@ -5,9 +5,7 @@ import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.api.service.CourseSessionService;
 import bs.service.employee.controller.generated.CourseSessionController;
 import bs.service.employee.model.enums.SessionStatus;
-import bs.service.employee.model.generated.CourseSessionDTO;
-import bs.service.employee.model.generated.CourseSessionResultSet;
-import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.employee.model.generated.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -36,13 +34,41 @@ public class CourseSessionControllerImpl implements CourseSessionController {
         return ResponseEntity.ok().build();
     }
 
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<Void> _deleteSessionsByDay(Integer courseId, String sessionDay) {
+        courseSessionService.deleteSessionsByDay(courseId,sessionDay);
+        return ResponseEntity.noContent().build();
+    }
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseSessionResultSet> _getAllCourseSessionsByFilter(Integer courseId,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
+    public ResponseEntity<Void> _deleteSessionsByDayAndCourse(Integer courseId, String sessionDay) {
+        courseSessionService.deleteSessionsByDayAndCourse(courseId,sessionDay);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<Void> _deleteSessionsByDayCourseAndTrainers(Integer courseId, String sessionDay, List<Integer> trainersId) {
+        courseSessionService.deleteSessionsByDayCourseAndTrainers(courseId,sessionDay,trainersId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<Void> _deleteSpecificSession(Integer courseSessionId) {
+        courseSessionService.deleteSpecificSession(courseSessionId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<CourseSessionResultSet> _getAllCourseSessionsByFilter(Integer courseId,List<Integer> trainerIds ,String sessionDay, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         CourseSessionResultSet result = courseSessionService.getAllCourseSessionsByFilter(
-                courseId,sessionDay, status, sessionDateFrom, sessionDateTo,
+                courseId,trainerIds,sessionDay, status, sessionDateFrom, sessionDateTo,
                 startTimeFrom, startTimeTo, endTimeFrom, endTimeTo,
                 pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
@@ -50,10 +76,10 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(Integer courseId,String sessionDay, Integer trainerId, Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy){
+    public ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(String quickSearch,Integer courseId,String sessionDay, Integer trainerId,List<Integer> trainerIds , Integer placeId, SessionStatus status, LocalDate sessionDateFrom, LocalDate sessionDateTo, String startTimeFrom, String startTimeTo, String endTimeFrom, String endTimeTo, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy){
 
         CourseSessionResultSet result = courseSessionService.getAllSessionsByFilter(
-                courseId,sessionDay, trainerId, placeId, status,
+                quickSearch,courseId,trainerIds,sessionDay, trainerId, placeId, status,
                 sessionDateFrom, sessionDateTo, startTimeFrom, startTimeTo,
                 endTimeFrom, endTimeTo, pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
@@ -61,16 +87,27 @@ public class CourseSessionControllerImpl implements CourseSessionController {
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseSessionVTO> _getCourseSessionById(Integer courseSessionId) {
-        CourseSessionVTO result = courseSessionService.getCourseSessionById(courseSessionId);
+    public ResponseEntity<CourseSessionLookupVTO> _getCourseSessionById(Integer courseSessionId) {
+        CourseSessionLookupVTO result = courseSessionService.getCourseSessionById(courseSessionId);
         return ResponseEntity.ok(result);
     }
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<List<NewRecordVTO>> _updateCourseSession(Integer courseSessionId,
-                                                             CourseSessionDTO courseSessionDTO) {
-        List<NewRecordVTO> result = courseSessionService.updateCourseSession(courseSessionId, courseSessionDTO);
+    public ResponseEntity<List<NewRecordVTO>> _updateCourseSession(CourseSessionDTO courseSessionDTO) {
+        List<NewRecordVTO> result = courseSessionService.updateCourseSession( courseSessionDTO);
         return ResponseEntity.ok(result);
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<List<NewRecordVTO>> _updateSessionsByDayAndCourse(CourseSessionDayDTO courseSessionDayDTO) {
+        return ResponseEntity.ok(courseSessionService.updateSessionsByDayAndCourse(courseSessionDayDTO));
+    }
+
+    @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<List<NewRecordVTO>> _updateSessionsByDayAndTrainer(CourseSessionDayDTO courseSessionDayDTO) {
+        return ResponseEntity.ok(courseSessionService.updateSessionsByDayAndTrainer(courseSessionDayDTO));
     }
 }

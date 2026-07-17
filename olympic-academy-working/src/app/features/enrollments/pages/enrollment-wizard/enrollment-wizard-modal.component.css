@@ -438,30 +438,47 @@
   border: 1px solid rgba(217, 119, 6, 0.15);
 }
 
-/* ===== PAYMENT STATUS ===== */
-.status-option {
+/* ===== STATUS TOGGLES ROW ===== */
+.status-toggles-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 20px;
+  margin: 20px 0;
+  flex-wrap: wrap;
 }
 
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* ===== STATUS TOGGLE ===== */
-.status-toggle {
-  margin-top: 16px;
-  padding: 16px;
+.status-toggles-row .status-toggle {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px 20px;
   background: #f9fafb;
   border-radius: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.status-toggles-row .status-toggle:hover {
+  border-color: #0f3460;
+  box-shadow: 0 2px 8px rgba(15, 52, 96, 0.08);
+}
+
+/* Individual status toggle (for backward compatibility) */
+.status-toggle {
+  padding: 16px 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.status-toggle:hover {
+  border-color: #0f3460;
+  box-shadow: 0 2px 8px rgba(15, 52, 96, 0.08);
 }
 
 .toggle-label {
@@ -483,11 +500,27 @@
   font-weight: 600;
   background: #fee2e2;
   color: #991b1b;
+  transition: all 0.3s ease;
 }
 
 .toggle-status.active {
   background: #d1fae5;
   color: #065f46;
+}
+
+/* ===== PAYMENT STATUS ===== */
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* ===== PAYMENT OPTION ===== */
@@ -666,6 +699,17 @@
   
   .header-actions {
     justify-content: center;
+  }
+  
+  .status-toggles-row {
+    flex-direction: column;
+  }
+  
+  .status-toggles-row .status-toggle {
+    min-width: 100%;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
   
   .status-toggle {
@@ -853,6 +897,12 @@
   }
   
   .status-toggle {
+    background: #f9fafb !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .status-toggles-row .status-toggle {
     background: #f9fafb !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;

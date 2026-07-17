@@ -17,6 +17,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PlaceRentPaymentSearchFilter extends SearchFilter<PlaceRentPaymentSearchFilter.OrderByAttributes> {
 
+    private Boolean effect;
+    private String quickSearch;
     private Boolean isDeleted;
     private Integer placeId;
     private Integer rentTypeId;

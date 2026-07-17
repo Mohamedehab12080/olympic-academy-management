@@ -89,6 +89,10 @@ import { FinancialTotalVTO } from '../../../../core/models/financial.model';
                 <span class="label">إجمالي المصروفات</span>
                 <span class="value">{{ getTotalExpenses() | number }} جم</span>
               </div>
+              <div class="card-details">
+                <span class="label">اجمالي الاستردادات</span>
+                <span class="value">{{ getTotalEnrollmentRefunds() | number }} جم</span>
+              </div>
             </div>
             <div class="summary-card profit">
               <div class="card-icon">📊</div>
@@ -106,6 +110,10 @@ import { FinancialTotalVTO } from '../../../../core/models/financial.model';
                 <span>مدفوعات التسجيلات</span>
                 <strong>{{ financialTotals.totalEnrollmentPayments | number }} جم</strong>
               </div>
+              <div class="detail-row">
+                <span>إيجارات الأماكن (إيراد)</span>
+                <strong>{{ financialTotals.totalPlacesGained | number }} جم</strong>
+              </div>
             </div>
 
             <div class="details-card">
@@ -119,8 +127,12 @@ import { FinancialTotalVTO } from '../../../../core/models/financial.model';
                 <strong>{{ financialTotals.totalIncentives | number }} جم</strong>
               </div>
               <div class="detail-row">
-                <span>إيجار المواقع</span>
+                <span>إيجار المواقع (مصروف)</span>
                 <strong>{{ financialTotals.totalPlacesRent | number }} جم</strong>
+              </div>
+              <div class="detail-row">
+                <span>استردادات التسجيلات</span>
+                <strong>{{ financialTotals.totalEnrollmentRefunds | number }} جم</strong>
               </div>
               <div class="detail-row">
                 <span>المصروفات الأخرى</span>
@@ -465,9 +477,15 @@ export class FinancialReportComponent implements OnInit {
     });
   }
 
+  getTotalEnrollmentRefunds(): number {
+    if(!this.financialTotals) return 0;
+    return this.financialTotals.totalEnrollmentRefunds || 0;
+  }
+
   getTotalRevenue(): number {
     if (!this.financialTotals) return 0;
-    return this.financialTotals.totalEnrollmentPayments || 0;
+    return (this.financialTotals.totalEnrollmentPayments || 0) + 
+           (this.financialTotals.totalPlacesGained || 0);
   }
 
   getTotalExpenses(): number {
@@ -492,11 +510,14 @@ export class FinancialReportComponent implements OnInit {
     const exportData = [
       { 'العنصر': 'إجمالي الإيرادات', 'القيمة': `${this.getTotalRevenue()} جم` },
       { 'العنصر': 'مدفوعات التسجيلات', 'القيمة': `${this.financialTotals.totalEnrollmentPayments || 0} جم` },
+      { 'العنصر': 'إيجارات الأماكن (إيراد)', 'القيمة': `${this.financialTotals.totalPlacesGained || 0} جم` },
       { 'العنصر': '', 'القيمة': '' },
       { 'العنصر': 'إجمالي المصروفات', 'القيمة': `${this.getTotalExpenses()} جم` },
+      { 'العنصر': 'إجمالي الاستردادات', 'القيمة': `${this.getTotalEnrollmentRefunds()} جم` },
       { 'العنصر': 'الرواتب', 'القيمة': `${this.financialTotals.totalSalary || 0} جم` },
       { 'العنصر': 'الحوافز', 'القيمة': `${this.financialTotals.totalIncentives || 0} جم` },
-      { 'العنصر': 'إيجار المواقع', 'القيمة': `${this.financialTotals.totalPlacesRent || 0} جم` },
+      { 'العنصر': 'إيجار المواقع (مصروف)', 'القيمة': `${this.financialTotals.totalPlacesRent || 0} جم` },
+      { 'العنصر': 'الاستردادات', 'القيمة': `${this.financialTotals.totalEnrollmentRefunds || 0} جم` },
       { 'العنصر': 'المصروفات الأخرى', 'القيمة': `${this.financialTotals.totalExpenses || 0} جم` },
       { 'العنصر': '', 'القيمة': '' },
       { 'العنصر': 'صافي الربح', 'القيمة': `${this.getNetProfit()} جم` },
@@ -536,7 +557,9 @@ export class FinancialReportComponent implements OnInit {
     
     const totalRevenue = this.getTotalRevenue();
     const totalExpenses = this.getTotalExpenses();
+    const totalEnrollmentRefunds = this.getTotalEnrollmentRefunds();
     const netProfit = this.getNetProfit();
+    const totalPlacesGained = this.financialTotals.totalPlacesGained || 0;
     
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -696,7 +719,7 @@ export class FinancialReportComponent implements OnInit {
         <div class="report-container">
           <div class="header">
             <h1>التقرير المالي الشامل</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
+            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           
           <div class="date-range">
@@ -707,6 +730,10 @@ export class FinancialReportComponent implements OnInit {
             <div class="summary-card revenue">
               <h3>إجمالي الإيرادات</h3>
               <div class="amount">${totalRevenue.toLocaleString('ar-EG')} جم</div>
+            </div>
+            <div class="summary-card expense">
+              <h3>إجمالي الاستردادات</h3>
+              <div class="amount">${totalEnrollmentRefunds.toLocaleString('ar-EG')} جم</div>
             </div>
             <div class="summary-card expense">
               <h3>إجمالي المصروفات</h3>
@@ -725,6 +752,10 @@ export class FinancialReportComponent implements OnInit {
                 <span>مدفوعات التسجيلات:</span>
                 <span>${(this.financialTotals.totalEnrollmentPayments || 0).toLocaleString('ar-EG')} جم</span>
               </div>
+              <div class="info-row">
+                <span>إيجارات الأماكن (إيراد):</span>
+                <span>${(this.financialTotals.totalPlacesGained || 0).toLocaleString('ar-EG')} جم</span>
+              </div>
             </div>
             
             <div class="info-card">
@@ -738,8 +769,12 @@ export class FinancialReportComponent implements OnInit {
                 <span>${(this.financialTotals.totalIncentives || 0).toLocaleString('ar-EG')} جم</span>
               </div>
               <div class="info-row">
-                <span>إيجار المواقع:</span>
+                <span>إيجار المواقع (مصروف):</span>
                 <span>${(this.financialTotals.totalPlacesRent || 0).toLocaleString('ar-EG')} جم</span>
+              </div>
+              <div class="info-row">
+                <span>الاستردادات:</span>
+                <span>${(this.financialTotals.totalEnrollmentRefunds || 0).toLocaleString('ar-EG')} جم</span>
               </div>
               <div class="info-row">
                 <span>المصروفات الأخرى:</span>
@@ -791,7 +826,7 @@ export class FinancialReportComponent implements OnInit {
           </div>
           
           <div class="footer">
-            تم التصدير من نظام إدارة الأكاديمية الأولمبية
+            تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة
           </div>
           
           <div class="print-btn no-print">

@@ -50,8 +50,7 @@ const routes: Routes = [
     MatProgressSpinnerModule,
     MatChipsModule,
     MatTooltipModule,
-    MatTabsModule,
-    CourseSessionListComponent
+    MatTabsModule
     ]
 })
 export class CourseSessionModule { }

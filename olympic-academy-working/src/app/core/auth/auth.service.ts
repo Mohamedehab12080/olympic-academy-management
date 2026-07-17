@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   LoginRequest,
@@ -22,15 +22,20 @@ export class AuthService {
   private router = inject(Router);
   private apiUrl = environment.apiUrl;
 
-  private currentUserValue: LoginResponse | null = null;
-  private isAuthenticatedValue: boolean = false;
+  // Use BehaviorSubject for reactive state
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  get currentUser(): LoginResponse | null {
-    return this.currentUserValue;
+  private currentUserSubject = new BehaviorSubject<LoginResponse | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  // Public getters for synchronous access
+  get isAuthenticated(): boolean {
+    return this.isAuthenticatedSubject.value;
   }
 
-  get isAuthenticated(): boolean {
-    return this.isAuthenticatedValue;
+  get currentUser(): LoginResponse | null {
+    return this.currentUserSubject.value;
   }
 
   constructor() {
@@ -43,9 +48,11 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
         tap(response => {
+          console.log('🔐 Login successful, setting session...');
           this.setSession(response);
-          this.isAuthenticatedValue = true;
-          this.currentUserValue = response;
+          this.isAuthenticatedSubject.next(true);
+          this.currentUserSubject.next(response);
+          console.log('✅ Session set, isAuthenticated:', this.isAuthenticated);
         })
       );
   }
@@ -54,13 +61,27 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, userData);
   }
 
-  logout(): void {
-    this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
-      next: () => {
-        this.clearSession();
-      },
-      error: () => {
-        this.clearSession();
+logout(): void {
+  this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
+    next: () => {
+      this.clearSession();
+      this.router.navigate(['/login']);
+    },
+    error: () => {
+      this.clearSession();
+      this.router.navigate(['/login']);
+    }
+  });
+}
+  clearSessionAndNavigate(): void {
+    this.clearSession();
+    console.log('🔀 Navigating to login page...');
+    this.router.navigate(['/login']).then((success) => {
+      if (success) {
+        console.log('✅ Navigation to login successful');
+      } else {
+        console.log('❌ Navigation to login failed, using fallback');
+        window.location.href = '/login';
       }
     });
   }
@@ -68,8 +89,9 @@ export class AuthService {
   clearSession(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.isAuthenticatedValue = false;
-    this.currentUserValue = null;
+    this.isAuthenticatedSubject.next(false);
+    this.currentUserSubject.next(null);
+    console.log('🧹 Session cleared');
   }
 
   clearSessionAndRedirect(): void {
@@ -80,8 +102,8 @@ export class AuthService {
   clearSessionOnExpiration(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.isAuthenticatedValue = false;
-    this.currentUserValue = null;
+    this.isAuthenticatedSubject.next(false);
+    this.currentUserSubject.next(null);
   }
 
   getToken(): string | null {
@@ -97,40 +119,61 @@ export class AuthService {
     const token = this.getToken();
     const user = localStorage.getItem('user');
     
+    console.log('🔍 Checking auth status...');
+    
     if (token && user) {
-      // Check if token is expired
       if (this.isTokenExpired(token)) {
+        console.log('⏰ Token expired, clearing session');
         this.clearSession();
       } else {
-        this.isAuthenticatedValue = true;
-        this.currentUserValue = JSON.parse(user);
+        console.log('✅ User is authenticated');
+        this.isAuthenticatedSubject.next(true);
+        this.currentUserSubject.next(JSON.parse(user));
       }
+    } else {
+      console.log('ℹ️ No token found, not authenticated');
+      this.isAuthenticatedSubject.next(false);
+      this.currentUserSubject.next(null);
     }
   }
 
-  // Check if token is expired
   isTokenExpired(token?: string): boolean {
     const checkToken = token || this.getToken();
     if (!checkToken) return true;
     
     try {
-      const payload = JSON.parse(atob(checkToken.split('.')[1]));
+      const parts = checkToken.split('.');
+      if (parts.length !== 3) return true;
+      
+      const payload = JSON.parse(atob(parts[1]));
+      
+      if (!payload.exp) return true;
+      
       const expirationDate = new Date(payload.exp * 1000);
-      return expirationDate < new Date();
+      const now = new Date();
+      
+      return expirationDate.getTime() < now.getTime() - 5000;
     } catch (error) {
+      console.error('Error checking token expiration:', error);
       return true;
     }
   }
 
-  // Get token expiration time
   getTokenExpirationTime(): Date | null {
     const token = this.getToken();
     if (!token) return null;
     
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      
+      const payload = JSON.parse(atob(parts[1]));
+      
+      if (!payload.exp) return null;
+      
       return new Date(payload.exp * 1000);
     } catch (error) {
+      console.error('Error getting token expiration time:', error);
       return null;
     }
   }
@@ -194,16 +237,16 @@ export class AuthService {
   // ==================== دوال مساعدة ====================
 
   hasRole(role: string): boolean {
-    const user = this.currentUserValue;
+    const user = this.currentUser;
     return user?.roles?.includes(role) || false;
   }
 
   getUserRole(): string | null {
-    const user = this.currentUserValue;
+    const user = this.currentUser;
     return user?.roles?.[0] || null;
   }
 
   isLoggedIn(): boolean {
-    return this.isAuthenticatedValue && !this.isTokenExpired();
+    return this.isAuthenticated && !this.isTokenExpired();
   }
 }

@@ -15,11 +15,21 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { FinancialService } from '../../../../../../core/services/financial.service';
 import { NotificationService } from '../../../../../../core/services/notification.service';
 import { ReportService } from '../../../../../../core/services/report.service';
 import { RentTypeWizardModalComponent } from '../rent-type-wizard/rent-type-wizard-modal.component';
+
+export interface RentTypeVTO {
+  id: number;
+  title: string;
+  effect: boolean;
+  description?: string;
+  createdOn: string;
+  createdBy: any;
+}
 
 @Component({
   selector: 'app-rent-type-list',
@@ -38,14 +48,15 @@ import { RentTypeWizardModalComponent } from '../rent-type-wizard/rent-type-wiza
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatDialogModule
+    MatDialogModule,
+    MatChipsModule
   ],
   templateUrl: './rent-type-list.component.html',
   styleUrls: ['./rent-type-list.component.css']
 })
 export class RentTypeListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['index', 'title', 'description', 'createdOn', 'actions'];
-  dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = ['index', 'title', 'description', 'effect', 'createdOn', 'actions'];
+  dataSource = new MatTableDataSource<RentTypeVTO>([]);
   isLoading = false;
   quickSearch: string = '';
 
@@ -55,6 +66,14 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
   // Statistics
   get totalCount(): number {
     return this.dataSource.data.length;
+  }
+
+  get incomeCount(): number {
+    return this.dataSource.data.filter(item => item.effect === true).length;
+  }
+
+  get expenseCount(): number {
+    return this.dataSource.data.filter(item => item.effect === false).length;
   }
 
   constructor(
@@ -122,30 +141,9 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  viewType(id: number) {
-    this.financialService.getRentTypeById(id).subscribe({
-      next: (type) => {
-        const dialogRef = this.dialog.open(RentTypeWizardModalComponent, {
-          data: { typeId: id },
-          width: '600px',
-          maxWidth: '90vw'
-        });
-        
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) {
-            this.loadData();
-          }
-        });
-      },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات النوع');
-      }
-    });
-  }
-
-  editType(id: number) {
+  viewType(type: RentTypeVTO) {
     const dialogRef = this.dialog.open(RentTypeWizardModalComponent, {
-      data: { typeId: id },
+      data: { typeId: type.id },
       width: '600px',
       maxWidth: '90vw'
     });
@@ -157,7 +155,21 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  deleteType(item: any) {
+  editType(type: RentTypeVTO) {
+    const dialogRef = this.dialog.open(RentTypeWizardModalComponent, {
+      data: { typeId: type.id },
+      width: '600px',
+      maxWidth: '90vw'
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadData();
+      }
+    });
+  }
+
+  deleteType(item: RentTypeVTO) {
     if (confirm(`هل أنت متأكد من حذف نوع الإيجار "${item.title}"؟`)) {
       this.financialService.deleteRentType(item.id).subscribe({
         next: () => { 
@@ -169,6 +181,22 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getEffectLabel(effect: boolean): string {
+    return effect ? 'مدخل (إيراد)' : 'مخرج (مصروف)';
+  }
+
+  getEffectIcon(effect: boolean): string {
+    return effect ? 'arrow_upward' : 'arrow_downward';
+  }
+
+  getEffectClass(effect: boolean): string {
+    return effect ? 'effect-income' : 'effect-expense';
+  }
+
+  getEffectColor(effect: boolean): string {
+    return effect ? '#10b981' : '#ef4444';
+  }
+
   exportToExcel() {
     if (this.dataSource.data.length === 0) { 
       this.notification.showWarning('لا توجد بيانات لتصديرها'); 
@@ -178,7 +206,8 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
     const exportData = this.dataSource.data.map((item, index) => ({ 
       '#': index + 1, 
       'الاسم': item.title, 
-      'الوصف': item.description || '-', 
+      'الوصف': item.description || '-',
+      'التأثير المالي': this.getEffectLabel(item.effect),
       'تاريخ الإنشاء': item.createdOn 
     }));
     
@@ -195,12 +224,21 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
     this.isLoading = true;
     
     let tableRows = '';
-    this.dataSource.data.forEach((item: any, index: number) => {
+    this.dataSource.data.forEach((item: RentTypeVTO, index: number) => {
+      const effectLabel = this.getEffectLabel(item.effect);
+      const effectColor = this.getEffectColor(item.effect);
+      const effectIcon = this.getEffectIcon(item.effect);
+      
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${item.title}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.description || '-'}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">
+            <span style="background: ${effectColor}; color: white; border-radius: 16px; padding: 4px 12px; display: inline-block; font-weight: 600; font-size: 12px;">
+              ${effectIcon === 'arrow_upward' ? '↑' : '↓'} ${effectLabel}
+            </span>
+          </td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.createdOn || '-'}</td>
         </tr>
       `;
@@ -224,14 +262,17 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
           .header { text-align: center; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border-radius: 8px; }
           .header h1 { margin: 0; font-size: 24px; }
           .header p { margin: 10px 0 0 0; font-size: 12px; }
-          .stats { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
-          .stat-item { flex: 1; text-align: center; }
+          .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; }
+          .stat-item { text-align: center; padding: 8px; background: white; border-radius: 8px; }
           .stat-label { font-size: 12px; color: #6b7280; }
           .stat-value { font-size: 20px; font-weight: bold; color: #8b5cf6; }
+          .stat-value.income { color: #10b981; }
+          .stat-value.expense { color: #ef4444; }
           table { width: 100%; border-collapse: collapse; direction: rtl; }
           th { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
           td { padding: 8px; border: 1px solid #ddd; }
           .footer { text-align: center; margin-top: 20px; padding: 10px; font-size: 10px; color: #666; }
+          .effect-badge { border-radius: 16px; padding: 4px 12px; display: inline-block; font-weight: 600; font-size: 12px; color: white; }
         </style>
       </head>
       <body>
@@ -241,7 +282,18 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
           <p>عدد السجلات: ${this.dataSource.data.length} نوع</p>
         </div>
         <div class="stats">
-          <div class="stat-item"><div class="stat-value">${this.dataSource.data.length}</div><div class="stat-label">عدد الأنواع</div></div>
+          <div class="stat-item">
+            <div class="stat-value">${this.dataSource.data.length}</div>
+            <div class="stat-label">إجمالي الأنواع</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value income">${this.incomeCount}</div>
+            <div class="stat-label">مدخل (إيراد)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value expense">${this.expenseCount}</div>
+            <div class="stat-label">مخرج (مصروف)</div>
+          </div>
         </div>
         <table>
           <thead>
@@ -249,6 +301,7 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
               <th>#</th>
               <th>الاسم</th>
               <th>الوصف</th>
+              <th>التأثير المالي</th>
               <th>تاريخ الإنشاء</th>
             </tr>
           </thead>
@@ -256,7 +309,7 @@ export class RentTypeListComponent implements OnInit, AfterViewInit {
             ${tableRows}
           </tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>

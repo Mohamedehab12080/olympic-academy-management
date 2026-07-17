@@ -1,45 +1,138 @@
+<!-- login.component.html -->
+
 <div class="login-container">
-  <mat-card class="login-card">
-    <div class="login-header">
-      <mat-icon class="logo-icon">sports_score</mat-icon>
-      <h1>الأكاديمية الأولمبية</h1>
-      <p>نظام إدارة الأكاديمية</p>
+  <!-- Animated Background -->
+  <div class="bg-animation">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+    <div class="bg-circle bg-circle-4"></div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="login-card">
+    <!-- Brand Section with Logo -->
+    <div class="brand-section">
+      <div class="logo-wrapper">
+        <div class="logo-ring">
+          <img 
+            src="{{ logoPath }}" 
+            alt="الأكاديمية الأولمبية لعلوم الرياضة" 
+            class="logo-image"
+            onerror="this.style.display='none'">
+        </div>
+      </div>
+      <h1 class="brand-title">الأكاديمية الأولمبية</h1>
+      <h2 class="brand-subtitle">لعلوم الرياضة</h2>
+      <p class="brand-description">نظام إدارة الأكاديمية</p>
     </div>
 
+    <!-- Form -->
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>البريد الإلكتروني</mat-label>
-        <input matInput formControlName="email" type="email">
-        <mat-icon matPrefix>email</mat-icon>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">البريد الإلكتروني مطلوب</mat-error>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">بريد إلكتروني غير صحيح</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>كلمة المرور</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
-        <mat-icon matPrefix>lock</mat-icon>
-        <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="cursor-pointer">
-          {{ hidePassword ? 'visibility_off' : 'visibility' }}
-        </mat-icon>
-        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">كلمة المرور مطلوبة</mat-error>
-        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">كلمة المرور يجب أن تكون 6 أحرف على الأقل</mat-error>
-      </mat-form-field>
-
-      <div class="login-options">
-        <a routerLink="/forgot-password" class="forgot-link">نسيت كلمة المرور؟</a>
+      <!-- Email -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>البريد الإلكتروني</mat-label>
+          <input 
+            matInput 
+            formControlName="email" 
+            type="email" 
+            placeholder="example@domain.com"
+            autocomplete="email">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="email?.invalid && email?.touched">
+            <span *ngIf="email?.hasError('required')">البريد الإلكتروني مطلوب</span>
+            <span *ngIf="email?.hasError('email')">بريد إلكتروني غير صحيح</span>
+          </mat-error>
+        </mat-form-field>
       </div>
 
-      <button mat-raised-button color="primary" type="submit" class="login-btn" [disabled]="isLoading">
-        <mat-icon *ngIf="!isLoading">login</mat-icon>
-        <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-        <span>{{ isLoading ? 'جاري الدخول...' : 'تسجيل الدخول' }}</span>
+      <!-- Password -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>كلمة المرور</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="أدخل كلمة المرور"
+            autocomplete="current-password">
+          <mat-icon matPrefix>lock</mat-icon>
+          <mat-icon
+            matSuffix
+            (click)="togglePasswordVisibility()"
+            class="toggle-password">
+            {{ hidePassword ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+          <mat-error *ngIf="password?.invalid && password?.touched">
+            <span *ngIf="password?.hasError('required')">كلمة المرور مطلوبة</span>
+            <span *ngIf="password?.hasError('minlength')">كلمة المرور يجب أن تكون 6 أحرف على الأقل</span>
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Password Strength -->
+        <div class="password-strength" *ngIf="showPasswordStrength && password?.valid">
+          <div class="strength-bar">
+            <div class="strength-fill" 
+                 [style.width.%]="getPasswordStrengthWidth()"
+                 [style.background]="getPasswordStrengthColor()">
+            </div>
+          </div>
+          <div class="strength-info">
+            <span class="strength-label" [style.color]="getPasswordStrengthColor()">
+              {{ passwordStrengthText }}
+            </span>
+            <span class="strength-percent" [style.color]="getPasswordStrengthColor()">
+              {{ getPasswordStrengthWidth() | number:'1.0-0' }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="form-options">
+        <mat-checkbox formControlName="rememberMe" color="primary" class="remember-checkbox">
+          تذكرني
+        </mat-checkbox>
+        <a routerLink="/forgot-password" class="forgot-link">
+          نسيت كلمة المرور؟
+        </a>
+      </div>
+
+      <!-- Submit -->
+      <button
+        mat-raised-button
+        type="submit"
+        class="submit-btn"
+        [disabled]="isLoading">
+        <span class="btn-content">
+          <mat-icon *ngIf="!isLoading" class="btn-icon">login</mat-icon>
+          <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+          <span class="btn-text">{{ isLoading ? 'جاري الدخول...' : 'تسجيل الدخول' }}</span>
+        </span>
       </button>
 
-      <div class="register-link">
-        <span>ليس لديك حساب؟</span>
-        <a routerLink="/register">إنشاء حساب جديد</a>
+      <!-- Register -->
+      <div class="register-section">
+        <span class="register-text">ليس لديك حساب؟</span>
+        <a routerLink="/register" class="register-link">إنشاء حساب جديد</a>
+        <span class="divider">|</span>
+        <a routerLink="/" class="home-link">
+          <mat-icon>home</mat-icon>
+          الرئيسية
+        </a>
+      </div>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <div class="footer-divider"></div>
+        <div class="footer-content">
+          <span class="copyright">&copy; {{ currentYear }} الأكاديمية الأولمبية لعلوم الرياضة</span>
+          <span class="dot">•</span>
+          <span class="powered-by">powered by CoreStack Solutions</span>
+          <span class="phone">📱 01069911181</span>
+        </div>
       </div>
     </form>
-  </mat-card>
+  </div>
 </div>

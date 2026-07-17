@@ -80,6 +80,8 @@ public interface EmployeeController {
      *            (optional)
      * @param isActive
      *            (optional)
+     * @param isMonthlyUpdated
+     *            (optional)
      * @param createdOnFrom
      *            (optional)
      * @param createdOnTo
@@ -115,6 +117,7 @@ public interface EmployeeController {
     ResponseEntity<EmployeeResultSet> _getAllEmployees(
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
+            @Parameter(name = "isMonthlyUpdated", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isMonthlyUpdated", required = false) Boolean isMonthlyUpdated,
             @Parameter(name = "createdOnFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnFrom,
             @Parameter(name = "createdOnTo", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "createdOnTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdOnTo,
             @Parameter(name = "hireDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "hireDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hireDateFrom,

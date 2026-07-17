@@ -55,6 +55,10 @@ public class EmployeeVTO implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isMonthlyUpdated;
+
+    private Integer updatePeriodInDays;
+
     @Valid
     private List<@Valid LookupVTO> departments = new ArrayList<>();
 
@@ -329,6 +333,48 @@ public class EmployeeVTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public EmployeeVTO isMonthlyUpdated(Boolean isMonthlyUpdated) {
+        this.isMonthlyUpdated = isMonthlyUpdated;
+        return this;
+    }
+
+    /**
+     * Get isMonthlyUpdated
+     *
+     * @return isMonthlyUpdated
+     */
+
+    @Schema(name = "isMonthlyUpdated", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isMonthlyUpdated")
+    public Boolean getIsMonthlyUpdated() {
+        return isMonthlyUpdated;
+    }
+
+    public void setIsMonthlyUpdated(Boolean isMonthlyUpdated) {
+        this.isMonthlyUpdated = isMonthlyUpdated;
+    }
+
+    public EmployeeVTO updatePeriodInDays(Integer updatePeriodInDays) {
+        this.updatePeriodInDays = updatePeriodInDays;
+        return this;
+    }
+
+    /**
+     * Get updatePeriodInDays
+     *
+     * @return updatePeriodInDays
+     */
+
+    @Schema(name = "updatePeriodInDays", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("updatePeriodInDays")
+    public Integer getUpdatePeriodInDays() {
+        return updatePeriodInDays;
+    }
+
+    public void setUpdatePeriodInDays(Integer updatePeriodInDays) {
+        this.updatePeriodInDays = updatePeriodInDays;
+    }
+
     public EmployeeVTO departments(List<@Valid LookupVTO> departments) {
         this.departments = departments;
         return this;
@@ -548,6 +594,8 @@ public class EmployeeVTO implements Serializable {
                 && Objects.equals(this.imageUrl, employeeVTO.imageUrl)
                 && Objects.equals(this.hireDate, employeeVTO.hireDate)
                 && Objects.equals(this.isActive, employeeVTO.isActive)
+                && Objects.equals(this.isMonthlyUpdated, employeeVTO.isMonthlyUpdated)
+                && Objects.equals(this.updatePeriodInDays, employeeVTO.updatePeriodInDays)
                 && Objects.equals(this.departments, employeeVTO.departments)
                 && Objects.equals(this.contacts, employeeVTO.contacts)
                 && Objects.equals(this.courses, employeeVTO.courses)
@@ -561,8 +609,8 @@ public class EmployeeVTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, fullName, nationalId, birthDate, gender, salary, remainedSalary, salaryType,
-                employeeType, imageUrl, hireDate, isActive, departments, contacts, courses, sessions, createdOn,
-                createdBy, lastModifiedOn, lastModifiedBy);
+                employeeType, imageUrl, hireDate, isActive, isMonthlyUpdated, updatePeriodInDays, departments, contacts,
+                courses, sessions, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -581,6 +629,8 @@ public class EmployeeVTO implements Serializable {
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    hireDate: ").append(toIndentedString(hireDate)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isMonthlyUpdated: ").append(toIndentedString(isMonthlyUpdated)).append("\n");
+        sb.append("    updatePeriodInDays: ").append(toIndentedString(updatePeriodInDays)).append("\n");
         sb.append("    departments: ").append(toIndentedString(departments)).append("\n");
         sb.append("    contacts: ").append(toIndentedString(contacts)).append("\n");
         sb.append("    courses: ").append(toIndentedString(courses)).append("\n");

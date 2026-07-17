@@ -1,3 +1,5 @@
+<!-- salary-incentive-wizard-modal.component.html - COMPLETE FIXED VERSION -->
+
 <div class="wizard-container">
   <!-- Header -->
   <div class="wizard-header">
@@ -38,9 +40,13 @@
     </div>
   </div>
 
-  <!-- Form Content -->
-  <div class="wizard-content" *ngIf="!isLoading">
-    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()">
+  <!-- ============================================================ -->
+  <!-- FORM - Wraps content and actions -->
+  <!-- ============================================================ -->
+  <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    
+    <!-- Scrollable Content -->
+    <div class="wizard-content">
       
       <!-- Step 0: Select Transaction Type -->
       <div class="step-content" *ngIf="currentStep === 0">
@@ -453,33 +459,35 @@
           </div>
         </div>
       </div>
-    </form>
-  </div>
-
-  <mat-divider></mat-divider>
-
-  <!-- Actions -->
-  <div class="wizard-actions">
-    <button type="button" mat-button (click)="onCancel()" [disabled]="isSubmitting">
-      <mat-icon>close</mat-icon> إلغاء
-    </button>
-    
-    <div class="action-buttons">
-      <button type="button" mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
-        <mat-icon>chevron_right</mat-icon> السابق
-      </button>
-      
-      <button type="button" mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" 
-              [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0 && currentStep === 1)">
-        التالي <mat-icon>chevron_left</mat-icon>
-      </button>
-      
-      <button type="submit" mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" 
-              [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0)">
-        <mat-icon *ngIf="!isSubmitting">check</mat-icon>
-        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
-        {{ isEditMode ? 'تحديث' : 'إضافة' }}
-      </button>
     </div>
-  </div>
+
+    <!-- Actions - Fixed at bottom -->
+    <mat-divider></mat-divider>
+
+    <div class="wizard-actions">
+      <button type="button" mat-button (click)="onCancel()" [disabled]="isSubmitting">
+        <mat-icon>close</mat-icon> إلغاء
+      </button>
+      
+      <div class="action-buttons">
+        <button type="button" mat-stroked-button *ngIf="currentStep > 0" (click)="previousStep()" [disabled]="isSubmitting">
+          <mat-icon>chevron_right</mat-icon> السابق
+        </button>
+        
+        <!-- Next Button -->
+        <button type="button" mat-raised-button color="primary" *ngIf="currentStep < steps.length - 1" (click)="nextStep()" 
+                [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0 && currentStep === 1)">
+          التالي <mat-icon>chevron_left</mat-icon>
+        </button>
+        
+        <!-- Submit Button -->
+        <button type="submit" mat-raised-button color="primary" *ngIf="currentStep === steps.length - 1" 
+                [disabled]="isSubmitting || (isSalaryTransaction && getCurrentRemained() === 0)">
+          <mat-icon *ngIf="!isSubmitting">check</mat-icon>
+          <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+          {{ isEditMode ? 'تحديث' : 'إضافة' }}
+        </button>
+      </div>
+    </div>
+  </form>
 </div>

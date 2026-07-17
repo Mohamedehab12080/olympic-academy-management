@@ -7,6 +7,7 @@ import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.course.api.repository.CourseRepository;
 import bs.service.course.model.entity.Course;
+import bs.service.course.model.filter.CourseSearchFilter;
 import bs.service.employee.api.repository.EmployeeRepository;
 import bs.service.employee.api.repository.TrainerCourseRepository;
 import bs.service.employee.api.service.TrainerCourseService;
@@ -15,10 +16,12 @@ import bs.service.employee.model.entity.Employee;
 import bs.service.employee.model.entity.TrainerCourse;
 import bs.service.employee.model.enums.EmployeeTypes;
 import bs.service.employee.model.filter.TrainerCourseSearchFilter;
+import bs.service.employee.model.generated.AssignCourseDTO;
 import bs.service.employee.model.generated.TrainerCourseAssignmentResultSet;
 import bs.service.employee.model.generated.TrainerCourseResultSet;
 import bs.service.employee.model.generated.TrainerCourseVTO;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +30,10 @@ import java.util.List;
 import static bs.service.course.model.enums.CourseErrors.COURSE_NOT_FOUND;
 import static bs.service.employee.model.enums.EmployeeErrors.*;
 
+@Slf4j
 @Service
 @AllArgsConstructor
-public class TrainerCourseServiceImpl implements TrainerCourseService {
+public class    TrainerCourseServiceImpl implements TrainerCourseService {
 
     private final TrainerCourseRepository trainerCourseRepository;
     private final EmployeeRepository employeeRepository;
@@ -38,37 +42,68 @@ public class TrainerCourseServiceImpl implements TrainerCourseService {
 
     @Override
     @Transactional
-    public NewRecordVTO assignCourseToTrainer(Integer trainerId, Integer courseId) {
+    public NewRecordVTO assignCourseToTrainer(Integer trainerId, AssignCourseDTO assignCourseDTO) {
+        log.info("COURSES TO ADD : {} ",assignCourseDTO.getCourseIdToBeAdded());
         // Verify trainer exists and is actually a trainer
         Employee trainer = employeeRepository.selectById(trainerId)
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, trainerId));
 
-        if (!trainer.getEmployeeType().equals(EmployeeTypes.TRAINER.id)) {
-            throw new BusinessException(INVALID_EMPLOYEE_TYPE, "Employee is not a trainer");
+        CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder()
+                        .courseIds(assignCourseDTO.getCourseIdToBeAdded())
+                                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Course> coursesToBeAdded=courseRepository.selectAllByFilter(courseSearchFilter);
+        if(coursesToBeAdded!=null && coursesToBeAdded.isEmpty()){
+            throw new BusinessException(COURSE_NOT_FOUND,assignCourseDTO.getCourseIdToBeAdded());
         }
-
-        // Verify course exists
-        courseRepository.selectById(courseId)
-                .orElseThrow(() -> new BusinessException(COURSE_NOT_FOUND, courseId));
 
         TrainerCourseSearchFilter trainerCourseSearchFilter=TrainerCourseSearchFilter.builder()
                 .trainerId(trainerId)
-                .courseId(courseId)
+                .courseIds(assignCourseDTO.getCourseIdToBeAdded())
                 .pagination(PaginationInfo.noPagination())
                 .build();
 
         List<TrainerCourse> trainerCourses=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter);
         if(trainerCourses!=null && !trainerCourses.isEmpty()){
-           throw new BusinessException(COURSE_ALREADY_ASSIGNED_TO_TRAINER, trainerId, courseId);
+            throw new BusinessException(COURSE_ALREADY_ASSIGNED_TO_TRAINER, trainerId, assignCourseDTO.getCourseIdToBeAdded());
         }
 
-        TrainerCourse assignment = TrainerCourse.builder()
-                .trainer(trainer)
-                .course(Course.builder().id(courseId).build())
-                .build();
+        assert coursesToBeAdded != null;
+        for (Course course : coursesToBeAdded) {
+            TrainerCourse assignment = TrainerCourse.builder()
+                    .trainer(trainer)
+                    .course(course)
+                    .build();
+            trainerCourseRepository.insert(assignment);
+        }
 
-        assignment = trainerCourseRepository.insert(assignment);
-        return NewRecordVTO.builder().id(assignment.getId()).build();
+        CourseSearchFilter courseSearchFilter2=CourseSearchFilter.builder()
+                .courseIds(assignCourseDTO.getCourseIdToBeDeleted())
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Course> coursesToBeDeleted=courseRepository.selectAllByFilter(courseSearchFilter2);
+        if(coursesToBeDeleted!=null && coursesToBeDeleted.isEmpty()){
+            throw new BusinessException(COURSE_NOT_FOUND,assignCourseDTO.getCourseIdToBeAdded());
+        }
+            if(assignCourseDTO.getCourseIdToBeDeleted()!=null && !assignCourseDTO.getCourseIdToBeDeleted().isEmpty()){
+
+                TrainerCourseSearchFilter trainerCourseSearchFilter2=TrainerCourseSearchFilter.builder()
+                        .trainerId(trainerId)
+                        .courseIds(assignCourseDTO.getCourseIdToBeDeleted())
+                        .pagination(PaginationInfo.noPagination())
+                        .build();
+                List<TrainerCourse> trainerCoursesToBeDeleted=trainerCourseRepository.selectAllByFilters(trainerCourseSearchFilter2);
+                if(trainerCoursesToBeDeleted!=null && trainerCoursesToBeDeleted.isEmpty()){
+                    throw new BusinessException(TRAINER_COURSE_ASSIGNMENT_NOT_FOUND, trainerId, assignCourseDTO.getCourseIdToBeDeleted());
+                }
+
+                assert trainerCoursesToBeDeleted != null;
+                for (TrainerCourse trainerCourse:trainerCoursesToBeDeleted){
+                    trainerCourseRepository.delete(trainerCourse);
+                }
+
+            }
+        return NewRecordVTO.builder().id(1).build();
     }
 
     @Override

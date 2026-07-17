@@ -110,7 +110,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public EnrollmentResultSet getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,
+    public EnrollmentResultSet getAllEnrollmentsByFilter(String quickSearch, Boolean isActive,Boolean isAutoUpdate,
                                                          Integer traineeId,String traineeNationalId, Integer courseId, Integer trainerId,
                                                          Integer enrollmentTypeId, EnrollmentStatus enrollmentStatus,
                                                          PaymentStatus paymentStatus, LocalDate startDateFrom,
@@ -123,6 +123,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         EnrollmentSearchFilter filter = EnrollmentSearchFilter.builder()
                     .quickSearchQuery(quickSearch)
                     .isActive(isActive)
+                    .isAutoUpdate(isAutoUpdate)
                     .isDeleted(false)
                     .traineeId(traineeId)
                     .traineeNationalId(traineeNationalId)
@@ -161,5 +162,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .build();
         List<LookupVTO> lookupVTOS=enrollmentMapper.toEnrollmentLookupVTOs(enrollmentRepository.selectAllByFilters(enrollmentSearchFilter));
         return LookupResultSet.builder().total(enrollmentRepository.countAllByFilters(enrollmentSearchFilter))._list(lookupVTOS).build();
+    }
+
+    @Override
+    public void updateEnrollmentsActivation() {
+        EnrollmentSearchFilter enrollmentSearchFilter=EnrollmentSearchFilter.builder()
+                .isDeleted(false)
+                .isActive(true)
+                .isAutoUpdate(true)
+                .endDateTo(LocalDate.now())
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Enrollment> enrollments = enrollmentRepository.selectAllByFilters(enrollmentSearchFilter);
+        for (Enrollment enrollment : enrollments) {
+            if(enrollment.getEndDate()!=null){
+                enrollment.setIsActive(false);
+                enrollment.setEnrollmentStatus(EnrollmentStatus.FINISHED.id);
+                enrollment.setNote("تم الغاء التفعيل تلقائيا من خلال الكشف عن تاريخ الانتهاء: "+enrollment.getEndDate());
+                enrollmentRepository.internalUpdate(enrollment);
+            }
+        }
     }
 }

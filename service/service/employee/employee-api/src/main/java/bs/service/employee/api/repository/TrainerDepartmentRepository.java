@@ -13,4 +13,5 @@ public interface TrainerDepartmentRepository {
     Optional<EmployeeDepartment> selectById(Integer id);
     List<EmployeeDepartment> selectAllByFilters(TrainerDepartmentSearchFilter filters);
     Integer countAllByFilters(TrainerDepartmentSearchFilter filters);
+    void deleteById(Integer id);
 }

@@ -1,319 +1,322 @@
-<div class="sessions-container">
+<!-- course-session-list.component.html - ENHANCED WITH MODERN DESIGN -->
+
+<div class="sessions-container" @fadeIn>
   <mat-card class="main-card">
-    <!-- Header Section -->
+    <!-- ============================================ -->
+    <!-- HEADER -->
+    <!-- ============================================ -->
     <div class="page-header">
       <div class="header-title">
-        <h1>جلسات الدورات</h1>
-        <p>إدارة ومتابعة جلسات الدورات التدريبية</p>
+        <div class="title-icon">
+          <mat-icon>event_note</mat-icon>
+        </div>
+        <div>
+          <h1>جدول جلسات الدورات</h1>
+          <p>عرض الجلسات في شكل جدول زمني حسب اليوم</p>
+        </div>
       </div>
-      <button mat-raised-button color="primary" (click)="openAddModal()" class="add-btn">
-        <mat-icon>add</mat-icon>
-        إضافة جلسة جديدة
-      </button>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="openAddModal()" class="add-button">
+          <mat-icon>add</mat-icon>
+          جلسة جديدة
+        </button>
+      </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="filters-card">
+    <!-- ============================================ -->
+    <!-- FILTERS -->
+    <!-- ============================================ -->
+    <div class="filters-card" @slideIn>
       <div class="filters-grid">
-        <!-- Quick Search -->
-        <div class="filter-group full-width">
+        <div class="filters-row">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput (keyup)="applyQuickSearch($event)" placeholder="ابحث عن جلسة...">
+            <input #searchInput matInput [(ngModel)]="searchText" (ngModelChange)="onSearchChange($event)" placeholder="ابحث عن جلسة...">
             <mat-icon matSuffix>search</mat-icon>
+            <mat-hint *ngIf="searchText">نتائج البحث عن: "{{ searchText }}"</mat-hint>
           </mat-form-field>
+
+          <app-searchable-select
+            [(ngModel)]="filters.courseId"
+            (ngModelChange)="onCourseFilterChange()"
+            label="الدورة التدريبية"
+            [options]="courseOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
+
+          <app-searchable-select
+            [(ngModel)]="filters.trainerId"
+            (ngModelChange)="onTrainerFilterChange()"
+            label="المدرب"
+            [options]="trainerOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
         </div>
 
         <div class="filters-row">
-          <!-- Course Filter -->
-          <div class="filter-group">
-            <label class="filter-label">الدورة التدريبية</label>
-            <app-searchable-select
-              [ngModel]="filters.courseId"
-              (ngModelChange)="filters.courseId = $event; loadSessions()"
-              [label]="'اختر الدورة'"
-              [options]="courseOptions"
-              [required]="false"
-              [ngModelOptions]="{standalone: true}">
-            </app-searchable-select>
-          </div>
+          <app-searchable-select
+            [(ngModel)]="filters.placeId"
+            (ngModelChange)="onPlaceFilterChange()"
+            label="المكان"
+            [options]="placeOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
 
-          <!-- Trainer Filter -->
-          <div class="filter-group">
-            <label class="filter-label">المدرب</label>
-            <app-searchable-select
-              [ngModel]="filters.trainerId"
-              (ngModelChange)="filters.trainerId = $event; loadSessions()"
-              [label]="'اختر المدرب'"
-              [options]="trainerOptions"
-              [required]="false"
-              [ngModelOptions]="{standalone: true}">
-            </app-searchable-select>
-          </div>
+          <app-searchable-select
+            [(ngModel)]="filters.status"
+            (ngModelChange)="onStatusFilterChange()"
+            label="حالة الجلسة"
+            [options]="statusOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
 
-          <!-- Place Filter -->
-          <div class="filter-group">
-            <label class="filter-label">المكان</label>
-            <app-searchable-select
-              [ngModel]="filters.placeId"
-              (ngModelChange)="filters.placeId = $event; loadSessions()"
-              [label]="'اختر المكان'"
-              [options]="placeOptions"
-              [required]="false"
-              [ngModelOptions]="{standalone: true}">
-            </app-searchable-select>
-          </div>
+          <app-searchable-select
+            [(ngModel)]="filters.sessionDay"
+            (ngModelChange)="onDayFilterChange()"
+            label="اليوم"
+            [options]="dayOptions"
+            [required]="false"
+            class="filter-select">
+          </app-searchable-select>
         </div>
 
         <div class="filters-row">
-          <!-- Status Filter -->
-          <div class="filter-group">
-            <label class="filter-label">حالة الجلسة</label>
-            <app-searchable-select
-              [ngModel]="filters.status"
-              (ngModelChange)="filters.status = $event; loadSessions()"
-              [label]="'اختر الحالة'"
-              [options]="statusOptions"
-              [required]="false"
-              [ngModelOptions]="{standalone: true}">
-            </app-searchable-select>
-          </div>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>من تاريخ</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.sessionDateFrom" (ngModelChange)="onDateFromChange()">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+          </mat-form-field>
 
-          <!-- Session Day Filter -->
-          <div class="filter-group">
-            <label class="filter-label">اليوم</label>
-            <app-searchable-select
-              [ngModel]="filters.sessionDay"
-              (ngModelChange)="filters.sessionDay = $event; loadSessions()"
-              [label]="'اختر اليوم'"
-              [options]="dayOptions"
-              [required]="false"
-              [ngModelOptions]="{standalone: true}">
-            </app-searchable-select>
-          </div>
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>إلى تاريخ</mat-label>
+            <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.sessionDateTo" (ngModelChange)="onDateToChange()">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+          </mat-form-field>
 
-          <!-- Date From -->
-          <div class="filter-group">
-            <label class="filter-label">من تاريخ</label>
-            <mat-form-field appearance="outline">
-              <input matInput [matDatepicker]="fromPicker" [(ngModel)]="filters.sessionDateFrom" (dateChange)="loadSessions()" placeholder="اختر تاريخ">
-              <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-              <mat-datepicker #fromPicker></mat-datepicker>
-            </mat-form-field>
+          <div class="filter-actions">
+            <button mat-stroked-button (click)="resetFilters()" class="reset-btn" [disabled]="isLoading">
+              <mat-icon>refresh</mat-icon>
+              مسح الكل
+            </button>
+            <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allSessions.length === 0 || isLoading" class="export-btn">
+              <mat-icon>grid_on</mat-icon>
+              تصدير Excel
+            </button>
+            <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allSessions.length === 0 || isLoading" class="export-btn">
+              <mat-icon>picture_as_pdf</mat-icon>
+              تصدير PDF
+            </button>
           </div>
-
-          <!-- Date To -->
-          <div class="filter-group">
-            <label class="filter-label">إلى تاريخ</label>
-            <mat-form-field appearance="outline">
-              <input matInput [matDatepicker]="toPicker" [(ngModel)]="filters.sessionDateTo" (dateChange)="loadSessions()" placeholder="اختر تاريخ">
-              <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-              <mat-datepicker #toPicker></mat-datepicker>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Filter Actions -->
-        <div class="filter-actions">
-          <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
-            <mat-icon>refresh</mat-icon>
-            مسح الكل
-          </button>
-          <button mat-stroked-button color="accent" (click)="exportToExcel()" [disabled]="allSessions.length === 0" class="export-btn">
-            <mat-icon>grid_on</mat-icon>
-            تصدير Excel
-          </button>
-          <button mat-stroked-button color="warn" (click)="exportToPDF()" [disabled]="allSessions.length === 0" class="export-btn">
-            <mat-icon>picture_as_pdf</mat-icon>
-            تصدير PDF
-          </button>
         </div>
       </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="stats-grid" *ngIf="!isLoading && allSessions.length > 0">
-      <div class="stat-card">
+    <!-- ============================================ -->
+    <!-- STATS -->
+    <!-- ============================================ -->
+    <div class="stats-grid" *ngIf="!isLoading && allSessions.length > 0" @staggerFade>
+      <div class="stat-card total">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalCourses }}</h3>
+          <p>دورات</p>
+        </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.totalCourses / Math.max(stats.totalCourses, 1)) * 100"></div>
+        </div>
+      </div>
+      <div class="stat-card total">
         <div class="stat-icon">📅</div>
         <div class="stat-info">
-          <h3>{{ totalItems }}</h3>
-          <p>إجمالي الجلسات</p>
+          <h3>{{ stats.totalSessions }}</h3>
+          <p>جلسات</p>
+        </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.totalSessions / Math.max(stats.totalSessions, 1)) * 100"></div>
         </div>
       </div>
-      <div class="stat-card scheduled">
+      <div class="stat-card scheduled" [class.active]="stats.scheduled > 0">
         <div class="stat-icon">⏰</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(1) }}</h3>
+          <h3>{{ stats.scheduled }}</h3>
           <p>مجدول</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.scheduled / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card in-progress">
+      <div class="stat-card in-progress" [class.active]="stats.inProgress > 0">
         <div class="stat-icon">▶️</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(2) }}</h3>
+          <h3>{{ stats.inProgress }}</h3>
           <p>في تقدم</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.inProgress / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card completed">
+      <div class="stat-card completed" [class.active]="stats.completed > 0">
         <div class="stat-icon">✅</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(3) }}</h3>
+          <h3>{{ stats.completed }}</h3>
           <p>مكتمل</p>
         </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.completed / Math.max(stats.totalSessions, 1)) * 100"></div>
+        </div>
       </div>
-      <div class="stat-card cancelled">
+      <div class="stat-card cancelled" [class.active]="stats.cancelled > 0">
         <div class="stat-icon">❌</div>
         <div class="stat-info">
-          <h3>{{ getStatusCount(4) }}</h3>
+          <h3>{{ stats.cancelled }}</h3>
           <p>ملغي</p>
+        </div>
+        <div class="stat-progress">
+          <div class="progress-bar" [style.width.%]="(stats.cancelled / Math.max(stats.totalSessions, 1)) * 100"></div>
         </div>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div class="loading-container" *ngIf="isLoading">
-      <mat-spinner diameter="50"></mat-spinner>
+    <!-- ============================================ -->
+    <!-- LOADING -->
+    <!-- ============================================ -->
+    <div class="loading-container" *ngIf="isLoading" @fadeIn>
+      <div class="loading-spinner">
+        <mat-spinner diameter="50" color="accent"></mat-spinner>
+        <div class="loading-ripple"></div>
+      </div>
       <p>جاري تحميل الجلسات...</p>
+      <span class="loading-subtitle" *ngIf="!isFirstLoad">تحديث البيانات</span>
     </div>
 
-    <!-- Table Section -->
+    <!-- ============================================ -->
+    <!-- TABLE -->
+    <!-- ============================================ -->
     <div class="table-section" *ngIf="!isLoading">
-      <div class="table-header" *ngIf="allSessions.length > 0">
+      <div class="table-header" *ngIf="groupedData.length > 0">
         <div class="records-count">
-          <mat-icon>info</mat-icon>
-          <span>عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} جلسة</span>
+          <mat-icon>table_chart</mat-icon>
+          <span>عرض {{ groupedData.length }} دورة</span>
+          <span class="divider">|</span>
+          <span>{{ totalItems }} جلسة</span>
+        </div>
+        <div class="records-actions">
+          <button mat-icon-button [matTooltip]="'تحديث البيانات'" (click)="loadSessions()" [disabled]="isLoading">
+            <mat-icon>refresh</mat-icon>
+          </button>
         </div>
       </div>
 
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" matSort class="data-table" (matSortChange)="onSortChange($event)">
-          <!-- Index Column -->
-          <ng-container matColumnDef="index">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>#</th>
-            <td mat-cell *matCellDef="let session; let i = index">
-              {{ (currentPage * pageSize) + i + 1 }}
-            </td>
-          </ng-container>
-
-          <!-- Title Column -->
-          <ng-container matColumnDef="title">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>عنوان الجلسة</th>
-            <td mat-cell *matCellDef="let session" class="clickable-cell" (click)="viewSessionDetails(session)">
-              <strong>{{ session.title }}</strong>
-            </td>
-          </ng-container>
-
+        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="timetable-table">
+          
           <!-- Course Column -->
           <ng-container matColumnDef="course">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>الدورة</th>
-            <td mat-cell *matCellDef="let session">
-              <span class="course-badge">{{ session.course?.title }}</span>
-            </td>
-          </ng-container>
-
-          <!-- Trainer Column -->
-          <ng-container matColumnDef="trainer">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>المدرب</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="trainer-info">
-                <mat-icon>person</mat-icon>
-                <span>{{ session.trainer?.title }}</span>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="course-header">
+              <div class="header-content">
+                <mat-icon>school</mat-icon>
+                <span>الدورة</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row" class="course-cell">
+              <div class="course-info">
+                <div class="course-avatar">
+                  <mat-icon>school</mat-icon>
+                </div>
+                <span class="course-title">{{ row.courseTitle }}</span>
+                <span class="session-badge">{{ row.totalSessions }}</span>
               </div>
             </td>
           </ng-container>
 
-          <!-- Place Column -->
-          <ng-container matColumnDef="place">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>المكان</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="place-info">
-                <mat-icon>location_on</mat-icon>
-                <span>{{ session.place?.title }}</span>
+          <!-- Trainers Column -->
+          <ng-container matColumnDef="trainers">
+            <th mat-header-cell *matHeaderCellDef class="trainers-header">
+              <div class="header-content">
+                <mat-icon>people</mat-icon>
+                <span>المدربون</span>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let row" class="trainers-cell">
+              <div class="trainers-list">
+                <span *ngFor="let trainer of row.trainers" class="trainer-chip">
+                  <span class="trainer-avatar-small">{{ getTrainerAvatarName(trainer) }}</span>
+                  {{ trainer.title || trainer.name || 'مدرب' }}
+                </span>
+                <span *ngIf="!row.trainers || row.trainers.length === 0" class="no-trainer">-</span>
               </div>
             </td>
           </ng-container>
 
-          <!-- Session Date Column -->
-          <ng-container matColumnDef="sessionDate">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>التاريخ</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="date-info">
-                <mat-icon>event</mat-icon>
-                <span>{{ session.sessionDate | date:'dd/MM/yyyy' }}</span>
+          <!-- Day Columns -->
+          <ng-container *ngFor="let day of DAYS_OF_WEEK" [matColumnDef]="day.value.toLowerCase()">
+            <th mat-header-cell *matHeaderCellDef class="day-header">
+              <div class="day-header-content">
+                <mat-icon class="day-icon">{{ day.icon }}</mat-icon>
+                <span class="day-short">{{ day.short }}</span>
+                <span class="day-full">{{ day.label }}</span>
               </div>
-            </td>
-          </ng-container>
+            </th>
+            <td mat-cell *matCellDef="let row" class="day-cell">
+              <div class="day-slots">
+                <div *ngFor="let slot of getDaySlots(row, day.value)" 
+                     class="time-slot"
+                     [class.has-trainers]="slot.trainers && slot.trainers.length > 0"
+                     [class.status-scheduled]="slot.status?.id === 1"
+                     [class.status-in-progress]="slot.status?.id === 2"
+                     [class.status-completed]="slot.status?.id === 3"
+                     [class.status-cancelled]="slot.status?.id === 4"
+                     (click)="viewSessionDetails(slot)"
+                     @cardHover>
+                  
+                  <div class="slot-time">
+                    <mat-icon class="time-icon">access_time</mat-icon>
+                    <span>{{ formatTimeRange(slot.startTime, slot.endTime) }}</span>
+                  </div>
+                  
+                  <div class="slot-trainers">
+                    <div *ngFor="let trainer of slot.trainers | slice:0:3" class="trainer-avatar-wrapper">
+                      <div class="trainer-avatar" [matTooltip]="getTrainerTooltip(trainer)">
+                        {{ getTrainerAvatarName(trainer) }}
+                      </div>
+                    </div>
+                    <div *ngIf="slot.trainers && slot.trainers.length > 3" class="trainer-more">
+                      +{{ slot.trainers.length - 3 }}
+                    </div>
+                  </div>
 
-          <!-- Session Day Column -->
-          <ng-container matColumnDef="sessionDay">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>اليوم</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="day-info">
-                <mat-icon>today</mat-icon>
-                <span class="day-badge">{{ getDayLabel(session.sessionDay) }}</span>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Start Time Column -->
-          <ng-container matColumnDef="startTime">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت البدء</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="time-info">
-                <mat-icon>access_time</mat-icon>
-                <span>{{ formatTime(session.startTime) }}</span>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- End Time Column -->
-          <ng-container matColumnDef="endTime">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>وقت الانتهاء</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="time-info">
-                <mat-icon>access_time</mat-icon>
-                <span>{{ formatTime(session.endTime) }}</span>
-              </div>
-            </td>
-          </ng-container>
-        
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>الحالة</th>
-            <td mat-cell *matCellDef="let session">
-              <span class="status-badge" [ngClass]="getStatusClass(session.status?.id)">
-                {{ session.status?.title }}
-              </span>
-            </td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>الإجراءات</th>
-            <td mat-cell *matCellDef="let session">
-              <div class="action-buttons">
-                <button mat-icon-button color="primary" (click)="viewSessionDetails(session); $event.stopPropagation()" matTooltip="عرض التفاصيل">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button mat-icon-button color="accent" (click)="editSession(session); $event.stopPropagation()" matTooltip="تعديل">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="deleteSession(session); $event.stopPropagation()" matTooltip="حذف">
-                  <mat-icon>delete</mat-icon>
-                </button>
+                  <div class="slot-status">
+                    <mat-icon [style.color]="getStatusColor(slot.status?.id || 0)">
+                      {{ getStatusIcon(slot.status?.id || 0) }}
+                    </mat-icon>
+                  </div>
+                </div>
+                
+                <div *ngIf="getDaySlots(row, day.value).length === 0" class="empty-slot">
+                  <span class="empty-text">—</span>
+                </div>
               </div>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row" (click)="viewSessionDetails(row)"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="timetable-row" @fadeIn></tr>
 
-          <!-- No Data Row -->
+          <!-- No Data -->
           <tr class="mat-row no-data-row" *matNoDataRow>
             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-              <div class="no-data-message">
-                <mat-icon>event_busy</mat-icon>
-                <p>لا توجد جلسات</p>
+              <div class="no-data-message" @fadeIn>
+                <div class="no-data-icon">
+                  <mat-icon>event_busy</mat-icon>
+                </div>
+                <h3>لا توجد جلسات</h3>
+                <p>لم يتم العثور على أي جلسات تدريبية مطابقة للفلترة الحالية</p>
                 <button mat-raised-button color="primary" (click)="openAddModal()">
                   <mat-icon>add</mat-icon>
                   إضافة جلسة جديدة
@@ -324,53 +327,32 @@
         </table>
       </div>
 
-      <!-- Custom Pagination Controls -->
-      <div class="custom-pagination" *ngIf="totalItems > 0">
+      <!-- Pagination -->
+      <div class="custom-pagination" *ngIf="totalItems > 0" @slideIn>
         <div class="pagination-controls">
-          <button 
-            class="pagination-btn" 
-            (click)="goToFirstPage()" 
-            [disabled]="currentPage === 0"
-            matTooltip="الصفحة الأولى">
+          <button class="pagination-btn" (click)="goToFirstPage()" [disabled]="currentPage === 0" matTooltip="الصفحة الأولى">
             <mat-icon>first_page</mat-icon>
           </button>
-          
-          <button 
-            class="pagination-btn" 
-            (click)="goToPreviousPage()" 
-            [disabled]="currentPage === 0"
-            matTooltip="الصفحة السابقة">
+          <button class="pagination-btn" (click)="goToPreviousPage()" [disabled]="currentPage === 0" matTooltip="الصفحة السابقة">
             <mat-icon>chevron_right</mat-icon>
           </button>
-          
-          <span class="page-info">
-            صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}
-          </span>
-          
-          <button 
-            class="pagination-btn" 
-            (click)="goToNextPage()" 
-            matTooltip="الصفحة التالية">
+          <span class="page-info">صفحة {{ currentPage + 1 }} من {{ getTotalPages() }}</span>
+          <button class="pagination-btn" (click)="goToNextPage()" [disabled]="currentPage >= getTotalPages() - 1" matTooltip="الصفحة التالية">
             <mat-icon>chevron_left</mat-icon>
           </button>
-          
-          <button 
-            class="pagination-btn" 
-            (click)="goToLastPage()" 
-            [disabled]="currentPage >= getTotalPages() - 1"
-            matTooltip="الصفحة الأخيرة">
+          <button class="pagination-btn" (click)="goToLastPage()" [disabled]="currentPage >= getTotalPages() - 1" matTooltip="الصفحة الأخيرة">
             <mat-icon>last_page</mat-icon>
           </button>
         </div>
-        
+
         <div class="page-size-control">
           <label>عرض:</label>
-          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+          <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()" class="page-size-select">
             <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
           </select>
           <span>نتيجة</span>
         </div>
-        
+
         <div class="records-info">
           عرض {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} من {{ totalItems }} جلسة
         </div>

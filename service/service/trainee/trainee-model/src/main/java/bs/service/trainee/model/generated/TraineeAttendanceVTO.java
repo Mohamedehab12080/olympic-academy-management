@@ -1,7 +1,7 @@
 package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
-import bs.service.employee.model.generated.CourseSessionVTO;
+import bs.service.employee.model.generated.CourseSessionLookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,9 +32,7 @@ public class TraineeAttendanceVTO implements Serializable {
 
     private LookupVTO trainee;
 
-    private CourseSessionVTO session;
-
-    private LookupVTO course;
+    private CourseSessionLookupVTO session;
 
     private LookupVTO status;
 
@@ -101,7 +99,7 @@ public class TraineeAttendanceVTO implements Serializable {
         this.trainee = trainee;
     }
 
-    public TraineeAttendanceVTO session(CourseSessionVTO session) {
+    public TraineeAttendanceVTO session(CourseSessionLookupVTO session) {
         this.session = session;
         return this;
     }
@@ -114,33 +112,12 @@ public class TraineeAttendanceVTO implements Serializable {
     @Valid
     @Schema(name = "session", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("session")
-    public CourseSessionVTO getSession() {
+    public CourseSessionLookupVTO getSession() {
         return session;
     }
 
-    public void setSession(CourseSessionVTO session) {
+    public void setSession(CourseSessionLookupVTO session) {
         this.session = session;
-    }
-
-    public TraineeAttendanceVTO course(LookupVTO course) {
-        this.course = course;
-        return this;
-    }
-
-    /**
-     * Get course
-     *
-     * @return course
-     */
-    @Valid
-    @Schema(name = "course", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("course")
-    public LookupVTO getCourse() {
-        return course;
-    }
-
-    public void setCourse(LookupVTO course) {
-        this.course = course;
     }
 
     public TraineeAttendanceVTO status(LookupVTO status) {
@@ -365,7 +342,6 @@ public class TraineeAttendanceVTO implements Serializable {
         return Objects.equals(this.id, traineeAttendanceVTO.id)
                 && Objects.equals(this.trainee, traineeAttendanceVTO.trainee)
                 && Objects.equals(this.session, traineeAttendanceVTO.session)
-                && Objects.equals(this.course, traineeAttendanceVTO.course)
                 && Objects.equals(this.status, traineeAttendanceVTO.status)
                 && Objects.equals(this.attendanceDate, traineeAttendanceVTO.attendanceDate)
                 && Objects.equals(this.checkInTime, traineeAttendanceVTO.checkInTime)
@@ -380,8 +356,8 @@ public class TraineeAttendanceVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, trainee, session, course, status, attendanceDate, checkInTime, checkOutTime, lateTime,
-                note, createdOn, createdBy, lastModifiedOn, lastModifiedBy);
+        return Objects.hash(id, trainee, session, status, attendanceDate, checkInTime, checkOutTime, lateTime, note,
+                createdOn, createdBy, lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -391,7 +367,6 @@ public class TraineeAttendanceVTO implements Serializable {
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    trainee: ").append(toIndentedString(trainee)).append("\n");
         sb.append("    session: ").append(toIndentedString(session)).append("\n");
-        sb.append("    course: ").append(toIndentedString(course)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");
         sb.append("    attendanceDate: ").append(toIndentedString(attendanceDate)).append("\n");
         sb.append("    checkInTime: ").append(toIndentedString(checkInTime)).append("\n");

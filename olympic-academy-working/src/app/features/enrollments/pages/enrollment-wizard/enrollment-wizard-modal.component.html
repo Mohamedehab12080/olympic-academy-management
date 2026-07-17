@@ -290,14 +290,18 @@
                   <mat-error *ngIf="enrollmentForm.get('endDate')?.hasError('beforeStartDate')">تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء</mat-error>
                 </mat-form-field>
               </div>
-              <div class="form-field">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>حالة التسجيل</mat-label>
-                  <mat-select formControlName="enrollmentStatus">
-                    <mat-option *ngFor="let status of enrollmentStatuses" [value]="status">{{ status.title }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+              <!-- In the template, update the select to use all statuses -->
+                <div class="form-field">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>حالة التسجيل</mat-label>
+                    <mat-select formControlName="enrollmentStatus">
+                      <mat-option [value]="null">-- اختر حالة التسجيل --</mat-option>
+                      <mat-option *ngFor="let status of enrollmentStatuses" [value]="status">
+                        {{ status.title }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
             </div>
 
             <!-- Third Row -->
@@ -355,20 +359,39 @@
               </div>
             </div>
 
-            <!-- Status Toggle -->
-            <div class="full-width status-toggle" *ngIf="isEditMode">
-              <mat-slide-toggle 
-                [color]="'primary'"
-                [checked]="enrollmentForm.get('isActive')?.value"
-                (change)="enrollmentForm.get('isActive')?.setValue($event.checked)">
-                <div class="toggle-label">
-                  <mat-icon>account_circle</mat-icon>
-                  <span>حالة التسجيل</span>
-                </div>
-                <div class="toggle-status" [class.active]="enrollmentForm.get('isActive')?.value">
-                  {{ enrollmentForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
-                </div>
-              </mat-slide-toggle>
+            <!-- Status Toggles Row -->
+            <div class="status-toggles-row">
+              <!-- isActive Toggle -->
+              <div class="status-toggle" *ngIf="isEditMode">
+                <mat-slide-toggle 
+                  [color]="'primary'"
+                  [checked]="enrollmentForm.get('isActive')?.value"
+                  (change)="enrollmentForm.get('isActive')?.setValue($event.checked)">
+                  <div class="toggle-label">
+                    <mat-icon>account_circle</mat-icon>
+                    <span>حالة التسجيل</span>
+                  </div>
+                  <div class="toggle-status" [class.active]="enrollmentForm.get('isActive')?.value">
+                    {{ enrollmentForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
+                  </div>
+                </mat-slide-toggle>
+              </div>
+
+              <!-- isAutoUpdate Toggle -->
+              <div class="status-toggle">
+                <mat-slide-toggle 
+                  [color]="'primary'"
+                  [checked]="enrollmentForm.get('isAutoUpdate')?.value"
+                  (change)="enrollmentForm.get('isAutoUpdate')?.setValue($event.checked)">
+                  <div class="toggle-label">
+                    <mat-icon>autorenew</mat-icon>
+                    <span>تحديث تلقائي</span>
+                  </div>
+                  <div class="toggle-status" [class.active]="enrollmentForm.get('isAutoUpdate')?.value">
+                    {{ enrollmentForm.get('isAutoUpdate')?.value ? 'مفعل' : 'غير مفعل' }}
+                  </div>
+                </mat-slide-toggle>
+              </div>
             </div>
 
             <!-- Payment Option -->

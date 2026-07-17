@@ -41,6 +41,12 @@ public class EnrollmentRepositoryImpl implements EnrollmentRepository {
     }
 
     @Override
+    public void internalUpdate(Enrollment enrollment) {
+        enrollment.setLastModifiedOn(LocalDateTime.now());
+        enrollmentJPARepository.save(enrollment);
+    }
+
+    @Override
     public Optional<Enrollment> selectById(Integer id) {
         return enrollmentJPARepository.findById(id);
     }

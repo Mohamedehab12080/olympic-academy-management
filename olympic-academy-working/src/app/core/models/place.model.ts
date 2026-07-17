@@ -13,12 +13,18 @@ export interface PlaceVTO {
   title: string;
   rentValue?: number;
   remainedValue?: number;
+  placeReport?:PlaceVTO;
   address?: string;
   phoneNumber?: string;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;
   lastModifiedBy?: LightUserVTO;
+}
+
+export interface PlaceVTO {
+  totalPayed: number;
+  totalGained:number;
 }
 
 export interface PlaceListItem {

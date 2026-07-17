@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -17,6 +19,7 @@ public class TrainerCourseSearchFilter extends SearchFilter<TrainerCourseSearchF
     private String quickSearch;
     private Integer trainerId;
     private Integer courseId;
+    private List<Integer> courseIds;
 
 
     @Getter

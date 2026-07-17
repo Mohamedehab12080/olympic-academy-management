@@ -10,7 +10,8 @@ export interface EmployeeType {
 
 export const EMPLOYEE_TYPES: EmployeeType[] = [
   { id: 1, title: 'مدرب' },
-  { id: 2, title: 'مدير' }
+  { id: 2, title: 'مدير' },
+  { id: 3, title: 'محاضر' }
 ];
 
 export interface EmployeeAttendanceStatus {
@@ -51,6 +52,8 @@ export interface EmployeeDTO {
   gender?: Gender;  // From common.model
   salary?: number;
   isActive?:boolean;
+  isMonthlyUpdated:boolean;
+  updatePeriodInDays: number;
   remainedSalary?: number;
   salaryType?: SalaryType;  // From common.model
   employeeType: EmployeeType;
@@ -108,6 +111,8 @@ export interface EmployeeVTO {
   imageUrl?: string;
   hireDate?: string;
   isActive: boolean;
+  isMonthlyUpdated:boolean;
+  updatePeriodInDays: number;
   departments: LookupVTO[];
   contacts: EmployeeContactVTO[];
   courses: LookupVTO[];
@@ -140,10 +145,28 @@ export interface EmployeeAttendanceVTO {
 }
 
 export interface CourseSessionVTO {
-  id: number;
+  id:number;
   title: string;
   course: LookupVTO;
-  trainer: LookupVTO;
+  trainers: LookupVTO[];
+  place: LookupVTO;
+  sessionDate: string;
+  sessionDay: string;
+  startTime: string;
+  endTime: string;
+  status: LookupVTO;  // SessionStatus as LookupVTO
+  note?: string;
+  createdOn: string;
+  createdBy: LightUserVTO;
+  lastModifiedOn?: string;
+  lastModifiedBy?: LightUserVTO;
+}
+
+export interface CourseSessionLookupVTO {
+  id:number;
+  title: string;
+  course: LookupVTO;
+  trainer: EmployeeLookupVTO;
   place: LookupVTO;
   sessionDate: string;
   sessionDay: string;
@@ -196,7 +219,10 @@ export interface EmployeeListItem {
   employeeType: LookupVTO;
   hireDate: string;
   isActive: boolean;
-  departments: LookupVTO[];
+  isMonthlyUpdated:boolean;
+  updatePeriodInDays: number;
+  salary: number;
+  remainedSalary: number;
 }
 
 export interface EmployeeAttendanceResultSet {
@@ -240,7 +266,8 @@ export interface DailyAttendanceReport {
 // ==================== DTOs for Assigning ====================
 
 export interface AssignCourseDTO {
-  courseId: number;
+  courseIdToBeAdded: number[];
+  courseIdToBeDeleted:number[];
 }
 
 export interface AssignDepartmentDTO {

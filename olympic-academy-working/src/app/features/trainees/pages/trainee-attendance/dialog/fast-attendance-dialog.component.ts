@@ -1,4 +1,4 @@
-// dialog/fast-attendance-dialog.component.ts - COMPLETE FIXED VERSION
+// fast-attendance-dialog.component.ts - UPDATED WITH ENROLLMENT-BASED TRAINER SELECTION
 
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -20,6 +20,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import { TraineeAttendanceService } from '../../../../../core/services/trainee-attendance.service';
 import { TraineeService } from '../../../../../core/services/trainee.service';
+import { EnrollmentService } from '../../../../../core/services/enrollment.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
 
 // ============================================================================
@@ -41,6 +42,8 @@ export interface SessionOption {
   startTime?: string;
   endTime?: string;
   day?: string;
+  courseId?: number;
+  trainers?: Array<{ id: number; title: string }>;
 }
 
 // ============================================================================
@@ -200,6 +203,58 @@ export interface SessionOption {
                   class="clear-selection-btn">
                   <mat-icon>close</mat-icon>
                 </button>
+              </div>
+            </div>
+
+            <!-- Trainer Selection - Auto-populated from enrollment -->
+            <div class="config-field">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>المدرب *</mat-label>
+                <mat-select 
+                  [(ngModel)]="selectedTrainerId" 
+                  [disabled]="!selectedSession || selectedSession.trainers?.length === 0 || isLoadingEnrollment">
+                  <mat-option *ngFor="let trainer of selectedSession?.trainers || []" [value]="trainer.id">
+                    {{ trainer.title }}
+                  </mat-option>
+                </mat-select>
+                <mat-icon matSuffix>person</mat-icon>
+                <mat-spinner matSuffix diameter="20" *ngIf="isLoadingEnrollment"></mat-spinner>
+              </mat-form-field>
+              
+              <!-- Loading state -->
+              <div class="field-hint loading" *ngIf="isLoadingEnrollment">
+                <mat-icon>hourglass_empty</mat-icon>
+                <span>جاري البحث عن تسجيل المتدرب...</span>
+              </div>
+              
+              <!-- No session selected -->
+              <div class="field-hint" *ngIf="!selectedSession">
+                <mat-icon>info</mat-icon>
+                <span>الرجاء اختيار الجلسة أولاً</span>
+              </div>
+              
+              <!-- No trainers available -->
+              <div class="field-hint warning" *ngIf="selectedSession && selectedSession.trainers?.length === 0">
+                <mat-icon>warning</mat-icon>
+                <span>لا يوجد مدربين لهذه الجلسة</span>
+              </div>
+              
+              <!-- Auto-selected from enrollment -->
+              <div class="field-hint success" *ngIf="enrollmentFound && selectedTrainerId">
+                <mat-icon>check_circle</mat-icon>
+                <span>تم تحديد المدرب تلقائياً من تسجيل المتدرب</span>
+              </div>
+              
+              <!-- No enrollment found -->
+              <div class="field-hint warning" *ngIf="enrollmentChecked && !enrollmentFound && selectedSession">
+                <mat-icon>warning</mat-icon>
+                <span>لم يتم العثور على تسجيل لهذا المتدرب في هذه الدورة</span>
+              </div>
+              
+              <!-- Multiple trainers available hint -->
+              <div class="field-hint" *ngIf="selectedSession && selectedSession.trainers && selectedSession.trainers.length > 1 && !enrollmentFound">
+                <mat-icon>people</mat-icon>
+                <span>اختر المدرب المناسب من القائمة</span>
               </div>
             </div>
 
@@ -383,6 +438,9 @@ export interface SessionOption {
     </div>
   `,
   styles: [`
+    /* ============================================ */
+    /* CONTAINER */
+    /* ============================================ */
     .dialog-container {
       min-width: 620px;
       max-width: 750px;
@@ -393,6 +451,9 @@ export interface SessionOption {
       box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
     }
 
+    /* ============================================ */
+    /* HEADER */
+    /* ============================================ */
     .dialog-header {
       display: flex;
       justify-content: space-between;
@@ -446,6 +507,9 @@ export interface SessionOption {
       background: rgba(255, 255, 255, 0.15) !important;
     }
 
+    /* ============================================ */
+    /* DIALOG BODY */
+    /* ============================================ */
     .dialog-body {
       padding: 20px 24px;
       max-height: 65vh;
@@ -466,6 +530,9 @@ export interface SessionOption {
       border-radius: 10px;
     }
 
+    /* ============================================ */
+    /* SECTION TITLE */
+    /* ============================================ */
     .section-title {
       display: flex;
       align-items: center;
@@ -503,6 +570,9 @@ export interface SessionOption {
       color: #065f46;
     }
 
+    /* ============================================ */
+    /* CONFIG SECTION */
+    /* ============================================ */
     .config-section {
       background: white;
       padding: 16px 20px;
@@ -563,6 +633,58 @@ export interface SessionOption {
       border-top: 0 !important;
     }
 
+    /* ============================================ */
+    /* FIELD HINTS */
+    /* ============================================ */
+    .field-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #6b7280;
+      padding: 4px 10px;
+      background: #f3f4f6;
+      border-radius: 8px;
+    }
+
+    .field-hint mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #7c3aed;
+    }
+
+    .field-hint.warning {
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .field-hint.warning mat-icon {
+      color: #f59e0b;
+    }
+
+    .field-hint.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .field-hint.success mat-icon {
+      color: #059669;
+    }
+
+    .field-hint.loading {
+      background: #ede9fe;
+      color: #5b21b6;
+    }
+
+    .field-hint.loading mat-icon {
+      color: #7c3aed;
+    }
+
+    /* ============================================ */
+    /* SESSION DROPDOWN */
+    /* ============================================ */
     .session-field {
       position: relative;
       z-index: 10;
@@ -600,33 +722,6 @@ export interface SessionOption {
       overflow: hidden;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
       z-index: 1000;
-    }
-
-    .dropdown-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px 20px;
-      gap: 12px;
-      color: #64748b;
-      font-size: 14px;
-    }
-
-    .dropdown-empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px 20px;
-      gap: 8px;
-      color: #94a3b8;
-    }
-
-    .dropdown-empty mat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
     }
 
     .dropdown-options {
@@ -735,6 +830,9 @@ export interface SessionOption {
       flex-shrink: 0;
     }
 
+    /* ============================================ */
+    /* SELECTED SESSION DISPLAY */
+    /* ============================================ */
     .selected-session-display {
       display: flex;
       justify-content: space-between;
@@ -802,6 +900,9 @@ export interface SessionOption {
       height: 18px;
     }
 
+    /* ============================================ */
+    /* TIME FIELDS */
+    /* ============================================ */
     .time-field-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -870,6 +971,9 @@ export interface SessionOption {
       color: #f59e0b;
     }
 
+    /* ============================================ */
+    /* SCANNER SECTION */
+    /* ============================================ */
     .scanner-section {
       background: white;
       padding: 16px 20px;
@@ -1057,6 +1161,9 @@ export interface SessionOption {
       opacity: 0.7;
     }
 
+    /* ============================================ */
+    /* RECENT LIST */
+    /* ============================================ */
     .recent-list {
       background: white;
       padding: 16px 20px;
@@ -1187,6 +1294,9 @@ export interface SessionOption {
       min-width: 50px;
     }
 
+    /* ============================================ */
+    /* FOOTER */
+    /* ============================================ */
     .dialog-footer {
       display: flex;
       justify-content: space-between;
@@ -1260,6 +1370,9 @@ export interface SessionOption {
       box-shadow: none !important;
     }
 
+    /* ============================================ */
+    /* RESPONSIVE */
+    /* ============================================ */
     @media (max-width: 768px) {
       .dialog-container {
         min-width: 320px;
@@ -1437,6 +1550,9 @@ export interface SessionOption {
       }
     }
 
+    /* ============================================ */
+    /* MATERIAL OVERRIDES */
+    /* ============================================ */
     ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
       color: #d1d5db !important;
     }
@@ -1503,6 +1619,12 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
   isDropdownOpen: boolean = false;
   isLoadingSessions: boolean = false;
 
+  // Trainer
+  selectedTrainerId: number | null = null;
+  isLoadingEnrollment: boolean = false;
+  enrollmentFound: boolean = false;
+  enrollmentChecked: boolean = false;
+
   // Status
   selectedStatus: TraineeAttendanceStatusType | null = null;
   attendanceStatuses = ATTENDANCE_STATUS_OPTIONS;
@@ -1516,6 +1638,10 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
   barcodeSearch: string = '';
   isProcessing: boolean = false;
   isScannerActive: boolean = false;
+
+  // Current trainee being processed
+  private currentTraineeId: number | null = null;
+  private currentTraineeNationalId: string | null = null;
 
   // Recent scans
   recentScans: Array<{
@@ -1542,14 +1668,15 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     @Inject(MAT_DIALOG_DATA) public data: { sessionOptions: SessionOption[] },
     private traineeAttendanceService: TraineeAttendanceService,
     private traineeService: TraineeService,
+    private enrollmentService: EnrollmentService,
     private notification: NotificationService,
     private cdr: ChangeDetectorRef
   ) {
     this.allSessions = data.sessionOptions || [];
     this.filteredSessions = [...this.allSessions];
     
-    // Debug: Log session data to verify times
-    console.log('Sessions received:', this.allSessions);
+    console.log('FastAttendanceDialog received data:', this.data);
+    console.log('Session options with trainers:', this.allSessions);
   }
 
   // ==========================================================================
@@ -1646,7 +1773,10 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     );
   }
 
-  // FIXED: Select session and populate times
+  // ==========================================================================
+  // SESSION SELECTION
+  // ==========================================================================
+
   selectSession(event: Event, session: SessionOption): void {
     event.preventDefault();
     event.stopPropagation();
@@ -1656,11 +1786,12 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     this.searchTerm = session.label;
     this.closeDropdown();
 
-    // FIXED: Populate check-in and check-out times from session
-    console.log('Selected session:', session);
-    console.log('Start time:', session.startTime);
-    console.log('End time:', session.endTime);
-    
+    // Reset trainer selection
+    this.selectedTrainerId = null;
+    this.enrollmentFound = false;
+    this.enrollmentChecked = false;
+
+    // Populate times
     if (session.startTime) {
       this.checkInTime = this.formatTimeForInput(session.startTime);
     } else {
@@ -1673,8 +1804,10 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
       this.checkOutTime = '';
     }
 
-    console.log('Check-in time set to:', this.checkInTime);
-    console.log('Check-out time set to:', this.checkOutTime);
+    // If we have a current trainee, try to find their enrollment
+    if (this.currentTraineeId) {
+      this.findTraineeEnrollment(this.currentTraineeId, session.courseId);
+    }
 
     this.cdr.detectChanges();
     setTimeout(() => this.focusBarcodeInput(), 100);
@@ -1687,6 +1820,9 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     }
     this.selectedSessionId = null;
     this.selectedSession = null;
+    this.selectedTrainerId = null;
+    this.enrollmentFound = false;
+    this.enrollmentChecked = false;
     this.searchTerm = '';
     this.filteredSessions = [...this.allSessions];
     this.checkInTime = '';
@@ -1694,6 +1830,105 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     this.closeDropdown();
     this.cdr.detectChanges();
     setTimeout(() => this.focusBarcodeInput(), 100);
+  }
+
+  // ==========================================================================
+  // ENROLLMENT-BASED TRAINER SELECTION
+  // ==========================================================================
+
+  /**
+   * Find trainee enrollment for the selected course
+   */
+  private findTraineeEnrollment(traineeId: number, courseId?: number): void {
+    if (!courseId) {
+      // Try to get courseId from selected session
+      if (this.selectedSession?.courseId) {
+        courseId = this.selectedSession.courseId;
+      } else {
+        return;
+      }
+    }
+
+    this.isLoadingEnrollment = true;
+    this.enrollmentFound = false;
+    this.enrollmentChecked = false;
+    this.selectedTrainerId = null;
+
+    // Use the trainee's national ID if available, otherwise use trainee ID
+    const traineeNationalId = this.currentTraineeNationalId || undefined;
+
+    const params: any = {};
+    if (traineeNationalId) {
+      params.traineeNationalId = traineeNationalId;
+    } else {
+      params.traineeId = traineeId;
+    }
+    params.courseId = courseId;
+
+    console.log('Searching enrollment with params:', params);
+
+    this.enrollmentService.getAllEnrollmentsDetailsByFilter(params).subscribe({
+      next: (res: any) => {
+        this.isLoadingEnrollment = false;
+        this.enrollmentChecked = true;
+
+        const enrollments = res.items || [];
+        
+        if (enrollments.length > 0) {
+          // Find the first enrollment for this course
+          const enrollment = enrollments[0];
+          
+          if (enrollment.trainer) {
+            const trainerId = enrollment.trainer.id;
+            const trainerTitle = enrollment.trainer.title;
+            
+            // Check if this trainer exists in the session's trainers list
+            const sessionTrainers = this.selectedSession?.trainers || [];
+            const trainerExists = sessionTrainers.some(t => t.id === trainerId);
+            
+            if (trainerExists) {
+              this.selectedTrainerId = trainerId;
+              this.enrollmentFound = true;
+              console.log(`Auto-selected trainer: ${trainerTitle} (ID: ${trainerId}) from enrollment`);
+              this.notification.showSuccess(`تم تحديد المدرب تلقائياً: ${trainerTitle}`);
+            } else {
+              // Trainer from enrollment is not in the session's trainers list
+              console.warn(`Trainer ${trainerTitle} (ID: ${trainerId}) not found in session trainers`);
+              
+              // Try to match by trainer name if available
+              const matchedTrainer = sessionTrainers.find(t => 
+                t.title?.toLowerCase().includes(trainerTitle?.toLowerCase() || '') ||
+                trainerTitle?.toLowerCase().includes(t.title?.toLowerCase() || '')
+              );
+              
+              if (matchedTrainer) {
+                this.selectedTrainerId = matchedTrainer.id;
+                this.enrollmentFound = true;
+                console.log(`Auto-selected trainer by name match: ${matchedTrainer.title}`);
+                this.notification.showSuccess(`تم تحديد المدرب تلقائياً: ${matchedTrainer.title}`);
+              } else {
+                // No matching trainer found
+                this.notification.showWarning(`المدرب "${trainerTitle}" غير متاح في هذه الجلسة، الرجاء الاختيار يدوياً`);
+              }
+            }
+          } else {
+            console.warn('Enrollment found but no trainer assigned');
+            this.notification.showWarning('تم العثور على تسجيل لكن لا يوجد مدرب معين');
+          }
+        } else {
+          console.log('No enrollment found for this trainee and course');
+          this.notification.showWarning('لم يتم العثور على تسجيل لهذا المتدرب في هذه الدورة');
+        }
+        
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error finding enrollment:', error);
+        this.isLoadingEnrollment = false;
+        this.enrollmentChecked = true;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // ==========================================================================
@@ -1709,36 +1944,18 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     }
     
     try {
-      // Try to extract time from various formats
-      let time = timeStr;
-      
-      // Remove AM/PM if present
-      time = time.replace(/\s*[AP]M\s*/i, '').trim();
-      
+      let time = timeStr.replace(/\s*[AP]M\s*/i, '').trim();
       const parts = time.split(':');
       if (parts.length >= 2) {
         let hours = parseInt(parts[0], 10);
         const minutes = parts[1].padStart(2, '0');
         if (!isNaN(hours)) {
-          // If hours > 23, it might be in 12-hour format with AM/PM removed
-          if (hours > 23) {
-            hours = hours % 24;
-          }
+          if (hours > 23) hours = hours % 24;
           return `${hours.toString().padStart(2, '0')}:${minutes}`;
         }
       }
-      
-      // Try to parse as date
-      const date = new Date(timeStr);
-      if (!isNaN(date.getTime())) {
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-      }
-      
       return timeStr;
     } catch (error) {
-      console.warn('Error formatting time:', timeStr, error);
       return timeStr;
     }
   }
@@ -1753,7 +1970,7 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
   }
 
   isConfigurationValid(): boolean {
-    return !!(this.selectedSessionId && this.selectedStatus);
+    return !!(this.selectedSessionId && this.selectedTrainerId && this.selectedStatus);
   }
 
   // ==========================================================================
@@ -1774,7 +1991,7 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
     }
 
     if (!this.isConfigurationValid()) {
-      this.showStatusMessage(false, 'الرجاء اختيار الجلسة وحالة الحضور أولاً');
+      this.showStatusMessage(false, 'الرجاء اختيار الجلسة والمدرب وحالة الحضور أولاً');
       return;
     }
 
@@ -1813,9 +2030,19 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
   }
 
   private createAttendanceForTrainee(trainee: any): void {
+    // Store current trainee info for enrollment lookup
+    this.currentTraineeId = trainee.id;
+    this.currentTraineeNationalId = trainee.nationalId;
+
+    // If session has courseId, try to find enrollment to auto-select trainer
+    if (this.selectedSession?.courseId) {
+      this.findTraineeEnrollment(trainee.id, this.selectedSession.courseId);
+    }
+
     const attendanceData = {
       traineeId: trainee.id,
       courseSessionId: this.selectedSessionId!,
+      trainerId: this.selectedTrainerId!,
       status: this.selectedStatus!,
       attendanceDate: this.attendanceDate.toISOString().split('T')[0],
       checkInTime: this.checkInTime || null,

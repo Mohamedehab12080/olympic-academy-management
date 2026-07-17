@@ -1,14 +1,24 @@
-// home.component.ts - Professional Dashboard with Print Support
+// home.component.ts - Professional Dashboard with Enhanced UI/UX
+// Updated to support totalPlacesGained
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, delay, finalize } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { MatMenuModule } from '@angular/material/menu';
+import { 
+  animate, 
+  style, 
+  transition, 
+  trigger, 
+  state,
+  query,
+  stagger
+} from '@angular/animations';
 import { FinancialService } from '../../core/services/financial.service';
 import { FinancialTotalVTO } from '../../core/models/financial.model';
 import { NotificationService } from '../../core/services/notification.service';
@@ -22,37 +32,58 @@ import { NotificationService } from '../../core/services/notification.service';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatMenuModule
   ],
   animations: [
     trigger('fadeInUp', [
       transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)', 
-          style({ opacity: 1, transform: 'translateY(0)' }))
+        style({ opacity: 0, transform: 'translateY(30px) scale(0.98)' }),
+        animate('500ms cubic-bezier(0.34, 1.56, 0.64, 1)', 
+          style({ opacity: 1, transform: 'translateY(0) scale(1)' }))
       ])
+    ]),
+    trigger('staggerFade', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(20px)' }),
+          stagger('60ms', [
+            animate('400ms cubic-bezier(0.4, 0, 0.2, 1)',
+              style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ]),
+    trigger('cardHover', [
+      state('default', style({
+        transform: 'translateY(0) scale(1)',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
+      })),
+      state('hover', style({
+        transform: 'translateY(-8px) scale(1.02)',
+        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+      })),
+      transition('default <=> hover', animate('300ms cubic-bezier(0.4, 0, 0.2, 1)'))
     ])
   ],
   template: `
-    <div class="dashboard-wrapper" id="dashboard-print-content">
+    <div class="dashboard-container" id="dashboard-print-content">
       <!-- Modern Header -->
-      <div class="dashboard-header" @fadeInUp>
-        <div class="header-left">
-          <div class="header-logo">
-            <div class="logo-icon">
-              <mat-icon>emoji_events</mat-icon>
-            </div>
-            <div class="logo-text">
-              <h1>الأكاديمية الأولمبية</h1>
-              <span>لوحة التحكم الرئيسية</span>
-            </div>
+      <header class="dashboard-header" @fadeInUp>
+        <div class="header-brand">
+          <div class="brand-icon">
+            <mat-icon>olympic</mat-icon>
+          </div>
+          <div class="brand-info">
+            <h1 class="brand-title"> الأكاديمية الأولمبية لعلوم الرياضة</h1>
+            <span class="brand-subtitle">لوحة التحكم الرئيسية</span>
           </div>
         </div>
         
-        <div class="header-right">
+        <div class="header-actions">
           <!-- Year Selector -->
-          <div class="year-selector-wrapper">
-            <mat-icon class="calendar-icon">calendar_today</mat-icon>
+          <div class="year-selector">
+            <mat-icon class="year-icon">event</mat-icon>
             <select 
               class="year-select"
               [(ngModel)]="selectedYear"
@@ -66,207 +97,325 @@ import { NotificationService } from '../../core/services/notification.service';
           </div>
           
           <!-- Quick Actions -->
-          <button 
-            class="action-btn print-btn"
-            (click)="printDashboard()"
-            matTooltip="طباعة لوحة التحكم"
-          >
-            <mat-icon>print</mat-icon>
-          </button>
-          
-          <button 
-            class="action-btn refresh-btn"
-            (click)="refreshData()"
-            [disabled]="isLoading"
-            matTooltip="تحديث البيانات"
-          >
-            <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
-          </button>
+          <div class="action-group">
+            <button 
+              class="action-btn refresh-btn"
+              (click)="refreshData()"
+              [disabled]="isLoading"
+              matTooltip="تحديث البيانات"
+              [matTooltipPosition]="'below'"
+            >
+              <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+            </button>
+            
+            <button 
+              class="action-btn print-btn"
+              (click)="printDashboard()"
+              matTooltip="طباعة لوحة التحكم"
+              [matTooltipPosition]="'below'"
+            >
+              <mat-icon>print</mat-icon>
+            </button>
+            
+            <button 
+              class="action-btn settings-btn"
+              [matMenuTriggerFor]="settingsMenu"
+              matTooltip="الإعدادات"
+              [matTooltipPosition]="'below'"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #settingsMenu="matMenu">
+              <button mat-menu-item (click)="exportData()">
+                <mat-icon>file_download</mat-icon>
+                <span>تصدير البيانات</span>
+              </button>
+              <button mat-menu-item (click)="toggleDarkMode()">
+                <mat-icon>dark_mode</mat-icon>
+                <span>الوضع الليلي</span>
+              </button>
+            </mat-menu>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <!-- Loading Overlay -->
-      <div class="loading-overlay" *ngIf="isLoading">
-        <mat-spinner diameter="48" color="accent"></mat-spinner>
-        <p>جاري تحميل البيانات...</p>
-      </div>
-
-      <!-- Stats Grid -->
+      <!-- Stats Grid with Stagger Animation -->
       <div class="stats-grid" *ngIf="!isLoading && data">
-        <!-- Financial Stats -->
-        <div class="stat-card financial-card" *ngFor="let stat of financialStats" @fadeInUp>
-          <div class="stat-icon" [class]="stat.iconClass">
-            <mat-icon>{{ stat.icon }}</mat-icon>
+        <div 
+          class="stat-card" 
+          *ngFor="let stat of allStats; let i = index" 
+          @fadeInUp
+          [@cardHover]="hoverState"
+          (mouseenter)="hoverState = 'hover'"
+          (mouseleave)="hoverState = 'default'"
+          [class]="stat.cardType"
+          [style.animation-delay]="i * 50 + 'ms'"
+        >
+          <div class="stat-icon-wrapper" [class]="stat.iconClass">
+            <mat-icon class="stat-icon">{{ stat.icon }}</mat-icon>
           </div>
           <div class="stat-content">
-            <h3 class="stat-value">{{ formatCurrency(stat.value) }}</h3>
             <p class="stat-label">{{ stat.label }}</p>
-          </div>
-        </div>
-
-        <!-- Active Counts -->
-        <div class="stat-card count-card" *ngFor="let stat of activeStats" @fadeInUp>
-          <div class="stat-icon active-icon">
-            <mat-icon>{{ stat.icon }}</mat-icon>
-          </div>
-          <div class="stat-content">
-            <h3 class="stat-value">{{ stat.value }}</h3>
-            <p class="stat-label">{{ stat.label }}</p>
-            <div class="stat-progress">
-              <div class="progress-bar" [style.width]="stat.percentage + '%'"></div>
+            <h3 class="stat-value" [class]="stat.valueClass">
+              {{ stat.isCurrency ? formatCurrency(stat.value) : stat.value }}
+            </h3>
+            <div class="stat-trend" *ngIf="stat.trend !== undefined">
+              <mat-icon class="trend-icon" [class.up]="stat.trend > 0" [class.down]="stat.trend < 0">
+                {{ stat.trend > 0 ? 'trending_up' : 'trending_down' }}
+              </mat-icon>
+              <span class="trend-value" [class.up]="stat.trend > 0" [class.down]="stat.trend < 0">
+                {{ stat.trend > 0 ? '+' : '' }}{{ stat.trend }}%
+              </span>
             </div>
           </div>
-        </div>
-
-        <!-- Inactive Counts -->
-        <div class="stat-card count-card inactive" *ngFor="let stat of inactiveStats" @fadeInUp>
-          <div class="stat-icon inactive-icon">
-            <mat-icon>{{ stat.icon }}</mat-icon>
-          </div>
-          <div class="stat-content">
-            <h3 class="stat-value">{{ stat.value }}</h3>
-            <p class="stat-label">{{ stat.label }}</p>
-            <div class="stat-progress">
-              <div class="progress-bar warning" [style.width]="stat.percentage + '%'"></div>
-            </div>
+          <div class="stat-progress" *ngIf="stat.progress !== undefined">
+            <div class="progress-bar" [style.width]="stat.progress + '%'"></div>
           </div>
         </div>
       </div>
 
-      <!-- Summary Section -->
+      <!-- Enhanced Summary Section -->
       <div class="summary-section" *ngIf="!isLoading && data" @fadeInUp>
         <div class="summary-card">
           <div class="summary-header">
-            <mat-icon>assessment</mat-icon>
-            <h3>ملخص الأداء</h3>
+            <div class="summary-title">
+              <mat-icon>analytics</mat-icon>
+              <h3>ملخص الأداء المالي</h3>
+            </div>
+            <span class="summary-badge">تقرير {{ selectedYear }}</span>
           </div>
+          
           <div class="summary-grid">
-            <div class="summary-item">
-              <span class="summary-label">إجمالي الإيرادات</span>
-              <span class="summary-value revenue">
-                {{ formatCurrency(getTotalRevenue()) }}
-              </span>
+            <div class="summary-item revenue">
+              <div class="item-icon">
+                <mat-icon>arrow_upward</mat-icon>
+              </div>
+              <div class="item-content">
+                <span class="item-label">إجمالي الإيرادات</span>
+                <span class="item-value">{{ formatCurrency(getTotalRevenue()) }}</span>
+              </div>
             </div>
-            <div class="summary-item">
-              <span class="summary-label">إجمالي المصروفات</span>
-              <span class="summary-value expense">
-                {{ formatCurrency(getTotalExpenses()) }}
-              </span>
+            
+            <div class="summary-item expenses">
+              <div class="item-icon">
+                <mat-icon>arrow_downward</mat-icon>
+              </div>
+              <div class="item-content">
+                <span class="item-label">إجمالي المصروفات</span>
+                <span class="item-value">{{ formatCurrency(getTotalExpenses()) }}</span>
+              </div>
             </div>
-            <div class="summary-item">
-              <span class="summary-label">صافي الربح</span>
-              <span class="summary-value profit" [class.negative]="getNetProfit() < 0">
-                {{ formatCurrency(getNetProfit()) }}
-              </span>
+            
+            <div class="summary-item profit" [class.negative]="getNetProfit() < 0">
+              <div class="item-icon">
+                <mat-icon>{{ getNetProfit() >= 0 ? 'check_circle' : 'warning' }}</mat-icon>
+              </div>
+              <div class="item-content">
+                <span class="item-label">صافي الربح</span>
+                <span class="item-value">{{ formatCurrency(getNetProfit()) }}</span>
+              </div>
             </div>
-            <div class="summary-item">
-              <span class="summary-label">إجمالي النشطاء</span>
-              <span class="summary-value active">
-                {{ getTotalActive() }}
-              </span>
+            
+            <div class="summary-item active">
+              <div class="item-icon">
+                <mat-icon>group</mat-icon>
+              </div>
+              <div class="item-content">
+                <span class="item-label">إجمالي النشطاء</span>
+                <span class="item-value">{{ getTotalActive() }}</span>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Cards -->
+      <div class="quick-stats" *ngIf="!isLoading && data" @fadeInUp>
+        <div class="quick-stat-card">
+          <div class="quick-stat-icon active-icon">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="quick-stat-info">
+            <span class="quick-stat-label">نشط</span>
+            <span class="quick-stat-value">{{ getTotalActive() }}</span>
+          </div>
+        </div>
+        <div class="quick-stat-card">
+          <div class="quick-stat-icon inactive-icon">
+            <mat-icon>cancel</mat-icon>
+          </div>
+          <div class="quick-stat-info">
+            <span class="quick-stat-label">غير نشط</span>
+            <span class="quick-stat-value">{{ getTotalInactive() }}</span>
+          </div>
+        </div>
+        <div class="quick-stat-card">
+          <div class="quick-stat-icon total-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="quick-stat-info">
+            <span class="quick-stat-label">إجمالي</span>
+            <span class="quick-stat-value">{{ getTotalActive() + getTotalInactive() }}</span>
           </div>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="dashboard-footer" @fadeInUp>
-        <div class="footer-left">
-          <mat-icon>update</mat-icon>
+      <footer class="dashboard-footer" @fadeInUp>
+        <div class="footer-info">
+          <mat-icon>schedule</mat-icon>
           <span>آخر تحديث: {{ lastUpdated | date:'dd/MM/yyyy HH:mm:ss' }}</span>
         </div>
-        <div class="footer-right">
-          <span class="footer-badge">الإصدار 2.0</span>
+        <div class="footer-status">
+          <span class="status-dot" [class.online]="!isLoading"></span>
+          <span class="status-text">{{ isLoading ? 'جاري التحميل...' : 'متصل' }}</span>
+        </div>
+        <div class="footer-version">
+          <span class="version-badge">v3.0</span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="loading-content">
+        <mat-spinner diameter="56" color="accent"></mat-spinner>
+        <p class="loading-text">جاري تحميل البيانات...</p>
+        <div class="loading-progress">
+          <div class="loading-bar"></div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .dashboard-wrapper {
-      padding: 24px;
-      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-      min-height: 100vh;
-      direction: rtl;
+    /* ============================================
+       CSS VARIABLES & RESET
+       ============================================ */
+    :host {
+      --primary: #667eea;
+      --primary-dark: #5a67d8;
+      --secondary: #764ba2;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #06b6d4;
+      --bg-primary: #f8fafc;
+      --bg-card: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+      --shadow-xl: 0 20px 60px rgba(0,0,0,0.12);
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ========== HEADER ========== */
+    /* ============================================
+       CONTAINER
+       ============================================ */
+    .dashboard-container {
+      padding: 24px;
+      background: var(--bg-primary);
+      min-height: 100vh;
+      direction: rtl;
+      position: relative;
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
     .dashboard-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 16px 32px;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      background: var(--bg-card);
+      padding: 16px 28px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
       margin-bottom: 28px;
+      border: 1px solid rgba(255,255,255,0.5);
+      backdrop-filter: blur(12px);
       flex-wrap: wrap;
-      gap: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      gap: 12px;
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-    }
-
-    .header-logo {
+    .header-brand {
       display: flex;
       align-items: center;
       gap: 16px;
     }
 
-    .logo-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 14px;
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35);
+      transition: var(--transition);
     }
 
-    .logo-icon mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
+    .brand-icon:hover {
+      transform: rotate(-8deg) scale(1.05);
+    }
+
+    .brand-icon mat-icon {
+      font-size: 30px;
+      width: 30px;
+      height: 30px;
       color: white;
     }
 
-    .logo-text h1 {
+    .brand-info h1 {
       margin: 0;
       font-size: 24px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--text-primary), #1e293b);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
     }
 
-    .logo-text span {
+    .brand-subtitle {
       font-size: 12px;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-weight: 500;
+      display: block;
+      margin-top: -2px;
     }
 
-    .header-right {
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .year-selector-wrapper {
+    .year-selector {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #f1f5f9;
-      padding: 4px 12px 4px 4px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-primary);
+      padding: 4px 12px 4px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
     }
 
-    .calendar-icon {
-      color: #667eea;
+    .year-selector:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .year-icon {
+      color: var(--primary);
       font-size: 20px;
     }
 
@@ -276,7 +425,7 @@ import { NotificationService } from '../../core/services/notification.service';
       background: transparent;
       font-size: 14px;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--text-primary);
       cursor: pointer;
       outline: none;
       min-width: 80px;
@@ -287,23 +436,29 @@ import { NotificationService } from '../../core/services/notification.service';
       cursor: not-allowed;
     }
 
+    .action-group {
+      display: flex;
+      gap: 8px;
+    }
+
     .action-btn {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border: none;
-      border-radius: 12px;
-      background: #f1f5f9;
-      color: #475569;
+      border-radius: var(--radius-sm);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s;
+      transition: var(--transition);
+      position: relative;
     }
 
     .action-btn:hover:not(:disabled) {
-      background: #e2e8f0;
       transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
     .action-btn:disabled {
@@ -311,145 +466,129 @@ import { NotificationService } from '../../core/services/notification.service';
       cursor: not-allowed;
     }
 
-    .refresh-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .action-btn.refresh-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
     }
 
-    .print-btn:hover:not(:disabled) {
+    .action-btn.print-btn:hover:not(:disabled) {
       background: #1e293b;
       color: white;
     }
 
+    .action-btn.settings-btn:hover:not(:disabled) {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
     .spinning {
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    /* ========== LOADING ========== */
-    .loading-overlay {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px;
-      gap: 16px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 20px;
-    }
-
-    .loading-overlay p {
-      color: #64748b;
-      font-size: 14px;
-      margin: 0;
-      font-weight: 500;
-    }
-
-    /* ========== STATS GRID ========== */
+    /* ============================================
+       STATS GRID
+       ============================================ */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
       margin-bottom: 24px;
     }
 
     .stat-card {
-      background: white;
-      border-radius: 18px;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
       padding: 20px 24px;
       display: flex;
-      align-items: center;
-      gap: 18px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: default;
+      flex-direction: column;
+      gap: 12px;
       position: relative;
       overflow: hidden;
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
     }
 
     .stat-card::before {
       content: '';
       position: absolute;
       top: 0;
+      left: 0;
       right: 0;
-      width: 4px;
-      height: 100%;
-      border-radius: 0 4px 4px 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      opacity: 0;
+      transition: var(--transition);
     }
 
-    .stat-card.financial-card::before {
-      background: linear-gradient(180deg, #667eea, #764ba2);
+    .stat-card:hover::before {
+      opacity: 1;
     }
 
-    .stat-card.count-card::before {
-      background: linear-gradient(180deg, #10b981, #059669);
+    .stat-card.financial::before {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
     }
 
-    .stat-card.count-card.inactive::before {
-      background: linear-gradient(180deg, #ef4444, #dc2626);
+    .stat-card.active-card::before {
+      background: linear-gradient(90deg, var(--success), #059669);
     }
 
-    .stat-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    .stat-card.inactive-card::before {
+      background: linear-gradient(90deg, var(--danger), #dc2626);
     }
 
-    .stat-card:hover .stat-icon {
-      transform: scale(1.05) rotate(-5deg);
-    }
-
-    .stat-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
+    .stat-icon-wrapper {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: transform 0.3s;
+      transition: var(--transition);
     }
 
-    .stat-icon mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
+    .stat-icon-wrapper:hover {
+      transform: scale(1.1) rotate(-4deg);
+    }
+
+    .stat-icon-wrapper .stat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
       color: white;
     }
 
-    .stat-icon.salary-icon {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .stat-icon-wrapper.salary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
     }
-
-    .stat-icon.advance-icon {
-      background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    .stat-icon-wrapper.advance {
+      background: linear-gradient(135deg, var(--warning), #f97316);
     }
-
-    .stat-icon.incentives-icon {
-      background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    .stat-icon-wrapper.incentives {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
     }
-
-    .stat-icon.rent-icon {
-      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    .stat-icon-wrapper.rent {
+      background: linear-gradient(135deg, var(--info), #0891b2);
     }
-
-    .stat-icon.enrollment-icon {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    .stat-icon-wrapper.placesGained {
+      background: linear-gradient(135deg, #10b981, #059669);
     }
-
-    .stat-icon.expenses-icon {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    .stat-icon-wrapper.enrollment {
+      background: linear-gradient(135deg, var(--success), #059669);
     }
-
-    .stat-icon.active-icon {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    .stat-icon-wrapper.expenses {
+      background: linear-gradient(135deg, var(--danger), #dc2626);
     }
-
-    .stat-icon.inactive-icon {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    .stat-icon-wrapper.active {
+      background: linear-gradient(135deg, var(--success), #059669);
+    }
+    .stat-icon-wrapper.inactive {
+      background: linear-gradient(135deg, var(--danger), #dc2626);
     }
 
     .stat-content {
@@ -457,162 +596,420 @@ import { NotificationService } from '../../core/services/notification.service';
       min-width: 0;
     }
 
+    .stat-label {
+      margin: 0 0 4px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
     .stat-value {
       margin: 0;
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--text-primary);
       line-height: 1.2;
     }
 
-    .stat-label {
-      margin: 4px 0 0;
-      font-size: 13px;
-      color: #94a3b8;
-      font-weight: 500;
+    .stat-value.positive {
+      color: var(--success);
+    }
+
+    .stat-value.negative {
+      color: var(--danger);
+    }
+
+    .stat-trend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .trend-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .trend-icon.up {
+      color: var(--success);
+    }
+
+    .trend-icon.down {
+      color: var(--danger);
+    }
+
+    .trend-value {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .trend-value.up {
+      color: var(--success);
+    }
+
+    .trend-value.down {
+      color: var(--danger);
     }
 
     .stat-progress {
       margin-top: 8px;
       height: 4px;
-      background: #e2e8f0;
+      background: var(--border-color);
       border-radius: 4px;
       overflow: hidden;
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #10b981, #059669);
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
       border-radius: 4px;
-      transition: width 0.8s ease;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .progress-bar.warning {
-      background: linear-gradient(90deg, #ef4444, #dc2626);
-    }
-
-    .stat-card.count-card.inactive .stat-value {
-      color: #991b1b;
-    }
-
-    /* ========== SUMMARY SECTION ========== */
+    /* ============================================
+       SUMMARY SECTION
+       ============================================ */
     .summary-section {
       margin-bottom: 24px;
     }
 
     .summary-card {
-      background: white;
-      border-radius: 18px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
       padding: 24px 32px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
     }
 
     .summary-header {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--bg-primary);
+    }
+
+    .summary-title {
+      display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 20px;
     }
 
-    .summary-header mat-icon {
-      color: #667eea;
-      font-size: 24px;
+    .summary-title mat-icon {
+      color: var(--primary);
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
     }
 
-    .summary-header h3 {
+    .summary-title h3 {
       margin: 0;
       font-size: 18px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--text-primary);
+    }
+
+    .summary-badge {
+      padding: 4px 14px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
     }
 
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
+      gap: 20px;
     }
 
     .summary-item {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-primary);
+      transition: var(--transition);
     }
 
-    .summary-label {
-      font-size: 13px;
-      color: #94a3b8;
-      font-weight: 500;
+    .summary-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
-    .summary-value {
-      font-size: 22px;
-      font-weight: 800;
+    .summary-item .item-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
-    .summary-value.revenue {
-      color: #667eea;
+    .summary-item.revenue .item-icon {
+      background: rgba(102, 126, 234, 0.12);
+      color: var(--primary);
     }
 
-    .summary-value.expense {
-      color: #ef4444;
+    .summary-item.expenses .item-icon {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
     }
 
-    .summary-value.profit {
-      color: #10b981;
+    .summary-item.profit .item-icon {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success);
     }
 
-    .summary-value.profit.negative {
-      color: #ef4444;
+    .summary-item.profit.negative .item-icon {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
     }
 
-    .summary-value.active {
+    .summary-item.active .item-icon {
+      background: rgba(139, 92, 246, 0.12);
       color: #8b5cf6;
     }
 
-    /* ========== FOOTER ========== */
+    .summary-item .item-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .item-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .summary-item.revenue .item-value {
+      color: var(--primary);
+    }
+
+    .summary-item.expenses .item-value {
+      color: var(--danger);
+    }
+
+    .summary-item.profit .item-value {
+      color: var(--success);
+    }
+
+    .summary-item.profit.negative .item-value {
+      color: var(--danger);
+    }
+
+    .summary-item.active .item-value {
+      color: #8b5cf6;
+    }
+
+    /* ============================================
+       QUICK STATS
+       ============================================ */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .quick-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg-card);
+      padding: 16px 20px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .quick-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .quick-stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quick-stat-icon.active-icon {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success);
+    }
+
+    .quick-stat-icon.inactive-icon {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+    }
+
+    .quick-stat-icon.total-icon {
+      background: rgba(102, 126, 234, 0.12);
+      color: var(--primary);
+    }
+
+    .quick-stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .quick-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .quick-stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
     .dashboard-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 14px 24px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: var(--bg-card);
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .footer-left {
+    .footer-info {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 13px;
     }
 
-    .footer-left mat-icon {
+    .footer-info mat-icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
     }
 
-    .footer-right {
+    .footer-status {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
-    .footer-badge {
-      padding: 4px 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      transition: var(--transition);
+    }
+
+    .status-dot.online {
+      background: var(--success);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .status-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .version-badge {
+      padding: 2px 12px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
-      border-radius: 20px;
+      border-radius: 12px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    /* ========== PRINT STYLES ========== */
+    /* ============================================
+       LOADING OVERLAY
+       ============================================ */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(248, 250, 252, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background: var(--bg-card);
+      padding: 48px 64px;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .loading-text {
+      font-size: 16px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .loading-progress {
+      width: 200px;
+      height: 4px;
+      background: var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .loading-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+      background-size: 200% 100%;
+      animation: loadingProgress 1.5s ease-in-out infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes loadingProgress {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ============================================
+       PRINT STYLES
+       ============================================ */
     @media print {
-      .dashboard-wrapper {
+      .dashboard-container {
         padding: 16px !important;
         background: white !important;
       }
@@ -620,19 +1017,19 @@ import { NotificationService } from '../../core/services/notification.service';
       .dashboard-header {
         background: white !important;
         box-shadow: none !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid var(--border-color) !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
-      .logo-icon {
+      .brand-icon {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
       .stat-card {
         box-shadow: none !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid var(--border-color) !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         break-inside: avoid !important;
@@ -644,13 +1041,15 @@ import { NotificationService } from '../../core/services/notification.service';
         box-shadow: none !important;
       }
 
-      .stat-icon {
+      .stat-card::before {
+        opacity: 1 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
-      .stat-icon mat-icon {
-        color: white !important;
+      .stat-icon-wrapper {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       .progress-bar {
@@ -660,7 +1059,12 @@ import { NotificationService } from '../../core/services/notification.service';
 
       .summary-card {
         box-shadow: none !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid var(--border-color) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .summary-badge {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
@@ -668,20 +1072,30 @@ import { NotificationService } from '../../core/services/notification.service';
       .dashboard-footer {
         background: white !important;
         box-shadow: none !important;
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid var(--border-color) !important;
       }
 
-      .footer-badge {
+      .version-badge {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
 
-      .header-right .action-btn {
+      .action-group {
         display: none !important;
       }
 
       .loading-overlay {
         display: none !important;
+      }
+
+      .quick-stats {
+        display: grid !important;
+      }
+
+      .quick-stat-card {
+        border: 1px solid var(--border-color) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       .stats-grid {
@@ -696,33 +1110,42 @@ import { NotificationService } from '../../core/services/notification.service';
         font-size: 20px !important;
       }
 
-      .stat-icon {
-        width: 44px !important;
-        height: 44px !important;
+      .stat-icon-wrapper {
+        width: 40px !important;
+        height: 40px !important;
       }
 
-      .stat-icon mat-icon {
-        font-size: 22px !important;
-        width: 22px !important;
-        height: 22px !important;
+      .stat-icon-wrapper .stat-icon {
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
       }
 
       .summary-grid {
-        gap: 16px !important;
+        gap: 12px !important;
       }
 
-      .summary-value {
-        font-size: 18px !important;
+      .summary-item {
+        padding: 12px !important;
+      }
+
+      .item-value {
+        font-size: 16px !important;
       }
     }
 
-    /* ========== RESPONSIVE ========== */
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
     @media (max-width: 1200px) {
       .stats-grid {
         grid-template-columns: repeat(3, 1fr);
       }
       .summary-grid {
         grid-template-columns: repeat(2, 1fr);
+      }
+      .quick-stats {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
 
@@ -733,7 +1156,7 @@ import { NotificationService } from '../../core/services/notification.service';
     }
 
     @media (max-width: 768px) {
-      .dashboard-wrapper {
+      .dashboard-container {
         padding: 16px;
       }
 
@@ -743,11 +1166,12 @@ import { NotificationService } from '../../core/services/notification.service';
         align-items: stretch;
       }
 
-      .header-right {
+      .header-actions {
         justify-content: space-between;
+        flex-wrap: wrap;
       }
 
-      .logo-text h1 {
+      .brand-info h1 {
         font-size: 20px;
       }
 
@@ -761,23 +1185,31 @@ import { NotificationService } from '../../core/services/notification.service';
         gap: 12px;
       }
 
+      .summary-card {
+        padding: 16px 20px;
+      }
+
+      .quick-stats {
+        grid-template-columns: 1fr;
+      }
+
       .stat-card {
         padding: 16px 18px;
       }
 
       .stat-value {
-        font-size: 20px;
-      }
-
-      .stat-icon {
-        width: 44px;
-        height: 44px;
-      }
-
-      .stat-icon mat-icon {
         font-size: 22px;
-        width: 22px;
-        height: 22px;
+      }
+
+      .stat-icon-wrapper {
+        width: 40px;
+        height: 40px;
+      }
+
+      .stat-icon-wrapper .stat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
       }
 
       .dashboard-footer {
@@ -787,31 +1219,31 @@ import { NotificationService } from '../../core/services/notification.service';
         padding: 12px 16px;
       }
 
-      .footer-left {
+      .footer-info {
         justify-content: center;
       }
 
-      .summary-card {
-        padding: 16px 20px;
+      .summary-item {
+        padding: 12px 16px;
       }
     }
 
     @media (max-width: 480px) {
       .stat-card {
-        padding: 12px 14px;
-        gap: 12px;
+        padding: 14px 16px;
+        gap: 10px;
       }
 
       .stat-value {
-        font-size: 18px;
+        font-size: 20px;
       }
 
-      .stat-icon {
-        width: 38px;
-        height: 38px;
+      .stat-icon-wrapper {
+        width: 36px;
+        height: 36px;
       }
 
-      .stat-icon mat-icon {
+      .stat-icon-wrapper .stat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
@@ -823,8 +1255,18 @@ import { NotificationService } from '../../core/services/notification.service';
       }
 
       .action-btn {
-        width: 36px;
-        height: 36px;
+        width: 38px;
+        height: 38px;
+      }
+
+      .loading-content {
+        padding: 32px 40px;
+      }
+
+      .summary-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
       }
     }
   `]
@@ -835,11 +1277,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   lastUpdated: Date = new Date();
   selectedYear: number = new Date().getFullYear();
   years: number[] = [];
+  hoverState: string = 'default';
   private destroy$ = new Subject<void>();
 
-  financialStats: any[] = [];
-  activeStats: any[] = [];
-  inactiveStats: any[] = [];
+  allStats: any[] = [];
 
   constructor(
     private financialService: FinancialService,
@@ -864,19 +1305,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     
     this.financialService.getAllMainTotalsOfFinancials(String(this.selectedYear))
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        delay(400),
+        finalize(() => this.isLoading = false)
+      )
       .subscribe({
         next: (response: FinancialTotalVTO) => {
           this.data = response;
-          console.log(response)
           this.updateStats();
           this.lastUpdated = new Date();
-          this.isLoading = false;
+          this.notification.showSuccess('تم تحديث البيانات بنجاح');
         },
         error: (error) => {
           console.error('Error loading financial data:', error);
           this.notification.showError('حدث خطأ في تحميل البيانات المالية');
-          this.isLoading = false;
         }
       });
   }
@@ -884,121 +1327,185 @@ export class HomeComponent implements OnInit, OnDestroy {
   updateStats(): void {
     if (!this.data) return;
 
-    // Financial Stats - Added totalAdvance
-    this.financialStats = [
+    const totalActive = this.getTotalActive();
+    const totalInactive = this.getTotalInactive();
+
+    // Financial Stats
+    const financialStats = [
       { 
         label: 'إجمالي الرواتب', 
         value: this.data.totalSalary || 0, 
         icon: 'payments', 
-        iconClass: 'salary-icon' 
+        iconClass: 'salary',
+        cardType: 'financial',
+        isCurrency: true,
+        trend: 0
       },
       { 
         label: 'إجمالي السلف', 
         value: this.data.totalAdvance || 0, 
         icon: 'currency_exchange', 
-        iconClass: 'advance-icon' 
+        iconClass: 'advance',
+        cardType: 'financial',
+        isCurrency: true,
+        trend: 0
       },
       { 
         label: 'إجمالي الحوافز', 
         value: this.data.totalIncentives || 0, 
         icon: 'card_giftcard', 
-        iconClass: 'incentives-icon' 
+        iconClass: 'incentives',
+        cardType: 'financial',
+        isCurrency: true,
+        trend: 0
       },
       { 
-        label: 'إيجارات الأماكن', 
+        label: 'إيجارات الأماكن (مصروف)', 
         value: this.data.totalPlacesRent || 0, 
         icon: 'apartment', 
-        iconClass: 'rent-icon' 
+        iconClass: 'rent',
+        cardType: 'financial',
+        isCurrency: true,
+        valueClass: 'negative',
+        trend: 0
+      },
+      { 
+        label: 'إيجارات الأماكن (إيراد)', 
+        value: this.data.totalPlacesGained || 0, 
+        icon: 'trending_up', 
+        iconClass: 'placesGained',
+        cardType: 'financial',
+        isCurrency: true,
+        valueClass: 'positive',
+        trend: 0
       },
       { 
         label: 'مدفوعات التسجيل', 
         value: this.data.totalEnrollmentPayments || 0, 
         icon: 'school', 
-        iconClass: 'enrollment-icon' 
+        iconClass: 'enrollment',
+        cardType: 'financial',
+        isCurrency: true,
+        valueClass: 'positive',
+        trend: 0
       },
       { 
-        label: 'إجمالي المصروفات', 
+        label: 'استردادات التسجيل', 
+        value: this.data.totalEnrollmentRefunds || 0, 
+        icon: 'money_off', 
+        iconClass: 'enrollment',
+        cardType: 'financial',
+        valueClass: 'negative',
+        isCurrency: true,
+        trend: 0
+      },
+      { 
+        label: 'مصروفات اخري', 
         value: this.data.totalExpenses || 0, 
         icon: 'money_off', 
-        iconClass: 'expenses-icon' 
+        iconClass: 'expenses',
+        cardType: 'financial',
+        isCurrency: true,
+        valueClass: 'negative',
+        trend: 0
       }
     ];
 
-    const totalActive = this.getTotalActive();
-    const totalInactive = this.getTotalInactive();
-
-    this.activeStats = [
+    // Active Stats
+    const activeStats = [
       { 
         label: 'الموظفين النشطين', 
         value: this.data.activeEmployeesCount || 0, 
-        icon: 'people',
-        percentage: totalActive > 0 ? Math.round((this.data.activeEmployeesCount || 0) / totalActive * 100) : 0 
+        icon: 'people', 
+        iconClass: 'active',
+        cardType: 'active-card',
+        progress: totalActive > 0 ? Math.round((this.data.activeEmployeesCount || 0) / totalActive * 100) : 0,
+        valueClass: 'positive'
       },
       { 
         label: 'المتدربين النشطين', 
         value: this.data.activeTraineesCount || 0, 
-        icon: 'person',
-        percentage: totalActive > 0 ? Math.round((this.data.activeTraineesCount || 0) / totalActive * 100) : 0 
+        icon: 'person', 
+        iconClass: 'active',
+        cardType: 'active-card',
+        progress: totalActive > 0 ? Math.round((this.data.activeTraineesCount || 0) / totalActive * 100) : 0,
+        valueClass: 'positive'
       },
       { 
         label: 'الدورات النشطة', 
         value: this.data.activeCoursesCount || 0, 
-        icon: 'book',
-        percentage: totalActive > 0 ? Math.round((this.data.activeCoursesCount || 0) / totalActive * 100) : 0 
+        icon: 'book', 
+        iconClass: 'active',
+        cardType: 'active-card',
+        progress: totalActive > 0 ? Math.round((this.data.activeCoursesCount || 0) / totalActive * 100) : 0,
+        valueClass: 'positive'
       },
       { 
         label: 'التسجيلات النشطة', 
         value: this.data.activeEnrollmentsCount || 0, 
-        icon: 'assignment',
-        percentage: totalActive > 0 ? Math.round((this.data.activeEnrollmentsCount || 0) / totalActive * 100) : 0 
+        icon: 'assignment', 
+        iconClass: 'active',
+        cardType: 'active-card',
+        progress: totalActive > 0 ? Math.round((this.data.activeEnrollmentsCount || 0) / totalActive * 100) : 0,
+        valueClass: 'positive'
       }
     ];
 
-    this.inactiveStats = [
+    // Inactive Stats
+    const inactiveStats = [
       { 
         label: 'الموظفين غير النشطين', 
         value: this.data.inactiveEmployeesCount || 0, 
-        icon: 'person_off',
-        percentage: totalInactive > 0 ? Math.round((this.data.inactiveEmployeesCount || 0) / totalInactive * 100) : 0 
+        icon: 'person_off', 
+        iconClass: 'inactive',
+        cardType: 'inactive-card',
+        progress: totalInactive > 0 ? Math.round((this.data.inactiveEmployeesCount || 0) / totalInactive * 100) : 0,
+        valueClass: 'negative'
       },
       { 
         label: 'المتدربين غير النشطين', 
         value: this.data.inactiveTraineesCount || 0, 
-        icon: 'person_off',
-        percentage: totalInactive > 0 ? Math.round((this.data.inactiveTraineesCount || 0) / totalInactive * 100) : 0 
+        icon: 'person_off', 
+        iconClass: 'inactive',
+        cardType: 'inactive-card',
+        progress: totalInactive > 0 ? Math.round((this.data.inactiveTraineesCount || 0) / totalInactive * 100) : 0,
+        valueClass: 'negative'
       },
       { 
         label: 'الدورات غير النشطة', 
         value: this.data.inactiveCoursesCount || 0, 
-        icon: 'book_off',
-        percentage: totalInactive > 0 ? Math.round((this.data.inactiveCoursesCount || 0) / totalInactive * 100) : 0 
+        icon: 'book_off', 
+        iconClass: 'inactive',
+        cardType: 'inactive-card',
+        progress: totalInactive > 0 ? Math.round((this.data.inactiveCoursesCount || 0) / totalInactive * 100) : 0,
+        valueClass: 'negative'
       },
       { 
         label: 'التسجيلات غير النشطة', 
         value: this.data.inactiveEnrollmentsCount || 0, 
-        icon: 'assignment_off',
-        percentage: totalInactive > 0 ? Math.round((this.data.inactiveEnrollmentsCount || 0) / totalInactive * 100) : 0 
+        icon: 'assignment_off', 
+        iconClass: 'inactive',
+        cardType: 'inactive-card',
+        progress: totalInactive > 0 ? Math.round((this.data.inactiveEnrollmentsCount || 0) / totalInactive * 100) : 0,
+        valueClass: 'negative'
       }
     ];
+
+    this.allStats = [...financialStats, ...activeStats, ...inactiveStats];
   }
 
   getTotalRevenue(): number {
     if (!this.data) return 0;
-    // Revenue includes: enrollment payments + incentives + places rent
-    return (this.data.totalEnrollmentPayments || 0);
+    return (this.data.totalEnrollmentPayments || 0) + (this.data.totalPlacesGained || 0);
   }
 
-  /**
-   * Get total expenses including all costs
-   * totalExpenses = totalSalary + totalIncentives + totalAdvance + totalPlacesRent + totalExpenses
-   */
   getTotalExpenses(): number {
     if (!this.data) return 0;
     return (this.data.totalSalary || 0) + 
+           (this.data.totalAdvance || 0) +
            (this.data.totalIncentives || 0) + 
-           (this.data.totalAdvance || 0) + 
-           (this.data.totalPlacesRent || 0) + 
-           (this.data.totalExpenses || 0);
+           (this.data.totalExpenses || 0) +
+           (this.data.totalPlacesRent || 0);
   }
 
   getNetProfit(): number {
@@ -1035,9 +1542,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     return amount.toLocaleString('ar-EG') + ' ج.م';
   }
 
-  /**
-   * Print the dashboard
-   */
+  exportData(): void {
+    this.notification.showSuccess('جاري تصدير البيانات...');
+    // Implement export functionality
+  }
+
+  toggleDarkMode(): void {
+    document.body.classList.toggle('dark-mode');
+    this.notification.showSuccess('تم تغيير الوضع');
+  }
+
   printDashboard(): void {
     const printContent = document.getElementById('dashboard-print-content');
     if (!printContent) {
@@ -1054,310 +1568,96 @@ export class HomeComponent implements OnInit, OnDestroy {
     const today = new Date().toLocaleDateString('ar-EG');
     const now = new Date().toLocaleString('ar-EG');
 
-    // Get the current data
-    const data = this.data;
-    const totalRevenue = this.getTotalRevenue();
-    const totalExpenses = this.getTotalExpenses();
-    const netProfit = this.getNetProfit();
-    const totalActive = this.getTotalActive();
-
     printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
       <head>
         <meta charset="UTF-8">
-        <title>لوحة التحكم - الأكاديمية الأولمبية</title>
+        <title>لوحة التحكم -  الأكاديمية الأولمبية لعلوم الرياضة</title>
         <style>
-          * {
-            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
-          
-          body {
-            padding: 20px;
-            background: white;
-            direction: rtl;
-          }
-          
-          .print-header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-          }
-          
-          .print-header h1 {
-            margin: 0;
-            font-size: 24px;
-          }
-          
-          .print-header .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-top: 4px;
-          }
-          
-          .print-header .date {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 8px;
-          }
-          
-          .print-section {
-            margin-bottom: 20px;
-          }
-          
-          .print-section-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
-          }
-          
-          .print-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-          }
-          
-          .print-grid-4 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-          }
-          
-          .print-card {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-          }
-          
-          .print-card .card-label {
-            font-size: 12px;
-            color: #64748b;
-            margin-bottom: 4px;
-          }
-          
-          .print-card .card-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-          }
-          
-          .print-card .card-value.financial {
-            color: #667eea;
-          }
-          
-          .print-card .card-value.expense {
-            color: #ef4444;
-          }
-          
-          .print-card .card-value.active {
-            color: #10b981;
-          }
-          
-          .print-card .card-value.inactive {
-            color: #991b1b;
-          }
-          
-          .print-card .card-value.revenue {
-            color: #667eea;
-          }
-          
-          .print-card .card-value.profit {
-            color: #10b981;
-          }
-          
-          .print-card .card-value.profit.negative {
-            color: #ef4444;
-          }
-          
-          .print-summary {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            background: #f1f5f9;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 12px;
-          }
-          
-          .print-summary-item {
-            text-align: center;
-          }
-          
-          .print-summary-item .summary-label {
-            font-size: 12px;
-            color: #64748b;
-          }
-          
-          .print-summary-item .summary-value {
-            font-size: 18px;
-            font-weight: 700;
-          }
-          
-          .print-footer {
-            text-align: center;
-            margin-top: 24px;
-            padding-top: 16px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 11px;
-            color: #94a3b8;
-          }
-          
-          @media print {
-            body { padding: 12px; }
-            .no-print { display: none; }
-            .print-card { break-inside: avoid; }
-          }
-          
-          @media (max-width: 768px) {
-            .print-grid {
-              grid-template-columns: repeat(3, 1fr);
-            }
-            .print-grid-4 {
-              grid-template-columns: repeat(2, 1fr);
-            }
-            .print-summary {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-          
-          @media (max-width: 480px) {
-            .print-grid {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+          body { padding: 20px; background: white; direction: rtl; }
+          .print-header { text-align: center; margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; }
+          .print-header h1 { margin: 0; font-size: 24px; }
+          .print-header .subtitle { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+          .print-header .date { font-size: 12px; opacity: 0.8; margin-top: 8px; }
+          .print-section { margin-bottom: 20px; }
+          .print-section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+          .print-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; margin-bottom: 20px; }
+          .print-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+          .print-card { background: #f8fafc; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #e2e8f0; }
+          .print-card .card-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+          .print-card .card-value { font-size: 18px; font-weight: 700; color: #0f172a; }
+          .print-card .card-value.financial { color: #667eea; }
+          .print-card .card-value.expense { color: #ef4444; }
+          .print-card .card-value.income { color: #10b981; }
+          .print-card .card-value.active { color: #10b981; }
+          .print-card .card-value.inactive { color: #991b1b; }
+          .print-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #f1f5f9; border-radius: 8px; padding: 16px; margin-top: 12px; }
+          .print-summary-item { text-align: center; }
+          .print-summary-item .summary-label { font-size: 12px; color: #64748b; }
+          .print-summary-item .summary-value { font-size: 18px; font-weight: 700; }
+          .print-footer { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
+          @media print { body { padding: 12px; } .no-print { display: none; } }
+          @media (max-width: 768px) { .print-grid { grid-template-columns: repeat(4, 1fr); } .print-grid-4 { grid-template-columns: repeat(2, 1fr); } .print-summary { grid-template-columns: repeat(2, 1fr); } }
+          @media (max-width: 480px) { .print-grid { grid-template-columns: repeat(2, 1fr); } }
         </style>
       </head>
       <body>
-        <!-- Header -->
         <div class="print-header">
-          <h1>🏊 الأكاديمية الأولمبية</h1>
+          <h1>🏊  الأكاديمية الأولمبية لعلوم الرياضة</h1>
           <div class="subtitle">لوحة التحكم الرئيسية - تقرير الأداء</div>
           <div class="date">التاريخ: ${today} | وقت الطباعة: ${now}</div>
           <div class="date" style="font-size: 11px; opacity: 0.7;">العام المالي: ${this.selectedYear}</div>
         </div>
 
-        <!-- Financial Stats -->
         <div class="print-section">
           <div class="print-section-title">📊 البيانات المالية</div>
           <div class="print-grid">
-            <div class="print-card">
-              <div class="card-label">إجمالي الرواتب</div>
-              <div class="card-value financial">${this.formatCurrency(data?.totalSalary || 0)}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">إجمالي السلف</div>
-              <div class="card-value financial">${this.formatCurrency(data?.totalAdvance || 0)}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">إجمالي الحوافز</div>
-              <div class="card-value financial">${this.formatCurrency(data?.totalIncentives || 0)}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">إيجارات الأماكن</div>
-              <div class="card-value financial">${this.formatCurrency(data?.totalPlacesRent || 0)}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">مدفوعات التسجيل</div>
-              <div class="card-value financial">${this.formatCurrency(data?.totalEnrollmentPayments || 0)}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">إجمالي المصروفات</div>
-              <div class="card-value expense">${this.formatCurrency(data?.totalExpenses || 0)}</div>
-            </div>
+            <div class="print-card"><div class="card-label">إجمالي الرواتب</div><div class="card-value financial">${this.formatCurrency(this.data?.totalSalary || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إجمالي السلف</div><div class="card-value financial">${this.formatCurrency(this.data?.totalAdvance || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إجمالي الحوافز</div><div class="card-value financial">${this.formatCurrency(this.data?.totalIncentives || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إيجارات الأماكن (مصروف)</div><div class="card-value expense">${this.formatCurrency(this.data?.totalPlacesRent || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إيجارات الأماكن (إيراد)</div><div class="card-value income">${this.formatCurrency(this.data?.totalPlacesGained || 0)}</div></div>
+            <div class="print-card"><div class="card-label">مدفوعات التسجيل</div><div class="card-value income">${this.formatCurrency(this.data?.totalEnrollmentPayments || 0)}</div></div>
+            <div class="print-card"><div class="card-label">استردادات التسجيل</div><div class="card-value expense">${this.formatCurrency(this.data?.totalEnrollmentRefunds || 0)}</div></div>
+            <div class="print-card"><div class="card-label">مصروفات اخري</div><div class="card-value expense">${this.formatCurrency(this.data?.totalExpenses || 0)}</div></div>
           </div>
         </div>
 
-        <!-- Active Counts -->
         <div class="print-section">
           <div class="print-section-title">✅ الإحصائيات النشطة</div>
           <div class="print-grid-4">
-            <div class="print-card">
-              <div class="card-label">الموظفين النشطين</div>
-              <div class="card-value active">${data?.activeEmployeesCount || 0}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">المتدربين النشطين</div>
-              <div class="card-value active">${data?.activeTraineesCount || 0}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">الدورات النشطة</div>
-              <div class="card-value active">${data?.activeCoursesCount || 0}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">التسجيلات النشطة</div>
-              <div class="card-value active">${data?.activeEnrollmentsCount || 0}</div>
-            </div>
+            <div class="print-card"><div class="card-label">الموظفين النشطين</div><div class="card-value active">${this.data?.activeEmployeesCount || 0}</div></div>
+            <div class="print-card"><div class="card-label">المتدربين النشطين</div><div class="card-value active">${this.data?.activeTraineesCount || 0}</div></div>
+            <div class="print-card"><div class="card-label">الدورات النشطة</div><div class="card-value active">${this.data?.activeCoursesCount || 0}</div></div>
+            <div class="print-card"><div class="card-label">التسجيلات النشطة</div><div class="card-value active">${this.data?.activeEnrollmentsCount || 0}</div></div>
           </div>
         </div>
 
-        <!-- Inactive Counts -->
         <div class="print-section">
           <div class="print-section-title">❌ الإحصائيات غير النشطة</div>
           <div class="print-grid-4">
-            <div class="print-card">
-              <div class="card-label">الموظفين غير النشطين</div>
-              <div class="card-value inactive">${data?.inactiveEmployeesCount || 0}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">المتدربين غير النشطين</div>
-              <div class="card-value inactive">${data?.inactiveTraineesCount || 0}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">الدورات غير النشطة</div>
-              <div class="card-value inactive">${data?.inactiveCoursesCount || 0}</div>
-            </div>
-            <div class="print-card">
-              <div class="card-label">التسجيلات غير النشطة</div>
-              <div class="card-value inactive">${data?.inactiveEnrollmentsCount || 0}</div>
-            </div>
+            <div class="print-card"><div class="card-label">الموظفين غير النشطين</div><div class="card-value inactive">${this.data?.inactiveEmployeesCount || 0}</div></div>
+            <div class="print-card"><div class="card-label">المتدربين غير النشطين</div><div class="card-value inactive">${this.data?.inactiveTraineesCount || 0}</div></div>
+            <div class="print-card"><div class="card-label">الدورات غير النشطة</div><div class="card-value inactive">${this.data?.inactiveCoursesCount || 0}</div></div>
+            <div class="print-card"><div class="card-label">التسجيلات غير النشطة</div><div class="card-value inactive">${this.data?.inactiveEnrollmentsCount || 0}</div></div>
           </div>
         </div>
 
-        <!-- Summary -->
         <div class="print-section">
           <div class="print-section-title">📈 ملخص الأداء</div>
           <div class="print-summary">
-            <div class="print-summary-item">
-              <div class="summary-label">إجمالي الإيرادات</div>
-              <div class="summary-value" style="color: #667eea;">${this.formatCurrency(totalRevenue)}</div>
-            </div>
-            <div class="print-summary-item">
-              <div class="summary-label">إجمالي المصروفات</div>
-              <div class="summary-value" style="color: #ef4444;">${this.formatCurrency(totalExpenses)}</div>
-            </div>
-            <div class="print-summary-item">
-              <div class="summary-label">صافي الربح</div>
-              <div class="summary-value" style="color: ${netProfit >= 0 ? '#10b981' : '#ef4444'};">${this.formatCurrency(netProfit)}</div>
-            </div>
-            <div class="print-summary-item">
-              <div class="summary-label">إجمالي النشطاء</div>
-              <div class="summary-value" style="color: #8b5cf6;">${totalActive}</div>
-            </div>
+            <div class="print-summary-item"><div class="summary-label">إجمالي الإيرادات</div><div class="summary-value" style="color: #667eea;">${this.formatCurrency(this.getTotalRevenue())}</div></div>
+            <div class="print-summary-item"><div class="summary-label">إجمالي المصروفات</div><div class="summary-value" style="color: #ef4444;">${this.formatCurrency(this.getTotalExpenses())}</div></div>
+            <div class="print-summary-item"><div class="summary-label">صافي الربح</div><div class="summary-value" style="color: ${this.getNetProfit() >= 0 ? '#10b981' : '#ef4444'};">${this.formatCurrency(this.getNetProfit())}</div></div>
+            <div class="print-summary-item"><div class="summary-label">إجمالي النشطاء</div><div class="summary-value" style="color: #8b5cf6;">${this.getTotalActive()}</div></div>
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="print-footer">
-          تم التصدير من نظام إدارة الأكاديمية الأولمبية | الإصدار 2.0
-        </div>
-
+        <div class="print-footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة | الإصدار 3.0</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
-          <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
-            🖨️ طباعة / حفظ كـ PDF
-          </button>
+          <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
       </body>
       </html>

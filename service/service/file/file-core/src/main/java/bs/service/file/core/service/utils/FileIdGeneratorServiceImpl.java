@@ -52,7 +52,7 @@ public class FileIdGeneratorServiceImpl implements FileIdGeneratorService {
     @Override
     public String extractFId(String versionId) {
         if (versionId == null || !versionId.matches(FILE_VER_FID_REGEX)) {
-            throw new IllegalArgumentException("Version ID must be exactly " + FILE_VER_FID_LENGTH + " digits");
+            throw new IllegalArgumentException("Version ID must be exactly " + FILE_VER_FID_LENGTH + " digits "+versionId);
         }
         return versionId.substring(0, FILE_FID_LENGTH);
     }

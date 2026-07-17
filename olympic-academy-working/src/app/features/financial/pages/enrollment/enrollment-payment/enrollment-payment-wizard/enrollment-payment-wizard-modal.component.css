@@ -229,6 +229,181 @@
 }
 
 /* ==========================================================================
+   BARCODE SCANNER SECTION
+   ========================================================================== */
+.barcode-scanner-section {
+  background: #f0fdf4;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 2px solid #86efac;
+  transition: all 0.3s ease;
+}
+
+.barcode-scanner-section:hover {
+  border-color: #4ade80;
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.2);
+}
+
+.scanner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.scanner-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #065f46;
+  font-size: 16px;
+}
+
+.scanner-title mat-icon {
+  color: #059669;
+}
+
+.scanner-toggle-btn {
+  font-weight: 600;
+}
+
+.scanner-toggle-btn mat-icon {
+  margin-left: 4px;
+}
+
+.scanner-input-area {
+  margin-top: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #d1fae5;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scanner-input-area.active {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+}
+
+.scanner-instructions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fef3c7;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  color: #92400e;
+  font-size: 13px;
+}
+
+.scanner-instructions .info-icon {
+  color: #f59e0b;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.scanner-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.scanner-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.scanner-input ::ng-deep .mat-form-field-outline {
+  color: #86efac !important;
+}
+
+.scanner-input ::ng-deep .mat-form-field-outline-thick {
+  color: #059669 !important;
+}
+
+.scanner-input ::ng-deep .mat-focused .mat-form-field-label {
+  color: #059669 !important;
+}
+
+.reset-filter-btn {
+  white-space: nowrap;
+  height: 56px;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.reset-filter-btn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.searching-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  background: #eff6ff;
+  border-radius: 8px;
+  color: #3b82f6;
+}
+
+.searching-indicator span {
+  font-weight: 500;
+}
+
+.filter-info {
+  margin-top: 12px;
+}
+
+.filter-info ::ng-deep .mat-chip {
+  font-size: 13px;
+}
+
+.filter-info ::ng-deep .mat-chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.filtered-results-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border-radius: 8px;
+  margin-top: 8px;
+  color: #1e40af;
+  font-size: 14px;
+}
+
+.filtered-results-info mat-icon {
+  color: #3b82f6;
+}
+
+.filtered-results-info strong {
+  color: #1e3a8a;
+}
+
+/* ==========================================================================
    FORM SECTION
    ========================================================================== */
 .form-section {
@@ -772,6 +947,24 @@
   .wizard-steps {
     padding: 16px 12px 0;
   }
+
+  /* Barcode Scanner Responsive */
+  .scanner-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .scanner-input-wrapper {
+    flex-direction: column;
+  }
+  
+  .reset-filter-btn {
+    width: 100%;
+  }
+  
+  .scanner-input {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -828,6 +1021,23 @@
   
   .confirmation-section {
     padding: 12px;
+  }
+
+  /* Barcode Scanner Responsive */
+  .barcode-scanner-section {
+    padding: 12px;
+  }
+  
+  .scanner-input-area {
+    padding: 12px;
+  }
+  
+  .scanner-title {
+    font-size: 14px;
+  }
+  
+  .scanner-instructions {
+    font-size: 12px;
   }
 }
 
@@ -901,6 +1111,10 @@ input:read-only {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+  
+  .barcode-scanner-section {
+    display: none !important;
+  }
 }
 
 /* ==========================================================================
@@ -965,4 +1179,22 @@ input:read-only {
 
 ::ng-deep .mat-form-field-suffix:hover {
   color: #667eea !important;
+}
+
+/* ==========================================================================
+   CHIPS OVERRIDES FOR FILTER INFO
+   ========================================================================== */
+::ng-deep .mat-chip.mat-primary {
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+::ng-deep .mat-chip.mat-accent {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+::ng-deep .mat-chip.mat-primary mat-icon,
+::ng-deep .mat-chip.mat-accent mat-icon {
+  color: inherit !important;
 }

@@ -42,10 +42,18 @@ public class CourseQueryBuilder extends AbstractQueryBuilderV2<Course, CourseSea
             conditions.add(QBCondition.builder().placeHolder("title").value("%" + filters.getQuickSearchQuery() + "%")
                     .condition("item.title LIKE :PH").build());
 
-        if (filters.getCourseType() != null) {
+        if (filters.getCourseIds() != null && !filters.getCourseIds().isEmpty())
+            conditions.add(QBCondition.builder().placeHolder("courseIds").value(filters.getCourseIds())
+                    .condition("item.id IN :PH").build());
+
+        if (filters.getDepartmentId() != null)
+            conditions.add(QBCondition.builder().placeHolder("departmentId").value(filters.getDepartmentId())
+                    .condition("item.department.id = :PH").build());
+
+        if (filters.getCourseType() != null)
             conditions.add(QBCondition.builder().placeHolder("courseType").value(filters.getCourseType())
                     .condition("item.courseType = :PH").build());
-        }
+
 
         if (filters.getIsActive() != null)
             conditions.add(QBCondition.builder().placeHolder("isActive").value(filters.getIsActive())

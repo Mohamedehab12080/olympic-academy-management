@@ -53,4 +53,9 @@ public class PlaceRentPaymentRepositoryImpl implements PlaceRentPaymentRepositor
     public Integer countAllByFilters(PlaceRentPaymentSearchFilter filters) {
         return queryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer paymentId) {
+        placeRentPaymentJPARepository.deleteById(paymentId);
+    }
 }

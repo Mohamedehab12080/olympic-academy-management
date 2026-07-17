@@ -60,4 +60,9 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
         return queryBuilder.countAllByFilters(filters);
     }
 
+    @Override
+    public void deleteById(Integer id) {
+        departmentJPARepository.deleteById(id);
+    }
+
 }

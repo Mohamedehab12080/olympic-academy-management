@@ -43,6 +43,9 @@ public class RentTypeServiceImpl implements RentTypeService {
                 .orElseThrow(() -> new BusinessException(RENT_TYPE_NOT_FOUND, rentTypeId));
         RentType typeToUpdate = financialMapper.toRentType(rentTypeDTO);
         typeToUpdate.setId(rentTypeId);
+        typeToUpdate.setCreatedBy(rentType.getCreatedBy());
+        typeToUpdate.setCreatedOn(rentType.getCreatedOn());
+        typeToUpdate.setIsDeleted(rentType.getIsDeleted());
         rentTypeRepository.update(typeToUpdate);
         return NewRecordVTO.builder().id(rentTypeId).build();
     }

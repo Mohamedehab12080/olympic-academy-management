@@ -199,13 +199,12 @@ interface ContactFormGroup {
             </ng-template>
             <div class="step-content">
               <form [formGroup]="basicInfoForm">
-                <!-- Image Upload -->
+                <!-- Image Upload - VALIDATION REMOVED -->
                 <div class="image-upload-section">
                   <label class="upload-label">صورة المتدرب</label>
                   <app-file-upload
                     [domainId]="FileDomain.TRAINEE"
-                    [acceptedTypes]="'image/jpeg,image/png,image/jpg'"
-                    [maxSizeMB]="2"
+                    [maxSizeMB]="100"
                     [label]="'اضغط لرفع صورة المتدرب'"
                     (fileUploaded)="onImageUploaded($event)"
                     (fileRemoved)="onImageRemoved()">
@@ -1438,7 +1437,7 @@ loadSelectOptions(): void {
         <div class="profile-container">
           <div class="header">
             <h1>ملف متدرب</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية</p>
+            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           <div class="profile-details">
             <div><strong>رقم الملف:</strong> ${data.isNewTrainee ? 'جديد' : '#' + data.id}</div>
@@ -1462,7 +1461,7 @@ loadSelectOptions(): void {
             <div class="signature-box"><div class="signature-line"></div><div>توقيع ولي الأمر</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
@@ -1542,7 +1541,9 @@ loadSelectOptions(): void {
           },
           error: (err) => {
             console.error('Update error:', err);
-            this.notification.showError(err.error?.messageEn || 'حدث خطأ في تحديث المتدرب');
+            // ✅ Show backend error message
+            const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في تحديث المتدرب';
+            this.notification.showError(errorMsg);
           }
         });
     } else {
@@ -1574,7 +1575,9 @@ loadSelectOptions(): void {
           },
           error: (err) => {
             console.error('Create error:', err);
-            this.notification.showError(err.error?.messageEn || 'حدث خطأ في إضافة المتدرب');
+            // ✅ Show backend error message
+            const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في إضافة المتدرب';
+            this.notification.showError(errorMsg);
           }
         });
     }

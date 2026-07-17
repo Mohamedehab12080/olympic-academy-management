@@ -29,6 +29,8 @@ public class RentTypeVTO implements Serializable {
 
     private String title;
 
+    private Boolean effect;
+
     private String description;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -76,6 +78,27 @@ public class RentTypeVTO implements Serializable {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public RentTypeVTO effect(Boolean effect) {
+        this.effect = effect;
+        return this;
+    }
+
+    /**
+     * Get effect
+     *
+     * @return effect
+     */
+
+    @Schema(name = "effect", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("effect")
+    public Boolean getEffect() {
+        return effect;
+    }
+
+    public void setEffect(Boolean effect) {
+        this.effect = effect;
     }
 
     public RentTypeVTO description(String description) {
@@ -151,6 +174,7 @@ public class RentTypeVTO implements Serializable {
         }
         RentTypeVTO rentTypeVTO = (RentTypeVTO) o;
         return Objects.equals(this.id, rentTypeVTO.id) && Objects.equals(this.title, rentTypeVTO.title)
+                && Objects.equals(this.effect, rentTypeVTO.effect)
                 && Objects.equals(this.description, rentTypeVTO.description)
                 && Objects.equals(this.createdOn, rentTypeVTO.createdOn)
                 && Objects.equals(this.createdBy, rentTypeVTO.createdBy);
@@ -158,7 +182,7 @@ public class RentTypeVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, createdOn, createdBy);
+        return Objects.hash(id, title, effect, description, createdOn, createdBy);
     }
 
     @Override
@@ -167,6 +191,7 @@ public class RentTypeVTO implements Serializable {
         sb.append("class RentTypeVTO {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    title: ").append(toIndentedString(title)).append("\n");
+        sb.append("    effect: ").append(toIndentedString(effect)).append("\n");
         sb.append("    description: ").append(toIndentedString(description)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");

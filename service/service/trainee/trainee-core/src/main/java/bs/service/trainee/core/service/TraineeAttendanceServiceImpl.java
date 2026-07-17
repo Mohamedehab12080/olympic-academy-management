@@ -136,7 +136,7 @@ public class TraineeAttendanceServiceImpl implements TraineeAttendanceService {
         TraineeAttendance traineeAttendance = traineeAttendanceRepository.selectById(attendanceId)
                 .orElseThrow(() -> new BusinessException(ATTENDANCE_NOT_FOUND, attendanceId));
 
-        traineeAttendanceRepository.softDeleteById(attendanceId);
+        traineeAttendanceRepository.deleteById(attendanceId);
 
         log.info("Trainee attendance deleted with id: {}", attendanceId);
     }

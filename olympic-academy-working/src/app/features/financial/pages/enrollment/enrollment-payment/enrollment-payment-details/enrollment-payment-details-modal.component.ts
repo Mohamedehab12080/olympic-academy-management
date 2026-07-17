@@ -885,17 +885,17 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
   <div class="receipt">
     <!-- ===== WATERMARK - Behind content ===== -->
     <div class="receipt-watermark">
-      <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+      <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
     </div>
-    <div class="receipt-watermark-text">الأكاديمية الأولمبية</div>
+    <div class="receipt-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
 
     <!-- ===== CONTENT ===== -->
     <div class="receipt-content">
       <!-- LOGO AND ACADEMY NAME -->
       <div class="logo-section">
-        <img src="${logoPath}" alt="الأكاديمية الأولمبية" onerror="this.style.display='none'">
+        <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
         <div class="logo-text">
-          <span class="academy-name"> الأكاديمية الأولمبية</span>
+          <span class="academy-name">  الأكاديمية الأولمبية لعلوم الرياضة</span>
           <span class="receipt-type">✦ إيصال دفع ✦</span>
         </div>
       </div>

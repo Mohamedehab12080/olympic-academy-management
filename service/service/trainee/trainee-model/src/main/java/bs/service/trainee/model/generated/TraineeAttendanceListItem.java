@@ -1,6 +1,7 @@
 package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.employee.model.generated.CourseSessionLookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -8,11 +9,9 @@ import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.Objects;
 import org.hibernate.validator.constraints.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * TraineeAttendanceListItem
@@ -30,14 +29,7 @@ public class TraineeAttendanceListItem implements Serializable {
 
     private LightUserVTO trainee;
 
-    private String sessionTitle;
-
-    private String courseTitle;
-
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate sessionDate;
-
-    private String sessionDay;
+    private CourseSessionLookupVTO session;
 
     private String attendanceDate;
 
@@ -91,88 +83,25 @@ public class TraineeAttendanceListItem implements Serializable {
         this.trainee = trainee;
     }
 
-    public TraineeAttendanceListItem sessionTitle(String sessionTitle) {
-        this.sessionTitle = sessionTitle;
+    public TraineeAttendanceListItem session(CourseSessionLookupVTO session) {
+        this.session = session;
         return this;
     }
 
     /**
-     * Get sessionTitle
+     * Get session
      *
-     * @return sessionTitle
-     */
-
-    @Schema(name = "sessionTitle", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("sessionTitle")
-    public String getSessionTitle() {
-        return sessionTitle;
-    }
-
-    public void setSessionTitle(String sessionTitle) {
-        this.sessionTitle = sessionTitle;
-    }
-
-    public TraineeAttendanceListItem courseTitle(String courseTitle) {
-        this.courseTitle = courseTitle;
-        return this;
-    }
-
-    /**
-     * Get courseTitle
-     *
-     * @return courseTitle
-     */
-
-    @Schema(name = "courseTitle", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("courseTitle")
-    public String getCourseTitle() {
-        return courseTitle;
-    }
-
-    public void setCourseTitle(String courseTitle) {
-        this.courseTitle = courseTitle;
-    }
-
-    public TraineeAttendanceListItem sessionDate(LocalDate sessionDate) {
-        this.sessionDate = sessionDate;
-        return this;
-    }
-
-    /**
-     * Get sessionDate
-     *
-     * @return sessionDate
+     * @return session
      */
     @Valid
-    @Schema(name = "sessionDate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("sessionDate")
-    public LocalDate getSessionDate() {
-        return sessionDate;
+    @Schema(name = "session", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("session")
+    public CourseSessionLookupVTO getSession() {
+        return session;
     }
 
-    public void setSessionDate(LocalDate sessionDate) {
-        this.sessionDate = sessionDate;
-    }
-
-    public TraineeAttendanceListItem sessionDay(String sessionDay) {
-        this.sessionDay = sessionDay;
-        return this;
-    }
-
-    /**
-     * Get sessionDay
-     *
-     * @return sessionDay
-     */
-
-    @Schema(name = "sessionDay", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @JsonProperty("sessionDay")
-    public String getSessionDay() {
-        return sessionDay;
-    }
-
-    public void setSessionDay(String sessionDay) {
-        this.sessionDay = sessionDay;
+    public void setSession(CourseSessionLookupVTO session) {
+        this.session = session;
     }
 
     public TraineeAttendanceListItem attendanceDate(String attendanceDate) {
@@ -291,10 +220,7 @@ public class TraineeAttendanceListItem implements Serializable {
         TraineeAttendanceListItem traineeAttendanceListItem = (TraineeAttendanceListItem) o;
         return Objects.equals(this.id, traineeAttendanceListItem.id)
                 && Objects.equals(this.trainee, traineeAttendanceListItem.trainee)
-                && Objects.equals(this.sessionTitle, traineeAttendanceListItem.sessionTitle)
-                && Objects.equals(this.courseTitle, traineeAttendanceListItem.courseTitle)
-                && Objects.equals(this.sessionDate, traineeAttendanceListItem.sessionDate)
-                && Objects.equals(this.sessionDay, traineeAttendanceListItem.sessionDay)
+                && Objects.equals(this.session, traineeAttendanceListItem.session)
                 && Objects.equals(this.attendanceDate, traineeAttendanceListItem.attendanceDate)
                 && Objects.equals(this.status, traineeAttendanceListItem.status)
                 && Objects.equals(this.checkInTime, traineeAttendanceListItem.checkInTime)
@@ -304,8 +230,7 @@ public class TraineeAttendanceListItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, trainee, sessionTitle, courseTitle, sessionDate, sessionDay, attendanceDate, status,
-                checkInTime, checkOutTime, lateTime);
+        return Objects.hash(id, trainee, session, attendanceDate, status, checkInTime, checkOutTime, lateTime);
     }
 
     @Override
@@ -314,10 +239,7 @@ public class TraineeAttendanceListItem implements Serializable {
         sb.append("class TraineeAttendanceListItem {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    trainee: ").append(toIndentedString(trainee)).append("\n");
-        sb.append("    sessionTitle: ").append(toIndentedString(sessionTitle)).append("\n");
-        sb.append("    courseTitle: ").append(toIndentedString(courseTitle)).append("\n");
-        sb.append("    sessionDate: ").append(toIndentedString(sessionDate)).append("\n");
-        sb.append("    sessionDay: ").append(toIndentedString(sessionDay)).append("\n");
+        sb.append("    session: ").append(toIndentedString(session)).append("\n");
         sb.append("    attendanceDate: ").append(toIndentedString(attendanceDate)).append("\n");
         sb.append("    status: ").append(toIndentedString(status)).append("\n");
         sb.append("    checkInTime: ").append(toIndentedString(checkInTime)).append("\n");

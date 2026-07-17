@@ -46,13 +46,13 @@
         </div>
         
         <div class="step-description">
-          أدخل معلومات نوع الإيجار
+          أدخل معلومات نوع الإيجار وحدد تأثيره المالي
         </div>
 
         <div class="form-section">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>اسم نوع الإيجار *</mat-label>
-            <input matInput formControlName="title" placeholder="مثال: شهري, سنوي, ربع سنوي">
+            <input matInput formControlName="title" placeholder="مثال: إيجار خارجي, إيجار داخلي">
             <mat-icon matSuffix>title</mat-icon>
             <mat-error *ngIf="typeForm.get('title')?.hasError('required')">
               اسم نوع الإيجار مطلوب
@@ -61,6 +61,39 @@
               الاسم يجب أن يكون حرفين على الأقل
             </mat-error>
           </mat-form-field>
+
+          <!-- Effect Selection -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>التأثير المالي *</mat-label>
+            <mat-select formControlName="effect">
+              <mat-option *ngFor="let option of effectOptions" [value]="option.value">
+                <div class="effect-option" [style.color]="option.color">
+                  <mat-icon>{{ option.icon }}</mat-icon>
+                  <span>{{ option.label }}</span>
+                  <mat-chip [style.background]="option.color" class="effect-chip">
+                    {{ option.value ? 'إيراد' : 'مصروف' }}
+                  </mat-chip>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>trending_up</mat-icon>
+            <mat-error *ngIf="typeForm.get('effect')?.hasError('required')">
+              التأثير المالي مطلوب
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Effect Preview Card -->
+          <div class="effect-preview" *ngIf="typeForm.get('effect')?.value !== undefined">
+            <div class="effect-preview-content" [class.effect-income]="getEffect()" [class.effect-expense]="!getEffect()">
+              <mat-icon class="effect-icon">{{ getEffectIcon() }}</mat-icon>
+              <div class="effect-info">
+                <span class="effect-label">{{ getEffectLabel() }}</span>
+                <span class="effect-badge" [class.income]="getEffect()" [class.expense]="!getEffect()">
+                  {{ getEffect() ? 'مدخل (إيراد)' : 'مخرج (مصروف)' }}
+                </span>
+              </div>
+            </div>
+          </div>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>الوصف</mat-label>
@@ -82,6 +115,13 @@
               <div class="preview-row" *ngIf="getDescription()">
                 <span class="label">الوصف:</span>
                 <span class="value">{{ getDescription() }}</span>
+              </div>
+              <div class="preview-row">
+                <span class="label">التأثير المالي:</span>
+                <span class="value" [style.color]="getEffectColor()">
+                  <mat-icon class="inline-icon">{{ getEffectIcon() }}</mat-icon>
+                  {{ getEffectLabel() }}
+                </span>
               </div>
             </div>
           </div>
@@ -106,13 +146,23 @@
               <span>معلومات نوع الإيجار</span>
             </div>
             <div class="info-grid">
-              <div class="info-item">
+              <div class="info-item full-width">
                 <span class="info-label">الاسم:</span>
                 <span class="info-value">{{ getTitle() }}</span>
               </div>
               <div class="info-item full-width" *ngIf="getDescription()">
                 <span class="info-label">الوصف:</span>
                 <span class="info-value">{{ getDescription() }}</span>
+              </div>
+              <div class="info-item full-width">
+                <span class="info-label">التأثير المالي:</span>
+                <span class="info-value" [style.color]="getEffectColor()">
+                  <mat-icon class="inline-icon">{{ getEffectIcon() }}</mat-icon>
+                  {{ getEffectLabel() }}
+                  <span class="effect-badge" [class.income]="getEffect()" [class.expense]="!getEffect()" style="margin-right: 8px;">
+                    {{ getEffect() ? 'إيراد' : 'مصروف' }}
+                  </span>
+                </span>
               </div>
             </div>
           </div>

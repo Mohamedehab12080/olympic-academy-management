@@ -34,6 +34,7 @@ import { SALARY_TYPES } from '../../../../../../core/models/common.model';
 import { SalaryIncentiveVTO, SalaryIncentiveResultSet } from '../../../../../../core/models/financial.model';
 import { EmployeeLookupVTO } from '../../../../../../core/models/employee.model';
 import { SalaryIncentiveWizardModalComponent } from '../salary-incentive-wizard/salary-incentive-wizard-modal.component.ts';
+import { ConstantService } from '../../../../../../core/services/constant.service';
 
 // ============================================================================
 // PRINT DIALOG COMPONENT
@@ -420,7 +421,8 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
     private reportService: ReportService,
     private router: Router,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private constantService: ConstantService
   ) {}
 
   // ==========================================================================
@@ -793,102 +795,732 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   // DETAILS MODAL
   // ==========================================================================
 
-  openDetailsModal(transaction: SalaryIncentiveVTO): void {
-    const modalContainer = document.createElement('div');
-    modalContainer.style.position = 'fixed';
-    modalContainer.style.top = '0';
-    modalContainer.style.left = '0';
-    modalContainer.style.width = '100%';
-    modalContainer.style.height = '100%';
-    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    modalContainer.style.display = 'flex';
-    modalContainer.style.justifyContent = 'center';
-    modalContainer.style.alignItems = 'center';
-    modalContainer.style.zIndex = '10000';
-    modalContainer.style.direction = 'rtl';
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.backgroundColor = 'white';
-    modalContent.style.borderRadius = '16px';
-    modalContent.style.maxWidth = '700px';
-    modalContent.style.width = '90%';
-    modalContent.style.maxHeight = '85vh';
-    modalContent.style.overflow = 'auto';
-    modalContent.style.position = 'relative';
-    modalContent.style.padding = '20px';
-    
-    const today = new Date().toLocaleDateString('ar-EG');
-    const transactionNumber = `TRX-${transaction.id}`;
-    
-    const getTransactionTypeStyle = (typeId: number) => {
-      switch(typeId) {
-        case 1: return 'background: #dbeafe; color: #1e40af;';
-        case 2: return 'background: #d1fae5; color: #065f46;';
-        case 3: return 'background: #fef3c7; color: #92400e;';
-        case 4: return 'background: #fee2e2; color: #991b1b;';
-        default: return 'background: #f3f4f6; color: #374151;';
-      }
-    };
-    
-    modalContent.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
-        <h2 style="margin: 0; color: #10b981; font-size: 20px;">تفاصيل المعاملة</h2>
+openDetailsModal(transaction: SalaryIncentiveVTO): void {
+  const modalContainer = document.createElement('div');
+  modalContainer.style.position = 'fixed';
+  modalContainer.style.top = '0';
+  modalContainer.style.left = '0';
+  modalContainer.style.width = '100%';
+  modalContainer.style.height = '100%';
+  modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  modalContainer.style.display = 'flex';
+  modalContainer.style.justifyContent = 'center';
+  modalContainer.style.alignItems = 'center';
+  modalContainer.style.zIndex = '10000';
+  modalContainer.style.direction = 'rtl';
+  
+  const modalContent = document.createElement('div');
+  modalContent.style.backgroundColor = 'white';
+  modalContent.style.borderRadius = '16px';
+  modalContent.style.maxWidth = '700px';
+  modalContent.style.width = '90%';
+  modalContent.style.maxHeight = '85vh';
+  modalContent.style.overflow = 'auto';
+  modalContent.style.position = 'relative';
+  modalContent.style.padding = '20px';
+  
+  const today = new Date().toLocaleDateString('ar-EG');
+  const transactionNumber = `TRX-${transaction.id}`;
+  
+  const getTransactionTypeStyle = (typeId: number) => {
+    switch(typeId) {
+      case 1: return 'background: #dbeafe; color: #1e40af;';
+      case 2: return 'background: #d1fae5; color: #065f46;';
+      case 3: return 'background: #fef3c7; color: #92400e;';
+      case 4: return 'background: #fee2e2; color: #991b1b;';
+      default: return 'background: #f3f4f6; color: #374151;';
+    }
+  };
+  
+  modalContent.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+      <h2 style="margin: 0; color: #10b981; font-size: 20px;">تفاصيل المعاملة</h2>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="printDetailsBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 18px;">🖨️</span> طباعة
+        </button>
         <button id="closeModalBtn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
       </div>
-      
-      <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px;">
-        <h1 style="margin: 0; font-size: 18px;">إيصال صرف</h1>
-        <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة الأكاديمية الأولمبية</p>
-      </div>
-      
-      <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
-        <div><strong>رقم الإيصال:</strong> ${transactionNumber}</div>
-        <div><strong>تاريخ الإصدار:</strong> ${today}</div>
-      </div>
-      
-      <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">👤 معلومات الموظف</h3>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الموظف</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.fullName || '-'}</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الرقم القومي</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.nationalId || '-'}</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الراتب الأساسي</div><div style="color: #1f2937; font-size: 12px;">${(transaction.employee?.salary || 0).toLocaleString('ar-EG')} جم</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الراتب المتبقي</div><div style="color: ${(transaction.employee?.remainedSalary || 0) < (transaction.employee?.salary || 0) ? '#d97706' : '#1f2937'}; font-size: 12px; font-weight: 500;">${(transaction.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع الراتب</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.salaryType?.title || '-'}</div></div>
-      </div>
-      
-      <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">💰 تفاصيل المعاملة</h3>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع المعاملة</div><div style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; ${getTransactionTypeStyle(transaction.salaryTransactionType?.id)}">${transaction.salaryTransactionType?.title || '-'}</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">المبلغ</div><div style="color: #dc2626; font-size: 16px; font-weight: 700;">${(transaction.amountWithdrawn || 0).toLocaleString('ar-EG')} جم</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">تاريخ الصرف</div><div style="color: #1f2937; font-size: 12px;">${transaction.withdrawDate ? new Date(transaction.withdrawDate).toLocaleDateString('ar-EG') : '-'}</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">طريقة الدفع</div><div style="color: #1f2937; font-size: 12px;">${transaction.paymentMethod?.title || '-'}</div></div>
-        <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع الراتب</div><div style="color: #1f2937; font-size: 12px;">${transaction.salaryType?.title || '-'}</div></div>
-      </div>
-      
-      ${transaction.note ? `
-      <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">📝 ملاحظات</h3>
-      <div style="padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 15px;">${transaction.note}</div>
-      ` : ''}
-      
-      <div style="margin-top: 20px; display: flex; justify-content: center; gap: 12px;">
-        <button id="closeModalBtn2" style="padding: 10px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">إغلاق</button>
-      </div>
-    `;
+    </div>
     
-    modalContainer.appendChild(modalContent);
-    document.body.appendChild(modalContainer);
+    <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px;">
+      <h1 style="margin: 0; font-size: 18px;">إيصال صرف</h1>
+      <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+    </div>
     
-    const closeModal = () => {
-      document.body.removeChild(modalContainer);
-    };
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
+      <div><strong>رقم الإيصال:</strong> ${transactionNumber}</div>
+      <div><strong>تاريخ الإصدار:</strong> ${today}</div>
+    </div>
     
-    modalContent.querySelector('#closeModalBtn')?.addEventListener('click', closeModal);
-    modalContent.querySelector('#closeModalBtn2')?.addEventListener('click', closeModal);
-    modalContainer.addEventListener('click', (e) => {
-      if (e.target === modalContainer) {
-        closeModal();
+    <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">👤 معلومات الموظف</h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الموظف</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.fullName || '-'}</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الرقم القومي</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.nationalId || '-'}</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الراتب الأساسي</div><div style="color: #1f2937; font-size: 12px;">${(transaction.employee?.salary || 0).toLocaleString('ar-EG')} جم</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">الراتب المتبقي</div><div style="color: ${(transaction.employee?.remainedSalary || 0) < (transaction.employee?.salary || 0) ? '#d97706' : '#1f2937'}; font-size: 12px; font-weight: 500;">${(transaction.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع الراتب</div><div style="color: #1f2937; font-size: 12px;">${transaction.employee?.salaryType?.title || '-'}</div></div>
+    </div>
+    
+    <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">💰 تفاصيل المعاملة</h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع المعاملة</div><div style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; ${getTransactionTypeStyle(transaction.salaryTransactionType?.id)}">${transaction.salaryTransactionType?.title || '-'}</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">المبلغ</div><div style="color: #dc2626; font-size: 16px; font-weight: 700;">${(transaction.amountWithdrawn || 0).toLocaleString('ar-EG')} جم</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">تاريخ الصرف</div><div style="color: #1f2937; font-size: 12px;">${transaction.withdrawDate ? new Date(transaction.withdrawDate).toLocaleDateString('ar-EG') : '-'}</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">طريقة الدفع</div><div style="color: #1f2937; font-size: 12px;">${transaction.paymentMethod?.title || '-'}</div></div>
+      <div><div style="font-weight: 600; color: #374151; font-size: 11px;">نوع الراتب</div><div style="color: #1f2937; font-size: 12px;">${transaction.salaryType?.title || '-'}</div></div>
+    </div>
+    
+    ${transaction.note ? `
+    <h3 style="color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; font-size: 16px;">📝 ملاحظات</h3>
+    <div style="padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 15px;">${transaction.note}</div>
+    ` : ''}
+    
+    <div style="margin-top: 20px; display: flex; justify-content: center; gap: 12px;">
+      <button id="printBtnBottom" style="padding: 10px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">🖨️</span> طباعة الإيصال
+      </button>
+      <button id="closeModalBtn2" style="padding: 10px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">إغلاق</button>
+    </div>
+  `;
+  
+  modalContainer.appendChild(modalContent);
+  document.body.appendChild(modalContainer);
+  
+  const closeModal = () => {
+    document.body.removeChild(modalContainer);
+  };
+  
+  // Print function that fetches contact number from API
+  const printReceipt = () => {
+    // Show loading indicator on button
+    const printBtn = modalContent.querySelector('#printDetailsBtn') as HTMLElement;
+    const printBtnBottom = modalContent.querySelector('#printBtnBottom') as HTMLElement;
+    const originalText = printBtn?.innerHTML || '';
+    const originalTextBottom = printBtnBottom?.innerHTML || '';
+    
+    if (printBtn) {
+      printBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> جاري التحميل...';
+      printBtn.style.opacity = '0.7';
+      printBtn.style.pointerEvents = 'none';
+    }
+    if (printBtnBottom) {
+      printBtnBottom.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> جاري التحميل...';
+      printBtnBottom.style.opacity = '0.7';
+      printBtnBottom.style.pointerEvents = 'none';
+    }
+    
+    // Fetch contact number from constant service (id = 1)
+    this.constantService.getConstantById(1).subscribe({
+      next: (constant) => {
+        const contactNumber = constant?.value || '01069911181'; // Fallback number
+        this.printSalaryReceipt(transaction, contactNumber);
+        
+        // Reset buttons
+        if (printBtn) {
+          printBtn.innerHTML = originalText;
+          printBtn.style.opacity = '1';
+          printBtn.style.pointerEvents = 'auto';
+        }
+        if (printBtnBottom) {
+          printBtnBottom.innerHTML = originalTextBottom;
+          printBtnBottom.style.opacity = '1';
+          printBtnBottom.style.pointerEvents = 'auto';
+        }
+      },
+      error: () => {
+        // If error, use fallback number
+        this.printSalaryReceipt(transaction, '01069911181');
+        
+        // Reset buttons
+        if (printBtn) {
+          printBtn.innerHTML = originalText;
+          printBtn.style.opacity = '1';
+          printBtn.style.pointerEvents = 'auto';
+        }
+        if (printBtnBottom) {
+          printBtnBottom.innerHTML = originalTextBottom;
+          printBtnBottom.style.opacity = '1';
+          printBtnBottom.style.pointerEvents = 'auto';
+        }
       }
     });
+  };
+  
+  // Add spin animation
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(styleElement);
+  
+  modalContent.querySelector('#printDetailsBtn')?.addEventListener('click', printReceipt);
+  modalContent.querySelector('#printBtnBottom')?.addEventListener('click', printReceipt);
+  modalContent.querySelector('#closeModalBtn')?.addEventListener('click', closeModal);
+  modalContent.querySelector('#closeModalBtn2')?.addEventListener('click', closeModal);
+  modalContainer.addEventListener('click', (e) => {
+    if (e.target === modalContainer) {
+      closeModal();
+    }
+  });
+}
+
+// ==========================================================================
+// PRINT SALARY RECEIPT
+// ==========================================================================
+
+private printSalaryReceipt(transaction: SalaryIncentiveVTO, contactNumber: string): void {
+  const today = new Date().toLocaleDateString('ar-EG');
+  const transactionNumber = `TRX-${transaction.id}`;
+  const logoPath = 'assets/images/mainLogo.jpeg';
+  const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+  const currentYear = new Date().getFullYear();
+  
+  const getTypeColor = (typeId: number) => {
+    switch(typeId) {
+      case 1: return '#1e40af';
+      case 2: return '#065f46';
+      case 3: return '#92400e';
+      case 4: return '#991b1b';
+      default: return '#374151';
+    }
+  };
+  
+  const getTypeBg = (typeId: number) => {
+    switch(typeId) {
+      case 1: return '#dbeafe';
+      case 2: return '#d1fae5';
+      case 3: return '#fef3c7';
+      case 4: return '#fee2e2';
+      default: return '#f3f4f6';
+    }
+  };
+  
+  const printWindow = window.open('', '_blank', 'width=400,height=600,scrollbars=no,menubar=no,toolbar=no,status=no');
+  if (!printWindow) {
+    this.notification.showError('تعذر فتح نافذة الطباعة');
+    return;
   }
+  
+  const e = transaction;
+  const typeId = e.salaryTransactionType?.id || 0;
+  const typeTitle = e.salaryTransactionType?.title || '-';
+  const typeColor = getTypeColor(typeId);
+  const typeBg = getTypeBg(typeId);
+  
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>إيصال صرف - ${typeTitle}</title>
+      <style>
+        @page { 
+          size: 58mm auto; 
+          margin: 0mm; 
+        }
+        
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        html, body { 
+          margin: 0;
+          padding: 0;
+          background: white;
+          width: 58mm;
+          min-width: 58mm;
+          max-width: 58mm;
+          display: flex;
+          justify-content: flex-start;
+          align-items: flex-start;
+          min-height: 100vh;
+        }
+        
+        .thermal-card { 
+          width: 100%;
+          max-width: 58mm;
+          margin: 0;
+          padding: 1.5mm 2mm 2mm 2mm;
+          background: white;
+          position: relative;
+          overflow: hidden;
+          direction: rtl;
+          border: 0.5px solid #e5e7eb;
+          border-radius: 4px;
+        }
+        
+        /* Watermark */
+        .watermark-wrapper {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 55%;
+          height: 55%;
+          pointer-events: none;
+          z-index: 0;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .watermark-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+          opacity: 0.06;
+          transform: rotate(-25deg);
+        }
+        
+        .watermark-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
+        }
+        
+        .watermark-text {
+          position: absolute;
+          top: 58%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-25deg);
+          font-size: 16px;
+          font-weight: 900;
+          color: #0f3460;
+          letter-spacing: 4px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          opacity: 0.04;
+          pointer-events: none;
+          z-index: 0;
+        }
+        
+        .card-content {
+          position: relative;
+          z-index: 1;
+        }
+        
+        /* Logo Section */
+        .card-logo-section {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 4px 0;
+          margin-bottom: 4px;
+          border-bottom: 2px solid #0f3460;
+        }
+        
+        .card-logo-image {
+          width: 36px;
+          height: 36px;
+          object-fit: contain;
+          border-radius: 6px;
+          flex-shrink: 0;
+          background: white;
+          padding: 2px;
+        }
+        
+        .card-logo-text {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        
+        .card-logo-text .academy-name {
+          font-size: 11px;
+          font-weight: 700;
+          color: #0f3460;
+          line-height: 1.2;
+        }
+        
+        .card-logo-text .card-title {
+          font-size: 7px;
+          color: #64748b;
+          font-weight: 500;
+        }
+        
+        .thermal-divider { 
+          border-top: 1px dashed #d1d5db; 
+          margin: 0.5mm 0; 
+        }
+        
+        .thermal-title-section {
+          text-align: center;
+          margin: 0.5mm 0;
+        }
+        .thermal-title-section .receipt-title {
+          font-size: 12px;
+          font-weight: 700;
+          color: #0f3460;
+        }
+        .thermal-title-section .receipt-subtitle {
+          font-size: 7px;
+          color: #6b7280;
+        }
+        
+        .thermal-transaction-id {
+          display: flex;
+          justify-content: space-between;
+          font-size: 6px;
+          color: #6b7280;
+          padding: 0.3mm 0;
+          margin-bottom: 0.3mm;
+        }
+        .thermal-transaction-id strong {
+          color: #1e293b;
+        }
+        
+        .thermal-employee-info {
+          background: #f8fafc;
+          border-radius: 4px;
+          padding: 0.5mm 1.5mm;
+          margin: 0.3mm 0;
+        }
+        .thermal-employee-info .employee-name {
+          font-size: 10px;
+          font-weight: 700;
+          color: #1a1a2e;
+          text-align: center;
+        }
+        .thermal-employee-info .employee-details {
+          display: flex;
+          justify-content: space-between;
+          font-size: 6px;
+          color: #6b7280;
+          margin-top: 0.2mm;
+        }
+        
+        .thermal-table { 
+          width: 100%; 
+          font-size: 6.5px; 
+          margin-bottom: 0.5mm; 
+          border-collapse: collapse; 
+        }
+        .thermal-table tr { 
+          line-height: 1.3; 
+        }
+        .thermal-label { 
+          text-align: right; 
+          padding: 0.2mm 0.5mm; 
+          color: #6b7280; 
+          width: 40%;
+          font-weight: 500;
+          font-size: 6px;
+        }
+        .thermal-value { 
+          text-align: left; 
+          padding: 0.2mm 0.5mm; 
+          font-weight: 600; 
+          width: 60%;
+          color: #1e293b;
+          font-size: 6px;
+        }
+        .thermal-value.amount { 
+          color: #dc2626; 
+          font-weight: 700; 
+          font-size: 12px;
+        }
+        .thermal-value.type-badge {
+          display: inline-block;
+          padding: 0.2mm 2mm;
+          border-radius: 12px;
+          font-size: 6px;
+          font-weight: 600;
+          background: ${typeBg};
+          color: ${typeColor};
+        }
+        
+        .thermal-amount-section {
+          text-align: center;
+          padding: 0.5mm 0;
+          margin: 0.3mm 0;
+          background: #fef2f2;
+          border-radius: 4px;
+          border: 1px solid #fecaca;
+        }
+        .thermal-amount-section .amount-label {
+          font-size: 6px;
+          color: #6b7280;
+        }
+        .thermal-amount-section .amount-value {
+          font-size: 18px;
+          font-weight: 700;
+          color: #dc2626;
+        }
+        .thermal-amount-section .amount-currency {
+          font-size: 12px;
+          color: #6b7280;
+        }
+        
+        .thermal-note {
+          font-size: 6px;
+          color: #6b7280;
+          padding: 0.3mm 1mm;
+          background: #f9fafb;
+          border-radius: 4px;
+          margin: 0.3mm 0;
+          border-right: 2px solid #d1d5db;
+        }
+        .thermal-note strong {
+          color: #1e293b;
+        }
+        
+        .thermal-footer { 
+          display: flex; 
+          flex-direction: column;
+          align-items: center;
+          gap: 1mm; 
+          margin-top: 0.6mm; 
+          padding-top: 0.6mm;
+          border-top: 2px solid #0f3460;
+        }
+        
+        .thermal-footer .footer-row {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+          gap: 1.5mm;
+        }
+        
+        .thermal-signature { 
+          flex: 1; 
+          text-align: center; 
+          font-size: 4.5px; 
+          color: #94a3b8;
+        }
+        .thermal-line { 
+          border-top: 0.5px solid #94a3b8; 
+          margin-bottom: 0.2mm; 
+          padding-top: 2mm; 
+        }
+        
+        .thermal-contact {
+          text-align: center;
+          font-size: 6px;
+          color: #0f3460;
+          font-weight: 600;
+          margin-top: 0.3mm;
+          padding-top: 0.3mm;
+          border-top: 1px solid #e5e7eb;
+          width: 100%;
+        }
+        .thermal-contact .contact-label {
+          color: #6b7280;
+          font-weight: 500;
+        }
+        .thermal-contact .contact-number {
+          color: #0f3460;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+        }
+        
+        .thermal-issue-date {
+          text-align: center;
+          font-size: 5px;
+          color: #94a3b8;
+          margin-top: 0.3mm;
+          padding-top: 0.3mm;
+          border-top: 1px dashed #e5e7eb;
+        }
+        
+        .powered-by {
+          text-align: left;
+          font-size: 4px;
+          color: #94a3b8;
+          margin-top: 0.5mm;
+          padding-top: 0.3mm;
+          border-top: 1px solid #f1f5f9;
+          letter-spacing: 0.3px;
+          direction: ltr;
+        }
+        .powered-by .company-name {
+          color: #8b5cf6;
+          font-weight: 700;
+          font-size: 4.5px;
+        }
+        .powered-by .separator {
+          color: #e5e7eb;
+          margin: 0 2px;
+        }
+        
+        @media print {
+          html, body {
+            width: 58mm !important;
+            min-width: 58mm !important;
+            max-width: 58mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .thermal-card {
+            padding: 1mm 1.5mm 1.5mm 1.5mm;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          .watermark-container {
+            opacity: 0.08 !important;
+          }
+          .watermark-container img {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .watermark-text {
+            opacity: 0.05 !important;
+          }
+          .card-logo-image {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .thermal-amount-section {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .thermal-employee-info {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="thermal-card">
+        <!-- Watermark -->
+        <div class="watermark-wrapper">
+          <div class="watermark-container">
+            <img src="${logoPath}" alt="${academyName}" onerror="this.style.display='none'">
+          </div>
+          <div class="watermark-text">${academyName}</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="card-content">
+          <!-- Logo -->
+          <div class="card-logo-section">
+            <img src="${logoPath}" alt="${academyName}" class="card-logo-image" onerror="this.style.display='none'">
+            <div class="card-logo-text">
+              <span class="academy-name">${academyName}</span>
+              <span class="card-title">إيصال صرف</span>
+            </div>
+          </div>
+          
+          <!-- Title -->
+          <div class="thermal-title-section">
+            <div class="receipt-title">${typeTitle}</div>
+            <div class="receipt-subtitle">إيصال صرف معاملة</div>
+          </div>
+          
+          <!-- Transaction ID -->
+          <div class="thermal-transaction-id">
+            <span><strong>رقم الإيصال:</strong> ${transactionNumber}</span>
+            <span><strong>التاريخ:</strong> ${today}</span>
+          </div>
+          
+          <div class="thermal-divider"></div>
+          
+          <!-- Employee Info -->
+          <div class="thermal-employee-info">
+            <div class="employee-name">${e.employee?.fullName || '-'}</div>
+            <div class="employee-details">
+              <span>الرقم القومي: ${e.employee?.nationalId || '-'}</span>
+              <span>الراتب الأساسي: ${(e.employee?.salary || 0).toLocaleString('ar-EG')} جم</span>
+              <span>الراتب المتبقي: ${(e.employee?.remainedSalary || 0).toLocaleString('ar-EG')} جم</span>
+            </div>
+          </div>
+          
+          <div class="thermal-divider"></div>
+          
+          <!-- Transaction Details -->
+          <table class="thermal-table">
+            <tr>
+              <td class="thermal-label">نوع المعاملة</td>
+              <td class="thermal-value"><span class="type-badge">${typeTitle}</span></td>
+            </tr>
+            <tr>
+              <td class="thermal-label">طريقة الدفع</td>
+              <td class="thermal-value">${e.paymentMethod?.title || '-'}</td>
+            </tr>
+            <tr>
+              <td class="thermal-label">نوع الراتب</td>
+              <td class="thermal-value">${e.salaryType?.title || '-'}</td>
+            </tr>
+            <tr>
+              <td class="thermal-label">تاريخ الصرف</td>
+              <td class="thermal-value">${e.withdrawDate ? new Date(e.withdrawDate).toLocaleDateString('ar-EG') : '-'}</td>
+            </tr>
+          </table>
+          
+          <div class="thermal-divider"></div>
+          
+          <!-- Amount -->
+          <div class="thermal-amount-section">
+            <div class="amount-label">المبلغ المصروف</div>
+            <div class="amount-value">${(e.amountWithdrawn || 0).toLocaleString('ar-EG')} <span class="amount-currency">جم</span></div>
+          </div>
+          
+          ${e.note ? `
+          <div class="thermal-note">
+            <strong>📝 ملاحظة:</strong> ${e.note}
+          </div>
+          ` : ''}
+          
+          <div class="thermal-divider"></div>
+          
+          <!-- Footer -->
+          <div class="thermal-footer">
+            <div class="footer-row">
+              <div class="thermal-signature">
+                <div class="thermal-line"></div>
+                <div>توقيع المستلم</div>
+              </div>
+              <div class="thermal-signature">
+                <div class="thermal-line"></div>
+                <div>ختم الأكاديمية</div>
+              </div>
+            </div>
+            
+            <div class="thermal-contact">
+              <span class="contact-label">🏛️</span>
+              <span class="contact-number">${academyName}</span>
+              <span style="color: #94a3b8; margin: 0 4px;">|</span>
+              <span class="contact-label">📞</span>
+              <span class="contact-number">${contactNumber}</span>
+            </div>
+          </div>
+          
+          <div class="thermal-issue-date">📅 تاريخ الإصدار: ${today}</div>
+          
+          <div class="powered-by">
+            <span class="company-name">⚡ CoreStack Solutions</span>
+            <span class="separator">|</span>
+            <span class="contact-number">01069911181</span>
+            <span style="color: #e5e7eb;">© ${currentYear}</span>
+          </div>
+        </div>
+      </div>
+      
+      <script>
+        window.onload = function() { 
+          setTimeout(function() { 
+            window.print(); 
+            setTimeout(function() { 
+              window.close(); 
+            }, 500); 
+          }, 300); 
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
 
   // ==========================================================================
   // HELPER METHODS - GETTERS
@@ -1150,7 +1782,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
             ${tableRows}
           </tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية</div>
+        <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
         <div class="no-print"><button class="print-btn" onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button></div>
       </body>
       </html>

@@ -2455,7 +2455,7 @@ async exportToPDF(): Promise<void> {
         </tbody>
       </table>
       <div class="footer">
-        <strong>🏛️ نظام إدارة الأكاديمية الأولمبية</strong><br>
+        <strong>🏛️ نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</strong><br>
         تم التصدير بواسطة النظام الآلي للأكاديمية الأولمبية
       </div>
       <div class="no-print">

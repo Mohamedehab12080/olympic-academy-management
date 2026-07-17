@@ -12,11 +12,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { MatStepperModule } from '@angular/material/stepper';
+import { finalize } from 'rxjs';
 
 import { EmployeeService } from '../../../../../core/services/employee.service';
 import { CourseService } from '../../../../../core/services/course.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../../shared/components/searchable-select/searchable-select.component';
+import { AssignCourseDTO } from '../../../../../core/models/employee.model';
 
 @Component({
   selector: 'app-assign-course-wizard-modal',
@@ -38,7 +40,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
     SearchableSelectComponent
   ],
   template: `
-    <div class="wizard-container">
+    <div class="wizard-container" dir="rtl">
       <div class="wizard-header">
         <div class="header-title">
           <mat-icon>school</mat-icon>
@@ -132,18 +134,19 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
       max-width: 600px;
       background: white;
       border-radius: 24px;
+      direction: rtl;
     }
 
     .wizard-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 20px;
     }
 
     .header-title {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
     }
 
@@ -152,6 +155,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
       width: 28px;
       height: 28px;
       color: #f59e0b;
+      margin-top: 4px;
     }
 
     .header-title h2 {
@@ -169,20 +173,40 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
 
     .close-btn {
       color: #94a3b8;
+      transition: transform 0.2s;
     }
 
     .close-btn:hover {
       color: #ef4444;
+      transform: rotate(90deg);
     }
 
     .wizard-content {
       padding: 20px 0;
-      max-height: 60vh;
+      max-height: 55vh;
       overflow-y: auto;
+    }
+
+    .wizard-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .wizard-content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    .wizard-content::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
     }
 
     .form-section {
       margin-bottom: 24px;
+    }
+
+    .form-section:last-child {
+      margin-bottom: 0;
     }
 
     .section-label {
@@ -222,6 +246,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
       margin: 0 0 12px;
       color: #0f172a;
       font-size: 16px;
+      font-weight: 600;
     }
 
     .preview-details {
@@ -233,6 +258,12 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
     .preview-item {
       display: flex;
       gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .preview-item:last-child {
+      border-bottom: none;
     }
 
     .preview-label {
@@ -243,6 +274,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
 
     .preview-value {
       color: #0f172a;
+      font-weight: 500;
     }
 
     .wizard-actions {
@@ -256,12 +288,34 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
 
     .wizard-actions button {
       min-width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
+    .wizard-actions button mat-spinner {
+      display: inline-block;
+    }
+
+    /* Responsive */
     @media (max-width: 640px) {
       .wizard-container {
         min-width: 300px;
         padding: 16px;
+      }
+
+      .wizard-header {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .header-title {
+        width: 100%;
+      }
+
+      .close-btn {
+        align-self: flex-end;
       }
 
       .wizard-actions {
@@ -270,6 +324,7 @@ import { SearchableSelectComponent, SelectOption } from '../../../../../shared/c
 
       .wizard-actions button {
         width: 100%;
+        min-width: unset;
       }
     }
   `]
@@ -313,7 +368,7 @@ export class AssignCourseWizardModalComponent implements OnInit {
       next: (res) => {
         this.trainerOptions = (res.list || []).map((item: any) => ({
           value: item.id,
-          label: item.title || item.fullName
+          label: item.title || item.fullName || `مدرب #${item.id}`
         }));
       },
       error: () => {
@@ -327,7 +382,7 @@ export class AssignCourseWizardModalComponent implements OnInit {
       next: (res) => {
         this.courseOptions = (res.list || []).map((item: any) => ({
           value: item.id,
-          label: item.title
+          label: item.title || `دورة #${item.id}`
         }));
       },
       error: () => {
@@ -348,20 +403,45 @@ export class AssignCourseWizardModalComponent implements OnInit {
 
     this.isSubmitting = true;
     const trainerId = this.assignForm.get('trainerId')?.value;
-    const data = {
-      courseId: this.assignForm.get('courseId')?.value
+    const courseId = this.assignForm.get('courseId')?.value;
+
+    // ✅ Correct DTO structure
+    const data: AssignCourseDTO = {
+      courseIdToBeAdded: [courseId],
+      courseIdToBeDeleted: []
     };
 
-    this.employeeService.assignCourseToTrainer(trainerId, data).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.dialogRef.close(true);
-      },
-      error: (err) => {
-        console.error('Error assigning course:', err);
-        this.notification.showError(err.error?.messageEn || 'حدث خطأ في إسناد الدورة');
-        this.isSubmitting = false;
-      }
+    console.log('📤 Assigning course to trainer:', {
+      trainerId,
+      courseId,
+      payload: data
     });
+
+    this.employeeService.assignCourseToTrainer(trainerId, data)
+      .pipe(finalize(() => {
+        this.isSubmitting = false;
+      }))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Course assigned successfully:', response);
+          this.notification.showSuccess('تم إسناد الدورة للمدرب بنجاح');
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          console.error('❌ Error assigning course:', error);
+          
+          let errorMessage = 'حدث خطأ في إسناد الدورة';
+          if (error.error?.messageEn) {
+            errorMessage = error.error.messageEn;
+          } else if (error.error?.messageAr) {
+            errorMessage = error.error.messageAr;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          this.notification.showError(errorMessage);
+          this.isSubmitting = false;
+        }
+      });
   }
 }

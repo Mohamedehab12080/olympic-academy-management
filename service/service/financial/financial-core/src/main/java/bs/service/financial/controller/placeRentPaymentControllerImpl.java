@@ -37,13 +37,13 @@ public class placeRentPaymentControllerImpl implements PlaceRentPaymentControlle
 
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<PlaceRentPaymentResultSet> _getAllPlaceRentPaymentsByFilter(
-            Integer placeId, Integer rentTypeId, Integer paymentMethodId, PaymentStatus status,
+    public ResponseEntity<PlaceRentPaymentResultSet> _getAllPlaceRentPaymentsByFilter(String quickSearch,
+            Integer placeId, Integer rentTypeId, Integer paymentMethodId, PaymentStatus status,Boolean effect,
             LocalDate paymentDateFrom, LocalDate paymentDateTo,
             Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         PlaceRentPaymentResultSet result = placeRentPaymentService.getAllPlaceRentPaymentsByFilter(
-                placeId, rentTypeId, paymentMethodId, status, paymentDateFrom, paymentDateTo,
+                quickSearch,placeId, rentTypeId, paymentMethodId, status,effect, paymentDateFrom, paymentDateTo,
                 pageNum, pageSize, orderDir, orderBy);
         return ResponseEntity.ok(result);
     }

@@ -115,6 +115,7 @@ paths:
       parameters:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '#/components/parameters/QPIsMonthlyUpdated'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnFrom'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPCreatedOnTo'
         - $ref: '#/components/parameters/QPHireDateFrom'
@@ -655,6 +656,7 @@ paths:
       operationId: getAllCourseSessionsByFilter
       parameters:
         - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPTrainersId'
         - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPSessionStatus'
         - $ref: '#/components/parameters/QPSessionDateFrom'
@@ -663,6 +665,7 @@ paths:
         - $ref: '#/components/parameters/QPStartTimeTo'
         - $ref: '#/components/parameters/QPEndTimeFrom'
         - $ref: '#/components/parameters/QPEndTimeTo'
+
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -684,9 +687,11 @@ paths:
       summary: Get all course sessions across all courses with filters
       operationId: getAllSessionsByFilter
       parameters:
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '#/components/parameters/QPCourseId'
         - $ref: '#/components/parameters/QPSessionDay'
         - $ref: '#/components/parameters/QPTrainerId'
+        - $ref: '#/components/parameters/QPTrainersId'
         - $ref: '#/components/parameters/QPPlaceId'
         - $ref: '#/components/parameters/QPSessionStatus'
         - $ref: '#/components/parameters/QPSessionDateFrom'
@@ -709,14 +714,12 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
-  /courses/{courseSessionId}/course-session:
+  /courses/course-session:
     put:
       tags:
         - CourseSession
       summary: Update course session
       operationId: updateCourseSession
-      parameters:
-        - $ref: '#/components/parameters/PPCourseSessionId'
       requestBody:
         content:
           application/json:
@@ -748,7 +751,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CourseSessionVTO'
+                $ref: '#/components/schemas/CourseSessionLookupVTO'
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
@@ -765,6 +768,115 @@ paths:
         '400':
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 
+  # ==================== Course Session Day-Specific Endpoints ====================
+
+  /courses/course-session/day:
+    put:
+      tags:
+        - CourseSession
+      summary: Update sessions for a specific day and course
+      operationId: updateSessionsByDayAndCourse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSessionDayDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/course-session/day/trainers:
+    put:
+      tags:
+        - CourseSession
+      summary: Update sessions for a specific day and trainers
+      operationId: updateSessionsByDayAndTrainer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSessionDayDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/day:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete all sessions for a specific day and course
+      operationId: deleteSessionsByDayAndCourse
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/day/trainers:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete sessions for specific day, course, and trainers
+      operationId: deleteSessionsByDayCourseAndTrainers
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
+        - $ref: '#/components/parameters/QPTrainersId'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/{courseId}/sessions/day/all:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete all sessions for a specific day (all trainers)
+      operationId: deleteSessionsByDay
+      parameters:
+        - $ref: '#/components/parameters/PPCourseId'
+        - $ref: '#/components/parameters/QPSessionDay'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  /courses/course-session/{courseSessionId}:
+    delete:
+      tags:
+        - CourseSession
+      summary: Delete a specific course session by ID
+      operationId: deleteSpecificSession
+      parameters:
+        - $ref: '#/components/parameters/PPCourseSessionId'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
 components:
   parameters:
     PPEmployeeId:
@@ -915,6 +1027,12 @@ components:
       schema:
         type: string
         format: date
+    QPIsMonthlyUpdated:
+      name: isMonthlyUpdated
+      in: query
+      required: false
+      schema:
+        type: boolean
     QPHireDateTo:
       name: hireDateTo
       in: query
@@ -1003,6 +1121,15 @@ components:
       schema:
         type: string
         format: date
+    QPTrainersId:
+      name: trainersId
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int32
     QPSessionDay:
       name: sessionDay
       in: query
@@ -1117,6 +1244,11 @@ components:
           $ref: '#/components/schemas/EmployeeTypes'
         isActive:
           type: boolean
+        isMonthlyUpdated:
+          type: boolean
+        updatePeriodInDays:
+          type: integer
+          format: int32
         imageUrl:
           type: string
         hireDate:
@@ -1196,6 +1328,19 @@ components:
           type: array
           items:
             type: string
+        sessionDay:
+          type: string
+        updateSingleSession:
+          type: boolean
+        sessionIdsToDelete:
+          type: array
+          items:
+            type: integer
+            format: int32
+        daysToRemove:
+          type: array
+          items:
+            type: string
         startTime:
           type: string
           format: time
@@ -1207,6 +1352,43 @@ components:
         note:
           type: string
 
+    CourseSessionDayDTO:
+      type: object
+      required:
+        - title
+        - courseId
+        - trainersId
+        - placeId
+        - sessionDay
+        - startTime
+        - endTime
+      properties:
+        title:
+          type: string
+        courseId:
+          type: integer
+          format: int32
+        trainersId:
+          type: array
+          items:
+            type: integer
+            format: int32
+        placeId:
+          type: integer
+          format: int32
+        sessionDay:
+          type: string
+          description: "Specific day to update (e.g., MONDAY, TUESDAY, etc.)"
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        note:
+          type: string
     AssignDepartmentDTO:
       type: object
       required:
@@ -1221,11 +1403,18 @@ components:
     AssignCourseDTO:
       type: object
       required:
-        - courseId
+        - courseIdToBeAdded
       properties:
-        courseId:
-          type: integer
-          format: int32
+        courseIdToBeAdded:
+          type: array
+          items:
+            type: integer
+            format: int32
+        courseIdToBeDeleted:
+          type: array
+          items:
+            type: integer
+            format: int32
 
     EmployeeLookupVTO:
       type: object
@@ -1282,6 +1471,11 @@ components:
           format: date
         isActive:
           type: boolean
+        isMonthlyUpdated:
+          type: boolean
+        updatePeriodInDays:
+          type: integer
+          format: int32
         departments:
           type: array
           items:
@@ -1437,10 +1631,17 @@ components:
           type: string
         isActive:
           type: boolean
-        departments:
-          type: array
-          items:
-            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        isMonthlyUpdated:
+          type: boolean
+        updatePeriodInDays:
+          type: integer
+          format: int32
+        salary:
+          type: integer
+          format: int32
+        remainedSalary:
+          type: integer
+          format: int32
 
     EmployeeContactResultSet:
       type: object
@@ -1571,8 +1772,50 @@ components:
           type: string
         course:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
-        trainer:
+        trainers:
+          type: array
+          items:
+            $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        place:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        sessionDate:
+          type: string
+          format: date
+        sessionDay:
+          type: string
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        status:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        note:
+          type: string
+        createdOn:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+        lastModifiedOn:
+          type: string
+          format: date-time
+        lastModifiedBy:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+
+    CourseSessionLookupVTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        course:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
+        trainer:
+          $ref: '#/components/schemas/EmployeeLookupVTO'
         place:
           $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/LookupVTO'
         sessionDate:

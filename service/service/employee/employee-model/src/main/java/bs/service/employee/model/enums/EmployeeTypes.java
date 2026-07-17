@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum EmployeeTypes implements EnumWithIdAndTitle {
-    TRAINER(1,"مدرب"),MANAGER(2,"مدير");
+    TRAINER(1,"مدرب"),MANAGER(2,"مدير"),LECTURER(3,"محاضر");
     public Integer id;
     public String title;
 }

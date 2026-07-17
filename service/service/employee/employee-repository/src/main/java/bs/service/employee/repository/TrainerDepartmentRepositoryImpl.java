@@ -54,4 +54,9 @@ public class TrainerDepartmentRepositoryImpl implements TrainerDepartmentReposit
     public Integer countAllByFilters(TrainerDepartmentSearchFilter filters) {
         return trainerDepartmentQueryBuilder.countAllByFilters(filters);
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        employeeDepartmentJPARepository.deleteById(id);
+    }
 }

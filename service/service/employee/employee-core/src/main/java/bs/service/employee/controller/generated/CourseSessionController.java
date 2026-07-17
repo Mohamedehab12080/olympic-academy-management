@@ -10,8 +10,9 @@ import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.employee.model.enums.SessionStatus;
 import bs.service.employee.model.generated.CourseSessionDTO;
+import bs.service.employee.model.generated.CourseSessionDayDTO;
+import bs.service.employee.model.generated.CourseSessionLookupVTO;
 import bs.service.employee.model.generated.CourseSessionResultSet;
-import bs.service.employee.model.generated.CourseSessionVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -60,7 +61,7 @@ public interface CourseSessionController {
             @Parameter(name = "CourseSessionDTO", description = "", required = true) @Valid @RequestBody CourseSessionDTO courseSessionDTO);
 
     /**
-     * DELETE /courses/{courseSessionId}/course-session : Delete course session (soft delete)
+     * DELETE /courses/course-session : Delete course session (soft delete)
      *
      * @param courseSessionId
      *            (required)
@@ -71,10 +72,93 @@ public interface CourseSessionController {
             "CourseSession" }, responses = { @ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.DELETE, value = "/courses/{courseSessionId}/course-session", produces = {
-            "application/json" })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/courses/course-session", produces = { "application/json" })
 
     ResponseEntity<Void> _deleteCourseSession(
+            @Parameter(name = "courseSessionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseSessionId") Integer courseSessionId);
+
+    /**
+     * DELETE /courses/{courseId}/sessions/day/all : Delete all sessions for a specific day (all trainers)
+     *
+     * @param courseId
+     *            (required)
+     * @param sessionDay
+     *            (optional)
+     *
+     * @return No Content (status code 204) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "deleteSessionsByDay", summary = "Delete all sessions for a specific day (all trainers)", tags = {
+            "CourseSession" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/courses/{courseId}/sessions/day/all", produces = {
+            "application/json" })
+
+    ResponseEntity<Void> _deleteSessionsByDay(
+            @Parameter(name = "courseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseId") Integer courseId,
+            @Parameter(name = "sessionDay", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDay", required = false) String sessionDay);
+
+    /**
+     * DELETE /courses/{courseId}/sessions/day : Delete all sessions for a specific day and course
+     *
+     * @param courseId
+     *            (required)
+     * @param sessionDay
+     *            (optional)
+     *
+     * @return No Content (status code 204) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "deleteSessionsByDayAndCourse", summary = "Delete all sessions for a specific day and course", tags = {
+            "CourseSession" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/courses/{courseId}/sessions/day", produces = {
+            "application/json" })
+
+    ResponseEntity<Void> _deleteSessionsByDayAndCourse(
+            @Parameter(name = "courseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseId") Integer courseId,
+            @Parameter(name = "sessionDay", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDay", required = false) String sessionDay);
+
+    /**
+     * DELETE /courses/{courseId}/sessions/day/trainers : Delete sessions for specific day, course, and trainers
+     *
+     * @param courseId
+     *            (required)
+     * @param sessionDay
+     *            (optional)
+     * @param trainersId
+     *            (optional)
+     *
+     * @return No Content (status code 204) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "deleteSessionsByDayCourseAndTrainers", summary = "Delete sessions for specific day, course, and trainers", tags = {
+            "CourseSession" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/courses/{courseId}/sessions/day/trainers", produces = {
+            "application/json" })
+
+    ResponseEntity<Void> _deleteSessionsByDayCourseAndTrainers(
+            @Parameter(name = "courseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseId") Integer courseId,
+            @Parameter(name = "sessionDay", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDay", required = false) String sessionDay,
+            @Parameter(name = "trainersId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainersId", required = false) List<Integer> trainersId);
+
+    /**
+     * DELETE /courses/course-session/{courseSessionId} : Delete a specific course session by ID
+     *
+     * @param courseSessionId
+     *            (required)
+     *
+     * @return No Content (status code 204) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "deleteSpecificSession", summary = "Delete a specific course session by ID", tags = {
+            "CourseSession" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.DELETE, value = "/courses/course-session/{courseSessionId}", produces = {
+            "application/json" })
+
+    ResponseEntity<Void> _deleteSpecificSession(
             @Parameter(name = "courseSessionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseSessionId") Integer courseSessionId);
 
     /**
@@ -82,6 +166,8 @@ public interface CourseSessionController {
      *
      * @param courseId
      *            (required)
+     * @param trainersId
+     *            (optional)
      * @param sessionDay
      *            (optional)
      * @param status
@@ -119,6 +205,7 @@ public interface CourseSessionController {
 
     ResponseEntity<CourseSessionResultSet> _getAllCourseSessionsByFilter(
             @Parameter(name = "courseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseId") Integer courseId,
+            @Parameter(name = "trainersId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainersId", required = false) List<Integer> trainersId,
             @Parameter(name = "sessionDay", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDay", required = false) String sessionDay,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid SessionStatus status,
             @Parameter(name = "sessionDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate sessionDateFrom,
@@ -135,11 +222,15 @@ public interface CourseSessionController {
     /**
      * GET /courses/sessions : Get all course sessions across all courses with filters
      *
+     * @param quickSearch
+     *            (optional)
      * @param courseId
      *            (optional)
      * @param sessionDay
      *            (optional)
      * @param trainerId
+     *            (optional)
+     * @param trainersId
      *            (optional)
      * @param placeId
      *            (optional)
@@ -176,9 +267,11 @@ public interface CourseSessionController {
     @RequestMapping(method = RequestMethod.GET, value = "/courses/sessions", produces = { "application/json" })
 
     ResponseEntity<CourseSessionResultSet> _getAllSessionsByFilter(
+            @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "courseId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "courseId", required = false) Integer courseId,
             @Parameter(name = "sessionDay", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDay", required = false) String sessionDay,
             @Parameter(name = "trainerId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainerId", required = false) Integer trainerId,
+            @Parameter(name = "trainersId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trainersId", required = false) List<Integer> trainersId,
             @Parameter(name = "placeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "placeId", required = false) Integer placeId,
             @Parameter(name = "status", description = "", in = ParameterIn.QUERY) @Valid SessionStatus status,
             @Parameter(name = "sessionDateFrom", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "sessionDateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate sessionDateFrom,
@@ -193,7 +286,7 @@ public interface CourseSessionController {
             @Parameter(name = "orderBy", description = "Order By Attribute", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderBy", required = false) String orderBy);
 
     /**
-     * GET /courses/{courseSessionId}/course-session : Get course session by id
+     * GET /courses/course-session : Get course session by id
      *
      * @param courseSessionId
      *            (required)
@@ -202,20 +295,17 @@ public interface CourseSessionController {
      */
     @Operation(operationId = "getCourseSessionById", summary = "Get course session by id", tags = {
             "CourseSession" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = CourseSessionVTO.class)) }),
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = CourseSessionLookupVTO.class)) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.GET, value = "/courses/{courseSessionId}/course-session", produces = {
-            "application/json" })
+    @RequestMapping(method = RequestMethod.GET, value = "/courses/course-session", produces = { "application/json" })
 
-    ResponseEntity<CourseSessionVTO> _getCourseSessionById(
+    ResponseEntity<CourseSessionLookupVTO> _getCourseSessionById(
             @Parameter(name = "courseSessionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseSessionId") Integer courseSessionId);
 
     /**
-     * PUT /courses/{courseSessionId}/course-session : Update course session
+     * PUT /courses/course-session : Update course session
      *
-     * @param courseSessionId
-     *            (required)
      * @param courseSessionDTO
      *            (required)
      *
@@ -226,11 +316,48 @@ public interface CourseSessionController {
                     @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = NewRecordVTO.class))) }),
                     @ApiResponse(responseCode = "400", description = "Bad Request", content = {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
-    @RequestMapping(method = RequestMethod.PUT, value = "/courses/{courseSessionId}/course-session", produces = {
+    @RequestMapping(method = RequestMethod.PUT, value = "/courses/course-session", produces = {
             "application/json" }, consumes = { "application/json" })
 
     ResponseEntity<List<NewRecordVTO>> _updateCourseSession(
-            @Parameter(name = "courseSessionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseSessionId") Integer courseSessionId,
             @Parameter(name = "CourseSessionDTO", description = "", required = true) @Valid @RequestBody CourseSessionDTO courseSessionDTO);
+
+    /**
+     * PUT /courses/course-session/day : Update sessions for a specific day and course
+     *
+     * @param courseSessionDayDTO
+     *            (required)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "updateSessionsByDayAndCourse", summary = "Update sessions for a specific day and course", tags = {
+            "CourseSession" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = NewRecordVTO.class))) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.PUT, value = "/courses/course-session/day", produces = {
+            "application/json" }, consumes = { "application/json" })
+
+    ResponseEntity<List<NewRecordVTO>> _updateSessionsByDayAndCourse(
+            @Parameter(name = "CourseSessionDayDTO", description = "", required = true) @Valid @RequestBody CourseSessionDayDTO courseSessionDayDTO);
+
+    /**
+     * PUT /courses/course-session/day/trainers : Update sessions for a specific day and trainers
+     *
+     * @param courseSessionDayDTO
+     *            (required)
+     *
+     * @return OK (status code 200) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "updateSessionsByDayAndTrainer", summary = "Update sessions for a specific day and trainers", tags = {
+            "CourseSession" }, responses = { @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = NewRecordVTO.class))) }),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.PUT, value = "/courses/course-session/day/trainers", produces = {
+            "application/json" }, consumes = { "application/json" })
+
+    ResponseEntity<List<NewRecordVTO>> _updateSessionsByDayAndTrainer(
+            @Parameter(name = "CourseSessionDayDTO", description = "", required = true) @Valid @RequestBody CourseSessionDayDTO courseSessionDayDTO);
 
 }

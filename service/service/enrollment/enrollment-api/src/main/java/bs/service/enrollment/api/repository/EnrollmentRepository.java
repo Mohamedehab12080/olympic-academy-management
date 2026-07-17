@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface EnrollmentRepository {
     Enrollment insert(Enrollment enrollment);
     Enrollment update(Enrollment enrollment);
+    void internalUpdate(Enrollment enrollment);
     Optional<Enrollment> selectById(Integer id);
     List<Enrollment> selectAllByFilters(EnrollmentSearchFilter filters);
     Integer countAllByFilters(EnrollmentSearchFilter filters);

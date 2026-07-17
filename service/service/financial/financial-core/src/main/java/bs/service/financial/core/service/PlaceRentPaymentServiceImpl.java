@@ -50,13 +50,14 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
 
         // Calculate remained amount
         Integer payedAmount = placeRentPaymentDTO.getPayedAmount() != null ? placeRentPaymentDTO.getPayedAmount() : 0;
-        if(place.getRentValue() >= payedAmount && place.getRemainedValue()>= payedAmount){
-            place.setRemainedValue(place.getRentValue()-payedAmount);
-        }else{
+        if(place.getRemainedValue()< payedAmount){
             throw new BusinessException(INVALID_RENT_AMOUNT);
         }
+        Integer remainedValue= place.getRemainedValue()-payedAmount;
+        place.setRemainedValue(remainedValue);
+        placeRepository.update(place);
         payment.setPayedAmount(payedAmount);
-        payment.setRemainedAmount(payment.getRemainedAmount() - payedAmount);
+        payment.setRemainedAmount(remainedValue);
         payment.setPlace(place);
         payment = placeRentPaymentRepository.insert(payment);
         return NewRecordVTO.builder().id(payment.getId()).build();
@@ -85,8 +86,7 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
     public void deletePlaceRentPayment(Integer paymentId) {
         PlaceRentPayment payment = placeRentPaymentRepository.selectById(paymentId)
                 .orElseThrow(() -> new BusinessException(PLACE_RENT_PAYMENT_NOT_FOUND, paymentId));
-        payment.setIsDeleted(true);
-        placeRentPaymentRepository.update(payment);
+        placeRentPaymentRepository.deleteById(paymentId);
     }
 
     @Override
@@ -97,15 +97,17 @@ public class PlaceRentPaymentServiceImpl implements PlaceRentPaymentService {
     }
 
     @Override
-    public PlaceRentPaymentResultSet getAllPlaceRentPaymentsByFilter(Integer placeId, Integer rentTypeId,
-                                                                     Integer paymentMethodId, PaymentStatus status,
+    public PlaceRentPaymentResultSet getAllPlaceRentPaymentsByFilter(String quickSearch,Integer placeId, Integer rentTypeId,
+                                                                     Integer paymentMethodId, PaymentStatus status,Boolean effect,
                                                                      LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                                      Integer pageNum, Integer pageSize,
                                                                      OrderDirections orderDir, String orderBy) {
         PlaceRentPaymentSearchFilter filter = PlaceRentPaymentSearchFilter.builder()
+                .quickSearch(quickSearch)
                 .placeId(placeId)
                 .rentTypeId(rentTypeId)
                 .isDeleted(false)
+                .effect(effect)
                 .paymentMethodId(paymentMethodId)
                 .status(status!=null?status.id:null)
                 .paymentDateFrom(paymentDateFrom)

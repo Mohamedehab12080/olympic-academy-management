@@ -30,7 +30,7 @@ public class TrainerCourseControllerImpl implements TrainerCourseController {
     @Override
     @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _assignCourseToTrainer(Integer trainerId, AssignCourseDTO assignCourseDTO) {
-        NewRecordVTO result = trainerCourseService.assignCourseToTrainer(trainerId, assignCourseDTO.getCourseId());
+        NewRecordVTO result = trainerCourseService.assignCourseToTrainer(trainerId, assignCourseDTO);
         return ResponseEntity.ok(result);
     }
 

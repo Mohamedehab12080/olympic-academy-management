@@ -47,6 +47,7 @@ export interface PaymentMethodDTO {
 export interface RentTypeDTO {
   title: string;
   description?: string;
+  effect: boolean;
 }
 
 export interface ExpenseTypeDTO {
@@ -127,6 +128,7 @@ export interface PaymentMethodVTO {
 export interface RentTypeVTO {
   id: number;
   title: string;
+  effect: boolean;
   description?: string;
   createdOn: string;
   createdBy: LightUserVTO;
@@ -147,7 +149,7 @@ export interface PlaceRentPaymentVTO {
   rentAmount: number;
   payedAmount: number;
   remainedAmount: number;
-  rentType: LookupVTO;
+  rentType: RentTypeVTO;
   paymentDate: string;
   paymentMethod: LookupVTO;
   createdOn: string;
@@ -240,7 +242,9 @@ export interface FinancialTotalVTO {
   totalAdvance: number;
   totalIncentives: number;
   totalPlacesRent: number;
+  totalPlacesGained: number;
   totalEnrollmentPayments: number;
+  totalEnrollmentRefunds: number;
   totalExpenses: number;
   activeEnrollmentsCount: number;
   activeCoursesCount: number;

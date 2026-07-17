@@ -14,6 +14,10 @@ export interface DepartmentVTO {
   title: string;
   description?: string;
   isActive: boolean;
+  totalCourses:number;
+  totalGained:number;
+  totalEnrollmentPayments:number;
+  totalStudents:number;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;

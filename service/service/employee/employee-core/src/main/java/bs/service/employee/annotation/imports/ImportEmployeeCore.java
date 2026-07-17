@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Import(value = {ImportEmployeeCore.Root.class })
 public @interface ImportEmployeeCore {
 
-    @ComponentScan(basePackages = {"bs.service.employee.core", "bs.service.employee.controller"})
+    @ComponentScan(basePackages = {"bs.service.employee.core", "bs.service.employee.controller","bs.service.employee.scheduler"})
     class Root {
     }
 }

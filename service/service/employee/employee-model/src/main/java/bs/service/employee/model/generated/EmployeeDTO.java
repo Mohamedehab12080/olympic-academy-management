@@ -48,6 +48,10 @@ public class EmployeeDTO implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isMonthlyUpdated;
+
+    private Integer updatePeriodInDays;
+
     private String imageUrl;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -249,6 +253,48 @@ public class EmployeeDTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public EmployeeDTO isMonthlyUpdated(Boolean isMonthlyUpdated) {
+        this.isMonthlyUpdated = isMonthlyUpdated;
+        return this;
+    }
+
+    /**
+     * Get isMonthlyUpdated
+     *
+     * @return isMonthlyUpdated
+     */
+
+    @Schema(name = "isMonthlyUpdated", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isMonthlyUpdated")
+    public Boolean getIsMonthlyUpdated() {
+        return isMonthlyUpdated;
+    }
+
+    public void setIsMonthlyUpdated(Boolean isMonthlyUpdated) {
+        this.isMonthlyUpdated = isMonthlyUpdated;
+    }
+
+    public EmployeeDTO updatePeriodInDays(Integer updatePeriodInDays) {
+        this.updatePeriodInDays = updatePeriodInDays;
+        return this;
+    }
+
+    /**
+     * Get updatePeriodInDays
+     *
+     * @return updatePeriodInDays
+     */
+
+    @Schema(name = "updatePeriodInDays", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("updatePeriodInDays")
+    public Integer getUpdatePeriodInDays() {
+        return updatePeriodInDays;
+    }
+
+    public void setUpdatePeriodInDays(Integer updatePeriodInDays) {
+        this.updatePeriodInDays = updatePeriodInDays;
+    }
+
     public EmployeeDTO imageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
         return this;
@@ -367,6 +413,8 @@ public class EmployeeDTO implements Serializable {
                 && Objects.equals(this.salaryType, employeeDTO.salaryType)
                 && Objects.equals(this.employeeType, employeeDTO.employeeType)
                 && Objects.equals(this.isActive, employeeDTO.isActive)
+                && Objects.equals(this.isMonthlyUpdated, employeeDTO.isMonthlyUpdated)
+                && Objects.equals(this.updatePeriodInDays, employeeDTO.updatePeriodInDays)
                 && Objects.equals(this.imageUrl, employeeDTO.imageUrl)
                 && Objects.equals(this.hireDate, employeeDTO.hireDate)
                 && Objects.equals(this.departmentIds, employeeDTO.departmentIds)
@@ -376,7 +424,7 @@ public class EmployeeDTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(fullName, nationalId, birthDate, gender, salary, remainedSalary, salaryType, employeeType,
-                isActive, imageUrl, hireDate, departmentIds, contacts);
+                isActive, isMonthlyUpdated, updatePeriodInDays, imageUrl, hireDate, departmentIds, contacts);
     }
 
     @Override
@@ -392,6 +440,8 @@ public class EmployeeDTO implements Serializable {
         sb.append("    salaryType: ").append(toIndentedString(salaryType)).append("\n");
         sb.append("    employeeType: ").append(toIndentedString(employeeType)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isMonthlyUpdated: ").append(toIndentedString(isMonthlyUpdated)).append("\n");
+        sb.append("    updatePeriodInDays: ").append(toIndentedString(updatePeriodInDays)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    hireDate: ").append(toIndentedString(hireDate)).append("\n");
         sb.append("    departmentIds: ").append(toIndentedString(departmentIds)).append("\n");

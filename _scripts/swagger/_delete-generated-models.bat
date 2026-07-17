@@ -81,6 +81,7 @@ if exist "!GENERATED_PACKAGE_PATH!" (
             call :delete_file "SalaryTypes.java"
             call :delete_file "EmployeeAttendanceStatus.java"
             call :delete_file "EmployeeTypes.java"
+            call :delete_file "EmployeeLookupVTO1.java"
     )
 
      if not "!MODULE!"=="trainee" (
@@ -102,6 +103,8 @@ if exist "!GENERATED_PACKAGE_PATH!" (
         call :delete_file "CourseSessionVTO.java"
         call :delete_file "EmployeeVTO.java"
         call :delete_file "EmployeeContactVTO.java"
+        call :delete_file "CourseSessionLookupVTO.java"
+        call :delete_file "EmployeeLookupVTO.java"
     )
 
     if not "!MODULE!"=="place" (

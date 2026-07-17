@@ -1,6 +1,12 @@
 // trainee-list.component.ts - COMPLETE WITH ENHANCED DIALOG AND PRINT CARDS PAGE SELECTION
 
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  Inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,7 +20,12 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { RouterLink } from '@angular/router';
 
@@ -22,11 +33,15 @@ import { TraineeService } from '../../../../core/services/trainee.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { FileService } from '../../../../core/services/file.service';
-import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import {
+  SearchableSelectComponent,
+  SelectOption,
+} from '../../../../shared/components/searchable-select/searchable-select.component';
 import { GENDERS } from '../../../../core/models/common.model';
 import { TraineeDetailsModalComponent } from '../trainee-details/trainee-details-modal.component';
 import { TraineeWizardModalComponent } from '../trainee-wizard/trainee-wizard-modal.component';
 import { TraineeListItem } from '../../../../core/models/trainee.model';
+import * as JsBarcode from 'jsbarcode';
 
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT - ENHANCED COLORS
@@ -44,7 +59,7 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatDividerModule
+    MatDividerModule,
   ],
   template: `
     <div class="dialog-container" dir="rtl">
@@ -54,15 +69,21 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
         </div>
         <div>
           <h2>{{ isCardPrint ? 'طباعة البطاقات' : 'تصدير التقرير' }}</h2>
-          <p>{{ isCardPrint ? 'اختر الصفحات التي تريد طباعة بطاقاتها' : 'اختر الصفحات التي تريد تصديرها' }}</p>
+          <p>
+            {{
+              isCardPrint
+                ? 'اختر الصفحات التي تريد طباعة بطاقاتها'
+                : 'اختر الصفحات التي تريد تصديرها'
+            }}
+          </p>
         </div>
         <button mat-icon-button (click)="close()" class="close-btn">
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-body">
         <div class="info-section">
           <div class="info-row">
@@ -81,37 +102,44 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
 
         <div class="selection-section">
           <div class="selection-options">
-            <button 
-              mat-raised-button 
+            <button
+              mat-raised-button
               [color]="selectedOption === 'all' ? 'primary' : 'default'"
               (click)="selectedOption = 'all'"
               class="option-btn"
-              [class.selected]="selectedOption === 'all'">
+              [class.selected]="selectedOption === 'all'"
+            >
               <mat-icon>description</mat-icon>
               <span>جميع الصفحات ({{ data.totalPages }})</span>
               <span class="check-icon" *ngIf="selectedOption === 'all'">✓</span>
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'current' ? 'primary' : 'default'"
               (click)="selectedOption = 'current'"
               class="option-btn"
-              [class.selected]="selectedOption === 'current'">
+              [class.selected]="selectedOption === 'current'"
+            >
               <mat-icon>description</mat-icon>
               <span>الصفحة الحالية فقط ({{ data.currentPage + 1 }})</span>
-              <span class="check-icon" *ngIf="selectedOption === 'current'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'current'"
+                >✓</span
+              >
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'range' ? 'primary' : 'default'"
               (click)="selectedOption = 'range'"
               class="option-btn"
-              [class.selected]="selectedOption === 'range'">
+              [class.selected]="selectedOption === 'range'"
+            >
               <mat-icon>description</mat-icon>
               <span>نطاق صفحات محدد</span>
-              <span class="check-icon" *ngIf="selectedOption === 'range'">✓</span>
+              <span class="check-icon" *ngIf="selectedOption === 'range'"
+                >✓</span
+              >
             </button>
           </div>
 
@@ -119,452 +147,475 @@ import { TraineeListItem } from '../../../../core/models/trainee.model';
             <div class="range-inputs">
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>من صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="startPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="startPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="1">
-                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
+                  placeholder="1"
+                />
+                <mat-error *ngIf="startPage < 1 || startPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
               </mat-form-field>
-              
+
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>إلى صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="endPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="endPage"
+                  [min]="1"
                   [max]="data.totalPages"
-                  placeholder="{{ data.totalPages }}">
-                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
-                <mat-error *ngIf="startPage > endPage">يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error>
+                  placeholder="{{ data.totalPages }}"
+                />
+                <mat-error *ngIf="endPage < 1 || endPage > data.totalPages"
+                  >أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error
+                >
+                <mat-error *ngIf="startPage > endPage"
+                  >يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error
+                >
               </mat-form-field>
             </div>
-            
+
             <div class="range-info">
               <mat-icon>info</mat-icon>
-              <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
+              <span
+                >سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }}
+                {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span
+              >
             </div>
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-actions">
         <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
-        <button 
-          mat-raised-button 
-          color="primary" 
+        <button
+          mat-raised-button
+          color="primary"
           (click)="confirm()"
           [disabled]="!isValid()"
-          class="confirm-btn">
+          class="confirm-btn"
+        >
           <mat-icon>{{ isCardPrint ? 'print' : 'check' }}</mat-icon>
           <span>{{ isCardPrint ? 'طباعة' : 'تصدير' }}</span>
         </button>
       </div>
     </div>
   `,
-  styles: [`
-    .dialog-container {
-      min-width: 480px;
-      max-width: 580px;
-      background: white;
-      border-radius: 24px;
-      overflow: hidden;
-      direction: rtl;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-    }
-
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      position: relative;
-    }
-
-    .dialog-header.card-print {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
-
-    .header-icon {
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      backdrop-filter: blur(4px);
-    }
-
-    .header-icon.card-print {
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    .header-icon mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
-    }
-
-    .dialog-header h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .dialog-header p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      opacity: 0.9;
-    }
-
-    .close-btn {
-      color: white !important;
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.15) !important;
-      transition: all 0.3s;
-    }
-
-    .close-btn:hover {
-      background: rgba(255, 255, 255, 0.3) !important;
-      transform: translateY(-50%) rotate(90deg);
-    }
-
-    .dialog-body {
-      padding: 24px;
-      background: #fafbfc;
-    }
-
-    .info-section {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1px solid #eef2f6;
-    }
-
-    .info-row {
-      text-align: center;
-      padding: 4px 0;
-    }
-
-    .info-label {
-      display: block;
-      font-size: 11px;
-      color: #94a3b8;
-      margin-bottom: 4px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .info-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .info-value:last-child {
-      color: #667eea;
-    }
-
-    .dialog-header.card-print .info-value:last-child {
-      color: #f59e0b;
-    }
-
-    .selection-section {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .selection-options {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .option-btn {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 12px 20px;
-      height: auto;
-      border: 2px solid #e5e7eb;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 12px;
-      background: white;
-      position: relative;
-      font-weight: 500;
-    }
-
-    .option-btn mat-icon {
-      margin-left: 12px;
-      color: #94a3b8;
-      transition: color 0.3s;
-    }
-
-    .option-btn.selected {
-      border-color: #667eea;
-      background: #eff6ff !important;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    }
-
-    .option-btn.selected mat-icon {
-      color: #667eea;
-    }
-
-    .dialog-header.card-print .option-btn.selected {
-      border-color: #f59e0b;
-      background: #fffbeb !important;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-    }
-
-    .dialog-header.card-print .option-btn.selected mat-icon {
-      color: #f59e0b;
-    }
-
-    .option-btn:hover:not(.selected) {
-      border-color: #cbd5e1;
-      background: #f8fafc;
-      transform: translateY(-1px);
-    }
-
-    .check-icon {
-      margin-right: auto;
-      color: #667eea;
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .dialog-header.card-print .check-icon {
-      color: #f59e0b;
-    }
-
-    .range-section {
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .range-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .range-field {
-      width: 100%;
-    }
-
-    .range-field ::ng-deep .mat-form-field-outline {
-      background: #fafbfc !important;
-      border-radius: 8px !important;
-    }
-
-    .range-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding: 10px 14px;
-      background: #f1f5f9;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #475569;
-    }
-
-    .range-info mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: #667eea;
-    }
-
-    .dialog-header.card-print .range-info mat-icon {
-      color: #f59e0b;
-    }
-
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 16px 24px;
-      background: white;
-      border-top: 1px solid #eef2f6;
-    }
-
-    .dialog-actions button {
-      min-width: 100px;
-      font-weight: 600;
-      border-radius: 10px;
-      transition: all 0.3s;
-    }
-
-    .cancel-btn {
-      color: #64748b !important;
-    }
-
-    .cancel-btn:hover {
-      background: #f1f5f9 !important;
-    }
-
-    .confirm-btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      color: white !important;
-      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
-    }
-
-    .confirm-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
-    }
-
-    .confirm-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    .dialog-header.card-print .confirm-btn {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
-    }
-
-    .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
-      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
-    }
-
-    @media (max-width: 600px) {
+  styles: [
+    `
       .dialog-container {
-        min-width: 320px;
-        max-width: 95vw;
+        min-width: 480px;
+        max-width: 580px;
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        direction: rtl;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
       }
 
       .dialog-header {
-        padding: 16px 20px;
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+      }
+
+      .dialog-header.card-print {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       }
 
       .header-icon {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        backdrop-filter: blur(4px);
+      }
+
+      .header-icon.card-print {
+        background: rgba(255, 255, 255, 0.25);
       }
 
       .header-icon mat-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
       }
 
       .dialog-header h2 {
-        font-size: 17px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
       }
 
-      .dialog-body {
-        padding: 16px;
-      }
-
-      .info-section {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 12px;
-      }
-
-      .info-row:last-child {
-        grid-column: span 2;
-      }
-
-      .info-value {
-        font-size: 17px;
-      }
-
-      .range-inputs {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-
-      .dialog-actions {
-        flex-direction: column-reverse;
-        padding: 12px 16px;
-        gap: 8px;
-      }
-
-      .dialog-actions button {
-        width: 100%;
-        min-width: unset;
+      .dialog-header p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.9;
       }
 
       .close-btn {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
+        color: white !important;
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.15) !important;
+        transition: all 0.3s;
       }
 
       .close-btn:hover {
-        transform: rotate(90deg);
+        background: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-50%) rotate(90deg);
       }
-    }
 
-    @media (max-width: 400px) {
-      .dialog-container {
-        min-width: 280px;
+      .dialog-body {
+        padding: 24px;
+        background: #fafbfc;
       }
 
       .info-section {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid #eef2f6;
       }
 
-      .info-row:last-child {
-        grid-column: span 1;
+      .info-row {
+        text-align: center;
+        padding: 4px 0;
+      }
+
+      .info-label {
+        display: block;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .info-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .info-value:last-child {
+        color: #667eea;
+      }
+
+      .dialog-header.card-print .info-value:last-child {
+        color: #f59e0b;
+      }
+
+      .selection-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .selection-options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       .option-btn {
-        font-size: 13px;
-        padding: 10px 14px;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 20px;
+        height: auto;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        background: white;
+        position: relative;
+        font-weight: 500;
       }
 
       .option-btn mat-icon {
+        margin-left: 12px;
+        color: #94a3b8;
+        transition: color 0.3s;
+      }
+
+      .option-btn.selected {
+        border-color: #667eea;
+        background: #eff6ff !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      }
+
+      .option-btn.selected mat-icon {
+        color: #667eea;
+      }
+
+      .dialog-header.card-print .option-btn.selected {
+        border-color: #f59e0b;
+        background: #fffbeb !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      }
+
+      .dialog-header.card-print .option-btn.selected mat-icon {
+        color: #f59e0b;
+      }
+
+      .option-btn:hover:not(.selected) {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+        transform: translateY(-1px);
+      }
+
+      .check-icon {
+        margin-right: auto;
+        color: #667eea;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .dialog-header.card-print .check-icon {
+        color: #f59e0b;
+      }
+
+      .range-section {
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      .range-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .range-field {
+        width: 100%;
+      }
+
+      .range-field ::ng-deep .mat-form-field-outline {
+        background: #fafbfc !important;
+        border-radius: 8px !important;
+      }
+
+      .range-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #475569;
+      }
+
+      .range-info mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
+        color: #667eea;
       }
-    }
-  `]
+
+      .dialog-header.card-print .range-info mat-icon {
+        color: #f59e0b;
+      }
+
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #eef2f6;
+      }
+
+      .dialog-actions button {
+        min-width: 100px;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s;
+      }
+
+      .cancel-btn {
+        color: #64748b !important;
+      }
+
+      .cancel-btn:hover {
+        background: #f1f5f9 !important;
+      }
+
+      .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #667eea 0%,
+          #764ba2 100%
+        ) !important;
+        color: white !important;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+      }
+
+      .confirm-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+      }
+
+      .confirm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      .dialog-header.card-print .confirm-btn {
+        background: linear-gradient(
+          135deg,
+          #f59e0b 0%,
+          #d97706 100%
+        ) !important;
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+      }
+
+      .dialog-header.card-print .confirm-btn:hover:not(:disabled) {
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4) !important;
+      }
+
+      @media (max-width: 600px) {
+        .dialog-container {
+          min-width: 320px;
+          max-width: 95vw;
+        }
+
+        .dialog-header {
+          padding: 16px 20px;
+          flex-wrap: wrap;
+        }
+
+        .header-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .header-icon mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
+        }
+
+        .dialog-header h2 {
+          font-size: 17px;
+        }
+
+        .dialog-body {
+          padding: 16px;
+        }
+
+        .info-section {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding: 12px;
+        }
+
+        .info-row:last-child {
+          grid-column: span 2;
+        }
+
+        .info-value {
+          font-size: 17px;
+        }
+
+        .range-inputs {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .dialog-actions {
+          flex-direction: column-reverse;
+          padding: 12px 16px;
+          gap: 8px;
+        }
+
+        .dialog-actions button {
+          width: 100%;
+          min-width: unset;
+        }
+
+        .close-btn {
+          position: relative;
+          left: auto;
+          top: auto;
+          transform: none;
+        }
+
+        .close-btn:hover {
+          transform: rotate(90deg);
+        }
+      }
+
+      @media (max-width: 400px) {
+        .dialog-container {
+          min-width: 280px;
+        }
+
+        .info-section {
+          grid-template-columns: 1fr;
+        }
+
+        .info-row:last-child {
+          grid-column: span 1;
+        }
+
+        .option-btn {
+          font-size: 13px;
+          padding: 10px 14px;
+        }
+
+        .option-btn mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    `,
+  ],
 })
 export class ExportPageSelectDialogComponent {
   selectedOption: 'all' | 'current' | 'range' = 'all';
   startPage: number = 1;
   endPage: number = 1;
   isCardPrint: boolean = false;
-  
+
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { 
-      totalPages: number; 
-      totalItems: number; 
-      pageSize: number; 
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      totalPages: number;
+      totalItems: number;
+      pageSize: number;
       currentPage: number;
       isCardPrint?: boolean;
-    }
+    },
   ) {
     this.endPage = data.totalPages;
     this.isCardPrint = data.isCardPrint || false;
@@ -584,21 +635,23 @@ export class ExportPageSelectDialogComponent {
 
   isValid(): boolean {
     if (this.selectedOption === 'range') {
-      return this.startPage >= 1 && 
-             this.endPage <= this.data.totalPages && 
-             this.startPage <= this.endPage;
+      return (
+        this.startPage >= 1 &&
+        this.endPage <= this.data.totalPages &&
+        this.startPage <= this.endPage
+      );
     }
     return true;
   }
 
   confirm(): void {
     let result: any = { option: this.selectedOption };
-    
+
     if (this.selectedOption === 'range') {
       result.startPage = this.startPage - 1; // Convert to 0-based index
       result.endPage = this.endPage - 1;
     }
-    
+
     this.dialogRef.close(result);
   }
 
@@ -631,46 +684,55 @@ export class ExportPageSelectDialogComponent {
     MatDialogModule,
     MatDividerModule,
     RouterLink,
-    SearchableSelectComponent
+    SearchableSelectComponent,
   ],
   templateUrl: './trainee-list.component.html',
-  styleUrls: ['./trainee-list.component.css']
+  styleUrls: ['./trainee-list.component.css'],
 })
 export class TraineeListComponent implements OnInit, OnDestroy {
   Math = Math;
-  
-  displayedColumns: string[] = ['index', 'image', 'fullName', 'nationalId', 'academicYear', 'gender', 'status', 'actions'];
+
+  displayedColumns: string[] = [
+    'index',
+    'image',
+    'fullName',
+    'nationalId',
+    'academicYear',
+    'gender',
+    'status',
+    'actions',
+  ];
   dataSource = new MatTableDataSource<TraineeListItem>([]);
   allTrainees: TraineeListItem[] = [];
   imageUrls: Map<number, string> = new Map();
   isLoading = false;
-  
+
   // ========== PAGINATION ==========
   totalItems: number = 0;
   pageSize: number = 25;
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   currentPage: number = 0;
-  
+
   // ========== SORTING ==========
   sortBy: string = 'CREATION_DATE';
   sortDir: string = 'DESC';
-  
+
   // ========== FILTERS ==========
   searchText = '';
   genderFilter: string | null = null;
   statusFilter: boolean | null = null;
   academicYearFilter: string | null = null;
-  
+
   // Options for selects
   genderOptions: SelectOption[] = [];
   statusOptions: SelectOption[] = [];
-  
-  get activeCount(): number { 
-    return this.allTrainees.filter(t => t.isActive).length; 
+
+  get activeCount(): number {
+    return this.allTrainees.filter((t) => t.isActive).length;
   }
-  
-  get inactiveCount(): number { 
-    return this.allTrainees.filter(t => !t.isActive).length; 
+
+  get inactiveCount(): number {
+    return this.allTrainees.filter((t) => !t.isActive).length;
   }
 
   constructor(
@@ -679,7 +741,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     private notification: NotificationService,
     private dialog: MatDialog,
     private fileService: FileService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -688,7 +750,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
@@ -699,23 +761,23 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   loadSelectOptions(): void {
     this.genderOptions = [
       { value: null, label: 'الكل' },
-      ...GENDERS.map(g => ({ 
-        value: this.getGenderEnumName(g.id), 
-        label: g.title 
-      }))
+      ...GENDERS.map((g) => ({
+        value: this.getGenderEnumName(g.id),
+        label: g.title,
+      })),
     ];
 
     this.statusOptions = [
       { value: null, label: 'الكل' },
       { value: true, label: 'نشط' },
-      { value: false, label: 'غير نشط' }
+      { value: false, label: 'غير نشط' },
     ];
   }
 
   private getGenderEnumName(id: number): string {
     const genderMap: { [key: number]: string } = {
       1: 'MALE',
-      2: 'FEMALE'
+      2: 'FEMALE',
     };
     return genderMap[id] || '';
   }
@@ -779,20 +841,20 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     console.log('🔄 loadTrainees() called');
     console.log(`  Current Page: ${this.currentPage}`);
     console.log(`  Page Size: ${this.pageSize}`);
-    
+
     this.isLoading = true;
     const params: any = {};
-    
+
     if (this.searchText) params.quickSearch = this.searchText;
     if (this.genderFilter) params.gender = this.genderFilter;
     if (this.statusFilter !== null) params.isActive = this.statusFilter;
     if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
       params.academicYear = this.academicYearFilter.trim();
     }
-    
+
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
-    
+
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
 
@@ -803,7 +865,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         console.log('✅ Response received:', res);
         console.log(`  Items: ${res.items?.length || 0}`);
         console.log(`  Total: ${res.total || 0}`);
-        
+
         this.allTrainees = res.items || [];
         this.totalItems = res.total || 0;
         this.loadAllImages();
@@ -816,19 +878,19 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         this.notification.showError('حدث خطأ في تحميل المتدربين');
         this.isLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   loadAllImages(): void {
-    this.imageUrls.forEach(url => {
+    this.imageUrls.forEach((url) => {
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
     });
     this.imageUrls.clear();
 
-    this.allTrainees.forEach(trainee => {
+    this.allTrainees.forEach((trainee) => {
       this.loadImage(trainee);
     });
   }
@@ -849,11 +911,14 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             this.cdr.detectChanges();
           },
           error: (error) => {
-            console.error(`Failed to load image for trainee ${trainee.id}:`, error);
+            console.error(
+              `Failed to load image for trainee ${trainee.id}:`,
+              error,
+            );
             this.imageUrls.set(trainee.id, '');
             this.dataSource.data = [...this.dataSource.data];
             this.cdr.detectChanges();
-          }
+          },
         });
       } else {
         this.imageUrls.set(trainee.id, fid);
@@ -937,42 +1002,42 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         this.dialog.open(TraineeDetailsModalComponent, {
           data: trainee,
           width: '700px',
-          maxWidth: '90vw'
+          maxWidth: '90vw',
         });
       },
       error: () => {
         this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
-      }
+      },
     });
   }
-  
+
   editTrainee(id: number): void {
-    const trainee = this.allTrainees.find(t => t.id === id);
-    
+    const trainee = this.allTrainees.find((t) => t.id === id);
+
     const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
-      data: { 
+      data: {
         traineeId: id,
-        traineeData: trainee
+        traineeData: trainee,
       },
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadTrainees();
       }
     });
   }
-  
+
   openNewTraineeModal(): void {
     const dialogRef = this.dialog.open(TraineeWizardModalComponent, {
       data: {},
       width: '900px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
-    
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadTrainees();
       }
@@ -986,7 +1051,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
           this.notification.showSuccess('تم حذف المتدرب بنجاح');
           this.loadTrainees();
         },
-        error: () => this.notification.showError('حدث خطأ في الحذف')
+        error: () => this.notification.showError('حدث خطأ في الحذف'),
       });
     }
   }
@@ -998,7 +1063,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
-      
+
       if (totalPages <= 1) {
         // If only one page, export directly
         resolve({ option: 'all' });
@@ -1014,39 +1079,48 @@ export class TraineeListComponent implements OnInit, OnDestroy {
           totalItems: this.totalItems,
           pageSize: this.pageSize,
           currentPage: this.currentPage,
-          isCardPrint: isCardPrint
-        }
+          isCardPrint: isCardPrint,
+        },
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         resolve(result);
       });
     });
   }
 
-  private async fetchPagesForExport(startPage: number, endPage: number): Promise<TraineeListItem[]> {
+  private async fetchPagesForExport(
+    startPage: number,
+    endPage: number,
+  ): Promise<TraineeListItem[]> {
     const allData: TraineeListItem[] = [];
     const totalPages = this.getTotalPages();
-    
+
     // If exporting all pages or range, fetch each page
-    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+    for (
+      let page = startPage;
+      page <= Math.min(endPage, totalPages - 1);
+      page++
+    ) {
       const params: any = {};
-      
+
       if (this.searchText) params.quickSearch = this.searchText;
       if (this.genderFilter) params.gender = this.genderFilter;
       if (this.statusFilter !== null) params.isActive = this.statusFilter;
       if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
         params.academicYear = this.academicYearFilter.trim();
       }
-      
+
       params.pageNum = page;
       params.pageSize = this.pageSize;
-      
+
       if (this.sortBy) params.orderBy = this.sortBy;
       if (this.sortDir) params.orderDir = this.sortDir;
-      
+
       try {
-        const res = await this.traineeService.getAllTraineesByFilter(params).toPromise();
+        const res = await this.traineeService
+          .getAllTraineesByFilter(params)
+          .toPromise();
         if (res && res.items) {
           allData.push(...res.items);
         }
@@ -1055,13 +1129,13 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
       }
     }
-    
+
     return allData;
   }
 
   async exportToExcel(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return; // User cancelled
     }
@@ -1070,13 +1144,19 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     if (result.option === 'all') {
       // Get all pages
-      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+      dataToExport = await this.fetchPagesForExport(
+        0,
+        this.getTotalPages() - 1,
+      );
     } else if (result.option === 'current') {
       // Use current page data
       dataToExport = this.allTrainees;
     } else if (result.option === 'range') {
       // Get specific range
-      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToExport = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToExport.length === 0) {
@@ -1086,20 +1166,20 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     const exportData = dataToExport.map((t: TraineeListItem, i: number) => ({
       '#': i + 1,
-      'الاسم': t.fullName,
+      الاسم: t.fullName,
       'رقم الهوية': t.nationalId,
       'السنة الدراسية': this.getAcademicYearDisplay(t.academicYear),
-      'الجنس': t.gender?.title || '-',
-      'الحالة': t.isActive ? 'نشط' : 'غير نشط'
+      الجنس: t.gender?.title || '-',
+      الحالة: t.isActive ? 'نشط' : 'غير نشط',
     }));
-    
+
     this.reportService.exportToExcel(exportData, 'trainees-list', 'المتدربين');
     this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
   async exportToPDF(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return; // User cancelled
     }
@@ -1113,7 +1193,10 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     } else if (result.option === 'current') {
       dataToPrint = this.allTrainees;
     } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToPrint.length === 0) {
@@ -1124,7 +1207,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     const filterTexts: string[] = [];
     if (this.genderFilter) {
-      const gender = GENDERS.find(g => this.getGenderEnumName(g.id) === this.genderFilter);
+      const gender = GENDERS.find(
+        (g) => this.getGenderEnumName(g.id) === this.genderFilter,
+      );
       if (gender) filterTexts.push(`الجنس: ${gender.title}`);
     }
     if (this.statusFilter !== null) {
@@ -1137,10 +1222,14 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
     // Calculate totals
     const totalTrainees = dataToPrint.length;
-    const totalActive = dataToPrint.filter(t => t.isActive).length;
-    const totalInactive = dataToPrint.filter(t => !t.isActive).length;
-    const totalMale = dataToPrint.filter(t => t.gender?.title === 'ذكر').length;
-    const totalFemale = dataToPrint.filter(t => t.gender?.title === 'أنثى' || t.gender?.title === 'انثي').length;
+    const totalActive = dataToPrint.filter((t) => t.isActive).length;
+    const totalInactive = dataToPrint.filter((t) => !t.isActive).length;
+    const totalMale = dataToPrint.filter(
+      (t) => t.gender?.title === 'ذكر',
+    ).length;
+    const totalFemale = dataToPrint.filter(
+      (t) => t.gender?.title === 'أنثى' || t.gender?.title === 'انثي',
+    ).length;
 
     // Split data into pages
     const rowsPerPage = 20;
@@ -1154,15 +1243,16 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     pages.forEach((pageData: TraineeListItem[], pageIndex: number) => {
       let tableRows = '';
       pageData.forEach((t: TraineeListItem, index: number) => {
-        const globalIndex = (pageIndex * rowsPerPage) + index + 1;
-        const statusStyle = t.isActive 
-          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;' 
+        const globalIndex = pageIndex * rowsPerPage + index + 1;
+        const statusStyle = t.isActive
+          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
           : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-        
-        const genderStyle = t.gender?.title === 'ذكر'
-          ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
-          : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
-        
+
+        const genderStyle =
+          t.gender?.title === 'ذكر'
+            ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
+            : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+
         tableRows += `
           <tr>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
@@ -1187,7 +1277,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             
             ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
             
-            ${pageIndex === 0 ? `
+            ${
+              pageIndex === 0
+                ? `
             <div class="totals-grid">
               <div class="total-card total-all">
                 <span class="total-icon">👥</span>
@@ -1215,7 +1307,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
                 <span class="total-label">إناث</span>
               </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
             <table>
               <thead>
@@ -1234,7 +1328,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             </table>
             
             <div class="footer">
-              الأكاديمية الأولمبية &copy; ${new Date().getFullYear()} - ${dataToPrint.length} متدرب
+               الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} متدرب
             </div>
           </div>
         </div>
@@ -1248,10 +1342,10 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     printContainer.style.backgroundColor = 'white';
     printContainer.style.position = 'relative';
     printContainer.style.width = '100%';
-    
+
     // Get the logo as base64 for reliable printing
     const logoPath = 'assets/images/mainLogoSvg.svg';
-    
+
     printContainer.innerHTML = `
       <!DOCTYPE html>
       <html>
@@ -1640,13 +1734,13 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             // Create image element
             var img = document.createElement('img');
             img.src = '${logoPath}';
-            img.alt = 'الأكاديمية الأولمبية';
+            img.alt = ' الأكاديمية الأولمبية لعلوم الرياضة';
             img.onerror = function() { this.style.display = 'none'; };
             
             // Create text element
             var text = document.createElement('div');
             text.className = 'watermark-text';
-            text.textContent = 'الأكاديمية الأولمبية';
+            text.textContent = ' الأكاديمية الأولمبية لعلوم الرياضة';
             
             wrapper.appendChild(img);
             wrapper.appendChild(text);
@@ -1659,12 +1753,18 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       </html>
     `;
 
-    const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+    const printWindow = window.open(
+      '',
+      '_blank',
+      'width=1100,height=850,scrollbars=yes',
+    );
     if (printWindow) {
       printWindow.document.write(printContainer.innerHTML);
       printWindow.document.close();
       this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
     } else {
       document.body.appendChild(printContainer);
       window.print();
@@ -1674,7 +1774,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
         }
       }, 500);
       this.isLoading = false;
-      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+      this.notification.showSuccess(
+        `تم فتح التقرير - ${dataToPrint.length} سجل`,
+      );
     }
   }
 
@@ -1684,7 +1786,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
 
   async printTraineeCards(): Promise<void> {
     const result = await this.showExportPageSelection(true);
-    
+
     if (!result) {
       return; // User cancelled
     }
@@ -1701,7 +1803,10 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       dataToPrint = this.allTrainees;
     } else if (result.option === 'range') {
       // Get specific range
-      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+      dataToPrint = await this.fetchPagesForExport(
+        result.startPage,
+        result.endPage,
+      );
     }
 
     if (dataToPrint.length === 0) {
@@ -1722,7 +1827,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             },
             error: () => {
               resolve('');
-            }
+            },
           });
         } else if (fid) {
           resolve(fid);
@@ -1738,53 +1843,103 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     this.notification.showSuccess(`تم فتح ${dataToPrint.length} بطاقة للطباعة`);
   }
 
-  /**
-   * Generate optimized card printing view for trainees
-   * Follows the same style as enrollment card printing
-   */
-  private generateCardsPrintOptimized(trainees: TraineeListItem[], imageUrls: string[]): void {
-    const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
-    if (!printWindow) {
-      this.notification.showError('تعذر فتح نافذة الطباعة');
-      return;
+/**
+ * Generate optimized card printing view for trainees
+ * SAME as details modal - generates barcode as data URL image
+ */
+private generateCardsPrintOptimized(
+  trainees: TraineeListItem[],
+  imageUrls: string[],
+): void {
+  const printWindow = window.open(
+    '',
+    '_blank',
+    'width=800,height=800,scrollbars=yes',
+  );
+  if (!printWindow) {
+    this.notification.showError('تعذر فتح نافذة الطباعة');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('ar-EG');
+  let cardsHtml = '';
+  const logoPath = 'assets/images/mainLogo.jpeg';
+
+  trainees.forEach((trainee, index) => {
+    const imageUrl = imageUrls[index] || '';
+    const traineeName = trainee.fullName || '-';
+    const nationalId = trainee.nationalId || '-';
+    const genderDisplay = trainee.gender?.title || '-';
+    const academicYearDisplay = this.getAcademicYearDisplay(
+      trainee.academicYear,
+    );
+    const isActive = trainee.isActive;
+
+    // ✅ Generate barcode image using the same method as details modal
+    let barcodeImage = '';
+    try {
+      // Create temporary canvas
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 200;
+      tempCanvas.height = 40;
+      
+      // Use JsBarcode (same as details modal)
+      JsBarcode(tempCanvas, nationalId || '000000', {
+        format: 'CODE128',
+        lineColor: '#000000',
+        width: 1.5,
+        height: 40,
+        displayValue: true,
+        fontSize: 10,
+        font: 'monospace',
+        textAlign: 'center',
+        margin: 5
+      });
+      
+      barcodeImage = tempCanvas.toDataURL('image/png');
+    } catch (e) {
+      console.error('Barcode generation error:', e);
+      // Fallback: generate simple text barcode
+      barcodeImage = '';
     }
 
-    const today = new Date().toLocaleDateString('ar-EG');
-    let cardsHtml = '';
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    // ✅ Only show photo section if imageUrl exists and is not empty
+    const hasImage = imageUrl && imageUrl.trim() !== '';
+    const photoSection = hasImage
+      ? `
+    <div class="card-photo">
+      <img src="${imageUrl}" alt="${traineeName}" onerror="this.style.display='none'">
+    </div>
+  `
+      : '';
 
-    trainees.forEach((trainee, index) => {
-      const imageUrl = imageUrls[index] || '';
-      const traineeName = trainee.fullName || '-';
-      const nationalId = trainee.nationalId || '-';
-      const genderDisplay = trainee.gender?.title || '-';
-      const academicYearDisplay = this.getAcademicYearDisplay(trainee.academicYear);
-      const isActive = trainee.isActive;
+    // ✅ Use the barcode image directly (like details modal)
+    const barcodeHtml = barcodeImage
+      ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
+      : `<span style="font-family:monospace;font-size:12px;color:#000;">${nationalId}</span>`;
 
-      cardsHtml += `
+    cardsHtml += `
         <div class="card-wrapper">
           <div class="card">
             <!-- Watermark (transparent background) -->
             <div class="card-watermark">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
             </div>
-            <div class="card-watermark-text">الأكاديمية الأولمبية</div>
+            <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
             
             <!-- Card Content -->
             <div class="card-content">
               <!-- Logo at top - Colored and visible -->
               <div class="card-logo-section">
-                <img src="${logoPath}" alt="الأكاديمية الأولمبية" class="card-logo-image">
+                <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
                 <div class="card-logo-text">
-                  <span class="academy-name">الأكاديمية الأولمبية</span>
-                  <span class="card-title">بطاقة هوية متدرب</span>
+                  <span class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</span>
+                  <span class="card-title">✦ بطاقة هوية متدرب ✦</span>
                 </div>
               </div>
               
               <div class="card-body">
-                <div class="card-photo">
-                  ${imageUrl ? `<img src="${imageUrl}" alt="${traineeName}">` : '<div class="placeholder-photo">📷</div>'}
-                </div>
+                ${photoSection}
                 <div class="card-info">
                   <div class="card-name">${traineeName}</div>
                   <div class="card-id">رقم الهوية: ${nationalId}</div>
@@ -1806,7 +1961,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
               </div>
               <div class="card-footer">
                 <div class="card-barcode">
-                  <svg id="barcode-${index}" class="barcode-svg"></svg>
+                  ${barcodeHtml}
                 </div>
                 <div class="card-signature">
                   <div class="signature-line"></div>
@@ -1822,418 +1977,66 @@ export class TraineeListComponent implements OnInit, OnDestroy {
           </div>
         </div>
       `;
-    });
+  });
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html dir="rtl">
-      <head>
-        <meta charset="UTF-8">
-        <title>بطاقات المتدربين</title>
-        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-        <style>
-          * { 
-            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
-          
-          @media print {
-            body { 
-              margin: 0; 
-              padding: 4px; 
-              background: white; 
-            }
-            .no-print { display: none; }
-            .card-wrapper { 
-              page-break-after: avoid;
-              display: inline-block;
-              width: 50%;
-              padding: 3px;
-            }
-            .card {
-              box-shadow: none !important;
-              border: 1px solid #ddd !important;
-              border-radius: 4px !important;
-              min-height: 220px;
-              padding: 8px 10px;
-            }
-            .card-watermark {
-              opacity: 0.08 !important;
-            }
-            .card-watermark img {
-              width: 80px !important;
-            }
-            .card-watermark-text {
-              font-size: 16px !important;
-              opacity: 0.04 !important;
-            }
-            .card-logo-section {
-              padding: 4px 0 !important;
-              margin-bottom: 4px !important;
-            }
-            .card-logo-image {
-              width: 40px !important;
-              height: 40px !important;
-            }
-            .card-logo-text .academy-name {
-              font-size: 11px !important;
-            }
-            .card-logo-text .card-title {
-              font-size: 7px !important;
-            }
-            .card-body {
-              gap: 6px;
-              margin-bottom: 4px;
-            }
-            .card-photo img, .placeholder-photo {
-              width: 45px !important;
-              height: 45px !important;
-            }
-            .card-name {
-              font-size: 10px !important;
-            }
-            .card-id {
-              font-size: 7px !important;
-            }
-            .card-details {
-              font-size: 7px !important;
-            }
-            .detail-row {
-              padding: 1px 0;
-            }
-            .card-footer {
-              padding-top: 4px;
-              margin-top: 2px;
-            }
-            .card-barcode svg {
-              height: 20px !important;
-            }
-            .card-signature {
-              width: 42%;
-            }
-            .signature-label {
-              font-size: 5px !important;
-            }
-            .signature-line {
-              margin: 2px 0;
-            }
-            .card-issue-date {
-              display: none;
-            }
-            .card-logo-image {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-          }
-          
-          @media screen {
-            body { 
-              margin: 0; 
-              padding: 20px; 
-              background: #f0f2f5; 
-              display: flex;
-              flex-wrap: wrap;
-              gap: 16px;
-              justify-content: center;
-            }
-            .card-wrapper { 
-              flex: 0 0 auto;
-              margin: 0;
-            }
-            .card-issue-date {
-              text-align: center;
-              font-size: 8px;
-              color: #94a3b8;
-              margin-top: 6px;
-              padding-top: 4px;
-              border-top: 1px dashed #e2e8f0;
-            }
-          }
-          
-          .card-wrapper {
-            display: inline-block;
-          }
-          
-          .card {
-            width: 100%;
-            max-width: 280px;
-            min-width: 220px;
-            height: auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-            direction: rtl;
-            padding: 12px 14px;
-            position: relative;
-          }
-          
-          /* ===== WATERMARK - Transparent background ===== */
-          .card-watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-25deg) scale(1.6);
-            opacity: 0.06;
-            pointer-events: none;
-            z-index: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-          }
-          
-          .card-watermark img {
-            width: 100px;
-            height: auto;
-            filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
-            opacity: 0.8;
-          }
-          
-          .card-watermark-text {
-            position: absolute;
-            top: 56%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-25deg) scale(0.9);
-            font-size: 20px;
-            font-weight: 900;
-            color: #667eea;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            white-space: nowrap;
-            opacity: 0.04;
-            pointer-events: none;
-            z-index: 0;
-            text-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
-          }
-          
-          /* ===== CARD CONTENT - Above watermark ===== */
-          .card-content {
-            position: relative;
-            z-index: 1;
-          }
-          
-          /* ===== LOGO AT TOP - Colored and visible ===== */
-          .card-logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 0;
-            margin-bottom: 6px;
-            border-bottom: 2px solid #667eea;
-          }
-          
-          .card-logo-image {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            border-radius: 8px;
-            flex-shrink: 0;
-            background: white;
-            padding: 2px;
-          }
-          
-          .card-logo-text {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-          }
-          
-          .card-logo-text .academy-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: #667eea;
-            line-height: 1.2;
-          }
-          
-          .card-logo-text .card-title {
-            font-size: 9px;
-            color: #64748b;
-            font-weight: 500;
-          }
-          
-          .card-body {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 8px;
-          }
-          
-          .card-photo {
-            flex-shrink: 0;
-          }
-          
-          .card-photo img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #667eea;
-          }
-          
-          .placeholder-photo {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: white;
-          }
-          
-          .card-info {
-            flex: 1;
-            min-width: 0;
-          }
-          
-          .card-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 2px;
-          }
-          
-          .card-id {
-            font-size: 8px;
-            color: #64748b;
-            margin-bottom: 2px;
-          }
-          
-          .card-details {
-            font-size: 9px;
-          }
-          
-          .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 2px 0;
-            border-bottom: 1px dashed #f1f5f9;
-          }
-          
-          .detail-label {
-            color: #64748b;
-          }
-          
-          .detail-value {
-            color: #1e293b;
-            font-weight: 500;
-          }
-          
-          .detail-value.status.active {
-            color: #10b981;
-          }
-          
-          .detail-value.status.inactive {
-            color: #ef4444;
-          }
-          
-          .card-footer {
-            border-top: 2px solid #667eea;
-            padding-top: 6px;
-            margin-top: 4px;
-          }
-          
-          .card-barcode {
-            text-align: center;
-            margin-bottom: 6px;
-          }
-          
-          .card-barcode svg {
-            max-width: 100%;
-            height: 30px;
-          }
-          
-          .card-signature {
-            display: inline-block;
-            width: 44%;
-            text-align: center;
-            vertical-align: top;
-          }
-          
-          .card-signature:last-child {
-            margin-right: 5%;
-          }
-          
-          .signature-line {
-            border-top: 1px solid #94a3b8;
-            margin: 3px 0 2px;
-          }
-          
-          .signature-label {
-            font-size: 7px;
-            color: #94a3b8;
-          }
-          
-          .card-issue-date {
-            text-align: center;
-            font-size: 8px;
-            color: #94a3b8;
-            margin-top: 6px;
-            padding-top: 4px;
-            border-top: 1px dashed #e2e8f0;
-          }
-          
-          @media (max-width: 600px) {
-            .card {
-              max-width: 100%;
-            }
-            .card-watermark img {
-              width: 80px !important;
-            }
-            .card-watermark-text {
-              font-size: 16px !important;
-            }
-            .card-logo-image {
-              width: 36px !important;
-              height: 36px !important;
-            }
-            .card-logo-text .academy-name {
-              font-size: 11px !important;
-            }
-            .card-photo img, .placeholder-photo {
-              width: 50px !important;
-              height: 50px !important;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        ${cardsHtml}
-        <div class="no-print" style="text-align: center; margin-top: 20px; width: 100%;">
-          <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">🖨️ طباعة / حفظ كـ PDF</button>
-        </div>
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              const trainees = ${JSON.stringify(trainees.map(t => t.nationalId || t.id))};
-              trainees.forEach(function(id, index) {
-                try {
-                  JsBarcode('#barcode-' + index, String(id || '000000'), {
-                    format: 'CODE128',
-                    lineColor: '#000000',
-                    width: 1,
-                    height: 25,
-                    displayValue: true,
-                    fontSize: 7,
-                    font: 'monospace',
-                    textAlign: 'center',
-                    margin: 1
-                  });
-                } catch(e) {
-                  console.error('Barcode error for index', index, e);
-                }
-              });
-            }, 300);
-          };
-        <\/script>
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
-  }
+  printWindow.document.write(`
+  <!DOCTYPE html>
+  <html dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <title>بطاقات المتدربين</title>
+    <style>
+      * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+      .card-wrapper { display: inline-block; margin: 4px; }
+      .card { width: 280px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px 14px; position: relative; }
+      .card-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); opacity: 0.06; pointer-events: none; z-index: 0; }
+      .card-watermark img { width: 100px; height: auto; }
+      .card-watermark-text { position: absolute; top: 56%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 20px; font-weight: 900; color: #667eea; opacity: 0.04; white-space: nowrap; z-index: 0; }
+      .card-content { position: relative; z-index: 1; }
+      .card-logo-section { display: flex; align-items: center; gap: 12px; padding: 8px 0; margin-bottom: 6px; border-bottom: 2px solid #667eea; }
+      .card-logo-image { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: white; padding: 2px; }
+      .card-logo-text .academy-name { font-size: 13px; font-weight: 700; color: #667eea; }
+      .card-logo-text .card-title { font-size: 9px; color: #64748b; }
+      .card-body { display: flex; gap: 10px; margin-bottom: 8px; }
+      .card-photo { flex-shrink: 0; }
+      .card-photo img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea; }
+      .card-info { flex: 1; }
+      .card-name { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+      .card-id { font-size: 8px; color: #64748b; }
+      .card-details { font-size: 9px; }
+      .detail-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #f1f5f9; }
+      .detail-label { color: #64748b; }
+      .detail-value { color: #1e293b; font-weight: 500; }
+      .detail-value.status.active { color: #10b981; }
+      .detail-value.status.inactive { color: #ef4444; }
+      .card-footer { border-top: 2px solid #667eea; padding-top: 6px; margin-top: 4px; text-align: center; }
+      .card-barcode img { max-width: 100%; height: 30px; }
+      .card-barcode span { font-size: 12px; font-family: monospace; color: #000; }
+      .card-signature { display: inline-block; width: 44%; text-align: center; }
+      .signature-line { border-top: 1px solid #94a3b8; margin: 3px 0 2px; }
+      .signature-label { font-size: 7px; color: #94a3b8; }
+      .card-issue-date { text-align: center; font-size: 8px; color: #94a3b8; margin-top: 6px; padding-top: 4px; border-top: 1px dashed #e2e8f0; }
+      .no-print { text-align: center; margin-top: 20px; width: 100%; }
+      .no-print button { padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+      @media print { .no-print { display: none; } .card { page-break-inside: avoid; } }
+      /* ✅ Ensure barcode images print properly */
+      @media print {
+        .card-barcode img {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    ${cardsHtml}
+    <div class="no-print">
+      <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
+    </div>
+    <!-- ✅ No JavaScript needed - barcodes are pre-generated as images -->
+  </body>
+  </html>
+`);
+  printWindow.document.close();
+}
 }

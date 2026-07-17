@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <!-- ================================================================ -->
+    <!-- Performance Indexes for Olympic Academy DB                       -->
+    <!-- Author: mohamed.ehab                                             -->
+    <!-- Date: 2026-07-14                                                 -->
+    <!-- Purpose: Add high-value indexes for query optimization           -->
+    <!-- ================================================================ -->
+
+    <!-- ================================================================ -->
+    <!-- 1. OA_COURSE_SESSION Table - Primary Indexes                   -->
+    <!-- ================================================================ -->
+
+    <!-- ⭐⭐⭐⭐⭐ COMPOSITE INDEX: Scheduling conflict detection -->
+    <changeSet id="1" author="mohamed.ehab">
+        <comment>Add composite index for scheduling conflict detection (employee + day + time)</comment>
+        <createIndex tableName="oa_course_session" indexName="idx_session_employee_day_time">
+            <column name="employee_id"/>
+            <column name="session_day"/>
+            <column name="start_time"/>
+            <column name="end_time"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ⭐⭐⭐ INDEX: Active course sessions per course -->
+    <changeSet id="2" author="mohamed.ehab">
+        <comment>Add index for active course sessions per course</comment>
+        <createIndex tableName="oa_course_session" indexName="idx_session_course_status">
+            <column name="course_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Supporting indexes for course_session -->
+    <changeSet id="3" author="mohamed.ehab">
+        <comment>Add index on course_id for faster session lookups</comment>
+        <createIndex tableName="oa_course_session" indexName="idx_course_session_course_id">
+            <column name="course_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="4" author="mohamed.ehab">
+        <comment>Add index on employee_id for trainer schedule lookups</comment>
+        <createIndex tableName="oa_course_session" indexName="idx_course_session_employee_id">
+            <column name="employee_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="5" author="mohamed.ehab">
+        <comment>Add index on place_id for venue-based queries</comment>
+        <createIndex tableName="oa_course_session" indexName="idx_course_session_place_id">
+            <column name="place_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 2. OA_ENROLLMENT Table - Primary Indexes                       -->
+    <!-- ================================================================ -->
+
+    <!-- ⭐⭐⭐⭐⭐ INDEX: Trainee enrollments with status -->
+    <changeSet id="6" author="mohamed.ehab">
+        <comment>Add composite index for trainee enrollments with status</comment>
+        <createIndex tableName="oa_enrollment" indexName="idx_enrollment_trainee_status">
+            <column name="trainee_id"/>
+            <column name="enrollment_status"/>
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ⭐⭐⭐⭐ INDEX: Course enrollments with date range -->
+    <changeSet id="7" author="mohamed.ehab">
+        <comment>Add composite index for course enrollments with date range</comment>
+        <createIndex tableName="oa_enrollment" indexName="idx_enrollment_course_dates">
+            <column name="course_id"/>
+            <column name="start_date"/>
+            <column name="end_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Supporting indexes for enrollment -->
+    <changeSet id="8" author="mohamed.ehab">
+        <comment>Add index for payment status financial reporting</comment>
+        <createIndex tableName="oa_enrollment" indexName="idx_enrollment_payment_status">
+            <column name="payment_status"/>
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="9" author="mohamed.ehab">
+        <comment>Add index for trainer workload management</comment>
+        <createIndex tableName="oa_enrollment" indexName="idx_enrollment_trainer_active">
+            <column name="trainer_id"/>
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Additional dashboard indexes for enrollment -->
+    <changeSet id="10" author="mohamed.ehab">
+        <comment>Add index for enrollment dashboard count queries</comment>
+        <createIndex tableName="oa_enrollment" indexName="idx_enrollment_created_active">
+            <column name="created_on"/>
+            <column name="is_active"/>
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="11" author="mohamed.ehab">
+        <comment>Add index for enrollment status dashboard queries</comment>
+        <createIndex tableName="oa_enrollment" indexName="idx_enrollment_created_status">
+            <column name="created_on"/>
+            <column name="enrollment_status"/>
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 3. OA_TRAINEE_ATTENDANCE Table - Primary Indexes              -->
+    <!-- ================================================================ -->
+
+    <!-- ⭐⭐⭐⭐⭐ INDEX: Trainee attendance history -->
+    <changeSet id="12" author="mohamed.ehab">
+        <comment>Add composite index for trainee attendance history by date</comment>
+        <createIndex tableName="oa_trainee_attendance" indexName="idx_attendance_trainee_date">
+            <column name="trainee_id"/>
+            <column name="attendance_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Supporting indexes for attendance -->
+    <changeSet id="13" author="mohamed.ehab">
+        <comment>Add index for session attendance summaries</comment>
+        <createIndex tableName="oa_trainee_attendance" indexName="idx_attendance_session_status">
+            <column name="course_session_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="14" author="mohamed.ehab">
+        <comment>Add index for date range attendance reports</comment>
+        <createIndex tableName="oa_trainee_attendance" indexName="idx_attendance_date_status">
+            <column name="attendance_date"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 4. OA_EMPLOYEE_CONTACT Table - Primary Indexes                -->
+    <!-- ================================================================ -->
+
+    <!-- ⭐⭐⭐⭐ INDEX: Contact value searches -->
+    <changeSet id="15" author="mohamed.ehab">
+        <comment>Add index for contact value searches (phone/email lookups)</comment>
+        <createIndex tableName="oa_employee_contact" indexName="idx_employee_contact_value">
+            <column name="contact_value"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Supporting index for employee contact -->
+    <changeSet id="16" author="mohamed.ehab">
+        <comment>Add composite index for employee contacts by type</comment>
+        <createIndex tableName="oa_employee_contact" indexName="idx_employee_contact_type">
+            <column name="employee_id"/>
+            <column name="contact_type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 5. OA_TRAINEE_CONTACT Table - Primary Indexes                -->
+    <!-- ================================================================ -->
+
+    <changeSet id="17" author="mohamed.ehab">
+        <comment>Add index for trainee contact value searches</comment>
+        <createIndex tableName="oa_trainee_contact" indexName="idx_trainee_contact_value">
+            <column name="contact_value"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 6. OA_TRAINER_COURSE Table - Primary Indexes                  -->
+    <!-- ================================================================ -->
+
+    <changeSet id="18" author="mohamed.ehab">
+        <comment>Add composite index for trainer-course assignments</comment>
+        <createIndex tableName="oa_trainer_course" indexName="idx_trainer_course_employee_course">
+            <column name="employee_id"/>
+            <column name="course_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 7. OA_EMPLOYEE_DEPARTMENT Table - Primary Indexes             -->
+    <!-- ================================================================ -->
+
+    <changeSet id="19" author="mohamed.ehab">
+        <comment>Add composite index for department memberships</comment>
+        <createIndex tableName="oa_employee_department" indexName="idx_emp_dept_employee_department">
+            <column name="employee_id"/>
+            <column name="department_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 8. OA_COURSE Table - Primary Indexes                          -->
+    <!-- ================================================================ -->
+
+    <changeSet id="20" author="mohamed.ehab">
+        <comment>Add index for department courses with active status</comment>
+        <createIndex tableName="oa_course" indexName="idx_course_department_active">
+            <column name="department_id"/>
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="21" author="mohamed.ehab">
+        <comment>Add index for course date range queries</comment>
+        <createIndex tableName="oa_course" indexName="idx_course_dates_active">
+            <column name="start_date"/>
+            <column name="end_date"/>
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 9. OA_EMPLOYEE Table - Primary Indexes                        -->
+    <!-- ================================================================ -->
+
+    <changeSet id="22" author="mohamed.ehab">
+        <comment>Add index for active employee lookups</comment>
+        <createIndex tableName="oa_employee" indexName="idx_employee_active">
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="23" author="mohamed.ehab">
+        <comment>Add composite index for employee type queries</comment>
+        <createIndex tableName="oa_employee" indexName="idx_employee_type_active">
+            <column name="employee_type"/>
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 10. OA_TRAINEE Table - Primary Indexes                        -->
+    <!-- ================================================================ -->
+
+    <changeSet id="24" author="mohamed.ehab">
+        <comment>Add index for active trainee lookups</comment>
+        <createIndex tableName="oa_trainee" indexName="idx_trainee_active">
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 11. OA_EMPLOYEE_ATTENDANCE Table - Primary Indexes            -->
+    <!-- ================================================================ -->
+
+    <changeSet id="25" author="mohamed.ehab">
+        <comment>Add index for employee attendance by date</comment>
+        <createIndex tableName="oa_employee_attendance" indexName="idx_emp_attendance_employee_date">
+            <column name="employee_id"/>
+            <column name="attendance_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 12. OA_ENROLLMENT_PAYMENT Table - Primary Indexes             -->
+    <!-- ================================================================ -->
+
+    <changeSet id="26" author="mohamed.ehab">
+        <comment>Add index for enrollment payments by date</comment>
+        <createIndex tableName="oa_enrollment_payment" indexName="idx_enrollment_payment_date">
+            <column name="payment_date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="27" author="mohamed.ehab">
+        <comment>Add index for payment status queries</comment>
+        <createIndex tableName="oa_enrollment_payment" indexName="idx_enrollment_payment_status">
+            <column name="payment_status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 13. OA_SALARY_INCENTIVE Table - Primary Indexes               -->
+    <!-- ================================================================ -->
+
+    <changeSet id="28" author="mohamed.ehab">
+        <comment>Add index for employee salary transactions by date</comment>
+        <createIndex tableName="oa_salary_incentive" indexName="idx_salary_incentive_emp_date">
+            <column name="employee_id"/>
+            <column name="withdraw_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Dashboard-specific indexes -->
+    <changeSet id="29" author="mohamed.ehab">
+        <comment>Add index for salary reporting with type and date</comment>
+        <createIndex tableName="oa_salary_incentive" indexName="idx_salary_incentive_date_type">
+            <column name="withdraw_date"/>
+            <column name="salary_transaction_type"/>
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="30" author="mohamed.ehab">
+        <comment>Add index for employee salary type reporting</comment>
+        <createIndex tableName="oa_salary_incentive" indexName="idx_salary_incentive_emp_type_date">
+            <column name="employee_id"/>
+            <column name="salary_transaction_type"/>
+            <column name="withdraw_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 14. OA_SALARY_DEDUCTION Table - Primary Indexes               -->
+    <!-- ================================================================ -->
+
+    <changeSet id="31" author="mohamed.ehab">
+        <comment>Add index for employee deductions by date</comment>
+        <createIndex tableName="oa_salary_deduction" indexName="idx_salary_deduction_emp_date">
+            <column name="employee_id"/>
+            <column name="deduction_date"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 15. OA_EXPENSE Table - Primary Indexes                        -->
+    <!-- ================================================================ -->
+
+    <changeSet id="32" author="mohamed.ehab">
+        <comment>Add index for expense date range queries</comment>
+        <createIndex tableName="oa_expense" indexName="idx_expense_date">
+            <column name="expense_date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="33" author="mohamed.ehab">
+        <comment>Add index for expense type queries</comment>
+        <createIndex tableName="oa_expense" indexName="idx_expense_type">
+            <column name="expense_type_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Dashboard-specific expense indexes -->
+    <changeSet id="34" author="mohamed.ehab">
+        <comment>Add index for expense date and deleted status</comment>
+        <createIndex tableName="oa_expense" indexName="idx_expense_date_deleted">
+            <column name="expense_date"/>
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 16. OA_PLACE_RENT_PAYMENT Table - Primary Indexes             -->
+    <!-- ================================================================ -->
+
+    <changeSet id="35" author="mohamed.ehab">
+        <comment>Add index for place rent payments by date</comment>
+        <createIndex tableName="oa_place_rent_payment" indexName="idx_place_rent_payment_date">
+            <column name="payment_date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="36" author="mohamed.ehab">
+        <comment>Add index for rent payment with deleted status</comment>
+        <createIndex tableName="oa_place_rent_payment" indexName="idx_place_rent_payment_date_deleted">
+            <column name="payment_date"/>
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- ================================================================ -->
+    <!-- 17. OA_ENROLLMENT_REFUND Table - Primary Indexes              -->
+    <!-- ================================================================ -->
+
+    <changeSet id="37" author="mohamed.ehab">
+        <comment>Add index for enrollment refunds by date</comment>
+        <createIndex tableName="oa_enrollment_refund" indexName="idx_enrollment_refund_date">
+            <column name="refund_date"/>
+            <column name="is_deleted"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

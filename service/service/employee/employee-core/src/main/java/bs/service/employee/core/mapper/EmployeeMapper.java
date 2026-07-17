@@ -176,4 +176,7 @@ public abstract class EmployeeMapper {
     public abstract LookupVTO toDepartmentLookupVTO(Department departments);
 
     public abstract List<LookupVTO> toDepartmentLookupVTOs(List<Department> departments);
+
+    @Mapping(target = "status", expression = "java(toLookupVTOFromSessionStatus(courseSession.getStatus()))")
+    public abstract CourseSessionLookupVTO toCourseSessionLookupVTO(CourseSession courseSession);
 }

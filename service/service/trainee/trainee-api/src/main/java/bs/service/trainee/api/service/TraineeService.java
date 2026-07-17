@@ -19,4 +19,6 @@ public interface TraineeService {
                                             OrderDirections orderDir, String orderBy);
 
     TraineeLookupResultSet getAllTraineesLookup();
+
+    void traineeCleanupScheduler();
 }

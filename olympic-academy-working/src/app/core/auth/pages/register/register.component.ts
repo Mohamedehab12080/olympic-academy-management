@@ -1,6 +1,16 @@
-import { Component } from '@angular/core';
+// register.component.ts
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { 
+  FormsModule, 
+  ReactiveFormsModule, 
+  FormBuilder, 
+  FormGroup, 
+  Validators, 
+  AbstractControl, 
+  ValidationErrors 
+} from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +18,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 import { AuthService } from '../../auth.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -24,16 +38,31 @@ import { NotificationService } from '../../../services/notification.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit, OnDestroy {
   registerForm: FormGroup;
   isLoading = false;
   hidePassword = true;
   hideConfirmPassword = true;
+  showPasswordStrength = false;
+  passwordStrength = 0;
+  passwordStrengthText = '';
+  currentYear = new Date().getFullYear();
+  logoPath = 'assets/images/mainLogo.jpeg';
+  
+  private destroy$ = new Subject<void>();
+
+  private readonly strengthColors = {
+    weak: '#ef4444',
+    medium: '#f59e0b',
+    strong: '#10b981',
+    veryStrong: '#8b5cf6'
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -42,11 +71,39 @@ export class RegisterComponent {
     private notification: NotificationService
   ) {
     this.registerForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(3)]],
+      fullName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
+
+    // Redirect if already logged in
+    if (this.authService.isAuthenticated && !this.authService.isTokenExpired()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
+
+  ngOnInit(): void {
+    // Password strength listener
+    this.registerForm.get('password')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((password: string) => {
+        if (password && password.length > 0) {
+          this.showPasswordStrength = true;
+          this.calculatePasswordStrength(password);
+        } else {
+          this.showPasswordStrength = false;
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
@@ -55,23 +112,70 @@ export class RegisterComponent {
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
+  private calculatePasswordStrength(password: string): void {
+    let strength = 0;
+    const checks = {
+      length: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+
+    const validChecks = Object.values(checks).filter(Boolean).length;
+    strength = (validChecks / 5) * 100;
+    this.passwordStrength = Math.min(strength, 100);
+
+    if (this.passwordStrength < 25) {
+      this.passwordStrengthText = 'ضعيفة';
+    } else if (this.passwordStrength < 50) {
+      this.passwordStrengthText = 'متوسطة';
+    } else if (this.passwordStrength < 75) {
+      this.passwordStrengthText = 'قوية';
+    } else {
+      this.passwordStrengthText = 'قوية جداً';
+    }
+  }
+
+  getPasswordStrengthColor(): string {
+    if (this.passwordStrength < 25) return this.strengthColors.weak;
+    if (this.passwordStrength < 50) return this.strengthColors.medium;
+    if (this.passwordStrength < 75) return this.strengthColors.strong;
+    return this.strengthColors.veryStrong;
+  }
+
+  getPasswordStrengthWidth(): number {
+    return this.passwordStrength;
+  }
+
+  get fullName() { return this.registerForm.get('fullName'); }
+  get email() { return this.registerForm.get('email'); }
+  get password() { return this.registerForm.get('password'); }
+  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+
   onSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      
       if (this.registerForm.hasError('passwordMismatch')) {
         this.notification.showWarning('كلمة المرور وتأكيد كلمة المرور غير متطابقين');
-      } else {
-        this.notification.showWarning('يرجى تعبئة جميع الحقول بشكل صحيح');
+        return;
       }
+      
+      this.notification.showWarning('يرجى تعبئة جميع الحقول بشكل صحيح');
       return;
     }
 
     this.isLoading = true;
-    this.authService.register(this.registerForm.value).subscribe({
+    const { fullName, email, password, confirmPassword } = this.registerForm.value; // Added confirmPassword
+
+    this.authService.register({ fullName, email, password, confirmPassword }).subscribe({
       next: (response) => {
-        this.notification.showSuccess(response.message || 'تم إنشاء الحساب بنجاح! يرجى تفعيل حسابك عبر البريد الإلكتروني');
-        this.router.navigate(['/login']);
+        this.notification.showSuccess(
+          response.message || 'تم إنشاء الحساب بنجاح! يرجى تفعيل حسابك عبر البريد الإلكتروني'
+        );
         this.isLoading = false;
+        this.router.navigate(['/login']);
       },
       error: (error) => {
         console.error('Register error:', error);
@@ -79,5 +183,13 @@ export class RegisterComponent {
         this.isLoading = false;
       }
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.hideConfirmPassword = !this.hideConfirmPassword;
   }
 }

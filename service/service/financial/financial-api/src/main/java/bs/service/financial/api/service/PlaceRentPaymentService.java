@@ -14,8 +14,8 @@ public interface PlaceRentPaymentService {
     NewRecordVTO updatePlaceRentPayment(Integer paymentId, PlaceRentPaymentDTO placeRentPaymentDTO);
     void deletePlaceRentPayment(Integer paymentId);
     PlaceRentPaymentVTO getPlaceRentPaymentById(Integer paymentId);
-    PlaceRentPaymentResultSet getAllPlaceRentPaymentsByFilter(Integer placeId, Integer rentTypeId,
-                                                              Integer paymentMethodId, PaymentStatus status,
+    PlaceRentPaymentResultSet getAllPlaceRentPaymentsByFilter(String quickSearch,Integer placeId, Integer rentTypeId,
+                                                              Integer paymentMethodId, PaymentStatus status,Boolean effect,
                                                               LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                               Integer pageNum, Integer pageSize,
                                                               OrderDirections orderDir, String orderBy);

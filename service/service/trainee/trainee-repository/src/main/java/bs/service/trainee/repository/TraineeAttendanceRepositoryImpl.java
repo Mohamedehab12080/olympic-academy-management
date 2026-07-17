@@ -82,4 +82,9 @@ public class TraineeAttendanceRepositoryImpl implements TraineeAttendanceReposit
             traineeAttendanceJPARepository.save(attendance);
         });
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        traineeAttendanceJPARepository.deleteById(id);
+    }
 }

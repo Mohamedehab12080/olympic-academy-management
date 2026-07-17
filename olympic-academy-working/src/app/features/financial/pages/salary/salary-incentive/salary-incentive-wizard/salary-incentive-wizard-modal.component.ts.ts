@@ -758,8 +758,23 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
   // ==========================================================================
   // SUBMIT
   // ==========================================================================
-
-  onSubmit(): void {
+onSubmit(): void {
+  console.log('===== FORM SUBMISSION TRIGGERED =====');
+  console.log('Form valid:', this.transactionForm.valid);
+  console.log('Form errors:', this.transactionForm.errors);
+  console.log('Form value:', this.transactionForm.value);
+  
+  // Check each control
+  Object.keys(this.transactionForm.controls).forEach(key => {
+    const control = this.transactionForm.get(key);
+    console.log(`${key}:`, {
+      value: control?.value,
+      valid: control?.valid,
+      errors: control?.errors,
+      touched: control?.touched
+    });
+  });
+  
     if (this.transactionForm.invalid) {
       this.notification.showWarning('يرجى تعبئة جميع الحقول المطلوبة في الخطوات السابقة');
       return;

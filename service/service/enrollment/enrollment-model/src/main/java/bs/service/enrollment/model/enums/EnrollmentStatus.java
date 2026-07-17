@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum EnrollmentStatus implements EnumWithIdAndTitle {
-    PENDING(1,"قيد الانتظار"),COMPLETED(2,"مكتمل"),CANCELLED(3,"تم الالغاء");
+    PENDING(1,"قيد الانتظار"),COMPLETED(2,"مكتمل"),CANCELLED(3,"تم الالغاء"),FINISHED(4,"منتهي");
 
     public Integer id;
     public String title;

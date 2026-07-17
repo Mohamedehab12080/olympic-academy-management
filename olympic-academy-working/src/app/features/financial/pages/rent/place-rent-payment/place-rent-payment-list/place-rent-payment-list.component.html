@@ -42,6 +42,20 @@
             [ngModelOptions]="{standalone: true}">
           </app-searchable-select>
 
+          <!-- Effect Filter -->
+          <mat-form-field appearance="outline" class="filter-select">
+            <mat-label>التأثير المالي</mat-label>
+            <mat-select [(ngModel)]="filters.rentTypeEffect" (selectionChange)="currentPage = 0; loadData()">
+              <mat-option *ngFor="let option of effectOptions" [value]="option.value">
+                <div class="effect-option" [style.color]="option.color">
+                  <mat-icon>{{ option.icon }}</mat-icon>
+                  <span>{{ option.label }}</span>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>trending_up</mat-icon>
+          </mat-form-field>
+
           <app-searchable-select
             [ngModel]="filters.paymentMethodId"
             (ngModelChange)="filters.paymentMethodId = $event; currentPage = 0; loadData()"
@@ -114,6 +128,20 @@
           <p>إجمالي المتبقي</p>
         </div>
       </div>
+      <div class="stat-card income">
+        <div class="stat-icon">📈</div>
+        <div class="stat-info">
+          <h3>{{ incomeTotal | number }} جم</h3>
+          <p>إجمالي الإيرادات</p>
+        </div>
+      </div>
+      <div class="stat-card expense">
+        <div class="stat-icon">📉</div>
+        <div class="stat-info">
+          <h3>{{ expenseTotal | number }} جم</h3>
+          <p>إجمالي المصروفات</p>
+        </div>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -132,6 +160,8 @@
         <div class="table-stats">
           <span class="stat-badge total-amount">💰 {{ totalPayedAmount | number }} جم</span>
           <span class="stat-badge total-remaining">📊 {{ totalRemainedAmount | number }} جم</span>
+          <span class="stat-badge income-badge">📈 {{ incomeTotal | number }} جم</span>
+          <span class="stat-badge expense-badge">📉 {{ expenseTotal | number }} جم</span>
         </div>
       </div>
 
@@ -152,6 +182,27 @@
             <td mat-cell *matCellDef="let item"> 
               <div class="place-info">
                 <strong>{{ item.place?.title || '-' }}</strong>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Rent Type Column -->
+          <ng-container matColumnDef="rentType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> نوع الإيجار </th>
+            <td mat-cell *matCellDef="let item"> 
+              {{ item.rentType?.title || '-' }}
+            </td>
+          </ng-container>
+
+          <!-- Effect Column -->
+          <ng-container matColumnDef="effect">
+            <th mat-header-cell *matHeaderCellDef> التأثير المالي </th>
+            <td mat-cell *matCellDef="let item">
+              <div class="effect-container">
+                <mat-chip [class]="getEffectClass(item.rentType?.effect)" class="effect-chip">
+                  <mat-icon class="chip-icon">{{ getEffectIcon(item.rentType?.effect) }}</mat-icon>
+                  <span>{{ getEffectLabel(item.rentType?.effect) }}</span>
+                </mat-chip>
               </div>
             </td>
           </ng-container>

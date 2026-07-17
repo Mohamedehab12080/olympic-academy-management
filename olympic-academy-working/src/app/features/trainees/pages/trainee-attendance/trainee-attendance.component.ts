@@ -1997,7 +1997,7 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   selectedDay: string | null = null;
   dayOptions: SelectOption[] = [];
   
-  displayedColumns: string[] = ['index', 'traineeImage', 'traineeNationalId', 'traineeName', 'courseTitle', 'sessionTitle', 'sessionDay','attendanceDate', 'status', 'checkInTime', 'checkOutTime', 'lateTime', 'actions'];
+  displayedColumns: string[] = ['index', 'traineeImage', 'traineeNationalId', 'traineeName', 'courseTitle', 'sessionTitle','sessionTrainer','sessionDay','attendanceDate', 'status', 'checkInTime', 'checkOutTime', 'lateTime', 'actions'];
   dataSource = new MatTableDataSource<TraineeAttendanceListItem>([]);
   allAttendances: TraineeAttendanceListItem[] = [];
   isLoading = false;
@@ -2130,17 +2130,48 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
 
 
 openFastAttendanceDialog(): void {
-  // Get all sessions with their details
+  // Get all sessions WITHOUT pagination params
+  // The backend will use default values
   this.courseSessionService.getAllSessionsByFilter().subscribe({
     next: (res: any) => {
       const sessions = res.items || [];
-      const sessionOptions = sessions.map((s: any) => ({
-        value: s.id,
-        label: `${s.title} - ${s.sessionDay || ''} ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`,
-        startTime: s.startTime || s.startTime,  // Make sure these are included
-        endTime: s.endTime || s.endTime,        // Make sure these are included
-        day: s.sessionDay || ''
-      }));
+      
+      console.log('Sessions loaded for Fast Attendance:', sessions);
+      
+      const sessionOptions = sessions.map((s: any) => {
+        const startTime = s.startTime || '';
+        const endTime = s.endTime || '';
+        const sessionDay = s.sessionDay || '';
+        const sessionTitle = s.title || `جلسة #${s.id}`;
+        const trainers = s.trainers || [];
+        const courseId = s.course?.id;
+        
+        // Build a descriptive label
+        let label = sessionTitle;
+        if (sessionDay) {
+          label += ` - ${this.getDayDisplay(sessionDay)}`;
+        }
+        if (startTime) {
+          const startTimeDisplay = this.convertTo12HourFormat(startTime);
+          label += ` ${startTimeDisplay}`;
+          if (endTime) {
+            const endTimeDisplay = this.convertTo12HourFormat(endTime);
+            label += ` - ${endTimeDisplay}`;
+          }
+        }
+        
+        return {
+          value: s.id,
+          label: label,
+          startTime: startTime,
+          endTime: endTime,
+          day: sessionDay,
+          trainers: trainers,
+          courseId: courseId
+        };
+      });
+
+      console.log('Session options with trainers:', sessionOptions);
 
       const dialogRef = this.dialog.open(FastAttendanceDialogComponent, {
         width: '750px',
@@ -2264,6 +2295,22 @@ openFastAttendanceDialog(): void {
     }
     return name.substring(0, 2).toUpperCase();
   }
+
+      getTrainerDisplayName(trainer: any): string {
+      if (!trainer) return '-';
+      
+      // If it's a single object (EmployeeLookupVTO)
+      if (typeof trainer === 'object') {
+        return trainer.fullName || '-';
+      }
+      
+      // Fallback if it's a string
+      if (typeof trainer === 'string') {
+        return trainer;
+      }
+      
+      return '-';
+    }
 
   /**
    * Get day display name
@@ -3018,45 +3065,46 @@ openFastAttendanceDialog(): void {
     return allData;
   }
 
-  async exportToExcel(): Promise<void> {
-    const result = await this.showExportPageSelection(false);
-    
-    if (!result) {
-      return;
-    }
-
-    let dataToExport: TraineeAttendanceListItem[] = [];
-
-    if (result.option === 'all') {
-      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-    } else if (result.option === 'current') {
-      dataToExport = this.allAttendances;
-    } else if (result.option === 'range') {
-      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
-    }
-
-    if (dataToExport.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      return;
-    }
-
-    const exportData = dataToExport.map((item, index) => ({
-      '#': index + 1,
-      'رقم الهوية': this.getTraineeNationalId(item.trainee),
-      'المتدرب': this.getTraineeDisplayName(item.trainee),
-      'الدورة': item.courseTitle || '-',
-      'الجلسة': item.sessionTitle || '-',
-      'اليوم': this.getDayDisplay(item.sessionDay),
-      'تاريخ الحضور': item.attendanceDate || '-',
-      'حالة الحضور': item.status?.title || '-',
-      'وقت الدخول': convertTo12HourFormat(item.checkInTime) || '-',
-      'وقت الخروج': convertTo12HourFormat(item.checkOutTime) || '-',
-      'وقت التأخير': item.lateTime ? `${item.lateTime} دقيقة` : '-'
-    }));
-
-    this.reportService.exportToExcel(exportData, 'trainee-attendance', 'سجلات الحضور');
-    this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
+async exportToExcel(): Promise<void> {
+  const result = await this.showExportPageSelection(false);
+  
+  if (!result) {
+    return;
   }
+
+  let dataToExport: TraineeAttendanceListItem[] = [];
+
+  if (result.option === 'all') {
+    dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+  } else if (result.option === 'current') {
+    dataToExport = this.allAttendances;
+  } else if (result.option === 'range') {
+    dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
+  }
+
+  if (dataToExport.length === 0) {
+    this.notification.showWarning('لا توجد بيانات لتصديرها');
+    return;
+  }
+
+  const exportData = dataToExport.map((item, index) => ({
+    '#': index + 1,
+    'رقم الهوية': this.getTraineeNationalId(item.trainee),
+    'المتدرب': this.getTraineeDisplayName(item.trainee),
+    'الدورة': item.session.course.title || '-',
+    'الجلسة': item.session.title || '-',
+    'المدرب': this.getTrainerDisplayName(item.session.trainer), // Added trainer column
+    'اليوم': this.getDayDisplay(item.session.sessionDay),
+    'تاريخ الحضور': item.attendanceDate || '-',
+    'حالة الحضور': item.status?.title || '-',
+    'وقت الدخول': convertTo12HourFormat(item.checkInTime) || '-',
+    'وقت الخروج': convertTo12HourFormat(item.checkOutTime) || '-',
+    'وقت التأخير': item.lateTime ? `${item.lateTime} دقيقة` : '-'
+  }));
+
+  this.reportService.exportToExcel(exportData, 'trainee-attendance', 'سجلات الحضور');
+  this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
+}
 
 async exportToPDF(): Promise<void> {
   const result = await this.showExportPageSelection(false);
@@ -3151,15 +3199,17 @@ async exportToPDF(): Promise<void> {
 
     const checkInFormatted = convertTo12HourFormat(item.checkInTime);
     const checkOutFormatted = convertTo12HourFormat(item.checkOutTime);
+    const trainerName = this.getTrainerDisplayName(item.session.trainer);
 
     tableRows += `
       <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
         <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
         <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getTraineeNationalId(item.trainee)}</td>
         <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${this.getTraineeDisplayName(item.trainee)}</td>
-        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.courseTitle || '-'}</td>
-        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.sessionTitle || '-'}</td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getDayDisplay(item.sessionDay)}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.session.course.title || '-'}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.session.title || '-'}</td>
+        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${trainerName}</td>
+        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getDayDisplay(item.session.sessionDay)}</td>
         <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
           ${item.status?.title || '-'}
         </td>
@@ -3303,29 +3353,34 @@ async exportToPDF(): Promise<void> {
       <table>
         <thead>
           <tr>
-            <th>#</th><th>رقم الهوية</th><th>المتدرب</th><th>الدورة</th><th>الجلسة</th>
-            <th>اليوم</th><th>الحالة</th><th>وقت الدخول</th>
-            <th>وقت الخروج</th><th>وقت التأخير</th>
+            <th>#</th>
+            <th>رقم الهوية</th>
+            <th>المتدرب</th>
+            <th>الدورة</th>
+            <th>الجلسة</th>
+            <th>المدرب</th>
+            <th>اليوم</th>
+            <th>الحالة</th>
+            <th>وقت الدخول</th>
+            <th>وقت الخروج</th>
+            <th>وقت التأخير</th>
           </tr>
         </thead>
         <tbody>
           ${tableRows}
           <tr class="total-row">
-            <td colspan="10" style="text-align:center; font-weight:700; color:#8b5cf6; font-size:14px;">
+            <td colspan="11" style="text-align:center; font-weight:700; color:#8b5cf6; font-size:14px;">
               إجمالي عدد السجلات: ${dataToPrint.length}
             </td>
           </tr>
         </tbody>
       </table>
       
-      <!-- ============================================================
-           FOOTER - Clean (No Background)
-           ============================================================ -->
+      <!-- Footer -->
       <div style="text-align: center; margin-top: 16px; padding: 8px 12px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
           <span style="font-weight: 700; color: #1e293b;">⚡ CoreStack Solutions</span>
           <span>📱 01069911181</span>
-          <span style="color: #94a3b8; font-size: 11px;">نظام إدارة الأكاديمية الأولمبية</span>
         </div>
         <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f1f5f9;">
           © ${new Date().getFullYear()} CoreStack Solutions. جميع الحقوق محفوظة

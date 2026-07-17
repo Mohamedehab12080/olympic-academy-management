@@ -63,4 +63,6 @@ public interface TraineeAttendanceRepository {
      * @param id the attendance record ID
      */
     void softDeleteById(Integer id);
+
+    void deleteById(Integer id);
 }

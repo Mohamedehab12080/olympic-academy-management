@@ -46,6 +46,9 @@ public abstract class FinancialMapper {
 
     // ==================== Lookup Mappings (Auto-detected by MapStruct) ====================
 
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "title", source = "title")
     public abstract LookupVTO toLookupVTO(PaymentMethod paymentMethod);
     public abstract LookupVTO toLookupVTO(RentType rentType);
     public abstract LookupVTO toLookupVTO(ExpenseType expenseType);
@@ -118,6 +121,9 @@ public abstract class FinancialMapper {
     public abstract PaymentMethod toPaymentMethod(PaymentMethodDTO paymentMethodDTO);
     public abstract RentType toRentType(RentTypeDTO rentTypeDTO);
     public abstract ExpenseType toExpenseType(ExpenseTypeDTO expenseTypeDTO);
+
+    @Mapping(target = "rentType.id", source = "rentTypeId")
+    @Mapping(target = "paymentMethod.id", source = "paymentMethodId")
     public abstract PlaceRentPayment toPlaceRentPayment(PlaceRentPaymentDTO placeRentPaymentDTO);
 
     // ==================== Entity to VTO Mappings (convert IDs to LookupVTO) ====================
@@ -131,6 +137,7 @@ public abstract class FinancialMapper {
     public abstract ExpenseTypeVTO toExpenseTypeVTO(ExpenseType expenseType);
     public abstract List<ExpenseTypeVTO> toExpenseTypeVTOs(List<ExpenseType> expenseTypes);
 
+    @Mapping(target = "paymentMethod", expression = "java(toLookupVTO(placeRentPayment.getPaymentMethod()))")
     public abstract PlaceRentPaymentVTO toPlaceRentPaymentVTO(PlaceRentPayment placeRentPayment);
     public abstract List<PlaceRentPaymentVTO> toPlaceRentPaymentVTOs(List<PlaceRentPayment> placeRentPayments);
 

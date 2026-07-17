@@ -46,7 +46,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public NewRecordVTO createCourse(CourseDTO courseDTO) {
-        DepartmentVTO departmentVTO=departmentMgtProxyService.getDepartmentDetails(courseDTO.getDepartmentId());
+        departmentMgtProxyService.existsById(courseDTO.getDepartmentId());
         Course course =courseMapper.toCourse(courseDTO);
         course=courseRepository.insert(course);
         return NewRecordVTO.builder().id(course.getId()).build();
