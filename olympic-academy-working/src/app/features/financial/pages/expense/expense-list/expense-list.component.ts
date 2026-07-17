@@ -474,7 +474,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
   // ==========================================================================
 
   openDetailsModal(expense: any): void {
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const expenseNumber = `EXP-${expense.id}`;
 
@@ -920,7 +920,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private buildExpenseReceiptHTML(data: any): string {
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     
     return `
 <!DOCTYPE html>
@@ -1398,7 +1398,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
     const avgExpense = this.averageExpense;
     const count = this.allExpenses.length;
 
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     let tableRows = '';
     this.allExpenses.forEach((item: any, index: number) => {
