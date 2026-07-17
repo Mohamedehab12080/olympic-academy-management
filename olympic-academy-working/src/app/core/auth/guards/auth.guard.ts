@@ -1,6 +1,7 @@
 // auth.guard.ts
+
 import { Injectable, inject } from '@angular/core';
-import { Router, CanActivateFn, UrlTree } from '@angular/router';
+import { Router, CanActivateFn, UrlTree, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -12,7 +13,27 @@ export class AuthGuardService {
     private notification: NotificationService
   ) {}
 
-  canActivate(): boolean | UrlTree {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
+    // Get the URL path
+    const url = state.url;
+    console.log('🔍 AuthGuard checking URL:', url);
+    
+    // Check if this is a public route
+    const isPublicRoute = 
+      url.startsWith('/login') ||
+      url.startsWith('/register') ||
+      url.startsWith('/auth/activate') ||
+      url.startsWith('/activate') ||
+      url.startsWith('/forgot-password') ||
+      url.startsWith('/reset-password');
+    
+    if (isPublicRoute) {
+      console.log('✅ Public route, allowing access:', url);
+      return true;
+    }
+
+    console.log('🔒 Protected route, checking authentication...');
+    
     // Check if user is authenticated
     if (!this.authService.isAuthenticated) {
       this.notification.showWarning('يرجى تسجيل الدخول أولاً');
@@ -30,6 +51,6 @@ export class AuthGuardService {
   }
 }
 
-export const AuthGuard: CanActivateFn = () => {
-  return inject(AuthGuardService).canActivate();
+export const AuthGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(AuthGuardService).canActivate(route, state);
 };

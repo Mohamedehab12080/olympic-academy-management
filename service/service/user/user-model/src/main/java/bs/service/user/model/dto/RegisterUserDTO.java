@@ -1,5 +1,6 @@
 package bs.service.user.model.dto;
 
+import bs.service.user.model.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -29,6 +30,8 @@ public class RegisterUserDTO {
     @NotBlank(message = "Full name is required")
     @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
     private String fullName;
+
+    private Role role;
 
     private String mobileNumber;
 }

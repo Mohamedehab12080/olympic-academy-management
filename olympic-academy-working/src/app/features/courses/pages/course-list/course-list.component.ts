@@ -1,3 +1,5 @@
+// course-list.component.ts - COMPLETE FILE
+
 import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -61,9 +63,9 @@ import { FileService } from '../../../../core/services/file.service';
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-body">
         <div class="info-section">
           <div class="info-row">
@@ -82,8 +84,8 @@ import { FileService } from '../../../../core/services/file.service';
 
         <div class="selection-section">
           <div class="selection-options">
-            <button 
-              mat-raised-button 
+            <button
+              mat-raised-button
               [color]="selectedOption === 'all' ? 'primary' : 'default'"
               (click)="selectedOption = 'all'"
               class="option-btn"
@@ -92,9 +94,9 @@ import { FileService } from '../../../../core/services/file.service';
               <span>جميع الصفحات ({{ data.totalPages }})</span>
               <span class="check-icon" *ngIf="selectedOption === 'all'">✓</span>
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'current' ? 'primary' : 'default'"
               (click)="selectedOption = 'current'"
               class="option-btn"
@@ -103,9 +105,9 @@ import { FileService } from '../../../../core/services/file.service';
               <span>الصفحة الحالية فقط ({{ data.currentPage + 1 }})</span>
               <span class="check-icon" *ngIf="selectedOption === 'current'">✓</span>
             </button>
-            
-            <button 
-              mat-raised-button 
+
+            <button
+              mat-raised-button
               [color]="selectedOption === 'range' ? 'primary' : 'default'"
               (click)="selectedOption = 'range'"
               class="option-btn"
@@ -120,30 +122,30 @@ import { FileService } from '../../../../core/services/file.service';
             <div class="range-inputs">
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>من صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="startPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="startPage"
+                  [min]="1"
                   [max]="data.totalPages"
                   placeholder="1">
                 <mat-error *ngIf="startPage < 1 || startPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
               </mat-form-field>
-              
+
               <mat-form-field appearance="outline" class="range-field">
                 <mat-label>إلى صفحة</mat-label>
-                <input 
-                  matInput 
-                  type="number" 
-                  [(ngModel)]="endPage" 
-                  [min]="1" 
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="endPage"
+                  [min]="1"
                   [max]="data.totalPages"
                   placeholder="{{ data.totalPages }}">
                 <mat-error *ngIf="endPage < 1 || endPage > data.totalPages">أدخل صفحة صالحة (1 - {{ data.totalPages }})</mat-error>
                 <mat-error *ngIf="startPage > endPage">يجب أن تكون صفحة البداية أقل من صفحة النهاية</mat-error>
               </mat-form-field>
             </div>
-            
+
             <div class="range-info">
               <mat-icon>info</mat-icon>
               <span>سيتم {{ isCardPrint ? 'طباعة' : 'تصدير' }} {{ getRangeCount() }} صفحة ({{ getRangeRecords() }} سجل)</span>
@@ -151,14 +153,14 @@ import { FileService } from '../../../../core/services/file.service';
           </div>
         </div>
       </div>
-      
+
       <mat-divider></mat-divider>
-      
+
       <div class="dialog-actions">
         <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
-        <button 
-          mat-raised-button 
-          color="primary" 
+        <button
+          mat-raised-button
+          color="primary"
           (click)="confirm()"
           [disabled]="!isValid()"
           class="confirm-btn">
@@ -518,13 +520,13 @@ export class ExportPageSelectDialogComponent {
   startPage: number = 1;
   endPage: number = 1;
   isCardPrint: boolean = false;
-  
+
   constructor(
     private dialogRef: MatDialogRef<ExportPageSelectDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { 
-      totalPages: number; 
-      totalItems: number; 
-      pageSize: number; 
+    @Inject(MAT_DIALOG_DATA) public data: {
+      totalPages: number;
+      totalItems: number;
+      pageSize: number;
       currentPage: number;
       isCardPrint?: boolean;
     }
@@ -547,21 +549,21 @@ export class ExportPageSelectDialogComponent {
 
   isValid(): boolean {
     if (this.selectedOption === 'range') {
-      return this.startPage >= 1 && 
-             this.endPage <= this.data.totalPages && 
-             this.startPage <= this.endPage;
+      return this.startPage >= 1 &&
+        this.endPage <= this.data.totalPages &&
+        this.startPage <= this.endPage;
     }
     return true;
   }
 
   confirm(): void {
     let result: any = { option: this.selectedOption };
-    
+
     if (this.selectedOption === 'range') {
       result.startPage = this.startPage - 1;
       result.endPage = this.endPage - 1;
     }
-    
+
     this.dialogRef.close(result);
   }
 
@@ -610,18 +612,18 @@ interface CourseTypeLookup {
 })
 export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
-  
+
   displayedColumns: string[] = ['index', 'title', 'department', 'courseType', 'duration', 'price', 'enrollmentsCount', 'totalRevenue', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   allCourses: any[] = [];
   isLoading = false;
-  
+
   // ========== PAGINATION ==========
   totalItems: number = 0;
   pageSize: number = 25;
   pageSizeOptions: number[] = [5, 10, 25, 50, 100];
   currentPage: number = 0;
-  
+
   // ========== SORTING ==========
   sortBy: string = 'START_DATE';
   sortDir: string = 'DESC';
@@ -699,17 +701,18 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           'تأهيل': 'QUALIFICATION',
           'تدريب': 'TRAINING'
         };
-        
+
         this.courseTypes = (res.list || []).map((item: any) => ({
           id: item.id,
           title: item.title,
           value: typeMap[item.title] || item.title
         }));
-        
+
         this.updateCourseTypeOptions();
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل أنواع الدورات');
+      error: (error) => {
+        const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحميل أنواع الدورات';
+        this.notification.showError(errorMessage);
         this.courseTypes = [
           { id: 1, title: 'تأهيل', value: 'QUALIFICATION' },
           { id: 2, title: 'تدريب', value: 'TRAINING' }
@@ -722,9 +725,9 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   updateCourseTypeOptions(): void {
     this.courseTypeOptions = [
       { value: null, label: 'الكل' },
-      ...this.courseTypes.map(t => ({ 
+      ...this.courseTypes.map(t => ({
         value: t.value,
-        label: t.title 
+        label: t.title
       }))
     ];
   }
@@ -791,25 +794,25 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('🔄 loadCourses() called');
     console.log(`  Current Page: ${this.currentPage}`);
     console.log(`  Page Size: ${this.pageSize}`);
-    
+
     this.isLoading = true;
-    
+
     const params: any = {};
-    
+
     // ===== FILTERS =====
     if (this.filters.quickSearch) params.quickSearch = this.filters.quickSearch;
     if (this.filters.courseType) params.courseType = this.filters.courseType;
     if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
-    
+
     if (this.filters.startDateFrom) params.startDateFrom = this.formatDateForAPI(this.filters.startDateFrom);
     if (this.filters.startDateTo) params.startDateTo = this.formatDateForAPI(this.filters.startDateTo);
     if (this.filters.endDateFrom) params.endDateFrom = this.formatDateForAPI(this.filters.endDateFrom);
     if (this.filters.endDateTo) params.endDateTo = this.formatDateForAPI(this.filters.endDateTo);
-    
+
     // ===== PAGINATION =====
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
-    
+
     // ===== SORTING =====
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
@@ -821,16 +824,17 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('✅ Response received:', res);
         console.log(`  Items: ${res.items?.length || 0}`);
         console.log(`  Total: ${res.total || 0}`);
-        
+
         this.allCourses = res.items || [];
         this.totalItems = res.total || 0;
         this.dataSource.data = [...this.allCourses];
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('❌ Error loading courses:', err);
-        this.notification.showError('حدث خطأ في تحميل الدورات');
+      error: (error) => {
+        console.error('❌ Error loading courses:', error);
+        const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحميل الدورات';
+        this.notification.showError(errorMessage);
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -839,16 +843,16 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getCourseTypeTitle(courseType: any): string {
     if (!courseType) return '-';
-    
+
     if (typeof courseType === 'object' && courseType.title) {
       return courseType.title;
     }
-    
+
     if (typeof courseType === 'string') {
       const found = this.courseTypes.find(t => t.value === courseType);
       return found?.title || courseType;
     }
-    
+
     return '-';
   }
 
@@ -894,9 +898,9 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   viewCourse(id: number): void {
     this.isLoading = true;
-    
+
     const existingCourse = this.allCourses.find(c => c.id === id);
-    
+
     if (existingCourse) {
       this.courseSessionService.getAllCourseSessionsByFilter(id).subscribe({
         next: (sessionsRes: any) => {
@@ -910,7 +914,9 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           });
           this.isLoading = false;
         },
-        error: () => {
+        error: (error) => {
+          const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحميل الجلسات';
+          this.notification.showError(errorMessage);
           this.dialog.open(CourseDetailsModalComponent, {
             data: {
               course: existingCourse,
@@ -937,7 +943,9 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
               });
               this.isLoading = false;
             },
-            error: () => {
+            error: (error) => {
+              const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحميل الجلسات';
+              this.notification.showError(errorMessage);
               this.dialog.open(CourseDetailsModalComponent, {
                 data: {
                   course: course,
@@ -950,9 +958,10 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
             }
           });
         },
-        error: () => {
-          this.notification.showError('حدث خطأ في تحميل بيانات الدورة');
+        error: (error) => {
           this.isLoading = false;
+          const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحميل بيانات الدورة';
+          this.notification.showError(errorMessage);
         }
       });
     }
@@ -964,7 +973,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       width: '850px',
       maxWidth: '90vw'
     });
-    
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadCourses();
@@ -978,7 +987,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       width: '850px',
       maxWidth: '90vw'
     });
-    
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadCourses();
@@ -993,7 +1002,10 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.notification.showSuccess('تم حذف الدورة بنجاح');
           this.loadCourses();
         },
-        error: () => this.notification.showError('حدث خطأ في حذف الدورة')
+        error: (error) => {
+          const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في حذف الدورة';
+          this.notification.showError(errorMessage);
+        }
       });
     }
   }
@@ -1005,7 +1017,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
-      
+
       if (totalPages <= 1) {
         resolve({ option: 'all' });
         return;
@@ -1033,42 +1045,43 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   private async fetchPagesForExport(startPage: number, endPage: number): Promise<any[]> {
     const allData: any[] = [];
     const totalPages = this.getTotalPages();
-    
+
     for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
       const params: any = {};
-      
+
       if (this.filters.quickSearch) params.quickSearch = this.filters.quickSearch;
       if (this.filters.courseType) params.courseType = this.filters.courseType;
       if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
-      
+
       if (this.filters.startDateFrom) params.startDateFrom = this.formatDateForAPI(this.filters.startDateFrom);
       if (this.filters.startDateTo) params.startDateTo = this.formatDateForAPI(this.filters.startDateTo);
       if (this.filters.endDateFrom) params.endDateFrom = this.formatDateForAPI(this.filters.endDateFrom);
       if (this.filters.endDateTo) params.endDateTo = this.formatDateForAPI(this.filters.endDateTo);
-      
+
       params.pageNum = page;
       params.pageSize = this.pageSize;
-      
+
       if (this.sortBy) params.orderBy = this.sortBy;
       if (this.sortDir) params.orderDir = this.sortDir;
-      
+
       try {
         const res = await this.courseService.getAllCourses(params).toPromise();
         if (res && res.items) {
           allData.push(...res.items);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error fetching page ${page}:`, error);
-        this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
+        const errorMessage = error?.messageEn || error?.message || `حدث خطأ في تحميل الصفحة ${page + 1}`;
+        this.notification.showError(errorMessage);
       }
     }
-    
+
     return allData;
   }
 
   async exportToExcel(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return;
     }
@@ -1106,7 +1119,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async exportToPDF(): Promise<void> {
     const result = await this.showExportPageSelection(false);
-    
+
     if (!result) {
       return;
     }
@@ -1170,7 +1183,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
     printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
     printContainer.style.padding = '20px';
     printContainer.style.backgroundColor = 'white';
-    
+
     printContainer.innerHTML = `
       <!DOCTYPE html>
       <html>
@@ -1265,7 +1278,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           </thead>
           <tbody>${tableRows}</tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
+        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
@@ -1294,7 +1307,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async printCourseCards(): Promise<void> {
     const result = await this.showExportPageSelection(true);
-    
+
     if (!result) {
       return;
     }
@@ -1415,21 +1428,21 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
         <meta charset="UTF-8">
         <title>بطاقات الدورات التدريبية</title>
         <style>
-          * { 
-            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+          * {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
             box-sizing: border-box;
             margin: 0;
             padding: 0;
           }
-          
+
           @media print {
-            body { 
-              margin: 0; 
-              padding: 4px; 
-              background: white; 
+            body {
+              margin: 0;
+              padding: 4px;
+              background: white;
             }
             .no-print { display: none; }
-            .card-wrapper { 
+            .card-wrapper {
               page-break-after: avoid;
               display: inline-block;
               width: 50%;
@@ -1485,23 +1498,23 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
               font-size: 7px !important;
             }
           }
-          
+
           @media screen {
-            body { 
-              margin: 0; 
-              padding: 20px; 
-              background: #f0f2f5; 
+            body {
+              margin: 0;
+              padding: 20px;
+              background: #f0f2f5;
               display: flex;
               flex-wrap: wrap;
               gap: 16px;
               justify-content: center;
             }
-            .card-wrapper { 
+            .card-wrapper {
               flex: 0 0 auto;
               margin: 0;
             }
           }
-          
+
           .card-wrapper {
             display: inline-block;
           }
@@ -1617,7 +1630,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
             padding-top: 4px;
             border-top: 1px dashed #e2e8f0;
           }
-          
+
           @media (max-width: 600px) {
             .card {
               max-width: 100%;

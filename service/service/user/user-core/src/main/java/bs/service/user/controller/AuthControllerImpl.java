@@ -1,5 +1,6 @@
 package bs.service.user.controller;
 
+import bs.lib.common.model.generated.LookupResultSet;
 import bs.service.user.api.service.UserService;
 import bs.service.user.controller.api.AuthController;
 import bs.service.user.model.dto.LoginUserDTO;
@@ -19,6 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthControllerImpl implements AuthController {
 
     private final UserService userService;
+
+    @Override
+    public ResponseEntity<LookupResultSet> getAllRoles() {
+        return ResponseEntity.ok(userService.getAllRoles());
+    }
 
     @Override
     public ResponseEntity<RegisterUserVTO> register(RegisterUserDTO request) {

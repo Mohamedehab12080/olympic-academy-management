@@ -64,6 +64,26 @@
         </mat-form-field>
       </div>
 
+      <!-- Role Selection - Dynamically from backend -->
+      <div class="form-group">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>الدور</mat-label>
+          <mat-select 
+            formControlName="role"
+            [class.is-invalid]="role?.invalid && role?.touched">
+            <mat-option 
+              *ngFor="let role of roles" 
+              [value]="role.title">
+              {{ role.title }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>assignment_ind</mat-icon>
+          <mat-error *ngIf="role?.invalid && role?.touched">
+            <span *ngIf="role?.hasError('required')">يرجى اختيار الدور</span>
+          </mat-error>
+        </mat-form-field>
+      </div>
+
       <!-- Password -->
       <div class="form-group">
         <mat-form-field appearance="outline" class="full-width">

@@ -1,7 +1,9 @@
+// auth.service.ts
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, BehaviorSubject } from 'rxjs';
+import { Observable, tap, BehaviorSubject, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   LoginRequest,
@@ -11,7 +13,8 @@ import {
   ActivationResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  UserDetails
+  UserDetails,
+  RoleLookup
 } from './models/auth.model';
 
 @Injectable({
@@ -29,6 +32,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<LoginResponse | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
+  private rolesSubject = new BehaviorSubject<RoleLookup[]>([]);
+  public roles$ = this.rolesSubject.asObservable();
+
   // Public getters for synchronous access
   get isAuthenticated(): boolean {
     return this.isAuthenticatedSubject.value;
@@ -38,11 +44,39 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  constructor() {
-    this.checkAuthStatus();
+  get availableRoles(): RoleLookup[] {
+    return this.rolesSubject.value;
   }
 
-  // ==================== مصادقة المستخدم ====================
+  constructor() {
+    this.checkAuthStatus();
+    this.loadRoles();
+  }
+
+  // ==================== Load Roles ====================
+  
+  loadRoles(): void {
+    this.http.get<{ total: number; list: RoleLookup[] }>(`${this.apiUrl}/auth/lookups/roles`)
+      .pipe(
+        map(response => response.list || [])
+      )
+      .subscribe({
+        next: (roles) => {
+          this.rolesSubject.next(roles);
+          console.log('✅ Roles loaded:', roles);
+        },
+        error: (error) => {
+          console.error('❌ Failed to load roles:', error);
+          this.rolesSubject.next([]);
+        }
+      });
+  }
+
+  getRoles(): Observable<RoleLookup[]> {
+    return this.roles$;
+  }
+
+  // ==================== Authentication Methods ====================
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
@@ -61,18 +95,19 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, userData);
   }
 
-logout(): void {
-  this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
-    next: () => {
-      this.clearSession();
-      this.router.navigate(['/login']);
-    },
-    error: () => {
-      this.clearSession();
-      this.router.navigate(['/login']);
-    }
-  });
-}
+  logout(): void {
+    this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
+      next: () => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
   clearSessionAndNavigate(): void {
     this.clearSession();
     console.log('🔀 Navigating to login page...');
@@ -178,7 +213,7 @@ logout(): void {
     }
   }
 
-  // ==================== تفعيل الحساب ====================
+  // ==================== Account Activation ====================
 
   verifyActivationToken(token: string): Observable<ActivationResponse> {
     return this.http.get<ActivationResponse>(`${this.apiUrl}/auth/activate/verify?token=${token}`);
@@ -192,7 +227,7 @@ logout(): void {
     return this.http.post<ActivationResponse>(`${this.apiUrl}/auth/resend-activation?email=${email}`, {});
   }
 
-  // ==================== إعادة تعيين كلمة المرور ====================
+  // ==================== Password Reset ====================
 
   forgotPassword(email: string): Observable<ActivationResponse> {
     const request: ForgotPasswordRequest = { email };
@@ -208,7 +243,7 @@ logout(): void {
     return this.http.post<ActivationResponse>(`${this.apiUrl}/auth/reset-password`, request);
   }
 
-  // ==================== إدارة المستخدمين (Super Admin) ====================
+  // ==================== User Management (Super Admin) ====================
 
   getAllAdmins(): Observable<UserDetails[]> {
     return this.http.get<UserDetails[]>(`${this.apiUrl}/super-admin/admins`);
@@ -234,7 +269,7 @@ logout(): void {
     return this.http.put<void>(`${this.apiUrl}/super-admin/admins/${adminId}/deactivate`, {});
   }
 
-  // ==================== دوال مساعدة ====================
+  // ==================== Helper Functions ====================
 
   hasRole(role: string): boolean {
     const user = this.currentUser;

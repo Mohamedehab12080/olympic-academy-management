@@ -1,3 +1,5 @@
+// activate-account.component.ts - COMPLETE
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -42,6 +44,7 @@ export class ActivateAccountComponent implements OnInit {
   resendForm: FormGroup;
   isResending = false;
   tokenEmail: string = '';
+  token: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -50,16 +53,24 @@ export class ActivateAccountComponent implements OnInit {
     private notification: NotificationService,
     private fb: FormBuilder
   ) {
+    console.log('🚀 ActivateAccountComponent CONSTRUCTOR called!');
     this.resendForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
   }
 
   ngOnInit(): void {
-    const token = this.route.snapshot.queryParams['token'];
+    console.log('🚀 ActivateAccountComponent ngOnInit STARTED!');
+    
+    this.token = this.route.snapshot.queryParams['token'];
     this.tokenEmail = this.route.snapshot.queryParams['email'] || '';
+    
+    console.log('📝 Token:', this.token);
+    console.log('📝 Email:', this.tokenEmail);
+    console.log('📝 Full URL:', window.location.href);
 
-    if (!token) {
+    if (!this.token) {
+      console.log('❌ No token found!');
       this.isLoading = false;
       this.isError = true;
       this.isExpired = true;
@@ -68,12 +79,20 @@ export class ActivateAccountComponent implements OnInit {
       return;
     }
 
-    this.verifyActivationToken(token);
+    console.log('✅ Token found, calling activateAccount...');
+    this.activateAccount(this.token);
   }
 
-  verifyActivationToken(token: string): void {
-    this.authService.verifyActivationToken(token).subscribe({
+  // ============================================
+  // ACTIVATE ACCOUNT
+  // ============================================
+  
+  activateAccount(token: string): void {
+    console.log('📡 Calling activateAccount with:', token);
+    
+    this.authService.activateAccount(token).subscribe({
       next: (response) => {
+        console.log('✅ activateAccount response:', response);
         this.isLoading = false;
         if (response.success) {
           this.isSuccess = true;
@@ -87,6 +106,7 @@ export class ActivateAccountComponent implements OnInit {
         }
       },
       error: (error) => {
+        console.error('❌ activateAccount error:', error);
         this.isLoading = false;
         this.isError = true;
         this.message = error.error?.messageEn || 'فشل تفعيل الحساب. الرابط قد يكون منتهي الصلاحية';
@@ -98,20 +118,10 @@ export class ActivateAccountComponent implements OnInit {
     });
   }
 
-  startCountdownAndRedirect(): void {
-    const interval = setInterval(() => {
-      this.countdown--;
-      if (this.countdown <= 0) {
-        clearInterval(interval);
-        this.router.navigate(['/login']);
-      }
-    }, 1000);
-  }
-
-  goToLogin(): void {
-    this.router.navigate(['/login']);
-  }
-
+  // ============================================
+  // RESEND ACTIVATION EMAIL
+  // ============================================
+  
   toggleResendForm(): void {
     this.showResendForm = !this.showResendForm;
     if (this.tokenEmail) {
@@ -135,11 +145,31 @@ export class ActivateAccountComponent implements OnInit {
         this.showResendForm = false;
         this.notification.showSuccess(response.message || 'تم إرسال بريد التفعيل بنجاح');
         this.resendForm.reset();
+        // Optionally close the form after success
+        this.showResendForm = false;
       },
       error: (error) => {
         this.isResending = false;
         this.notification.showError(error.error?.messageEn || 'فشل إرسال بريد التفعيل');
       }
     });
+  }
+
+  // ============================================
+  // HELPERS
+  // ============================================
+  
+  startCountdownAndRedirect(): void {
+    const interval = setInterval(() => {
+      this.countdown--;
+      if (this.countdown <= 0) {
+        clearInterval(interval);
+        this.router.navigate(['/login']);
+      }
+    }, 1000);
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }

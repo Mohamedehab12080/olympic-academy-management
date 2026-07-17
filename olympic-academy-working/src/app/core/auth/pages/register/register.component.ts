@@ -19,11 +19,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { AuthService } from '../../auth.service';
 import { NotificationService } from '../../../services/notification.service';
+import { RoleLookup } from '../../models/auth.model';
 
 @Component({
   selector: 'app-register',
@@ -39,7 +41,8 @@ import { NotificationService } from '../../../services/notification.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatSelectModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
@@ -54,6 +57,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   passwordStrengthText = '';
   currentYear = new Date().getFullYear();
   logoPath = 'assets/images/mainLogo.jpeg';
+  roles: RoleLookup[] = [];
   
   private destroy$ = new Subject<void>();
 
@@ -74,7 +78,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
       fullName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
+      role: ['', [Validators.required]] // No default value - will be set from backend
     }, { validators: this.passwordMatchValidator });
 
     // Redirect if already logged in
@@ -84,6 +89,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load roles from service
+    this.authService.roles$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(roles => {
+        this.roles = roles;
+        // Set default role to the first role from backend
+        if (this.roles.length > 0 && !this.registerForm.get('role')?.value) {
+          this.registerForm.patchValue({ role: this.roles[0].title });
+        }
+      });
+
     // Password strength listener
     this.registerForm.get('password')?.valueChanges
       .pipe(
@@ -148,10 +164,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
     return this.passwordStrength;
   }
 
+  // Form getters
   get fullName() { return this.registerForm.get('fullName'); }
   get email() { return this.registerForm.get('email'); }
   get password() { return this.registerForm.get('password'); }
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+  get role() { return this.registerForm.get('role'); }
+
+  // Simply return the role title as is from backend
+  getRoleDisplayName(role: RoleLookup): string {
+    return role.title; // Use exactly what the backend returns
+  }
 
   onSubmit(): void {
     if (this.registerForm.invalid) {
@@ -167,9 +190,22 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    const { fullName, email, password, confirmPassword } = this.registerForm.value; // Added confirmPassword
+    const { fullName, email, password, confirmPassword, role } = this.registerForm.value;
 
-    this.authService.register({ fullName, email, password, confirmPassword }).subscribe({
+    // Optional: You can add validation here to restrict certain roles
+    // For example, prevent users from selecting ADMIN roles during public registration
+    // This check can be removed or modified based on your business rules
+    const adminRoles = this.roles
+      .filter(r => r.title.includes('ADMIN'))
+      .map(r => r.title);
+    
+    if (adminRoles.includes(role)) {
+      this.notification.showWarning('لا يمكن التسجيل بدور إداري من خلال هذا النموذج');
+      this.isLoading = false;
+      return;
+    }
+
+    this.authService.register({ fullName, email, password, confirmPassword, role }).subscribe({
       next: (response) => {
         this.notification.showSuccess(
           response.message || 'تم إنشاء الحساب بنجاح! يرجى تفعيل حسابك عبر البريد الإلكتروني'
