@@ -808,7 +808,7 @@ export class EnrollmentPaymentWizardModalComponent
     const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
     const currentDateFormatted = formatDate(new Date());
     const traineeNationalId = paymentData.traineeNationalId || enrollmentData.trainee?.nationalId || '0000000000';
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     return `
     <!DOCTYPE html>
