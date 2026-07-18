@@ -56,7 +56,7 @@ public class TraineeAttendanceControllerImpl implements TraineeAttendanceControl
 
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<TraineeAttendanceResultSet> _getAllTraineeAttendances(TraineeAttendanceStatus status,String sessionDay, String traineeNationalId, Integer traineeId, Integer courseId, Integer courseSessionId, String quickSearch, String checkInFrom, String checkInTo, String checkOutFrom, String checkOutTo, LocalDate fromDate, LocalDate toDate, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
 
         log.info("GET /trainee-attendances - Getting all trainee attendances with filters");
@@ -67,7 +67,7 @@ public class TraineeAttendanceControllerImpl implements TraineeAttendanceControl
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<DailyAttendanceReport> _getDailyTraineeAttendanceReport(LocalDate attendanceDate) {
         log.info("GET /attendances/reports/daily - Getting daily attendance report for date: {}", attendanceDate);
 
@@ -77,7 +77,7 @@ public class TraineeAttendanceControllerImpl implements TraineeAttendanceControl
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<SessionAttendanceReport> _getSessionAttendanceReport(Integer sessionId) {
         log.info("GET /trainee-attendances/session/{}/report - Getting session attendance report", sessionId);
 
@@ -87,7 +87,7 @@ public class TraineeAttendanceControllerImpl implements TraineeAttendanceControl
     }
 
     @Override
-    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<TraineeAttendanceVTO> _getTraineeAttendanceById(Integer attendanceId) {
         log.info("GET /trainee-attendances/{} - Getting trainee attendance by id", attendanceId);
 

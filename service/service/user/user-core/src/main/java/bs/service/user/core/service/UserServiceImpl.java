@@ -3,6 +3,8 @@ package bs.service.user.core.service;
 import bs.lib.common.api.service.EmailService;
 import bs.lib.common.model.dto.MailTemplateDTO;
 import bs.lib.common.model.exception.BusinessException;
+import bs.lib.common.model.generated.LookupResultSet;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.lib.security.api.service.JwtService;
 import bs.lib.security.api.service.SecurityUtilsService;
 import bs.service.user.api.repository.TokenRepository;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static bs.service.user.model.enums.UserErrors.*;
@@ -69,7 +72,6 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.toEntity(request);
         user.setIsActive(false);
-        user.setRole(Role.ROLE_USER);
 
         Integer currentUserId = securityUtilsService.getCurrentUserId();
         if (currentUserId != null) {
@@ -151,8 +153,14 @@ public class UserServiceImpl implements UserService {
         if (user.getIsActive()) {
             throw new BusinessException(USER_ALREADY_ACTIVE, user.getId());
         }
-
-        user.setIsActive(true);
+        switch (user.getRole()) {
+            case ROLE_USER:
+            case ROLE_ADMIN:
+            case ROLE_SUPER_ADMIN:
+                user.setIsActive(false);
+            default:
+                user.setIsActive(true);
+        }
         userRepository.update(user);
 
         log.info("User is just acttive ");
@@ -187,7 +195,14 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(USER_ALREADY_ACTIVE, user.getId());
         }
 
-        user.setIsActive(true);
+        switch (user.getRole()) {
+            case ROLE_USER:
+            case ROLE_ADMIN:
+            case ROLE_SUPER_ADMIN:
+                user.setIsActive(false);
+            default:
+                user.setIsActive(true);
+        }
         userRepository.update(user);
 
         log.info("User is just acttive ");
@@ -196,6 +211,12 @@ public class UserServiceImpl implements UserService {
         tokenRepository.update(activationToken);
 
         log.info("User with id: {} activated successfully", user.getId());
+    }
+
+    @Override
+    public LookupResultSet getAllRoles() {
+        List<LookupVTO> lookupVTOS= userMapper.toLookupVTOs(Arrays.stream(Role.values()).toList());
+        return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
     }
 
     @Override

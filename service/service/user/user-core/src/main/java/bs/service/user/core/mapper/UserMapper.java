@@ -1,7 +1,9 @@
 package bs.service.user.core.mapper;
 
+import bs.lib.common.model.generated.LookupVTO;
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
 import bs.service.user.model.generated.LightUserVTO;
 import bs.service.user.model.vto.*;
 import org.mapstruct.Mapper;
@@ -21,6 +23,8 @@ public interface UserMapper {
     @Mapping(target = "createdBy", ignore = true)
     User toEntity(RegisterUserDTO requestDTO);
 
+    LookupVTO toLookupVTO(Role role);
+    List<LookupVTO> toLookupVTOs(List<Role> roles);
     LightUserVTO toLightUserVTO(User user);
 
     @Mapping(target = "userId" , source = "entity.id")

@@ -652,4 +652,139 @@
   .register-footer {
     display: none !important;
   }
+  
+/* Style the select dropdown panel */
+::ng-deep .mat-mdc-select-panel {
+  background-color: #ffffff !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12) !important;
+  max-height: 200px !important;
+  padding: 8px 0 !important;
+}
+
+/* Style individual options */
+::ng-deep .mat-mdc-option {
+  padding: 12px 20px !important;
+  min-height: 44px !important;
+  font-size: 14px !important;
+  color: #1e293b !important;
+  transition: all 0.2s ease !important;
+}
+
+::ng-deep .mat-mdc-option:hover {
+  background-color: #f1f5f9 !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected {
+  background-color: #eef2ff !important;
+  color: #667eea !important;
+}
+
+::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* Add a visual indicator for selected option */
+::ng-deep .mat-mdc-option.mdc-list-item--selected::after {
+  content: '✓';
+  position: absolute;
+  right: 16px;
+  color: #667eea;
+  font-weight: bold;
+}
+
+/* Style the select trigger */
+::ng-deep .mat-mdc-select-value-text {
+  color: #1e293b !important;
+  font-size: 14px !important;
+}
+
+::ng-deep .mat-mdc-select-arrow-wrapper {
+  color: #94a3b8 !important;
+}
+
+::ng-deep .mat-mdc-select.mat-focused .mat-mdc-select-arrow-wrapper {
+  color: #667eea !important;
+}
+
+/* Style when select is focused */
+::ng-deep .mat-mdc-select-panel .mat-mdc-option.mat-mdc-option-active {
+  background-color: #eef2ff !important;
+}
+
+/* Add an icon or badge for role types */
+::ng-deep .mat-mdc-option .role-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+/* Error state for select */
+::ng-deep .mat-form-field.mat-form-field-invalid .mat-mdc-select-arrow-wrapper {
+  color: #ef4444 !important;
+}
+
+/* Hover effect for the select field */
+::ng-deep .mat-form-field-appearance-outline:not(.mat-form-field-invalid):not(.mat-focused) .mat-form-field-outline:hover {
+  border-color: #667eea !important;
+}
+
+/* Responsive adjustments for select */
+@media (max-width: 480px) {
+  ::ng-deep .mat-mdc-option {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+  
+  ::ng-deep .mat-mdc-select-panel {
+    max-height: 180px !important;
+  }
+}
+
+/* ==========================================================================
+   RTL Support for Select Dropdown
+   ========================================================================== */
+
+::ng-deep .mat-mdc-select-panel {
+  direction: rtl !important;
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected::after {
+  right: auto !important;
+  left: 16px !important;
+}
+
+/* ==========================================================================
+   Animation for dropdown options
+   ========================================================================== */
+
+::ng-deep .mat-mdc-option {
+  animation: fadeInOption 0.2s ease forwards;
+  opacity: 0;
+}
+
+::ng-deep .mat-mdc-option:nth-child(1) { animation-delay: 0.05s; }
+::ng-deep .mat-mdc-option:nth-child(2) { animation-delay: 0.10s; }
+::ng-deep .mat-mdc-option:nth-child(3) { animation-delay: 0.15s; }
+::ng-deep .mat-mdc-option:nth-child(4) { animation-delay: 0.20s; }
+::ng-deep .mat-mdc-option:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fadeInOption {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 }

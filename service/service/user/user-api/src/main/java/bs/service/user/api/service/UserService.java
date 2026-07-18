@@ -1,5 +1,7 @@
 package bs.service.user.api.service;
 
+import bs.lib.common.model.generated.LookupResultSet;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.service.user.model.dto.*;
 import bs.service.user.model.vto.LoginUserVTO;
 import bs.service.user.model.vto.RegisterUserVTO;
@@ -26,4 +28,5 @@ public interface UserService {
     void resetPassword(ResetPasswordDTO request);
     void resetPasswordVerification(String token);
     void verifyActivationToken(String token);
+    LookupResultSet getAllRoles();
 }

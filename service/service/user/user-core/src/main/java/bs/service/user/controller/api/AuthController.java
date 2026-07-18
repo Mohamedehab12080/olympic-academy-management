@@ -1,11 +1,14 @@
 // user-module/src/main/java/com/fawry/user/core/controller/api/AuthController.java
 package bs.service.user.controller.api;
 
+import bs.lib.common.model.generated.LookupResultSet;
+import bs.lib.common.model.generated.LookupVTO;
 import bs.lib.common.model.vto.ErrorVTO;
 import bs.service.user.model.dto.LoginUserDTO;
 import bs.service.user.model.dto.RegisterUserDTO;
 import bs.service.user.model.vto.LoginUserVTO;
 import bs.service.user.model.vto.RegisterUserVTO;
+import bs.service.user.model.vto.UserDetailsVTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,9 +20,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Authentication", description = "Endpoints for user authentication")
 @RequestMapping("/auth")
 public interface AuthController {
+
+    @GetMapping("/lookups/roles")
+    @Operation(summary = "Get All Roles Lookup", description = "Returns roles lookup")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = LookupResultSet.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
+            }),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class))
+            })
+    })
+    ResponseEntity<LookupResultSet> getAllRoles();
 
     @PostMapping("/register")
     @Operation(summary = "Register new user", description = "Creates a new user account")

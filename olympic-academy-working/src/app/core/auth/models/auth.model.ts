@@ -2,6 +2,11 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
+export interface RoleLookup {
+  id: number;
+  title: string;
+  imageUrl: string | null;
+}
 
 export interface LoginResponse {
   token: string;
@@ -15,6 +20,7 @@ export interface RegisterRequest {
   fullName: string;
   email: string;
   password: string;
+  role: string; 
   confirmPassword: string;
 }
 
@@ -24,6 +30,7 @@ export interface RegisterResponse {
   email: string;
   message: string;
 }
+
 
 export interface ActivationResponse {
   success: boolean;

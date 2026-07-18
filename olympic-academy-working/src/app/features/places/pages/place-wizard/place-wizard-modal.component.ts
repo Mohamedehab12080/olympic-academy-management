@@ -1,3 +1,5 @@
+// place-wizard-modal.component.ts
+
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -42,7 +44,7 @@ export class PlaceWizardModalComponent implements OnInit {
   placeId?: number;
   isLoading = false;
   isSubmitting = false;
-  
+
   // Wizard steps
   currentStep = 0;
   steps = [
@@ -60,7 +62,7 @@ export class PlaceWizardModalComponent implements OnInit {
   ) {
     this.placeId = data?.placeId;
     this.isEditMode = !!this.placeId;
-    
+
     this.placeForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2)]],
       address: [''],
@@ -87,16 +89,18 @@ export class PlaceWizardModalComponent implements OnInit {
           rentValue: place.rentValue,
           remainedValue: place.remainedValue
         });
-        
+
         // Mark steps as completed for edit mode
         this.steps.forEach(step => step.completed = true);
         this.currentStep = 2;
-        
+
         this.isLoading = false;
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل بيانات الموقع');
+      error: (error) => {
         this.isLoading = false;
+        // Display backend error message
+        const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحميل بيانات الموقع';
+        this.notification.showError(errorMessage);
       }
     });
   }
@@ -187,9 +191,11 @@ export class PlaceWizardModalComponent implements OnInit {
           this.dialogRef.close(true);
           this.isSubmitting = false;
         },
-        error: () => {
-          this.notification.showError('حدث خطأ في تحديث الموقع');
+        error: (error) => {
           this.isSubmitting = false;
+          // Display backend error message
+          const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحديث الموقع';
+          this.notification.showError(errorMessage);
         }
       });
     } else {
@@ -199,9 +205,11 @@ export class PlaceWizardModalComponent implements OnInit {
           this.dialogRef.close(true);
           this.isSubmitting = false;
         },
-        error: () => {
-          this.notification.showError('حدث خطأ في إضافة الموقع');
+        error: (error) => {
           this.isSubmitting = false;
+          // Display backend error message
+          const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في إضافة الموقع';
+          this.notification.showError(errorMessage);
         }
       });
     }

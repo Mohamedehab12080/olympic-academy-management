@@ -1,79 +1,103 @@
-// auth.interceptor.ts
+// auth.interceptor.ts - Updated with backend error messages
+
 import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { NotificationService } from '../services/notification.service';
-import { catchError, throwError, switchMap, of } from 'rxjs';
+import { catchError, throwError } from 'rxjs';
+
+// Public endpoints that don't require authentication
+const publicEndpoints = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/resend-activation',
+  '/auth/activate',
+  '/auth/activate/verify',
+  '/auth/reset-verify',
+  '/lookups/roles',
+];
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
-  const authService = inject(AuthService);
+  const injector = inject(Injector);
   const router = inject(Router);
   const notificationService = inject(NotificationService);
-  
-  // Public endpoints that don't require authentication
-  const publicEndpoints = [
-    '/auth/login', 
-    '/auth/register', 
-    '/auth/forgot-password',
-    '/auth/reset-password',
-    '/auth/activate',
-    '/auth/resend-activation'
-  ];
-  
-  const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
-  
-  // Get token
-  const token = authService.getToken();
 
-  // Clone the request and add the authorization header
+  let authService: AuthService | null = null;
+
+  // Check if endpoint is public
+  const isPublic = publicEndpoints.some(endpoint => req.url.includes(endpoint));
+
+  console.log(`🔍 Interceptor: ${req.url} - Public: ${isPublic}`);
+
+  // Only try to get AuthService for non-public endpoints
+  if (!isPublic) {
+    try {
+      authService = injector.get(AuthService);
+    } catch (error) {
+      console.warn('AuthService not available yet:', error);
+    }
+  }
+
+  // Handle public endpoints - just pass through
+  if (isPublic) {
+    return next(req).pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Get error message from backend or use default
+        const errorMessage = error.error?.messageEn || error.error?.message || 'حدث خطأ في الخادم، يرجى المحاولة مرة أخرى';
+        notificationService.showError(errorMessage);
+        return throwError(() => error.error || error);
+      })
+    );
+  }
+
+  // Handle protected endpoints
+  const token = authService?.getToken();
+
   let authReq = req;
-  if (token && !isPublicEndpoint) {
-    
-    // Check if token is expired before making the request
+  if (token && authService) {
     if (authService.isTokenExpired(token)) {
       authService.clearSessionOnExpiration();
       notificationService.showError('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
       router.navigate(['/login']);
       return throwError(() => new Error('Token expired'));
     }
-    
+
     authReq = req.clone({
       headers: req.headers.set('Authorization', `Bearer ${token}`)
     });
   }
 
-  // Handle the request and catch errors
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Check for 401 Unauthorized error (token expired or invalid)
+      // Get error data from backend
+      const errorData = error.error;
+      const errorMessage = errorData?.messageEn || errorData?.message || error.message;
+
       if (error.status === 401) {
-        // Clear session
-        authService.clearSessionOnExpiration();
-        
-        // Show message
-        notificationService.showError('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
-        
-        // Redirect to login only if not already on a public page
+        authService?.clearSessionOnExpiration();
+        notificationService.showError(errorMessage || 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+
         const currentUrl = router.url;
         const isPublicPage = publicEndpoints.some(endpoint => currentUrl.includes(endpoint));
-        
+
         if (!isPublicPage) {
           router.navigate(['/login'], { replaceUrl: true });
         }
       }
-      
-      // Check for 403 Forbidden
+
       if (error.status === 403) {
-        notificationService.showError('غير مصرح لك بالوصول إلى هذه الصفحة');
+        notificationService.showError(errorMessage || 'غير مصرح لك بالوصول إلى هذه الصفحة');
       }
-      
-      // Handle 500 Internal Server Error
+
       if (error.status === 500) {
-        notificationService.showError('حدث خطأ في الخادم، يرجى المحاولة مرة أخرى');
+        notificationService.showError(errorMessage || 'حدث خطأ في الخادم، يرجى المحاولة مرة أخرى');
       }
-      
-      return throwError(() => error);
+
+      // Return the backend error object so components can use it
+      return throwError(() => errorData || error);
     })
   );
 };

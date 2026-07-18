@@ -1,8 +1,8 @@
 // core/services/api.service.ts
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpEventType, HttpEvent } from '@angular/common/http';
-import { Observable, map, last } from 'rxjs';
+import { HttpClient, HttpParams, HttpEventType, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { Observable, map, last, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class ApiService {
   private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {
-    console.log('API Base URL:', this.baseUrl); // Debug: Check if baseUrl is correct
+    console.log('API Base URL:', this.baseUrl);
   }
 
   get<T>(endpoint: string, params?: any): Observable<T> {
@@ -25,8 +25,15 @@ export class ApiService {
       });
     }
     const url = `${this.baseUrl}${endpoint}`;
-    console.log('GET Request:', url); // Debug: Check the full URL
-    return this.http.get<T>(url, { params: httpParams });
+    console.log('GET Request:', url);
+    
+    return this.http.get<T>(url, { params: httpParams }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        // Return the backend error as-is
+        const errorData = error.error;
+        return throwError(() => errorData || error);
+      })
+    );
   }
 
   getBlob(endpoint: string, params?: any): Observable<Blob> {
@@ -40,33 +47,54 @@ export class ApiService {
     }
     const url = `${this.baseUrl}${endpoint}`;
     console.log('GET Blob Request:', url);
+    
     return this.http.get(url, {
       params: httpParams,
       responseType: 'blob'
-    });
+    }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        const errorData = error.error;
+        return throwError(() => errorData || error);
+      })
+    );
   }
 
   post<T>(endpoint: string, data: any): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
     console.log('POST Request:', url, data);
-    return this.http.post<T>(url, data);
+    
+    return this.http.post<T>(url, data).pipe(
+      catchError((error: HttpErrorResponse) => {
+        const errorData = error.error;
+        return throwError(() => errorData || error);
+      })
+    );
   }
 
   put<T>(endpoint: string, data: any): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
     console.log('PUT Request:', url);
-    return this.http.put<T>(url, data);
+    
+    return this.http.put<T>(url, data).pipe(
+      catchError((error: HttpErrorResponse) => {
+        const errorData = error.error;
+        return throwError(() => errorData || error);
+      })
+    );
   }
 
   delete<T>(endpoint: string): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
     console.log('DELETE Request:', url);
-    return this.http.delete<T>(url);
+    
+    return this.http.delete<T>(url).pipe(
+      catchError((error: HttpErrorResponse) => {
+        const errorData = error.error;
+        return throwError(() => errorData || error);
+      })
+    );
   }
 
-  /**
-   * Upload file with progress tracking
-   */
   uploadFile(endpoint: string, formData: FormData, onProgress?: (progress: number) => void): Observable<any> {
     const fullUrl = `${this.baseUrl}${endpoint}`;
     console.log('Upload File URL:', fullUrl);
@@ -91,6 +119,10 @@ export class ApiService {
       map((event: HttpEvent<any>) => {
         console.log('Upload complete, response:', event);
         return (event as any).body;
+      }),
+      catchError((error: HttpErrorResponse) => {
+        const errorData = error.error;
+        return throwError(() => errorData || error);
       })
     );
   }
