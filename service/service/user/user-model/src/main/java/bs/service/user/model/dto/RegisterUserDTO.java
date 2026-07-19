@@ -33,5 +33,7 @@ public class RegisterUserDTO {
 
     private Role role;
 
+    private String imageUrl;
+
     private String mobileNumber;
 }

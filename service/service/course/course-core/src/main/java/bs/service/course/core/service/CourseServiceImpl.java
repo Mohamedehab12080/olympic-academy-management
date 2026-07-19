@@ -14,6 +14,7 @@ import bs.service.course.model.entity.Course;
 import bs.service.course.model.enums.CourseTypes;
 import bs.service.course.model.filter.CourseSearchFilter;
 import bs.service.course.model.generated.CourseDTO;
+import bs.service.course.model.generated.CoursePatchDTO;
 import bs.service.course.model.generated.CourseResultSet;
 import bs.service.course.model.generated.CourseVTO;
 import bs.service.department.model.generated.DepartmentVTO;
@@ -89,11 +90,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseResultSet getAllCourses(String quickSearch, Boolean isActive, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo) {
+    public CourseResultSet getAllCourses(String quickSearch, Boolean isActive,Boolean isPublic, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo) {
 
         CourseSearchFilter courseSearchFilter = CourseSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .isActive(isActive)
+                .isPublic(isPublic)
                 .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
                 .defaultSorting(new SortingInfo<>(CourseSearchFilter.OrderByAttributes.START_DATE,OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
@@ -160,5 +162,29 @@ public class CourseServiceImpl implements CourseService {
         LookupResultSet lookupResultSet=LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();
         System.out.println(lookupResultSet);
         return lookupResultSet;
+    }
+
+    @Override
+    @Transactional
+    public void patchUpdateCourse(CoursePatchDTO coursePatchDTO) {
+     CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder()
+             .courseIds(coursePatchDTO.getCourseIds())
+             .pagination(PaginationInfo.noPagination())
+             .build();
+     List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
+     if(courses.size()!=coursePatchDTO.getCourseIds().size()){
+         throw new BusinessException(COURSE_NOT_FOUND, coursePatchDTO.getCourseIds());
+     }
+     for (Course course : courses) {
+         course.setIsActive(coursePatchDTO.getIsActive());
+         course.setIsPublic(coursePatchDTO.getIsPublic());
+         course.setDuration(coursePatchDTO.getDuration());
+         course.setStartDate(coursePatchDTO.getStartDate());
+         course.setEndDate(coursePatchDTO.getEndDate());
+         course.setMaxCapacity(coursePatchDTO.getMaxCapacity());
+         course.setCreatedBy(course.getCreatedBy());
+         course.setCreatedOn(course.getCreatedOn());
+         courseRepository.update(course);
+     }
     }
 }

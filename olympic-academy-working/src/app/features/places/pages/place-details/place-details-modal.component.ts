@@ -1145,7 +1145,7 @@ export class PlaceDetailsModalComponent implements OnInit {
           
           <div class="footer">
             تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة<br>
-            هذا المستند معتمد ويحتوي على جميع بيانات الموقع
+              هذا المستند معتمد ويحتوي على جميع بيانات الموقع
           </div>
           
           <div class="print-btn no-print">

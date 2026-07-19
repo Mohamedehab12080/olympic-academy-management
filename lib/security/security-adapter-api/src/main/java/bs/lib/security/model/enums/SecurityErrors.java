@@ -14,7 +14,8 @@ public enum SecurityErrors implements Errors {
     MISSING_TOKEN(JWT_TOKEN, "0002", "Missing or Non Bearer Authorization Token in the Request"),
     MISSING_USERNAME(JWT_TOKEN, "0003", "Missing username in the JWT Token"),
     INVALID_TOKEN(JWT_TOKEN, "0004", "Invalid Authorization Token provided"),
-    NOT_AUTHENTICATED(JWT_TOKEN, "0005", "Not Authenticated");
+    NOT_AUTHENTICATED(JWT_TOKEN, "0005", "Not Authenticated"),
+    NOT_AUTHORIZED(JWT_TOKEN, "0006", "Not Authorized");
 
     private final Domains domain;
     private final String code;

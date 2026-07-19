@@ -50,6 +50,10 @@ public class CourseQueryBuilder extends AbstractQueryBuilderV2<Course, CourseSea
             conditions.add(QBCondition.builder().placeHolder("departmentId").value(filters.getDepartmentId())
                     .condition("item.department.id = :PH").build());
 
+        if (filters.getIsPublic() != null)
+            conditions.add(QBCondition.builder().placeHolder("isPublic").value(filters.getIsPublic())
+                    .condition("item.isPublic = :PH").build());
+
         if (filters.getCourseType() != null)
             conditions.add(QBCondition.builder().placeHolder("courseType").value(filters.getCourseType())
                     .condition("item.courseType = :PH").build());

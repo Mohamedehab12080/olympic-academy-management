@@ -17,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CourseSearchFilter extends SearchFilter<CourseSearchFilter.OrderByAttributes> {
 
+    private Boolean isPublic;
     private List<Integer> courseIds;
     private Integer departmentId;
     private String quickSearchQuery;

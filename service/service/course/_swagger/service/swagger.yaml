@@ -14,6 +14,24 @@ tags:
   - name: CourseLookup
 
 paths:
+  /courses/patch:
+    patch:
+      tags:
+        - Course
+      summary: Update list of courses
+      operationId: updatePatchOfCourses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoursePatchDTO'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
   /courses:
     post:
       tags:
@@ -44,6 +62,7 @@ paths:
       parameters:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
+        - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsPublic'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageNum'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPPageSize'
         - $ref: '../../../../../lib/sql-db-adapter/_swagger/service/swagger.yaml#/components/parameters/QPOrderDir'
@@ -198,6 +217,36 @@ components:
 
     # ==================== DTOs ====================
 
+    CoursePatchDTO:
+      type: object
+      properties:
+        courseIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+        duration:
+          type: integer
+          format: int32
+        maxCapacity:
+          type: integer
+          format: int32
+          minimum: 1
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        price:
+          type: integer
+          format: int32
+        isActive:
+          type: boolean
+        isPublic:
+          type: boolean
+
+
     CourseDTO:
       type: object
       required:
@@ -207,6 +256,8 @@ components:
         - startDate
         - courseType
         - price
+        - isActive
+        - isPublic
       properties:
         title:
           type: string
@@ -235,6 +286,10 @@ components:
         price:
           type: integer
           format: int32
+        isActive:
+          type: boolean
+        isPublic:
+          type: boolean
 
     # ==================== VTOs ====================
 
@@ -276,6 +331,8 @@ components:
           type: integer
           format: int32
         isActive:
+          type: boolean
+        isPublic:
           type: boolean
         createdOn:
           type: string

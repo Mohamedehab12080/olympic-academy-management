@@ -48,6 +48,10 @@ public class User {
     @Column(name = "created_on")
     private LocalDateTime createdOn;
 
+    @Basic
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToOne
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

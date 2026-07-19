@@ -29,6 +29,10 @@ public class TraineeQueryBuilder extends AbstractQueryBuilderV2<Trainee, Trainee
             qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())
                     .condition("item.isDeleted = :PH").build());
 
+        if (filters.getTraineeUserId() != null)
+            qbConditions.add(QBCondition.builder().placeHolder("trainerUserId").value(filters.getTraineeUserId())
+                    .condition("item.traineeUser.id = :PH").build());
+
         if (filters.getIsActive() != null)
             qbConditions.add(QBCondition.builder().placeHolder("isActive").value(filters.getIsActive())
                     .condition("item.isActive = :PH").build());

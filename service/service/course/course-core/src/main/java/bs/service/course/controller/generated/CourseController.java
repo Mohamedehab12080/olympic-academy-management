@@ -10,6 +10,7 @@ import bs.lib.common.model.vto.ErrorVTO;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
 import bs.service.course.model.enums.CourseTypes;
 import bs.service.course.model.generated.CourseDTO;
+import bs.service.course.model.generated.CoursePatchDTO;
 import bs.service.course.model.generated.CourseResultSet;
 import bs.service.course.model.generated.CourseVTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,6 +62,8 @@ public interface CourseController {
      *            (optional)
      * @param isActive
      *            (optional)
+     * @param isPublic
+     *            (optional)
      * @param pageNum
      *            (optional, default to 0)
      * @param pageSize
@@ -92,6 +95,7 @@ public interface CourseController {
     ResponseEntity<CourseResultSet> _getAllCourses(
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
             @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
+            @Parameter(name = "isPublic", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isPublic", required = false) Boolean isPublic,
             @Min(0) @Parameter(name = "pageNum", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageNum", required = false, defaultValue = "0") Integer pageNum,
             @Min(1) @Max(100) @Parameter(name = "pageSize", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "pageSize", required = false, defaultValue = "25") Integer pageSize,
             @Parameter(name = "orderDir", description = "Order Direction", in = ParameterIn.QUERY) @Valid @RequestParam(value = "orderDir", required = false) OrderDirections orderDir,
@@ -141,5 +145,23 @@ public interface CourseController {
     ResponseEntity<NewRecordVTO> _updateCourseById(
             @Parameter(name = "courseId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("courseId") Integer courseId,
             @Parameter(name = "CourseDTO", description = "", required = true) @Valid @RequestBody CourseDTO courseDTO);
+
+    /**
+     * PATCH /courses/patch : Update list of courses
+     *
+     * @param coursePatchDTO
+     *            (required)
+     *
+     * @return No Content (status code 204) or Bad Request (status code 400)
+     */
+    @Operation(operationId = "updatePatchOfCourses", summary = "Update list of courses", tags = {
+            "Course" }, responses = { @ApiResponse(responseCode = "204", description = "No Content"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request", content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorVTO.class)) }) })
+    @RequestMapping(method = RequestMethod.PATCH, value = "/courses/patch", produces = {
+            "application/json" }, consumes = { "application/json" })
+
+    ResponseEntity<Void> _updatePatchOfCourses(
+            @Parameter(name = "CoursePatchDTO", description = "", required = true) @Valid @RequestBody CoursePatchDTO coursePatchDTO);
 
 }

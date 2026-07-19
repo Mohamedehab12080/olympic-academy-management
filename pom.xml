@@ -562,6 +562,8 @@
 		<module>lib/common/common-api</module>
 		<module>lib/common/common-core</module>
 
+		<module>lib/json/json-adapter-api</module>
+		<module>lib/json/json-adapter-core</module>
 
 		<module>lib/rest/rest-adapter-api</module>
 		<module>lib/rest/rest-adapter-core</module>

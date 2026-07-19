@@ -78,30 +78,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @SpringBootApplication
 
-@EntityScan(basePackages = {
-        "bs.service.place.model.entity",
-        "bs.service.user.model.entity",
-        "bs.service.course.model.entity",
-        "bs.service.department.model.entity",
-        "bs.service.employee.model.entity",
-        "bs.service.trainee.model.entity",
-        "bs.service.financial.model.entity",
-        "bs.service.enrollment.model.entity",
-        "bs.lib.id.counter.model.entity"
-})
-
-@EnableJpaRepositories(basePackages = {
-        "bs.service.user.repository",
-        "bs.service.course.repository",
-        "bs.service.department.repository",
-        "bs.service.employee.repository",
-        "bs.service.trainee.repository",
-        "bs.service.place.repository",
-        "bs.service.financial.repository",
-        "bs.service.enrollment.repository",
-        "bs.lib.id.counter.repository"
-})
-
 public class OlympicAcademyManagement {
 
     public static void main(String[] args) {

@@ -62,6 +62,10 @@ public class Course {
     @Basic
     private Integer price;
 
+    @Column(name = "is_public")
+    @Basic
+    private Boolean isPublic;
+
     @Column(name = "is_active")
     @Basic
     private Boolean isActive;

@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class TraineeSearchFilter extends SearchFilter<TraineeSearchFilter.OrderByAttributes> {
 
+    private Integer traineeUserId;
     private String quickSearchQuery;
     private Boolean isActive;
     private Boolean isDeleted;

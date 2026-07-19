@@ -78,6 +78,13 @@ components:
       schema:
         type: boolean
 
+    QPIsPublic:
+      name: isPublic
+      in: query
+      schema:
+        type: boolean
+
+
   schemas:
     Gender:
       type: object

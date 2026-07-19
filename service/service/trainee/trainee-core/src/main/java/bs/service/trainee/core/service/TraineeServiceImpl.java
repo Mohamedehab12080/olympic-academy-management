@@ -4,6 +4,7 @@ import bs.lib.common.model.enums.Gender;
 import bs.lib.common.model.exception.BusinessException;
 import bs.lib.common.model.generated.CommonEnrollmentVTO;
 import bs.lib.common.model.generated.NewRecordVTO;
+import bs.lib.security.api.service.SecurityUtilsService;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
@@ -26,6 +27,8 @@ import bs.service.trainee.model.enums.AcademicYear;
 import bs.service.trainee.model.enums.TraineeDomains;
 import bs.service.trainee.model.filter.TraineeSearchFilter;
 import bs.service.trainee.model.generated.*;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +39,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import static bs.lib.security.model.enums.SecurityErrors.NOT_AUTHORIZED;
 import static bs.service.trainee.model.enums.TraineeErrors.NATIONAL_ID_ALREADY_EXISTS;
 import static bs.service.trainee.model.enums.TraineeErrors.TRAINEE_NOT_FOUND;
 
@@ -51,6 +55,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final TraineeCertificateRepository traineeCertificateRepository;
     private final HealthConditionRepository healthConditionRepository;
     private final AbstractTraineeConfig abstractTraineeConfig;
+    private final SecurityUtilsService securityUtilsService;
 
     @Override
     @Transactional
@@ -127,8 +132,15 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public TraineeVTO getTraineeById(Integer traineeId) {
+        User currentUser = User.builder().id(securityUtilsService.getCurrentUserId()).build();
         Trainee trainee = traineeRepository.selectById(traineeId)
                 .orElseThrow(() -> new BusinessException(TRAINEE_NOT_FOUND, traineeId));
+        if(currentUser.getRole().equals(Role.ROLE_TRAINEE)){
+            if(!currentUser.getId().equals(trainee.getTraineeUser().getId())){
+                throw new BusinessException(NOT_AUTHORIZED);
+            }
+        }
+
         EnrollmentSearchFilter enrollmentSearchFilter=EnrollmentSearchFilter.builder().traineeId(trainee.getId()).pagination(PaginationInfo.noPagination()).build();
         List<CommonEnrollmentVTO> enrollmentVTOS=traineeMapper.toCommonEnrollmentVTOs(enrollmentRepository.selectAllByFilters(enrollmentSearchFilter));
         TraineeVTO traineeVTO=traineeMapper.toTraineeVTO(trainee);
@@ -142,7 +154,7 @@ public class TraineeServiceImpl implements TraineeService {
                                                    LocalDate createdOnFrom, LocalDate createdOnTo,
                                                    Integer pageNum, Integer pageSize,
                                                    OrderDirections orderDir, String orderBy) {
-        TraineeSearchFilter filter = TraineeSearchFilter.builder()
+        TraineeSearchFilter filter=TraineeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
                 .gender(gender)
                 .isDeleted(false)
@@ -153,7 +165,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .defaultSorting(new SortingInfo<>(TraineeSearchFilter.OrderByAttributes.CREATION_DATE, OrderDirections.DESC))
                 .sorting(new SortingInfo<>(orderBy, orderDir))
                 .build();
-        System.out.println("Sent page size  : "+pageSize);
         List<Trainee> trainees = traineeRepository.selectAllByFilters(filter);
         List<TraineeListItem> items = traineeMapper.toTraineeListItems(trainees);
 

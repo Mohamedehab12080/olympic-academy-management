@@ -60,6 +60,10 @@ public class Trainee {
     private LocalDateTime lastModifiedOn;
 
     @ManyToOne
+    @JoinColumn(name = "trainee_user_id")
+    private User traineeUser;
+
+    @ManyToOne
     @JoinColumn(name = "created_by_id")
     private User createdBy;
 

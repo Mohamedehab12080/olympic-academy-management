@@ -6,6 +6,7 @@ import bs.service.course.api.service.CourseService;
 import bs.service.course.controller.generated.CourseController;
 import bs.service.course.model.enums.CourseTypes;
 import bs.service.course.model.generated.CourseDTO;
+import bs.service.course.model.generated.CoursePatchDTO;
 import bs.service.course.model.generated.CourseResultSet;
 import bs.service.course.model.generated.CourseVTO;
 import lombok.AllArgsConstructor;
@@ -29,8 +30,8 @@ public class CourseControllerImpl implements CourseController {
 
     @Override
     @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
-    public ResponseEntity<CourseResultSet> _getAllCourses(String quickSearch, Boolean isActive, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo) {
-        return ResponseEntity.ok(courseService.getAllCourses(quickSearch, isActive, pageNum, pageSize, orderDir, orderBy, courseType, startDateFrom, startDateTo, endDateFrom, endDateTo));
+    public ResponseEntity<CourseResultSet> _getAllCourses(String quickSearch, Boolean isActive,Boolean isPublic ,Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo) {
+        return ResponseEntity.ok(courseService.getAllCourses(quickSearch, isActive,isPublic, pageNum, pageSize, orderDir, orderBy, courseType, startDateFrom, startDateTo, endDateFrom, endDateTo));
     }
 
     @Override
@@ -43,5 +44,12 @@ public class CourseControllerImpl implements CourseController {
     @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<NewRecordVTO> _updateCourseById(Integer courseId, CourseDTO courseDTO) {
         return ResponseEntity.ok(courseService.updateCourse(courseId, courseDTO));
+    }
+
+    @Override
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    public ResponseEntity<Void> _updatePatchOfCourses(CoursePatchDTO coursePatchDTO) {
+        courseService.patchUpdateCourse(coursePatchDTO);
+        return ResponseEntity.noContent().build();
     }
 }

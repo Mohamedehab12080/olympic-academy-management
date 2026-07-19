@@ -47,6 +47,10 @@ public class CourseDTO implements Serializable {
 
     private Integer price;
 
+    private Boolean isActive;
+
+    private Boolean isPublic;
+
     public CourseDTO title(String title) {
         this.title = title;
         return this;
@@ -259,6 +263,48 @@ public class CourseDTO implements Serializable {
         this.price = price;
     }
 
+    public CourseDTO isActive(Boolean isActive) {
+        this.isActive = isActive;
+        return this;
+    }
+
+    /**
+     * Get isActive
+     *
+     * @return isActive
+     */
+    @NotNull
+    @Schema(name = "isActive", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("isActive")
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public CourseDTO isPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+        return this;
+    }
+
+    /**
+     * Get isPublic
+     *
+     * @return isPublic
+     */
+    @NotNull
+    @Schema(name = "isPublic", requiredMode = Schema.RequiredMode.REQUIRED)
+    @JsonProperty("isPublic")
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -274,13 +320,15 @@ public class CourseDTO implements Serializable {
                 && Objects.equals(this.maxCapacity, courseDTO.maxCapacity)
                 && Objects.equals(this.startDate, courseDTO.startDate)
                 && Objects.equals(this.endDate, courseDTO.endDate) && Objects.equals(this.imageUrl, courseDTO.imageUrl)
-                && Objects.equals(this.courseType, courseDTO.courseType) && Objects.equals(this.price, courseDTO.price);
+                && Objects.equals(this.courseType, courseDTO.courseType) && Objects.equals(this.price, courseDTO.price)
+                && Objects.equals(this.isActive, courseDTO.isActive)
+                && Objects.equals(this.isPublic, courseDTO.isPublic);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(title, description, departmentId, duration, maxCapacity, startDate, endDate, imageUrl,
-                courseType, price);
+                courseType, price, isActive, isPublic);
     }
 
     @Override
@@ -297,6 +345,8 @@ public class CourseDTO implements Serializable {
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    courseType: ").append(toIndentedString(courseType)).append("\n");
         sb.append("    price: ").append(toIndentedString(price)).append("\n");
+        sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isPublic: ").append(toIndentedString(isPublic)).append("\n");
         sb.append("}");
         return sb.toString();
     }

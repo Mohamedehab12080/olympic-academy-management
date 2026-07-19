@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="1" author="mohamed.ehab">
+        <createTable tableName="oa_trainee_schedule">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="trainee_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_session_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_confirmed" type="boolean" defaultValueBoolean="false"/>
+            <column name="created_on" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_id" type="int"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_schedule_created_by"
+                baseTableName="oa_trainee_schedule"
+                baseColumnNames="created_by_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_schedule_trainee"
+                baseTableName="oa_trainee_schedule"
+                baseColumnNames="trainee_id"
+                referencedTableName="oa_trainee"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="2" author="mohamed.ehab">
+        <addColumn tableName="oa_trainee">
+            <column name="user_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_user"
+                baseTableName="oa_trainee"
+                baseColumnNames="user_id"
+                referencedTableName="oa_user"
+                referencedColumnNames="id"/>
+
+    </changeSet>
+
+    <changeSet id="3" author="mohamed.ehab">
+        <addForeignKeyConstraint
+                constraintName="fk_trainee_schedule_course_session"
+                baseTableName="oa_trainee_schedule"
+                baseColumnNames="course_session_id"
+                referencedTableName="oa_course_session"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

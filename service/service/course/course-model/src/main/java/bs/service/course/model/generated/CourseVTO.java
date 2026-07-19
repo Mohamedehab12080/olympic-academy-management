@@ -57,6 +57,8 @@ public class CourseVTO implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isPublic;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime createdOn;
 
@@ -361,6 +363,27 @@ public class CourseVTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public CourseVTO isPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+        return this;
+    }
+
+    /**
+     * Get isPublic
+     *
+     * @return isPublic
+     */
+
+    @Schema(name = "isPublic", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isPublic")
+    public Boolean getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
     public CourseVTO createdOn(LocalDateTime createdOn) {
         this.createdOn = createdOn;
         return this;
@@ -465,6 +488,7 @@ public class CourseVTO implements Serializable {
                 && Objects.equals(this.endDate, courseVTO.endDate) && Objects.equals(this.imageUrl, courseVTO.imageUrl)
                 && Objects.equals(this.courseType, courseVTO.courseType) && Objects.equals(this.price, courseVTO.price)
                 && Objects.equals(this.isActive, courseVTO.isActive)
+                && Objects.equals(this.isPublic, courseVTO.isPublic)
                 && Objects.equals(this.createdOn, courseVTO.createdOn)
                 && Objects.equals(this.createdBy, courseVTO.createdBy)
                 && Objects.equals(this.lastModifiedOn, courseVTO.lastModifiedOn)
@@ -474,8 +498,8 @@ public class CourseVTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, title, description, department, enrollmentsCount, totalRevenue, duration, maxCapacity,
-                startDate, endDate, imageUrl, courseType, price, isActive, createdOn, createdBy, lastModifiedOn,
-                lastModifiedBy);
+                startDate, endDate, imageUrl, courseType, price, isActive, isPublic, createdOn, createdBy,
+                lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -496,6 +520,7 @@ public class CourseVTO implements Serializable {
         sb.append("    courseType: ").append(toIndentedString(courseType)).append("\n");
         sb.append("    price: ").append(toIndentedString(price)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isPublic: ").append(toIndentedString(isPublic)).append("\n");
         sb.append("    createdOn: ").append(toIndentedString(createdOn)).append("\n");
         sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
         sb.append("    lastModifiedOn: ").append(toIndentedString(lastModifiedOn)).append("\n");
