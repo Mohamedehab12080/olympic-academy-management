@@ -71,6 +71,18 @@ export class ApiService {
     );
   }
 
+  patch<T>(endpoint: string, data: any): Observable<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log('PATCH Request:', url, data);
+    
+    return this.http.patch<T>(url, data).pipe(
+      catchError((error: HttpErrorResponse) => {
+        const errorData = error.error;
+        return throwError(() => errorData || error);
+      })
+    );
+  }
+
   put<T>(endpoint: string, data: any): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
     console.log('PUT Request:', url);

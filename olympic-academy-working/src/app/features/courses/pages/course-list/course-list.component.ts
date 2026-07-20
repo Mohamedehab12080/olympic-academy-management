@@ -1,4 +1,4 @@
-// course-list.component.ts - COMPLETE FILE
+// course-list.component.ts - COMPLETE FILE WITH BATCH UPDATE
 
 import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -20,6 +20,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { CourseService } from '../../../../core/services/course.service';
 import { EnrollmentService } from '../../../../core/services/enrollment.service';
@@ -30,6 +31,473 @@ import { SearchableSelectComponent, SelectOption } from '../../../../shared/comp
 import { CourseWizardModalComponent } from '../course-wizard/course-wizard-modal.component';
 import { CourseDetailsModalComponent } from '../course-details/course-details-modal.component';
 import { FileService } from '../../../../core/services/file.service';
+
+// ============================================================================
+// BATCH UPDATE DIALOG COMPONENT
+// ============================================================================
+
+@Component({
+  selector: 'app-batch-update-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDividerModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatCheckboxModule,
+    MatChipsModule
+  ],
+  template: `
+    <div class="dialog-container" dir="rtl">
+      <div class="dialog-header">
+        <div class="header-icon">
+          <mat-icon>edit_note</mat-icon>
+        </div>
+        <div>
+          <h2>تحديث جماعي للدورات</h2>
+          <p>تم تحديد {{ data.selectedCount }} دورة للتحديث</p>
+        </div>
+        <button mat-icon-button (click)="close()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="dialog-body">
+        <div class="selected-courses">
+          <div class="courses-list">
+            <mat-chip *ngFor="let course of data.selectedCourses" class="course-chip">
+              {{ course.title }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <div class="update-fields">
+          <h3>القيم الجديدة للتحديث</h3>
+          <p class="hint">اترك الحقل فارغاً إذا كنت لا تريد تحديثه</p>
+
+          <div class="fields-grid">
+            <!-- Duration -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>المدة (ساعات)</mat-label>
+              <input matInput type="number" [(ngModel)]="patchData.duration" placeholder="مثال: 20">
+            </mat-form-field>
+
+            <!-- Max Capacity -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>السعة القصوى</mat-label>
+              <input matInput type="number" [(ngModel)]="patchData.maxCapacity" placeholder="مثال: 30" min="1">
+            </mat-form-field>
+
+            <!-- Price -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>السعر (جنيه)</mat-label>
+              <input matInput type="number" [(ngModel)]="patchData.price" placeholder="مثال: 500">
+            </mat-form-field>
+
+            <!-- Start Date -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>تاريخ البدء</mat-label>
+              <input matInput [matDatepicker]="startPicker" [(ngModel)]="patchData.startDate">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+
+            <!-- End Date -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>تاريخ الانتهاء</mat-label>
+              <input matInput [matDatepicker]="endPicker" [(ngModel)]="patchData.endDate">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+
+            <!-- Status (Active/Inactive) -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>الحالة</mat-label>
+              <mat-select [(ngModel)]="patchData.isActive">
+                <mat-option [value]="null">لا تغيير</mat-option>
+                <mat-option [value]="true">نشط</mat-option>
+                <mat-option [value]="false">غير نشط</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Public/Private -->
+            <mat-form-field appearance="outline" class="field">
+              <mat-label>الرؤية</mat-label>
+              <mat-select [(ngModel)]="patchData.isPublic">
+                <mat-option [value]="null">لا تغيير</mat-option>
+                <mat-option [value]="true">عام</mat-option>
+                <mat-option [value]="false">خاص</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="preview-section" *ngIf="hasChanges()">
+            <mat-divider></mat-divider>
+            <h4>ملخص التغييرات</h4>
+            <div class="changes-list">
+              <div *ngIf="patchData.duration !== null && patchData.duration !== undefined" class="change-item">
+                <mat-icon>schedule</mat-icon>
+                <span>تحديث المدة إلى: <strong>{{ patchData.duration }} ساعة</strong></span>
+              </div>
+              <div *ngIf="patchData.maxCapacity !== null && patchData.maxCapacity !== undefined" class="change-item">
+                <mat-icon>group</mat-icon>
+                <span>تحديث السعة إلى: <strong>{{ patchData.maxCapacity }}</strong></span>
+              </div>
+              <div *ngIf="patchData.price !== null && patchData.price !== undefined" class="change-item">
+                <mat-icon>attach_money</mat-icon>
+                <span>تحديث السعر إلى: <strong>{{ patchData.price }} جم</strong></span>
+              </div>
+              <div *ngIf="patchData.startDate" class="change-item">
+                <mat-icon>event</mat-icon>
+                <span>تحديث تاريخ البدء إلى: <strong>{{ patchData.startDate | date:'dd/MM/yyyy' }}</strong></span>
+              </div>
+              <div *ngIf="patchData.endDate" class="change-item">
+                <mat-icon>event</mat-icon>
+                <span>تحديث تاريخ الانتهاء إلى: <strong>{{ patchData.endDate | date:'dd/MM/yyyy' }}</strong></span>
+              </div>
+              <div *ngIf="patchData.isActive !== null && patchData.isActive !== undefined" class="change-item">
+                <mat-icon>check_circle</mat-icon>
+                <span>تحديث الحالة إلى: <strong>{{ patchData.isActive ? 'نشط' : 'غير نشط' }}</strong></span>
+              </div>
+              <div *ngIf="patchData.isPublic !== null && patchData.isPublic !== undefined" class="change-item">
+                <mat-icon>visibility</mat-icon>
+                <span>تحديث الرؤية إلى: <strong>{{ patchData.isPublic ? 'عام' : 'خاص' }}</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="close()" class="cancel-btn">إلغاء</button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="confirm()"
+          [disabled]="!hasChanges()"
+          class="confirm-btn">
+          <mat-icon>save</mat-icon>
+          <span>تحديث {{ data.selectedCount }} دورة</span>
+        </button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .dialog-container {
+      min-width: 520px;
+      max-width: 620px;
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      direction: rtl;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: white;
+      position: relative;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-icon mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .dialog-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .dialog-header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .close-btn {
+      color: white !important;
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      border-radius: 50%;
+    }
+
+    .dialog-body {
+      padding: 24px;
+      background: #fafbfc;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .selected-courses {
+      margin-bottom: 24px;
+    }
+
+    .courses-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .course-chip {
+      background: #ede9fe !important;
+      color: #5b21b6 !important;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .update-fields h3 {
+      margin: 0 0 8px 0;
+      color: #1e293b;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .hint {
+      color: #94a3b8;
+      font-size: 13px;
+      margin: 0 0 20px 0;
+    }
+
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      width: 100%;
+    }
+
+    .preview-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .preview-section h4 {
+      margin: 0 0 12px 0;
+      color: #1e293b;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .changes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .change-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    .change-item mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #7c3aed;
+    }
+
+    .change-item strong {
+      color: #0f172a;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      background: white;
+      border-top: 1px solid #eef2f6;
+    }
+
+    .dialog-actions button {
+      min-width: 120px;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .cancel-btn {
+      color: #64748b !important;
+    }
+
+    .cancel-btn:hover {
+      background: #f1f5f9 !important;
+    }
+
+    .confirm-btn {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3) !important;
+    }
+
+    .confirm-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4) !important;
+    }
+
+    .confirm-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    @media (max-width: 600px) {
+      .dialog-container {
+        min-width: 320px;
+        max-width: 95vw;
+      }
+
+      .fields-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dialog-header {
+        padding: 16px 20px;
+      }
+
+      .dialog-body {
+        padding: 16px;
+      }
+
+      .dialog-actions {
+        flex-direction: column;
+        padding: 12px 16px;
+      }
+
+      .dialog-actions button {
+        width: 100%;
+        min-width: unset;
+      }
+    }
+  `]
+})
+export class BatchUpdateDialogComponent {
+  patchData: any = {
+    courseIds: [],
+    duration: null,
+    maxCapacity: null,
+    startDate: null,
+    endDate: null,
+    price: null,
+    isActive: null,
+    isPublic: null
+  };
+
+  constructor(
+    private dialogRef: MatDialogRef<BatchUpdateDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: {
+      selectedCourses: any[];
+      selectedCount: number;
+    }
+  ) {
+    this.patchData.courseIds = data.selectedCourses.map(c => c.id);
+  }
+
+  hasChanges(): boolean {
+    return !!(this.patchData.duration !== null ||
+              this.patchData.maxCapacity !== null ||
+              this.patchData.price !== null ||
+              this.patchData.startDate ||
+              this.patchData.endDate ||
+              this.patchData.isActive !== null ||
+              this.patchData.isPublic !== null);
+  }
+
+  confirm(): void {
+    const dataToSend: any = {
+      courseIds: this.patchData.courseIds
+    };
+
+    // Only include fields that have values
+    if (this.patchData.duration !== null && this.patchData.duration !== undefined) {
+      dataToSend.duration = this.patchData.duration;
+    }
+    if (this.patchData.maxCapacity !== null && this.patchData.maxCapacity !== undefined) {
+      dataToSend.maxCapacity = this.patchData.maxCapacity;
+    }
+    if (this.patchData.price !== null && this.patchData.price !== undefined) {
+      dataToSend.price = this.patchData.price;
+    }
+    if (this.patchData.startDate) {
+      dataToSend.startDate = this.formatDate(this.patchData.startDate);
+    }
+    if (this.patchData.endDate) {
+      dataToSend.endDate = this.formatDate(this.patchData.endDate);
+    }
+    if (this.patchData.isActive !== null && this.patchData.isActive !== undefined) {
+      dataToSend.isActive = this.patchData.isActive;
+    }
+    if (this.patchData.isPublic !== null && this.patchData.isPublic !== undefined) {
+      dataToSend.isPublic = this.patchData.isPublic;
+    }
+
+    this.dialogRef.close(dataToSend);
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  close(): void {
+    this.dialogRef.close(null);
+  }
+}
 
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT
@@ -605,6 +1073,7 @@ interface CourseTypeLookup {
     MatTooltipModule,
     MatDialogModule,
     MatDividerModule,
+    MatCheckboxModule,
     SearchableSelectComponent
   ],
   templateUrl: './course-list.component.html',
@@ -613,10 +1082,14 @@ interface CourseTypeLookup {
 export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
 
-  displayedColumns: string[] = ['index', 'title', 'department', 'courseType', 'duration', 'price', 'enrollmentsCount', 'totalRevenue', 'status', 'actions'];
+  displayedColumns: string[] = ['select', 'index', 'title', 'department', 'courseType', 'duration', 'price', 'enrollmentsCount', 'totalRevenue', 'isPublic', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   allCourses: any[] = [];
   isLoading = false;
+
+  // ========== SELECTION ==========
+  selectedCourseIds: Set<number> = new Set<number>();
+  selectAllChecked: boolean = false;
 
   // ========== PAGINATION ==========
   totalItems: number = 0;
@@ -644,6 +1117,10 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild(MatSort) sort!: MatSort;
 
+  get selectedCount(): number {
+    return this.selectedCourseIds.size;
+  }
+
   get qualCount(): number {
     return this.allCourses.filter(c => c.courseType?.value === 'QUALIFICATION' || c.courseType?.title === 'تأهيل').length;
   }
@@ -658,6 +1135,10 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get totalEnrollments(): number {
     return this.allCourses.reduce((sum, c) => sum + (c.enrollmentsCount || 0), 0);
+  }
+
+  get hasSelection(): boolean {
+    return this.selectedCourseIds.size > 0;
   }
 
   constructor(
@@ -741,6 +1222,94 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ==========================================================================
+  // SELECTION METHODS
+  // ==========================================================================
+
+  toggleSelection(courseId: number): void {
+    if (this.selectedCourseIds.has(courseId)) {
+      this.selectedCourseIds.delete(courseId);
+    } else {
+      this.selectedCourseIds.add(courseId);
+    }
+    this.updateSelectAllState();
+  }
+
+  toggleSelectAll(): void {
+    if (this.selectAllChecked) {
+      // Deselect all
+      this.selectedCourseIds.clear();
+    } else {
+      // Select all current page
+      this.allCourses.forEach(course => {
+        this.selectedCourseIds.add(course.id);
+      });
+    }
+    this.updateSelectAllState();
+  }
+
+  updateSelectAllState(): void {
+    const currentPageIds = this.allCourses.map(c => c.id);
+    const selectedCurrentPage = currentPageIds.filter(id => this.selectedCourseIds.has(id));
+    this.selectAllChecked = selectedCurrentPage.length === currentPageIds.length && currentPageIds.length > 0;
+  }
+
+  isSelected(courseId: number): boolean {
+    return this.selectedCourseIds.has(courseId);
+  }
+
+  clearSelection(): void {
+    this.selectedCourseIds.clear();
+    this.selectAllChecked = false;
+  }
+
+  // ==========================================================================
+  // BATCH UPDATE
+  // ==========================================================================
+
+  openBatchUpdateDialog(): void {
+    if (this.selectedCourseIds.size === 0) {
+      this.notification.showWarning('الرجاء تحديد دورة واحدة على الأقل للتحديث');
+      return;
+    }
+
+    const selectedCourses = this.allCourses.filter(c => this.selectedCourseIds.has(c.id));
+
+    const dialogRef = this.dialog.open(BatchUpdateDialogComponent, {
+      width: '620px',
+      maxWidth: '95vw',
+      disableClose: true,
+      data: {
+        selectedCourses: selectedCourses,
+        selectedCount: this.selectedCourseIds.size
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((patchData: any) => {
+      if (patchData) {
+        this.applyBatchUpdate(patchData);
+      }
+    });
+  }
+
+  applyBatchUpdate(patchData: any): void {
+    this.isLoading = true;
+
+    this.courseService.updatePatchCourse(patchData).subscribe({
+      next: () => {
+        this.notification.showSuccess(`تم تحديث ${this.selectedCourseIds.size} دورة بنجاح`);
+        this.clearSelection();
+        this.loadCourses();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.isLoading = false;
+        const errorMessage = error?.messageEn || error?.message || 'حدث خطأ في تحديث الدورات';
+        this.notification.showError(errorMessage);
+      }
+    });
+  }
+
+  // ==========================================================================
   // GET TOTAL PAGES
   // ==========================================================================
 
@@ -768,7 +1337,6 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   goToNextPage(): void {
     this.currentPage++;
-    console.log('➡️ Going to next page:', this.currentPage);
     this.loadCourses();
   }
 
@@ -782,7 +1350,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onPageSizeChange(): void {
     this.currentPage = 0;
-    console.log('📏 Page size changed to:', this.pageSize);
+    this.clearSelection();
     this.loadCourses();
   }
 
@@ -791,15 +1359,10 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   // ==========================================================================
 
   loadCourses(): void {
-    console.log('🔄 loadCourses() called');
-    console.log(`  Current Page: ${this.currentPage}`);
-    console.log(`  Page Size: ${this.pageSize}`);
-
     this.isLoading = true;
 
     const params: any = {};
 
-    // ===== FILTERS =====
     if (this.filters.quickSearch) params.quickSearch = this.filters.quickSearch;
     if (this.filters.courseType) params.courseType = this.filters.courseType;
     if (this.filters.isActive !== null) params.isActive = this.filters.isActive;
@@ -809,26 +1372,19 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.filters.endDateFrom) params.endDateFrom = this.formatDateForAPI(this.filters.endDateFrom);
     if (this.filters.endDateTo) params.endDateTo = this.formatDateForAPI(this.filters.endDateTo);
 
-    // ===== PAGINATION =====
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
 
-    // ===== SORTING =====
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
 
-    console.log('📤 Sending request with params:', params);
-
     this.courseService.getAllCourses(params).subscribe({
       next: (res: any) => {
-        console.log('✅ Response received:', res);
-        console.log(`  Items: ${res.items?.length || 0}`);
-        console.log(`  Total: ${res.total || 0}`);
-
         this.allCourses = res.items || [];
         this.totalItems = res.total || 0;
         this.dataSource.data = [...this.allCourses];
         this.isLoading = false;
+        this.updateSelectAllState();
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -861,7 +1417,6 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
   // ==========================================================================
 
   onSortChange(sort: Sort): void {
-    console.log('📊 Sort changed:', sort);
     if (sort.active && sort.direction) {
       this.sortBy = sort.active;
       this.sortDir = sort.direction.toUpperCase();
@@ -870,6 +1425,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sortDir = 'DESC';
     }
     this.currentPage = 0;
+    this.clearSelection();
     this.loadCourses();
   }
 
@@ -888,6 +1444,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       endDateTo: null
     };
     this.currentPage = 0;
+    this.clearSelection();
     this.loadCourses();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
   }
@@ -976,6 +1533,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.clearSelection();
         this.loadCourses();
       }
     });
@@ -1000,6 +1558,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.courseService.deleteCourse(course.id).subscribe({
         next: () => {
           this.notification.showSuccess('تم حذف الدورة بنجاح');
+          this.selectedCourseIds.delete(course.id);
           this.loadCourses();
         },
         error: (error) => {
@@ -1110,6 +1669,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       'السعر': course.price || 0,
       'عدد المسجلين': course.enrollmentsCount || 0,
       'الإيرادات': course.totalRevenue || 0,
+      'الرؤية': course.isPublic ? 'عام' : 'خاص',
       'الحالة': course.isActive ? 'نشط' : 'غير نشط'
     }));
 
@@ -1161,6 +1721,8 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
     dataToPrint.forEach((course: any, index: number) => {
       const statusColor = course.isActive ? '#d1fae5' : '#fee2e2';
       const statusTextColor = course.isActive ? '#065f46' : '#991b1b';
+      const visibilityColor = course.isPublic ? '#dbeafe' : '#f1f5f9';
+      const visibilityTextColor = course.isPublic ? '#1e40af' : '#64748b';
       tableRows += `
         <tr>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
@@ -1171,6 +1733,9 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${(course.price || 0).toLocaleString('ar-EG')} جم</td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${course.enrollmentsCount || 0}</td>
           <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${(course.totalRevenue || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; background-color: ${visibilityColor}; color: ${visibilityTextColor};">
+            ${course.isPublic ? 'عام' : 'خاص'}
+          </td>
           <td style="text-align: center; padding: 8px; border: 1px solid #ddd; background-color: ${statusColor}; color: ${statusTextColor};">
             ${course.isActive ? 'نشط' : 'غير نشط'}
           </td>
@@ -1273,6 +1838,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
               <th>السعر</th>
               <th>عدد المسجلين</th>
               <th>الإيرادات</th>
+              <th>الرؤية</th>
               <th>الحالة</th>
             </tr>
           </thead>
@@ -1349,6 +1915,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
       const courseTypeDisplay = this.getCourseTypeTitle(course.courseType);
       const isActive = course.isActive;
       const departmentName = course.department?.title || '-';
+      const isPublic = course.isPublic;
 
       cardsHtml += `
         <div class="card-wrapper">
@@ -1396,6 +1963,10 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
                   <div class="detail-row">
                     <span class="detail-label">الإيرادات:</span>
                     <span class="detail-value revenue">${(course.totalRevenue || 0).toLocaleString('ar-EG')} جم</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">الرؤية:</span>
+                    <span class="detail-value visibility ${isPublic ? 'public' : 'private'}">${isPublic ? 'عام' : 'خاص'}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">الحالة:</span>
@@ -1587,6 +2158,12 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           .detail-value.revenue {
             color: #7c3aed;
             font-weight: 700;
+          }
+          .detail-value.visibility.public {
+            color: #2563eb;
+          }
+          .detail-value.visibility.private {
+            color: #64748b;
           }
           .detail-value.status.active {
             color: #10b981;

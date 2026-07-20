@@ -26,7 +26,21 @@ export interface CourseDTO {
   imageUrl?: string;
   courseType: CourseType;  // Send enum constant: "QUALIFICATION" or "TRAINING"
   price: number;
+  isActive: boolean;
+  isPublic: boolean;
 }
+
+export interface CoursePatchDTO {
+  courseIds: number[];
+  duration?: number;
+  maxCapacity?: number;
+  startDate?: string;
+  endDate?: string;
+  price?: number;
+  isActive?: boolean;
+  isPublic?: boolean;
+}
+
 
 // ==================== VTOs (received from backend - use LookupVTO for enums) ====================
 
@@ -45,6 +59,7 @@ export interface CourseVTO {
   courseType: LookupVTO;  // { id: number; title: string; imageUrl: string | null }
   price: number;
   isActive: boolean;
+  isPublic: boolean;
   createdOn: string;
   createdBy: LightUserVTO;
   lastModifiedOn?: string;

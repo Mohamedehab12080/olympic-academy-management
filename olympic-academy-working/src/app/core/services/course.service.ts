@@ -28,6 +28,10 @@ export class CourseService {
     return this.api.put(`/courses/${id}`, data);
   }
 
+  updatePatchCourse(data: CourseDTO): Observable<void> {
+    return this.api.patch(`/courses/patch`, data);
+  }
+
   // Course Session endpoints
   createCourseSession(courseId: number, data: CourseSessionDTO): Observable<NewRecordVTO> {
     return this.api.post(`/courses/${courseId}/sessions`, data);

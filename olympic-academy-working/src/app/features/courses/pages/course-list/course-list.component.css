@@ -1,4 +1,4 @@
-/* course-list.component.css - COMPLETE WITH CUSTOM PAGINATION */
+/* course-list.component.css - COMPLETE FILE */
 
 /* Main Container */
 .courses-container {
@@ -38,6 +38,35 @@
   opacity: 0.9;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.batch-update-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0 28px;
+  transition: all 0.3s;
+}
+
+.batch-update-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.batch-update-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.batch-update-btn mat-icon {
+  margin-left: 8px;
+}
+
 .add-button {
   background: white !important;
   color: #2563eb !important;
@@ -49,6 +78,41 @@
 .add-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Selection Bar */
+.selection-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #ede9fe 0%, #f5f3ff 100%);
+  border-bottom: 2px solid #7c3aed;
+  margin: 0;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #5b21b6;
+  font-size: 14px;
+}
+
+.selection-info mat-icon {
+  color: #7c3aed;
+}
+
+.selection-info strong {
+  font-weight: 700;
+}
+
+.clear-selection-btn {
+  color: #64748b !important;
+}
+
+.clear-selection-btn:hover {
+  background: rgba(100, 116, 139, 0.1) !important;
 }
 
 /* Filters Card */
@@ -210,6 +274,18 @@
   height: 20px;
 }
 
+.select-all-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.select-all-control .mat-checkbox {
+  margin-left: 8px;
+}
+
 .table-wrapper {
   overflow-x: auto;
   border-radius: 16px;
@@ -255,6 +331,19 @@
 
 .clickable-cell:hover {
   text-decoration: underline;
+}
+
+/* Table Checkbox Column */
+.select-cell {
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  text-align: center !important;
+  padding: 8px !important;
+}
+
+.select-cell .mat-checkbox {
+  pointer-events: auto !important;
 }
 
 /* Badges and Info Styles */
@@ -308,6 +397,41 @@
 .revenue-value {
   font-weight: 600;
   color: #8b5cf6;
+}
+
+/* Visibility Badge */
+.visibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.visibility-badge.public {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.visibility-badge.public mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #2563eb;
+}
+
+.visibility-badge.private {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.visibility-badge.private mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
 }
 
 .status-badge {
@@ -508,6 +632,24 @@
     font-size: 22px;
   }
 
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .batch-update-btn,
+  .add-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .selection-bar {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 12px 16px;
+  }
+
   .filters-card {
     padding: 16px;
   }
@@ -561,8 +703,25 @@
     gap: 12px;
   }
 
+  .select-all-control {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .data-table {
     min-width: 900px;
+  }
+
+  .select-cell {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    padding: 4px !important;
+  }
+
+  .select-cell .mat-checkbox .mat-checkbox-inner-container {
+    width: 16px !important;
+    height: 16px !important;
   }
 
   .custom-pagination {
@@ -601,6 +760,17 @@
 
   .header-title h1 {
     font-size: 18px;
+  }
+
+  .batch-update-btn {
+    font-size: 12px;
+    padding: 0 16px;
+  }
+
+  .batch-update-btn mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
 
   .add-button {
@@ -650,12 +820,10 @@
   padding: 0 16px !important;
 }
 
-/* Hover effect for mat-select options */
 ::ng-deep .mat-option:hover:not(.mat-option-disabled) {
   background: #eff6ff !important;
 }
 
-/* Selected option styling */
 ::ng-deep .mat-option.mat-selected:not(.mat-option-disabled) {
   background: #dbeafe !important;
   color: #1e40af !important;
@@ -680,10 +848,12 @@
   }
 
   .add-button,
+  .batch-update-btn,
   .reset-btn,
   .export-btn,
   .action-buttons,
-  .filter-actions {
+  .filter-actions,
+  .selection-bar {
     display: none !important;
   }
 
@@ -700,7 +870,9 @@
   .type-badge.qualification,
   .type-badge.training,
   .status-badge.active,
-  .status-badge.inactive {
+  .status-badge.inactive,
+  .visibility-badge.public,
+  .visibility-badge.private {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -714,6 +886,10 @@
   }
 
   .custom-pagination {
+    display: none !important;
+  }
+
+  .select-cell {
     display: none !important;
   }
 }

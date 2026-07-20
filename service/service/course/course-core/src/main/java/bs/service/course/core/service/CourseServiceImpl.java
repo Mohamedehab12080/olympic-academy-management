@@ -167,24 +167,24 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public void patchUpdateCourse(CoursePatchDTO coursePatchDTO) {
-     CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder()
-             .courseIds(coursePatchDTO.getCourseIds())
-             .pagination(PaginationInfo.noPagination())
-             .build();
-     List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
-     if(courses.size()!=coursePatchDTO.getCourseIds().size()){
-         throw new BusinessException(COURSE_NOT_FOUND, coursePatchDTO.getCourseIds());
-     }
-     for (Course course : courses) {
-         course.setIsActive(coursePatchDTO.getIsActive());
-         course.setIsPublic(coursePatchDTO.getIsPublic());
-         course.setDuration(coursePatchDTO.getDuration());
-         course.setStartDate(coursePatchDTO.getStartDate());
-         course.setEndDate(coursePatchDTO.getEndDate());
-         course.setMaxCapacity(coursePatchDTO.getMaxCapacity());
-         course.setCreatedBy(course.getCreatedBy());
-         course.setCreatedOn(course.getCreatedOn());
-         courseRepository.update(course);
-     }
+        CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder()
+                .courseIds(coursePatchDTO.getCourseIds())
+                .pagination(PaginationInfo.noPagination())
+                .build();
+        List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
+        if(courses.size()!=coursePatchDTO.getCourseIds().size()){
+            throw new BusinessException(COURSE_NOT_FOUND, coursePatchDTO.getCourseIds());
+        }
+        for (Course course : courses) {
+            course.setIsActive(coursePatchDTO.getIsActive()!=null?coursePatchDTO.getIsActive():course.getIsActive());
+            course.setIsPublic(coursePatchDTO.getIsPublic()!=null?coursePatchDTO.getIsPublic():course.getIsPublic());
+            course.setDuration(coursePatchDTO.getDuration()!=null?coursePatchDTO.getDuration():course.getDuration());
+            course.setStartDate(coursePatchDTO.getStartDate()!=null?coursePatchDTO.getStartDate():course.getStartDate());
+            course.setEndDate(coursePatchDTO.getEndDate()!=null?coursePatchDTO.getEndDate():course.getEndDate());
+            course.setMaxCapacity(coursePatchDTO.getMaxCapacity()!=null?coursePatchDTO.getMaxCapacity():course.getMaxCapacity());
+            course.setCreatedBy(course.getCreatedBy());
+            course.setCreatedOn(course.getCreatedOn());
+            courseRepository.update(course);
+        }
     }
 }
