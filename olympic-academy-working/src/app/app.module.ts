@@ -54,13 +54,13 @@ import { authInterceptor } from './core/auth/auth.interceptor';
 @NgModule({
   declarations: [
     AppComponent,
-    MainLayoutComponent,
     ToastComponent
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    MainLayoutComponent,
     // REMOVE useHash: true !!!
     RouterModule.forRoot(routes), // ← FIXED: No { useHash: true }
     FormsModule,

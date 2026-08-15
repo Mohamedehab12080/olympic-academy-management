@@ -11,6 +11,7 @@ servers:
 
 tags:
   - name: Trainee
+  - name: TraineeUser
   - name: TraineeContact
   - name: TraineeCertificate
   - name: HealthCondition
@@ -18,7 +19,72 @@ tags:
   - name: TraineeLookup
 
 paths:
-  # ==================== Trainee Endpoints ====================
+  # ==================== User Trainee Endpoints ====================
+  /trainees/users/{traineeUserId}:
+    post:
+      tags:
+        - TraineeUser
+      summary: Create trainee
+      operationId: createTraineeUser
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeUserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    put:
+      tags:
+        - TraineeUser
+      summary: Update Trainee User By Id
+      operationId: updateTraineeUser
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeUserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraineeDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/NewRecordVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - TraineeUser
+      summary: Retrieve trainee user
+      operationId: getTraineeUserById
+      parameters:
+        - $ref: '#/components/parameters/PPTraineeUserId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraineeVTO'
+        '400':
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/responses/BadRequest'
+
+  # ==================== Admin Trainee Endpoints ====================
   /trainees:
     post:
       tags:
@@ -586,6 +652,13 @@ components:
   parameters:
     PPTraineeId:
       name: traineeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    PPTraineeUserId:
+      name: traineeUserId
       in: path
       required: true
       schema:

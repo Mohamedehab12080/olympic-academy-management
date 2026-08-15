@@ -29,13 +29,13 @@ public class CourseControllerImpl implements CourseController {
     }
 
     @Override
-    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<CourseResultSet> _getAllCourses(String quickSearch, Boolean isActive,Boolean isPublic ,Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo) {
         return ResponseEntity.ok(courseService.getAllCourses(quickSearch, isActive,isPublic, pageNum, pageSize, orderDir, orderBy, courseType, startDateFrom, startDateTo, endDateFrom, endDateTo));
     }
 
     @Override
-    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<CourseVTO> _getCourse(Integer courseId) {
         return ResponseEntity.ok(courseService.getCourseById(courseId));
     }

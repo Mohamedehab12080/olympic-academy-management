@@ -4,6 +4,7 @@ import bs.lib.common.model.exception.BusinessException;
 import bs.lib.common.model.generated.LookupResultSet;
 import bs.lib.common.model.generated.LookupVTO;
 import bs.lib.common.model.generated.NewRecordVTO;
+import bs.lib.security.api.service.SecurityUtilsService;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
@@ -22,6 +23,8 @@ import bs.service.department.proxy.service.DepartmentMgtProxyService;
 import bs.service.enrollment.model.filter.EnrollmentSearchFilter;
 import bs.service.enrollment.model.generated.EnrollmentVTO;
 import bs.service.enrollment.proxy.service.EnrollmentMgtProxyService;
+import bs.service.user.model.entity.User;
+import bs.service.user.model.enums.Role;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +46,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseMapper courseMapper;
     private final DepartmentMgtProxyService departmentMgtProxyService;
     private final EnrollmentMgtProxyService enrollmentMgtProxyService;
+    private final SecurityUtilsService securityUtilsService;
 
     @Override
     @Transactional
@@ -92,19 +96,38 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseResultSet getAllCourses(String quickSearch, Boolean isActive,Boolean isPublic, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy, CourseTypes courseType, LocalDate startDateFrom, LocalDate startDateTo, LocalDate endDateFrom, LocalDate endDateTo) {
 
-        CourseSearchFilter courseSearchFilter = CourseSearchFilter.builder()
-                .quickSearchQuery(quickSearch)
-                .isActive(isActive)
-                .isPublic(isPublic)
-                .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
-                .defaultSorting(new SortingInfo<>(CourseSearchFilter.OrderByAttributes.START_DATE,OrderDirections.DESC))
-                .sorting(new SortingInfo<>(orderBy, orderDir))
-                .courseType(courseType!=null ?courseType.getId() :null)
-                .startDateFrom(startDateFrom)
-                .startDateTo(startDateTo)
-                .endDateFrom(endDateFrom)
-                .endDateTo(endDateTo)
-                .build();
+        User currentUser = User.builder().id(securityUtilsService.getCurrentUserId()).role(Role.valueOf(securityUtilsService.getCurrentUserRole())).build();
+        CourseSearchFilter courseSearchFilter = CourseSearchFilter.builder().build();
+        if(currentUser.getRole().equals(Role.ROLE_TRAINEE)){
+             courseSearchFilter = CourseSearchFilter.builder()
+                    .quickSearchQuery(quickSearch)
+                    .isActive(isActive)
+                    .isPublic(true)
+                    .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
+                    .defaultSorting(new SortingInfo<>(CourseSearchFilter.OrderByAttributes.START_DATE,OrderDirections.DESC))
+                    .sorting(new SortingInfo<>(orderBy, orderDir))
+                    .courseType(courseType!=null ?courseType.getId() :null)
+                    .startDateFrom(startDateFrom)
+                    .startDateTo(startDateTo)
+                    .endDateFrom(endDateFrom)
+                    .endDateTo(endDateTo)
+                    .build();
+        }else{
+            courseSearchFilter = CourseSearchFilter.builder()
+                    .quickSearchQuery(quickSearch)
+                    .isActive(isActive)
+                    .isPublic(isPublic)
+                    .pagination(PaginationInfo.builder().pageNum(pageNum).pageSize(pageSize).build())
+                    .defaultSorting(new SortingInfo<>(CourseSearchFilter.OrderByAttributes.START_DATE,OrderDirections.DESC))
+                    .sorting(new SortingInfo<>(orderBy, orderDir))
+                    .courseType(courseType!=null ?courseType.getId() :null)
+                    .startDateFrom(startDateFrom)
+                    .startDateTo(startDateTo)
+                    .endDateFrom(endDateFrom)
+                    .endDateTo(endDateTo)
+                    .build();
+        }
+
         List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
         List<Integer> courseIds = courses.stream().map(Course::getId).toList();
         EnrollmentSearchFilter enrollmentSearchFilter = EnrollmentSearchFilter.builder()
@@ -145,11 +168,20 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public LookupResultSet getAllCoursesLookup() {
-        CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder()
-                .isActive(true)
-                .isDeleted(false)
-                .pagination(PaginationInfo.noPagination())
-                .build();
+        User currentUser = User.builder().id(securityUtilsService.getCurrentUserId()).build();
+        CourseSearchFilter courseSearchFilter=CourseSearchFilter.builder().build();
+        if(currentUser.getRole().equals(Role.ROLE_TRAINEE)){
+            courseSearchFilter=CourseSearchFilter.builder().isActive(true)
+                    .isDeleted(false)
+                    .isPublic(true)
+                    .pagination(PaginationInfo.noPagination())
+                    .build();
+        }else{
+            courseSearchFilter=CourseSearchFilter.builder().isActive(true)
+                    .isDeleted(false)
+                    .pagination(PaginationInfo.noPagination())
+                    .build();
+        }
         List<Course> courses=courseRepository.selectAllByFilter(courseSearchFilter);
         List<LookupVTO> lookupVTOS=courseMapper.toLookupVTOs(courses);
         return LookupResultSet.builder()._list(lookupVTOS).total(lookupVTOS.size()).build();

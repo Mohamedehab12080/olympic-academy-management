@@ -22,8 +22,20 @@ export class TraineeService {
     return this.api.post('/trainees', data);
   }
 
+  createTraineeUser(traineeUserId:number, data: TraineeDTO): Observable<NewRecordVTO> {
+    return this.api.post(`/trainees/users/${traineeUserId}`, data);
+  }
+
+  updateTraineeUser(traineeUserId:number, data: TraineeDTO): Observable<NewRecordVTO> {
+    return this.api.post(`/trainees/users/${traineeUserId}`, data);
+  }
+
   getAllTraineesByFilter(params?: any): Observable<TraineeResultSet> {
     return this.api.get('/trainees', params);
+  }
+
+  getTraineeUserById(traineeUserId: number): Observable<TraineeVTO> {
+    return this.api.get(`/trainees/users/${traineeUserId}`);
   }
 
   getTraineeById(id: number): Observable<TraineeVTO> {

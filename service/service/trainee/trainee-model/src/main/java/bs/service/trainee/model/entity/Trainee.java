@@ -60,7 +60,7 @@ public class Trainee {
     private LocalDateTime lastModifiedOn;
 
     @ManyToOne
-    @JoinColumn(name = "trainee_user_id")
+    @JoinColumn(name = "user_id")
     private User traineeUser;
 
     @ManyToOne

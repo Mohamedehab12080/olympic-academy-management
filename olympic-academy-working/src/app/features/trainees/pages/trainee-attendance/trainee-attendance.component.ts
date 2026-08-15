@@ -1,4 +1,4 @@
-// trainee-attendance.component.ts - COMPLETE WITH ALL REQUIREMENTS
+// trainee-attendance.component.ts - COMPLETE FULL CODE
 
 import { Component, OnInit, ViewChild, Inject, ElementRef, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,6 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatListModule } from '@angular/material/list';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { takeUntil, Subject } from 'rxjs';
 
 import { TraineeAttendanceService } from '../../../../core/services/trainee-attendance.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -30,6 +31,7 @@ import { TraineeService } from '../../../../core/services/trainee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { FileService } from '../../../../core/services/file.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { TRAINEE_ATTENDANCE_STATUSES, TraineeAttendanceListItem, TraineeAttendanceVTO } from '../../../../core/models/trainee-attendance.model';
 import { TraineeAttendanceDetailsModalComponent } from './trainee-attendance-details/trainee-attendance-details-modal.component';
@@ -78,7 +80,7 @@ export function convertTo12HourFormat(timeStr: string | undefined | null): strin
 }
 
 // ============================================================================
-// PAGE SELECTION DIALOG COMPONENT - ENHANCED COLORS
+// PAGE SELECTION DIALOG COMPONENT
 // ============================================================================
 
 @Component({
@@ -94,7 +96,7 @@ export function convertTo12HourFormat(timeStr: string | undefined | null): strin
     MatInputModule,
     MatSelectModule,
     MatDividerModule
-    ],
+  ],
   template: `
     <div class="dialog-container" dir="rtl">
       <div class="dialog-header" [class.card-print]="isCardPrint">
@@ -657,71 +659,7 @@ export class AttendanceExportPageSelectDialogComponent {
 }
 
 // ============================================================================
-// TRAINEE SELECTION DIALOG
-// ============================================================================
-
-@Component({
-  selector: 'app-trainee-selection-dialog',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule,
-    MatListModule
-  ],
-  template: `
-    <h2 mat-dialog-title>اختر المتدرب</h2>
-    <mat-dialog-content>
-      <p>تم العثور على عدة متدربين. الرجاء اختيار المتدرب المناسب:</p>
-      <mat-list>
-        <mat-list-item *ngFor="let trainee of data.trainees" (click)="selectTrainee(trainee)" class="trainee-item">
-          <mat-icon mat-list-icon>person</mat-icon>
-          <div mat-line><strong>{{ trainee.title || trainee.fullName }}</strong></div>
-          <div mat-line class="trainee-detail">رقم الهوية: {{ trainee.nationalId }}</div>
-          <button mat-raised-button color="primary" (click)="selectTrainee(trainee); $event.stopPropagation()">
-            اختر
-          </button>
-        </mat-list-item>
-      </mat-list>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>إلغاء</button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .trainee-item {
-      cursor: pointer;
-      transition: background-color 0.2s;
-      border-radius: 8px;
-      margin-bottom: 4px;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      padding: 8px 12px !important;
-    }
-    .trainee-item:hover {
-      background-color: #f3e8ff;
-    }
-    .trainee-detail {
-      color: #6b7280;
-      font-size: 12px;
-    }
-  `]
-})
-export class TraineeSelectionDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<TraineeSelectionDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { trainees: any[] }
-  ) {}
-
-  selectTrainee(trainee: any): void {
-    this.dialogRef.close(trainee);
-  }
-}
-
-// ============================================================================
-// ATTENDANCE DIALOG COMPONENT - COMPLETE WITH FULL STYLES
+// ATTENDANCE DIALOG COMPONENT - WITH ROLE-BASED ACCESS
 // ============================================================================
 
 @Component({
@@ -742,8 +680,7 @@ export class TraineeSelectionDialogComponent {
     MatTooltipModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    SearchableSelectComponent,
-    TraineeSelectionDialogComponent
+    SearchableSelectComponent
   ],
   template: `
     <div class="dialog-header">
@@ -761,54 +698,10 @@ export class TraineeSelectionDialogComponent {
     <mat-dialog-content class="dialog-content">
       <form [formGroup]="data.form" class="dialog-form">
 
-        <!-- Barcode Search -->
-        <div class="barcode-search-container">
-          <div class="barcode-search-header">
-            <mat-icon class="barcode-icon">qr_code_scanner</mat-icon>
-            <span class="barcode-title">بحث بالباركود</span>
-            <span class="barcode-hint-text">(مسح الباركود أو إدخال رقم الهوية)</span>
-          </div>
-
-          <div class="barcode-search-row">
-            <mat-form-field appearance="outline" class="barcode-input-field">
-              <mat-label>رقم الباركود</mat-label>
-              <input #dialogBarcodeInput
-                     matInput
-                     [(ngModel)]="barcodeSearch"
-                     (keydown)="onDialogBarcodeKeydown($event)"
-                     placeholder="أدخل رقم الباركود..."
-                     [ngModelOptions]="{ standalone: true }">
-              <mat-icon matSuffix>qr_code_scanner</mat-icon>
-            </mat-form-field>
-
-            <button mat-raised-button color="primary" (click)="searchTraineeInDialog()" class="barcode-search-btn" type="button">
-              <mat-icon>search</mat-icon>
-              بحث
-            </button>
-
-            <button mat-icon-button (click)="clearBarcodeSearch()" matTooltip="مسح" class="barcode-clear-btn" type="button">
-              <mat-icon>clear</mat-icon>
-            </button>
-          </div>
-
-          <div class="barcode-hint" *ngIf="barcodeSearchResult">
-            <span class="hint-success" *ngIf="barcodeSearchResult.found">
-              <mat-icon>check_circle</mat-icon>
-              تم العثور على المتدرب: <strong>{{ barcodeSearchResult.traineeName }}</strong>
-            </span>
-            <span class="hint-error" *ngIf="barcodeSearchResult.found === false">
-              <mat-icon>error</mat-icon>
-              {{ barcodeSearchResult.message }}
-            </span>
-          </div>
-        </div>
-
-        <mat-divider></mat-divider>
-
         <!-- Form Fields -->
         <div class="form-fields-grid">
-          <!-- Trainee -->
-          <div class="form-field-full">
+          <!-- Trainee - Only visible for non-TRAINEE roles -->
+          <div class="form-field-full" *ngIf="!isTraineeRole">
             <app-searchable-select
               [formControl]="data.form.get('traineeId')"
               label="المتدرب *"
@@ -817,6 +710,11 @@ export class TraineeSelectionDialogComponent {
               class="full-width-select"
               (selectionChange)="onTraineeChange($event)">
             </app-searchable-select>
+          </div>
+          
+          <!-- Hidden trainee ID for TRAINEE role -->
+          <div *ngIf="isTraineeRole" style="display: none;">
+            <input [formControl]="data.form.get('traineeId')" />
           </div>
 
           <!-- Session -->
@@ -1013,180 +911,6 @@ export class TraineeSelectionDialogComponent {
       display: flex;
       flex-direction: column;
       gap: 20px;
-    }
-
-    /* ==========================================================================
-       BARCODE SEARCH
-       ========================================================================== */
-    .barcode-search-container {
-      background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-      padding: 16px 20px;
-      border-radius: 16px;
-      border: 2px solid #e5d5ff;
-      transition: all 0.3s;
-    }
-
-    .barcode-search-container:focus-within {
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
-    }
-
-    .barcode-search-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .barcode-icon {
-      color: #8b5cf6;
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-    }
-
-    .barcode-title {
-      font-weight: 700;
-      color: #4c1d95;
-      font-size: 15px;
-    }
-
-    .barcode-hint-text {
-      font-size: 12px;
-      color: #7c3aed;
-      opacity: 0.8;
-      font-weight: 400;
-    }
-
-    .barcode-search-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .barcode-input-field {
-      flex: 1;
-    }
-
-    .barcode-input-field ::ng-deep .mat-form-field-wrapper {
-      margin: 0;
-      padding: 0;
-    }
-
-    .barcode-input-field ::ng-deep .mat-form-field-flex {
-      padding: 0 12px !important;
-      background: white !important;
-      border-radius: 8px !important;
-      border: 1px solid #e5e7eb;
-      transition: all 0.3s;
-    }
-
-    .barcode-input-field ::ng-deep .mat-form-field-flex:hover {
-      border-color: #8b5cf6;
-    }
-
-    .barcode-input-field ::ng-deep .mat-form-field-flex.mat-focused {
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
-    }
-
-    .barcode-input-field ::ng-deep .mat-form-field-infix {
-      padding: 8px 0 !important;
-      border-top: 0 !important;
-    }
-
-    .barcode-input-field ::ng-deep .mat-form-field-outline {
-      display: none;
-    }
-
-    .barcode-search-btn {
-      height: 44px;
-      white-space: nowrap;
-      background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
-      color: white !important;
-      border-radius: 10px !important;
-      font-weight: 600;
-      padding: 0 24px;
-      transition: all 0.3s !important;
-      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3) !important;
-    }
-
-    .barcode-search-btn:hover {
-      transform: translateY(-2px) !important;
-      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4) !important;
-    }
-
-    .barcode-search-btn mat-icon {
-      margin-left: 6px;
-    }
-
-    .barcode-clear-btn {
-      color: #6b7280 !important;
-      transition: all 0.3s;
-    }
-
-    .barcode-clear-btn:hover {
-      color: #ef4444 !important;
-      background: #fee2e2 !important;
-      border-radius: 50%;
-    }
-
-    .barcode-hint {
-      margin-top: 12px;
-      font-size: 14px;
-      border-radius: 10px;
-      animation: slideDown 0.3s ease-out;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .hint-success {
-      color: #065f46;
-      background: #d1fae5;
-      padding: 10px 16px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-right: 4px solid #059669;
-    }
-
-    .hint-success mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      color: #059669;
-    }
-
-    .hint-success strong {
-      color: #065f46;
-    }
-
-    .hint-error {
-      color: #991b1b;
-      background: #fee2e2;
-      padding: 10px 16px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-right: 4px solid #dc2626;
-    }
-
-    .hint-error mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      color: #dc2626;
     }
 
     /* ==========================================================================
@@ -1389,34 +1113,6 @@ export class TraineeSelectionDialogComponent {
         gap: 16px;
       }
 
-      .barcode-search-container {
-        padding: 12px 16px;
-      }
-
-      .barcode-search-row {
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .barcode-input-field {
-        min-width: 100%;
-      }
-
-      .barcode-search-btn {
-        flex: 1;
-        padding: 0 16px;
-        height: 40px;
-        font-size: 13px;
-      }
-
-      .barcode-hint-text {
-        display: none;
-      }
-
-      .barcode-title {
-        font-size: 13px;
-      }
-
       .form-row {
         flex-direction: column;
         gap: 0;
@@ -1473,23 +1169,6 @@ export class TraineeSelectionDialogComponent {
       .dialog-content {
         padding: 12px;
         max-height: 60vh;
-      }
-
-      .barcode-search-container {
-        padding: 10px 12px;
-      }
-
-      .barcode-search-header {
-        margin-bottom: 10px;
-      }
-
-      .barcode-search-btn {
-        font-size: 12px;
-        padding: 0 12px;
-      }
-
-      .barcode-input-field ::ng-deep .mat-form-field-infix {
-        padding: 6px 0 !important;
       }
 
       .full-width ::ng-deep .mat-form-field-infix {
@@ -1623,7 +1302,6 @@ export class TraineeSelectionDialogComponent {
       color: #8b5cf6 !important;
     }
 
-    /* Fix for time input */
     ::ng-deep input[type="time"]::-webkit-calendar-picker-indicator {
       filter: invert(0.5);
       cursor: pointer;
@@ -1645,13 +1323,9 @@ export class TraineeAttendanceDialogComponent implements OnInit {
   sessionOptions: SelectOption[] = [];
   attendanceStatuses: SelectOption[] = [];
   isLoadingSessions: boolean = false;
+  isTraineeRole: boolean = false;
 
   private sessionsData: any[] = [];
-
-  barcodeSearch: string = '';
-  barcodeSearchResult: { found: boolean; traineeName?: string; message?: string } | null = null;
-  private allTrainees: any[] = [];
-
   private readonly STATUS_ENUM_MAP: { [key: number]: string } = {
     1: 'PRESENT',
     2: 'ABSENT',
@@ -1664,14 +1338,14 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private traineeService: TraineeService,
     private notification: NotificationService,
-    private dialog: MatDialog,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {
-    this.allTrainees = data.trainees || [];
-    this.traineeOptions = this.allTrainees.map((t: any) => ({
-      value: t.id,
-      label: t.title || t.fullName
-    }));
+    // Check if user is TRAINEE role using AuthService
+    this.isTraineeRole = this.authService.hasRole('ROLE_TRAINEE');
+    
+    // Set trainee options
+    this.traineeOptions = data.trainees || [];
 
     this.sessionOptions = data.sessionOptions || [];
     this.sessionsData = data.sessions || [];
@@ -1680,6 +1354,11 @@ export class TraineeAttendanceDialogComponent implements OnInit {
       value: this.STATUS_ENUM_MAP[s.id] || s.id,
       label: s.title
     }));
+
+    // For TRAINEE role, set traineeId from data
+    if (this.isTraineeRole && data.traineeId) {
+      this.data.form.get('traineeId')?.setValue(data.traineeId);
+    }
   }
 
   ngOnInit(): void {
@@ -1693,6 +1372,14 @@ export class TraineeAttendanceDialogComponent implements OnInit {
         this.data.loadSessionsFn(traineeId);
       }
     });
+
+    // If trainee is pre-selected (TRAINEE role), load sessions
+    const initialTraineeId = this.data.form.get('traineeId')?.value;
+    if (initialTraineeId && this.data.loadSessionsFn) {
+      this.isLoadingSessions = true;
+      this.cdr.detectChanges();
+      this.data.loadSessionsFn(initialTraineeId);
+    }
   }
 
   isFormValid(): boolean {
@@ -1814,107 +1501,6 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  searchTraineeInDialog(): void {
-    if (!this.barcodeSearch?.trim()) {
-      this.barcodeSearchResult = {
-        found: false,
-        message: 'الرجاء إدخال رقم الباركود'
-      };
-      return;
-    }
-
-    const searchValue = this.barcodeSearch.trim();
-
-    this.traineeService.getAllTraineesByFilter({ quickSearch: searchValue }).subscribe({
-      next: (res: any) => {
-        const foundTrainees = res.items || [];
-
-        if (foundTrainees.length === 0) {
-          this.setBarcodeSearchResult(false, 'لم يتم العثور على متدرب بهذا الرقم');
-          this.notification.showError('لم يتم العثور على متدرب');
-          return;
-        }
-
-        const exactMatch = foundTrainees.find((t: any) => t.nationalId === searchValue);
-
-        if (exactMatch) {
-          this.selectTraineeInDialog(exactMatch);
-          this.notification.showSuccess(`تم العثور على المتدرب: ${exactMatch.title || exactMatch.fullName}`);
-          return;
-        }
-
-        if (foundTrainees.length > 1) {
-          this.showTraineeSelectionDialog(foundTrainees);
-          return;
-        }
-
-        const trainee = foundTrainees[0];
-        this.selectTraineeInDialog(trainee);
-        this.notification.showSuccess(`تم العثور على المتدرب: ${trainee.title || trainee.fullName}`);
-      },
-      error: () => {
-        this.setBarcodeSearchResult(false, 'حدث خطأ في البحث عن المتدرب');
-        this.notification.showError('حدث خطأ في البحث عن المتدرب');
-      }
-    });
-  }
-
-  private selectTraineeInDialog(trainee: any): void {
-    this.barcodeSearchResult = {
-      found: true,
-      traineeName: trainee.title || trainee.fullName
-    };
-    
-    this.data.form.get('traineeId')?.setValue(trainee.id);
-    this.barcodeSearch = '';
-    
-    this.data.form.get('courseSessionId')?.setValue(null);
-    this.data.form.get('status')?.setValue(null);
-    this.data.form.get('checkInTime')?.setValue('');
-    this.data.form.get('checkOutTime')?.setValue('');
-    
-    if (this.data.loadSessionsFn) {
-      this.isLoadingSessions = true;
-      this.sessionOptions = [];
-      this.sessionsData = [];
-      this.cdr.detectChanges();
-      this.data.loadSessionsFn(trainee.id);
-    }
-    
-    this.cdr.detectChanges();
-  }
-
-  private setBarcodeSearchResult(found: boolean, message: string): void {
-    this.barcodeSearchResult = { found, message };
-  }
-
-  private showTraineeSelectionDialog(trainees: any[]): void {
-    const selectionDialog = this.dialog.open(TraineeSelectionDialogComponent, {
-      width: '500px',
-      maxWidth: '90vw',
-      data: { trainees }
-    });
-
-    selectionDialog.afterClosed().subscribe((selected: any) => {
-      if (selected) {
-        this.selectTraineeInDialog(selected);
-        this.notification.showSuccess(`تم اختيار المتدرب: ${selected.title || selected.fullName}`);
-      }
-    });
-  }
-
-  onDialogBarcodeKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.searchTraineeInDialog();
-    }
-  }
-
-  clearBarcodeSearch(): void {
-    this.barcodeSearch = '';
-    this.barcodeSearchResult = null;
-  }
-
   save(): void {
     if (!this.isFormValid()) {
       this.notification.showWarning('الرجاء تعبئة جميع الحقول المطلوبة');
@@ -1949,7 +1535,7 @@ export class TraineeAttendanceDialogComponent implements OnInit {
 }
 
 // ============================================================================
-// MAIN COMPONENT
+// MAIN COMPONENT - FULL COMPLETE CODE
 // ============================================================================
 
 @Component({
@@ -1978,7 +1564,6 @@ export class TraineeAttendanceDialogComponent implements OnInit {
     MatListModule,
     SearchableSelectComponent,
     TraineeAttendanceDetailsModalComponent,
-    TraineeSelectionDialogComponent,
     AttendanceExportPageSelectDialogComponent,
     FastAttendanceDialogComponent
   ],
@@ -2017,14 +1602,14 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   sessions: any[] = [];
   trainees: any[] = [];
 
-  // Filters
+  // Filters - HIDDEN for TRAINEE role
   selectedCourseId: number | null = null;
   selectedSessionId: number | null = null;
   selectedStatus: string | null = null;
   fromDate: string = '';
   toDate: string = '';
 
-  // Barcode
+  // Barcode - HIDDEN for TRAINEE role
   barcodeSearch: string = '';
   isBarcodeMode: boolean = false;
 
@@ -2049,9 +1634,18 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
     attendanceRate: 0
   };
 
+  // ========== ROLE-BASED ACCESS ==========
+  isTraineeRole: boolean = false;
+  isAdminOrSuperAdmin: boolean = false;
+  currentUserId: number | null = null;
+  traineeUserId: number | null = null;
+
   // ========== TRAINEE IMAGE CACHE ==========
   traineeImageCache: Map<number, SafeUrl> = new Map();
   traineeImageLoading: Set<number> = new Set();
+
+  // Cleanup
+  private destroy$ = new Subject<void>();
 
   // View children
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -2074,8 +1668,30 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
     private dialog: MatDialog,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private authService: AuthService
   ) {
+    // ============================================================
+    // CHECK USER ROLE USING AUTH SERVICE
+    // ============================================================
+    this.isTraineeRole = this.authService.hasRole('ROLE_TRAINEE');
+    this.isAdminOrSuperAdmin = this.authService.hasRole('ROLE_ADMIN') || this.authService.hasRole('ROLE_SUPER_ADMIN');
+    
+    // Get current user ID from AuthService
+    this.currentUserId = this.authService.currentUser?.userId || null;
+    
+    // For TRAINEE role, the traineeUserId is the same as the user ID
+    if (this.isTraineeRole) {
+      this.traineeUserId = this.currentUserId;
+    }
+
+    console.log('🔐 Role-based access initialized:');
+    console.log('  - isTraineeRole:', this.isTraineeRole);
+    console.log('  - isAdminOrSuperAdmin:', this.isAdminOrSuperAdmin);
+    console.log('  - currentUserId:', this.currentUserId);
+    console.log('  - traineeUserId:', this.traineeUserId);
+
+    // Initialize form
     this.attendanceForm = this.fb.group({
       traineeId: [null, Validators.required],
       courseSessionId: [null, Validators.required],
@@ -2086,6 +1702,11 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
       lateTime: [null],
       note: ['']
     });
+
+    // If TRAINEE role, set the trainee ID in the form
+    if (this.isTraineeRole && this.traineeUserId) {
+      this.attendanceForm.get('traineeId')?.setValue(this.traineeUserId);
+    }
   }
 
   // ==========================================================================
@@ -2095,8 +1716,14 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   ngOnInit(): void {
     this.loadSelectOptions();
     this.loadDayOptions();
-    this.loadCourses();
-    this.loadTrainees();
+    
+    // For TRAINEE role, we don't need to load courses/trainees
+    if (!this.isTraineeRole) {
+      this.loadCourses();
+      this.loadTrainees();
+    }
+    
+    // Always load attendances (backend will filter based on role)
     this.loadAttendances();
   }
 
@@ -2114,6 +1741,9 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    
     // Clean up all cached image URLs
     this.traineeImageCache.forEach((value, key) => {
       if (value && typeof value === 'string') {
@@ -2128,79 +1758,6 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   // TIME CONVERSION HELPER
   // ==========================================================================
 
-
-openFastAttendanceDialog(): void {
-  // Get all sessions WITHOUT pagination params
-  // The backend will use default values
-  this.courseSessionService.getAllSessionsByFilter().subscribe({
-    next: (res: any) => {
-      const sessions = res.items || [];
-      
-      console.log('Sessions loaded for Fast Attendance:', sessions);
-      
-      const sessionOptions = sessions.map((s: any) => {
-        const startTime = s.startTime || '';
-        const endTime = s.endTime || '';
-        const sessionDay = s.sessionDay || '';
-        const sessionTitle = s.title || `جلسة #${s.id}`;
-        const trainers = s.trainers || [];
-        const courseId = s.course?.id;
-        
-        // Build a descriptive label
-        let label = sessionTitle;
-        if (sessionDay) {
-          label += ` - ${this.getDayDisplay(sessionDay)}`;
-        }
-        if (startTime) {
-          const startTimeDisplay = this.convertTo12HourFormat(startTime);
-          label += ` ${startTimeDisplay}`;
-          if (endTime) {
-            const endTimeDisplay = this.convertTo12HourFormat(endTime);
-            label += ` - ${endTimeDisplay}`;
-          }
-        }
-        
-        return {
-          value: s.id,
-          label: label,
-          startTime: startTime,
-          endTime: endTime,
-          day: sessionDay,
-          trainers: trainers,
-          courseId: courseId
-        };
-      });
-
-      console.log('Session options with trainers:', sessionOptions);
-
-      const dialogRef = this.dialog.open(FastAttendanceDialogComponent, {
-        width: '750px',
-        maxWidth: '95vw',
-        disableClose: true,
-        data: {
-          sessionOptions: sessionOptions
-        }
-      });
-
-      dialogRef.afterClosed().subscribe((result: any) => {
-        if (result) {
-          this.loadAttendances();
-          if (result.success > 0) {
-            this.notification.showSuccess(`تم تسجيل ${result.success} حضور بنجاح`);
-          }
-          if (result.failed > 0) {
-            this.notification.showWarning(`فشل تسجيل ${result.failed} حضور`);
-          }
-        }
-      });
-    },
-    error: (error) => {
-      console.error('Error loading sessions:', error);
-      this.notification.showError('حدث خطأ في تحميل الجلسات');
-    }
-  });
-}
-
   convertTo12HourFormat(timeStr: string | undefined | null): string {
     return convertTo12HourFormat(timeStr);
   }
@@ -2209,25 +1766,19 @@ openFastAttendanceDialog(): void {
   // TRAINEE IMAGE HELPERS
   // ==========================================================================
 
-  /**
-   * Get trainee image URL from FID
-   */
   getTraineeImage(trainee: LightUserVTO | undefined | null): SafeUrl | null {
     if (!trainee?.imageUrl || !trainee?.id) {
       return null;
     }
     
-    // Check cache first
     if (this.traineeImageCache.has(trainee.id)) {
       return this.traineeImageCache.get(trainee.id)!;
     }
     
-    // Check if already loading
     if (this.traineeImageLoading.has(trainee.id)) {
       return null;
     }
     
-    // Start loading
     this.traineeImageLoading.add(trainee.id);
     
     this.fileService.downloadFile(trainee.imageUrl).subscribe({
@@ -2241,7 +1792,6 @@ openFastAttendanceDialog(): void {
       error: (error) => {
         console.error('Failed to load trainee image for:', trainee.fullName, error);
         this.traineeImageLoading.delete(trainee.id);
-        // Set a placeholder to avoid repeated attempts
         this.traineeImageCache.set(trainee.id, this.sanitizer.bypassSecurityTrustUrl(''));
         this.cdr.detectChanges();
       }
@@ -2250,29 +1800,19 @@ openFastAttendanceDialog(): void {
     return null;
   }
 
-  /**
-   * Get trainee display name
-   */
   getTraineeDisplayName(trainee: LightUserVTO | undefined | null): string {
     if (!trainee) return '-';
     return trainee.fullName || '-';
   }
 
-  /**
-   * Get trainee national ID
-   */
   getTraineeNationalId(trainee: LightUserVTO | undefined | null): string {
     if (!trainee) return '-';
     return trainee.nationalId || '-';
   }
 
-  /**
-   * Handle image loading error
-   */
   onImageError(trainee: LightUserVTO | undefined | null): void {
     if (!trainee?.id) return;
     
-    // Clear cache for this trainee if image fails to load
     if (this.traineeImageCache.has(trainee.id)) {
       const url = this.traineeImageCache.get(trainee.id);
       if (url && typeof url === 'string') {
@@ -2284,9 +1824,6 @@ openFastAttendanceDialog(): void {
     this.cdr.detectChanges();
   }
 
-  /**
-   * Get initials for avatar placeholder
-   */
   getInitials(name: string): string {
     if (!name) return '?';
     const parts = name.trim().split(' ');
@@ -2296,25 +1833,17 @@ openFastAttendanceDialog(): void {
     return name.substring(0, 2).toUpperCase();
   }
 
-      getTrainerDisplayName(trainer: any): string {
-      if (!trainer) return '-';
-      
-      // If it's a single object (EmployeeLookupVTO)
-      if (typeof trainer === 'object') {
-        return trainer.fullName || '-';
-      }
-      
-      // Fallback if it's a string
-      if (typeof trainer === 'string') {
-        return trainer;
-      }
-      
-      return '-';
+  getTrainerDisplayName(trainer: any): string {
+    if (!trainer) return '-';
+    if (typeof trainer === 'object') {
+      return trainer.fullName || trainer.title || '-';
     }
+    if (typeof trainer === 'string') {
+      return trainer;
+    }
+    return '-';
+  }
 
-  /**
-   * Get day display name
-   */
   getDayDisplay(day: string): string {
     const dayMap: { [key: string]: string } = {
       'SATURDAY': 'السبت',
@@ -2337,13 +1866,9 @@ openFastAttendanceDialog(): void {
   }
 
   // ==========================================================================
-  // PAGINATION METHODS - FIXED
+  // PAGINATION METHODS
   // ==========================================================================
 
-  /**
-   * Handle page change events from the paginator
-   * This includes page size changes and page navigation
-   */
   onPageChange(event: any): void {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
@@ -2368,74 +1893,90 @@ openFastAttendanceDialog(): void {
   }
 
   // ==========================================================================
-  // LOAD ATTENDANCES - UPDATED WITH DAY FILTER
+  // LOAD ATTENDANCES - BACKEND HANDLES ROLE-BASED FILTERING
   // ==========================================================================
 
   loadAttendances(): void {
     this.isLoading = true;
     const params: any = {};
 
-    // Apply filters
-    if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
+    // ============================================================
+    // IMPORTANT: For TRAINEE role, we ONLY send pagination info.
+    // The backend will filter by the logged-in user's trainee ID.
+    // ============================================================
     
-    // Status is already a string enum value (PRESENT, ABSENT, etc.)
-    if (this.selectedStatus) {
-      params.status = this.selectedStatus;
-    }
-    
-    // Add day filter
-    if (this.selectedDay) {
-      params.sessionDay = this.selectedDay;
-    }
-    
-    // Date format - convert to yyyy-MM-dd
-    if (this.fromDate) {
-      params.fromDate = this.formatDateForAPI(this.fromDate);
-    }
-    if (this.toDate) {
-      params.toDate = this.formatDateForAPI(this.toDate);
-    }
-    
-    // If barcode search is active, add traineeNationalId filter
-    if (this.barcodeSearch?.trim()) {
-      params.traineeNationalId = this.barcodeSearch.trim();
+    // For TRAINEE role, we do NOT send any filter parameters
+    // The backend will automatically filter by the current user's trainee ID
+    if (!this.isTraineeRole) {
+      // Only add filters for non-TRAINEE roles
+      
+      if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
+      
+      // Status is already a string enum value (PRESENT, ABSENT, etc.)
+      if (this.selectedStatus) {
+        params.status = this.selectedStatus;
+      }
+      
+      // Add day filter
+      if (this.selectedDay) {
+        params.sessionDay = this.selectedDay;
+      }
+      
+      // Date format - convert to yyyy-MM-dd
+      if (this.fromDate) {
+        params.fromDate = this.formatDateForAPI(this.fromDate);
+      }
+      if (this.toDate) {
+        params.toDate = this.formatDateForAPI(this.toDate);
+      }
+      
+      // Barcode search filter
+      if (this.barcodeSearch?.trim()) {
+        params.traineeNationalId = this.barcodeSearch.trim();
+      }
+    } else {
+      // For TRAINEE role, we only send pagination and sorting
+      // The backend will filter by traineeUserId
+      console.log('🔒 TRAINEE role: Only pagination/sorting parameters will be sent');
     }
 
-    // Pagination parameters - use current values
+    // Pagination parameters - always sent
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
 
-    // Sorting parameters
+    // Sorting parameters - always sent
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
 
-    console.log('Request params:', params);
+    console.log('📊 Request params:', params);
 
-    this.traineeAttendanceService.getAllAttendances(params).subscribe({
-      next: (res: any) => {
-        this.allAttendances = res.items || [];
-        this.totalItems = res.total || 0;
-        this.dataSource.data = this.allAttendances;
-        this.isLoading = false;
-        this.calculateSummary();
-        this.traineeImageCache.clear();
-        this.traineeImageLoading.clear();
-        
-        if (this.paginator) {
-          this.paginator.length = this.totalItems;
-          this.paginator.pageIndex = this.currentPage;
-          this.paginator.pageSize = this.pageSize;
+    this.traineeAttendanceService.getAllAttendances(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.allAttendances = res.items || [];
+          this.totalItems = res.total || 0;
+          this.dataSource.data = this.allAttendances;
+          this.isLoading = false;
+          this.calculateSummary();
+          this.traineeImageCache.clear();
+          this.traineeImageLoading.clear();
+          
+          if (this.paginator) {
+            this.paginator.length = this.totalItems;
+            this.paginator.pageIndex = this.currentPage;
+            this.paginator.pageSize = this.pageSize;
+          }
+          
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Load attendances error:', error);
+          this.notification.showError('حدث خطأ في تحميل بيانات الحضور');
+          this.isLoading = false;
+          this.cdr.detectChanges();
         }
-        
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Load attendances error:', error);
-        this.notification.showError('حدث خطأ في تحميل بيانات الحضور');
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+      });
   }
 
   /**
@@ -2445,18 +1986,15 @@ openFastAttendanceDialog(): void {
     if (!dateStr) return '';
     
     try {
-      // If it's already in yyyy-MM-dd format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         return dateStr;
       }
       
-      // Try to parse the date
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
         return dateStr;
       }
       
-      // Format as yyyy-MM-dd
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -2483,10 +2021,16 @@ openFastAttendanceDialog(): void {
   }
 
   // ==========================================================================
-  // BARCODE SEARCH - FILTERING ONLY
+  // BARCODE SEARCH - HIDDEN FOR TRAINEE ROLE
   // ==========================================================================
 
   searchTraineeByBarcode(): void {
+    // TRAINEE role cannot use barcode search
+    if (this.isTraineeRole) {
+      this.notification.showWarning('غير مسموح لك باستخدام البحث بالباركود');
+      return;
+    }
+
     if (!this.barcodeSearch?.trim()) {
       this.notification.showWarning('الرجاء إدخال رقم الباركود');
       return;
@@ -2498,18 +2042,12 @@ openFastAttendanceDialog(): void {
     const params: any = {};
 
     if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
-    
-    // Status is already a string enum value
     if (this.selectedStatus) {
       params.status = this.selectedStatus;
     }
-    
-    // Add day filter
     if (this.selectedDay) {
       params.sessionDay = this.selectedDay;
     }
-    
-    // Date format
     if (this.fromDate) {
       params.fromDate = this.formatDateForAPI(this.fromDate);
     }
@@ -2517,50 +2055,48 @@ openFastAttendanceDialog(): void {
       params.toDate = this.formatDateForAPI(this.toDate);
     }
     
-    // Add traineeNationalId filter
     params.traineeNationalId = searchValue;
-    
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
 
     if (this.sortBy) params.orderBy = this.sortBy;
     if (this.sortDir) params.orderDir = this.sortDir;
 
-    console.log('Barcode search params:', params);
-
-    this.traineeAttendanceService.getAllAttendances(params).subscribe({
-      next: (res: any) => {
-        this.allAttendances = res.items || [];
-        this.totalItems = res.total || 0;
-        this.dataSource.data = this.allAttendances;
-        this.isLoading = false;
-        this.calculateSummary();
-        this.traineeImageCache.clear();
-        this.traineeImageLoading.clear();
-        
-        if (this.paginator) {
-          this.paginator.length = this.totalItems;
-          this.paginator.pageIndex = this.currentPage;
-          this.paginator.pageSize = this.pageSize;
+    this.traineeAttendanceService.getAllAttendances(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.allAttendances = res.items || [];
+          this.totalItems = res.total || 0;
+          this.dataSource.data = this.allAttendances;
+          this.isLoading = false;
+          this.calculateSummary();
+          this.traineeImageCache.clear();
+          this.traineeImageLoading.clear();
+          
+          if (this.paginator) {
+            this.paginator.length = this.totalItems;
+            this.paginator.pageIndex = this.currentPage;
+            this.paginator.pageSize = this.pageSize;
+          }
+          
+          this.cdr.detectChanges();
+          
+          if (this.allAttendances.length === 0) {
+            this.notification.showWarning(`لم يتم العثور على سجلات حضور للمتدرب برقم: ${searchValue}`);
+          } else {
+            this.notification.showSuccess(`تم العثور على ${this.allAttendances.length} سجل حضور للمتدرب`);
+          }
+          
+          this.clearBarcodeSearch();
+        },
+        error: (error) => {
+          console.error('Barcode search error:', error);
+          this.isLoading = false;
+          this.notification.showError('حدث خطأ في البحث عن سجلات الحضور');
+          this.cdr.detectChanges();
         }
-        
-        this.cdr.detectChanges();
-        
-        if (this.allAttendances.length === 0) {
-          this.notification.showWarning(`لم يتم العثور على سجلات حضور للمتدرب برقم: ${searchValue}`);
-        } else {
-          this.notification.showSuccess(`تم العثور على ${this.allAttendances.length} سجل حضور للمتدرب`);
-        }
-        
-        this.clearBarcodeSearch();
-      },
-      error: (error) => {
-        console.error('Barcode search error:', error);
-        this.isLoading = false;
-        this.notification.showError('حدث خطأ في البحث عن سجلات الحضور');
-        this.cdr.detectChanges();
-      }
-    });
+      });
   }
 
   clearBarcodeFilter(): void {
@@ -2584,6 +2120,12 @@ openFastAttendanceDialog(): void {
   }
 
   toggleBarcodeMode(): void {
+    // TRAINEE role cannot use barcode mode
+    if (this.isTraineeRole) {
+      this.notification.showWarning('غير مسموح لك باستخدام البحث بالباركود');
+      return;
+    }
+    
     this.isBarcodeMode = !this.isBarcodeMode;
     if (this.isBarcodeMode) {
       setTimeout(() => this.barcodeInput?.nativeElement.focus(), 100);
@@ -2607,32 +2149,36 @@ openFastAttendanceDialog(): void {
   }
 
   private loadCourses(): void {
-    this.courseService.getAllCourses().subscribe({
-      next: (res: any) => {
-        this.courses = res.items || [];
-        this.courseOptions = [
-          { value: null, label: 'الكل' },
-          ...this.courses.map(c => ({ value: c.id, label: c.title }))
-        ];
-      },
-      error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
-    });
+    this.courseService.getAllCourses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.courses = res.items || [];
+          this.courseOptions = [
+            { value: null, label: 'الكل' },
+            ...this.courses.map(c => ({ value: c.id, label: c.title }))
+          ];
+        },
+        error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
+      });
   }
 
   private loadTrainees(): void {
-    this.enrollmentService.getAllEnrollmentsByFilter().subscribe({
-      next: (res: any) => {
-        const uniqueTrainees = new Map();
-        const items: EnrollmentListItem[] = res.items || [];
-        items.forEach((e: EnrollmentListItem) => {
-          if (e.trainee && !uniqueTrainees.has(e.trainee.id)) {
-            uniqueTrainees.set(e.trainee.id, e.trainee);
-          }
-        });
-        this.trainees = Array.from(uniqueTrainees.values());
-      },
-      error: () => this.notification.showError('حدث خطأ في تحميل المتدربين')
-    });
+    this.enrollmentService.getAllEnrollmentsByFilter()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const uniqueTrainees = new Map();
+          const items: EnrollmentListItem[] = res.items || [];
+          items.forEach((e: EnrollmentListItem) => {
+            if (e.trainee && !uniqueTrainees.has(e.trainee.id)) {
+              uniqueTrainees.set(e.trainee.id, e.trainee);
+            }
+          });
+          this.trainees = Array.from(uniqueTrainees.values());
+        },
+        error: () => this.notification.showError('حدث خطأ في تحميل المتدربين')
+      });
   }
 
   // ==========================================================================
@@ -2640,36 +2186,40 @@ openFastAttendanceDialog(): void {
   // ==========================================================================
 
   loadTraineeSessions(traineeId: number): void {
-    this.isLoading = true;
+    this.isLoadingSessions = true;
 
-    this.enrollmentService.getAllEnrollmentsByFilter({ traineeId }).subscribe({
-      next: (res: any) => {
-        const items: EnrollmentListItem[] = res.items || [];
+    this.enrollmentService.getAllEnrollmentsByFilter({ traineeId })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const items: EnrollmentListItem[] = res.items || [];
 
-        if (items.length === 0) {
-          this.setEmptySessions('هذا المتدرب غير مسجل في أي دورة');
-          return;
+          if (items.length === 0) {
+            this.setEmptySessions('هذا المتدرب غير مسجل في أي دورة');
+            return;
+          }
+
+          const courseIds = items
+            .map((e: EnrollmentListItem) => e.course?.id)
+            .filter((id: any) => id && id > 0);
+
+          if (courseIds.length === 0) {
+            this.setEmptySessions('لا توجد دورات صالحة لهذا المتدرب');
+            return;
+          }
+
+          this.loadSessionsForCourses(courseIds);
+        },
+        error: (error) => {
+          console.error('Load trainee sessions error:', error);
+          this.notification.showError('حدث خطأ في تحميل تسجيلات المتدرب');
+          this.isLoadingSessions = false;
+          this.updateDialogSessions();
         }
-
-        const courseIds = items
-          .map((e: EnrollmentListItem) => e.course?.id)
-          .filter((id: any) => id && id > 0);
-
-        if (courseIds.length === 0) {
-          this.setEmptySessions('لا توجد دورات صالحة لهذا المتدرب');
-          return;
-        }
-
-        this.loadSessionsForCourses(courseIds);
-      },
-      error: (error) => {
-        console.error('Load trainee sessions error:', error);
-        this.notification.showError('حدث خطأ في تحميل تسجيلات المتدرب');
-        this.isLoading = false;
-        this.updateDialogSessions();
-      }
-    });
+      });
   }
+
+  private isLoadingSessions: boolean = false;
 
   private loadSessionsForCourses(courseIds: number[]): void {
     let allSessions: any[] = [];
@@ -2681,25 +2231,26 @@ openFastAttendanceDialog(): void {
     }
 
     courseIds.forEach((courseId: number) => {
-      // Use getAllSessionsByFilter without courseId
-      this.courseSessionService.getAllSessionsByFilter().subscribe({
-        next: (res: any) => {
-          const sessions = res.items || [];
-          allSessions = [...allSessions, ...sessions];
-          completed++;
+      this.courseSessionService.getAllCourseSessionsByFilter(courseId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            const sessions = res.items || [];
+            allSessions = [...allSessions, ...sessions];
+            completed++;
 
-          if (completed === courseIds.length) {
-            this.setSessions(allSessions);
+            if (completed === courseIds.length) {
+              this.setSessions(allSessions);
+            }
+          },
+          error: (error) => {
+            console.error(`Error loading sessions for course ${courseId}:`, error);
+            completed++;
+            if (completed === courseIds.length) {
+              this.setSessions(allSessions);
+            }
           }
-        },
-        error: (error) => {
-          console.error(`Error loading sessions:`, error);
-          completed++;
-          if (completed === courseIds.length) {
-            this.setSessions(allSessions);
-          }
-        }
-      });
+        });
     });
   }
 
@@ -2712,21 +2263,20 @@ openFastAttendanceDialog(): void {
         label: `${s.title} - ${s.sessionDay || s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
       }))
     ];
-    this.isLoading = false;
+    this.isLoadingSessions = false;
     this.updateDialogSessions();
 
     if (this.sessions.length === 0) {
       this.notification.showWarning('لا توجد جلسات متاحة لهذا المتدرب');
     }
     
-    // Force change detection
     this.cdr.detectChanges();
   }
 
   private setEmptySessions(message: string): void {
     this.sessions = [];
     this.sessionOptions = [];
-    this.isLoading = false;
+    this.isLoadingSessions = false;
     this.notification.showWarning(message);
     this.updateDialogSessions();
   }
@@ -2742,36 +2292,48 @@ openFastAttendanceDialog(): void {
   }
 
   // ==========================================================================
-  // DIALOG MANAGEMENT
+  // DIALOG MANAGEMENT - WITH ROLE-BASED ACCESS
   // ==========================================================================
 
   openAttendanceDialog(attendanceId?: number): void {
+    // TRAINEE role can only view, not create/edit
+    if (this.isTraineeRole) {
+      if (attendanceId) {
+        this.viewAttendance(attendanceId);
+      } else {
+        this.notification.showWarning('غير مسموح لك بإضافة سجلات حضور');
+      }
+      return;
+    }
+
     this.editMode = !!attendanceId;
     this.editId = attendanceId || null;
 
     if (this.editMode && attendanceId) {
-      this.traineeAttendanceService.getAttendanceById(attendanceId).subscribe({
-        next: (res: any) => {
-          const statusEnumName = STATUS_ENUM_MAP[res.status?.id] || res.status;
-          this.attendanceForm.patchValue({
-            traineeId: res.trainee?.id,
-            courseSessionId: res.session?.id,
-            status: statusEnumName,
-            attendanceDate: res.attendanceDate,
-            checkInTime: res.checkInTime ? convertTo12HourFormat(res.checkInTime) : '',
-            checkOutTime: res.checkOutTime ? convertTo12HourFormat(res.checkOutTime) : '',
-            lateTime: res.lateTime,
-            note: res.note
-          });
+      this.traineeAttendanceService.getAttendanceById(attendanceId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            const statusEnumName = STATUS_ENUM_MAP[res.status?.id] || res.status;
+            this.attendanceForm.patchValue({
+              traineeId: res.trainee?.id,
+              courseSessionId: res.session?.id,
+              status: statusEnumName,
+              attendanceDate: res.attendanceDate,
+              checkInTime: res.checkInTime ? convertTo12HourFormat(res.checkInTime) : '',
+              checkOutTime: res.checkOutTime ? convertTo12HourFormat(res.checkOutTime) : '',
+              lateTime: res.lateTime,
+              note: res.note
+            });
 
-          if (res.trainee?.id) {
-            this.loadTraineeSessionsForEdit(res.trainee.id);
-          } else {
-            this.openDialog();
-          }
-        },
-        error: () => this.notification.showError('حدث خطأ في تحميل البيانات')
-      });
+            if (res.trainee?.id) {
+              this.loadTraineeSessionsForEdit(res.trainee.id);
+            } else {
+              this.openDialog();
+            }
+          },
+          error: () => this.notification.showError('حدث خطأ في تحميل البيانات')
+        });
       return;
     }
 
@@ -2791,6 +2353,12 @@ openFastAttendanceDialog(): void {
   }
 
   openAttendanceDialogWithTrainee(trainee: any): void {
+    // TRAINEE role cannot create attendance
+    if (this.isTraineeRole) {
+      this.notification.showWarning('غير مسموح لك بإضافة سجلات حضور');
+      return;
+    }
+
     this.editMode = false;
     this.editId = null;
 
@@ -2812,161 +2380,217 @@ openFastAttendanceDialog(): void {
   }
 
   private loadTraineeSessionsForEdit(traineeId: number): void {
-    this.enrollmentService.getAllEnrollmentsByFilter({ traineeId }).subscribe({
-      next: (res: any) => {
-        const items: EnrollmentListItem[] = res.items || [];
-        const courseIds = items
-          .map((e: EnrollmentListItem) => e.course?.id)
-          .filter((id: any) => id && id > 0);
+    this.enrollmentService.getAllEnrollmentsByFilter({ traineeId })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const items: EnrollmentListItem[] = res.items || [];
+          const courseIds = items
+            .map((e: EnrollmentListItem) => e.course?.id)
+            .filter((id: any) => id && id > 0);
 
-        if (courseIds.length === 0) {
+          if (courseIds.length === 0) {
+            this.sessions = [];
+            this.sessionOptions = [];
+            this.openDialog();
+            return;
+          }
+
+          let allSessions: any[] = [];
+          let completed = 0;
+
+          courseIds.forEach((courseId: number) => {
+            this.courseSessionService.getAllCourseSessionsByFilter(courseId)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (res2: any) => {
+                  const sessions = res2.items || [];
+                  allSessions = [...allSessions, ...sessions];
+                  completed++;
+
+                  if (completed === courseIds.length) {
+                    this.sessions = allSessions;
+                    this.sessionOptions = this.sessions.map((s: any) => ({
+                      value: s.id,
+                      label: `${s.title} - ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
+                    }));
+                    this.updateDialogSessions();
+                    this.openDialog();
+                  }
+                },
+                error: () => {
+                  completed++;
+                  if (completed === courseIds.length) {
+                    this.sessions = allSessions;
+                    this.sessionOptions = this.sessions.map((s: any) => ({
+                      value: s.id,
+                      label: `${s.title} - ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
+                    }));
+                    this.updateDialogSessions();
+                    this.openDialog();
+                  }
+                }
+              });
+          });
+        },
+        error: () => {
           this.sessions = [];
           this.sessionOptions = [];
           this.openDialog();
-          return;
         }
-
-        let allSessions: any[] = [];
-        let completed = 0;
-
-        courseIds.forEach((courseId: number) => {
-          this.courseSessionService.getAllCourseSessionsByFilter(courseId).subscribe({
-            next: (res2: any) => {
-              const sessions = res2.items || [];
-              allSessions = [...allSessions, ...sessions];
-              completed++;
-
-              if (completed === courseIds.length) {
-                this.sessions = allSessions;
-                this.sessionOptions = this.sessions.map((s: any) => ({
-                  value: s.id,
-                  label: `${s.title} - ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
-                }));
-                this.updateDialogSessions();
-                this.openDialog();
-              }
-            },
-            error: () => {
-              completed++;
-              if (completed === courseIds.length) {
-                this.sessions = allSessions;
-                this.sessionOptions = this.sessions.map((s: any) => ({
-                  value: s.id,
-                  label: `${s.title} - ${s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
-                }));
-                this.updateDialogSessions();
-                this.openDialog();
-              }
-            }
-          });
-        });
-      },
-      error: () => {
-        this.sessions = [];
-        this.sessionOptions = [];
-        this.openDialog();
-      }
-    });
+      });
   }
 
   private openDialog(): void {
+    // Prepare trainees list
+    let traineesToShow = this.trainees;
+    let preSelectedTraineeId: number;
+    
+    // For TRAINEE role, we need to get the trainee's own record
+    if (this.isTraineeRole && this.traineeUserId) {
+      // Load the trainee's own data using the user ID
+      this.traineeService.getTraineeUserById(this.traineeUserId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (trainee: any) => {
+            if (trainee) {
+              preSelectedTraineeId = trainee.id;
+              traineesToShow = [trainee];
+              // Set the trainee ID in the form
+              this.attendanceForm.get('traineeId')?.setValue(preSelectedTraineeId);
+              // Load sessions for this trainee
+              this.loadTraineeSessions(preSelectedTraineeId);
+              this.openDialogWithData(traineesToShow, preSelectedTraineeId);
+            } else {
+              this.notification.showError('لم يتم العثور على بيانات المتدرب');
+            }
+          },
+          error: () => {
+            this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
+          }
+        });
+      return;
+    }
+    
+    this.openDialogWithData(traineesToShow, null);
+  }
+
+  private openDialogWithData(trainees: any[], preSelectedTraineeId: number | null): void {
     const dialogRef = this.dialog.open(TraineeAttendanceDialogComponent, {
       width: '700px',
       maxWidth: '95vw',
       disableClose: true,
       data: {
         form: this.attendanceForm,
-        trainees: this.trainees,
+        trainees: trainees,
         sessions: this.sessions,
         sessionOptions: this.sessionOptions,
         attendanceStatuses: this.attendanceStatuses,
         editMode: this.editMode,
         title: this.editMode ? 'تعديل سجل حضور' : 'تسجيل حضور جديد',
-        loadSessionsFn: (traineeId: number) => this.loadTraineeSessions(traineeId)
+        loadSessionsFn: (traineeId: number) => this.loadTraineeSessions(traineeId),
+        traineeId: preSelectedTraineeId // Pass for TRAINEE role
       }
     });
 
-    dialogRef.afterClosed().subscribe((result: any) => {
-      if (result) {
-        const serviceCall = this.editMode
-          ? this.traineeAttendanceService.updateAttendance(this.editId!, result)
-          : this.traineeAttendanceService.createAttendance(result);
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result: any) => {
+        if (result) {
+          const serviceCall = this.editMode
+            ? this.traineeAttendanceService.updateAttendance(this.editId!, result)
+            : this.traineeAttendanceService.createAttendance(result);
 
-        serviceCall.subscribe({
-          next: () => {
-            this.notification.showSuccess(
-              this.editMode ? 'تم تحديث سجل الحضور بنجاح' : 'تم إضافة سجل الحضور بنجاح'
-            );
-            this.loadAttendances();
-          },
-          error: (err) => this.notification.showError(err.error?.messageEn || 'حدث خطأ في حفظ سجل الحضور')
-        });
-      }
-    });
+          serviceCall
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.notification.showSuccess(
+                  this.editMode ? 'تم تحديث سجل الحضور بنجاح' : 'تم إضافة سجل الحضور بنجاح'
+                );
+                this.loadAttendances();
+              },
+              error: (err) => this.notification.showError(err.error?.messageEn || 'حدث خطأ في حفظ سجل الحضور')
+            });
+        }
+      });
   }
 
   // ==========================================================================
-  // ATTENDANCE CRUD
+  // ATTENDANCE CRUD - DELETE ONLY FOR ADMIN/SUPER_ADMIN
   // ==========================================================================
 
   viewAttendance(id: number): void {
-    this.traineeAttendanceService.getAttendanceById(id).subscribe({
-      next: (attendance: TraineeAttendanceVTO) => {
-        const formattedAttendance = {
-          ...attendance,
-          checkInTime: convertTo12HourFormat(attendance.checkInTime),
-          checkOutTime: convertTo12HourFormat(attendance.checkOutTime)
-        };
-        this.dialog.open(TraineeAttendanceDetailsModalComponent, {
-          data: formattedAttendance,
-          width: '650px',
-          maxWidth: '90vw'
-        });
-      },
-      error: () => this.notification.showError('حدث خطأ في تحميل بيانات سجل الحضور')
-    });
+    this.traineeAttendanceService.getAttendanceById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (attendance: TraineeAttendanceVTO) => {
+          const formattedAttendance = {
+            ...attendance,
+            checkInTime: convertTo12HourFormat(attendance.checkInTime),
+            checkOutTime: convertTo12HourFormat(attendance.checkOutTime)
+          };
+          this.dialog.open(TraineeAttendanceDetailsModalComponent, {
+            data: formattedAttendance,
+            width: '650px',
+            maxWidth: '90vw'
+          });
+        },
+        error: () => this.notification.showError('حدث خطأ في تحميل بيانات سجل الحضور')
+      });
   }
 
   deleteAttendance(id: number): void {
+    // Only ADMIN or SUPER_ADMIN can delete
+    if (!this.isAdminOrSuperAdmin) {
+      this.notification.showWarning('غير مسموح لك بحذف سجلات الحضور');
+      return;
+    }
+
     if (confirm('هل أنت متأكد من حذف سجل الحضور؟')) {
-      this.traineeAttendanceService.deleteAttendance(id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم حذف سجل الحضور بنجاح');
-          this.loadAttendances();
-        },
-        error: () => this.notification.showError('حدث خطأ في حذف سجل الحضور')
-      });
+      this.traineeAttendanceService.deleteAttendance(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.notification.showSuccess('تم حذف سجل الحضور بنجاح');
+            this.loadAttendances();
+          },
+          error: () => this.notification.showError('حدث خطأ في حذف سجل الحضور')
+        });
     }
   }
 
   // ==========================================================================
-  // FILTERS
+  // FILTERS - HIDDEN FOR TRAINEE ROLE
   // ==========================================================================
 
   onCourseChange(): void {
+    // TRAINEE role cannot change course filter
+    if (this.isTraineeRole) return;
+    
     if (this.selectedCourseId) {
-      // Use getAllCourseSessionsByFilter with courseId
-      this.courseSessionService.getAllCourseSessionsByFilter(this.selectedCourseId).subscribe({
-        next: (res: any) => {
-          this.sessions = res.items || [];
-          this.sessionOptions = [
-            { value: null, label: 'الكل' },
-            ...this.sessions.map(s => ({
-              value: s.id,
-              label: `${s.title} - ${s.sessionDay || s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
-            }))
-          ];
-          // Reset selected session when course changes
-          this.selectedSessionId = null;
-          this.updateDialogSessions();
-          this.loadAttendances();
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          console.error('Load sessions error:', error);
-          this.notification.showError('حدث خطأ في تحميل الجلسات');
-        }
-      });
+      this.courseSessionService.getAllCourseSessionsByFilter(this.selectedCourseId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            this.sessions = res.items || [];
+            this.sessionOptions = [
+              { value: null, label: 'الكل' },
+              ...this.sessions.map(s => ({
+                value: s.id,
+                label: `${s.title} - ${s.sessionDay || s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('ar-EG') : ''}`
+              }))
+            ];
+            this.selectedSessionId = null;
+            this.updateDialogSessions();
+            this.loadAttendances();
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Load sessions error:', error);
+            this.notification.showError('حدث خطأ في تحميل الجلسات');
+          }
+        });
     } else {
       this.sessions = [];
       this.sessionOptions = [{ value: null, label: 'الكل' }];
@@ -2978,6 +2602,9 @@ openFastAttendanceDialog(): void {
   }
 
   resetFilters(): void {
+    // TRAINEE role cannot reset filters
+    if (this.isTraineeRole) return;
+    
     this.selectedCourseId = null;
     this.selectedSessionId = null;
     this.selectedStatus = null;
@@ -3001,10 +2628,87 @@ openFastAttendanceDialog(): void {
   }
 
   // ==========================================================================
-  // EXPORT FUNCTIONS WITH PAGE SELECTION
+  // FAST ATTENDANCE - ONLY FOR ADMIN/SUPER_ADMIN
   // ==========================================================================
 
-  private showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
+  openFastAttendanceDialog(): void {
+    // Only ADMIN or SUPER_ADMIN can use fast attendance
+    if (!this.isAdminOrSuperAdmin) {
+      this.notification.showWarning('غير مسموح لك باستخدام خاصية التسجيل السريع للحضور');
+      return;
+    }
+
+    this.courseSessionService.getAllSessionsByFilter()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          const sessions = res.items || [];
+          
+          const sessionOptions = sessions.map((s: any) => {
+            const startTime = s.startTime || '';
+            const endTime = s.endTime || '';
+            const sessionDay = s.sessionDay || '';
+            const sessionTitle = s.title || `جلسة #${s.id}`;
+            
+            let label = sessionTitle;
+            if (sessionDay) {
+              label += ` - ${this.getDayDisplay(sessionDay)}`;
+            }
+            if (startTime) {
+              const startTimeDisplay = this.convertTo12HourFormat(startTime);
+              label += ` ${startTimeDisplay}`;
+              if (endTime) {
+                const endTimeDisplay = this.convertTo12HourFormat(endTime);
+                label += ` - ${endTimeDisplay}`;
+              }
+            }
+            
+            return {
+              value: s.id,
+              label: label,
+              startTime: startTime,
+              endTime: endTime,
+              day: sessionDay,
+              trainers: s.trainers || [],
+              courseId: s.course?.id
+            };
+          });
+
+          const dialogRef = this.dialog.open(FastAttendanceDialogComponent, {
+            width: '750px',
+            maxWidth: '95vw',
+            disableClose: true,
+            data: {
+              sessionOptions: sessionOptions
+            }
+          });
+
+          dialogRef.afterClosed()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((result: any) => {
+              if (result) {
+                this.loadAttendances();
+                if (result.success > 0) {
+                  this.notification.showSuccess(`تم تسجيل ${result.success} حضور بنجاح`);
+                }
+                if (result.failed > 0) {
+                  this.notification.showWarning(`فشل تسجيل ${result.failed} حضور`);
+                }
+              }
+            });
+        },
+        error: (error) => {
+          console.error('Error loading sessions:', error);
+          this.notification.showError('حدث خطأ في تحميل الجلسات');
+        }
+      });
+  }
+
+  // ==========================================================================
+  // EXPORT FUNCTIONS - WITH ROLE-BASED ACCESS
+  // ==========================================================================
+
+  private async showExportPageSelection(isCardPrint: boolean = false): Promise<any> {
     return new Promise((resolve) => {
       const totalPages = this.getTotalPages();
       
@@ -3039,11 +2743,14 @@ openFastAttendanceDialog(): void {
     for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
       const params: any = {};
 
-      if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
-      if (this.selectedStatus) params.status = this.selectedStatus;
-      if (this.selectedDay) params.sessionDay = this.selectedDay;
-      if (this.fromDate) params.fromDate = this.formatDateForAPI(this.fromDate);
-      if (this.toDate) params.toDate = this.formatDateForAPI(this.toDate);
+      // Only add filters for non-TRAINEE roles
+      if (!this.isTraineeRole) {
+        if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
+        if (this.selectedStatus) params.status = this.selectedStatus;
+        if (this.selectedDay) params.sessionDay = this.selectedDay;
+        if (this.fromDate) params.fromDate = this.formatDateForAPI(this.fromDate);
+        if (this.toDate) params.toDate = this.formatDateForAPI(this.toDate);
+      }
 
       params.pageNum = page;
       params.pageSize = this.pageSize;
@@ -3065,349 +2772,357 @@ openFastAttendanceDialog(): void {
     return allData;
   }
 
-async exportToExcel(): Promise<void> {
-  const result = await this.showExportPageSelection(false);
-  
-  if (!result) {
-    return;
-  }
-
-  let dataToExport: TraineeAttendanceListItem[] = [];
-
-  if (result.option === 'all') {
-    dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-  } else if (result.option === 'current') {
-    dataToExport = this.allAttendances;
-  } else if (result.option === 'range') {
-    dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
-  }
-
-  if (dataToExport.length === 0) {
-    this.notification.showWarning('لا توجد بيانات لتصديرها');
-    return;
-  }
-
-  const exportData = dataToExport.map((item, index) => ({
-    '#': index + 1,
-    'رقم الهوية': this.getTraineeNationalId(item.trainee),
-    'المتدرب': this.getTraineeDisplayName(item.trainee),
-    'الدورة': item.session.course.title || '-',
-    'الجلسة': item.session.title || '-',
-    'المدرب': this.getTrainerDisplayName(item.session.trainer), // Added trainer column
-    'اليوم': this.getDayDisplay(item.session.sessionDay),
-    'تاريخ الحضور': item.attendanceDate || '-',
-    'حالة الحضور': item.status?.title || '-',
-    'وقت الدخول': convertTo12HourFormat(item.checkInTime) || '-',
-    'وقت الخروج': convertTo12HourFormat(item.checkOutTime) || '-',
-    'وقت التأخير': item.lateTime ? `${item.lateTime} دقيقة` : '-'
-  }));
-
-  this.reportService.exportToExcel(exportData, 'trainee-attendance', 'سجلات الحضور');
-  this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
-}
-
-async exportToPDF(): Promise<void> {
-  const result = await this.showExportPageSelection(false);
-  
-  if (!result) {
-    return;
-  }
-
-  this.isLoading = true;
-
-  let dataToPrint: TraineeAttendanceListItem[] = [];
-
-  if (result.option === 'all') {
-    dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-  } else if (result.option === 'current') {
-    dataToPrint = this.allAttendances;
-  } else if (result.option === 'range') {
-    dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
-  }
-
-  if (dataToPrint.length === 0) {
-    this.notification.showWarning('لا توجد بيانات لتصديرها');
-    this.isLoading = false;
-    return;
-  }
-
-  const filterTexts: string[] = [];
-  
-  if (this.selectedCourseId) {
-    const course = this.courses.find(c => c.id === this.selectedCourseId);
-    if (course) filterTexts.push(`الدورة: ${course.title}`);
-  }
-  if (this.selectedSessionId) {
-    const session = this.sessions.find(s => s.id === this.selectedSessionId);
-    if (session) filterTexts.push(`الجلسة: ${session.title}`);
-  }
-  if (this.selectedStatus) {
-    const statusMap: { [key: string]: string } = {
-      'PRESENT': 'حاضر',
-      'ABSENT': 'غائب',
-      'LATE': 'متأخر',
-      'EXCUSED': 'معتذر'
-    };
-    const statusTitle = statusMap[this.selectedStatus];
-    if (statusTitle) {
-      filterTexts.push(`حالة الحضور: ${statusTitle}`);
+  async exportToExcel(): Promise<void> {
+    // TRAINEE role can export their own data
+    const result = await this.showExportPageSelection(false);
+    
+    if (!result) {
+      return;
     }
-  }
-  if (this.selectedDay) {
-    const dayMap: { [key: string]: string } = {
-      'SATURDAY': 'السبت',
-      'SUNDAY': 'الأحد',
-      'MONDAY': 'الإثنين',
-      'TUESDAY': 'الثلاثاء',
-      'WEDNESDAY': 'الأربعاء',
-      'THURSDAY': 'الخميس',
-      'FRIDAY': 'الجمعة'
-    };
-    const dayTitle = dayMap[this.selectedDay];
-    if (dayTitle) {
-      filterTexts.push(`اليوم: ${dayTitle}`);
+
+    let dataToExport: TraineeAttendanceListItem[] = [];
+
+    if (result.option === 'all') {
+      dataToExport = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToExport = this.allAttendances;
+    } else if (result.option === 'range') {
+      dataToExport = await this.fetchPagesForExport(result.startPage, result.endPage);
     }
-  }
-  if (this.fromDate) {
-    filterTexts.push(`من تاريخ: ${this.fromDate}`);
-  }
-  if (this.toDate) {
-    filterTexts.push(`إلى تاريخ: ${this.toDate}`);
+
+    if (dataToExport.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      return;
+    }
+
+    const exportData = dataToExport.map((item, index) => ({
+      '#': index + 1,
+      'رقم الهوية': this.getTraineeNationalId(item.trainee),
+      'المتدرب': this.getTraineeDisplayName(item.trainee),
+      'الدورة': item.session.course.title || '-',
+      'الجلسة': item.session.title || '-',
+      'المدرب': this.getTrainerDisplayName(item.session.trainer),
+      'اليوم': this.getDayDisplay(item.session.sessionDay),
+      'تاريخ الحضور': item.attendanceDate || '-',
+      'حالة الحضور': item.status?.title || '-',
+      'وقت الدخول': convertTo12HourFormat(item.checkInTime) || '-',
+      'وقت الخروج': convertTo12HourFormat(item.checkOutTime) || '-',
+      'وقت التأخير': item.lateTime ? `${item.lateTime} دقيقة` : '-'
+    }));
+
+    this.reportService.exportToExcel(exportData, 'trainee-attendance', 'سجلات الحضور');
+    this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
-  const total = dataToPrint.length;
-  const present = dataToPrint.filter(a => a.status?.id === 1).length;
-  const exportStats = {
-    total,
-    present,
-    absent: dataToPrint.filter(a => a.status?.id === 2).length,
-    late: dataToPrint.filter(a => a.status?.id === 3).length,
-    excused: dataToPrint.filter(a => a.status?.id === 4).length,
-    attendanceRate: total > 0 ? Math.round((present / total) * 100) : 0
-  };
+  async exportToPDF(): Promise<void> {
+    // TRAINEE role can export their own data
+    const result = await this.showExportPageSelection(false);
+    
+    if (!result) {
+      return;
+    }
 
-  let tableRows = '';
-  dataToPrint.forEach((item: TraineeAttendanceListItem, index: number) => {
-    const statusClass = this.getStatusClass(item.status?.id);
-    const statusStyles: { [key: string]: string } = {
-      present: 'background-color: #d1fae5; color: #065f46;',
-      absent: 'background-color: #fee2e2; color: #991b1b;',
-      late: 'background-color: #fef3c7; color: #92400e;',
-      excused: 'background-color: #dbeafe; color: #1e40af;'
+    this.isLoading = true;
+
+    let dataToPrint: TraineeAttendanceListItem[] = [];
+
+    if (result.option === 'all') {
+      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+    } else if (result.option === 'current') {
+      dataToPrint = this.allAttendances;
+    } else if (result.option === 'range') {
+      dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+    }
+
+    if (dataToPrint.length === 0) {
+      this.notification.showWarning('لا توجد بيانات لتصديرها');
+      this.isLoading = false;
+      return;
+    }
+
+    const filterTexts: string[] = [];
+    
+    // Only add filter texts for non-TRAINEE roles
+    if (!this.isTraineeRole) {
+      if (this.selectedCourseId) {
+        const course = this.courses.find(c => c.id === this.selectedCourseId);
+        if (course) filterTexts.push(`الدورة: ${course.title}`);
+      }
+      if (this.selectedSessionId) {
+        const session = this.sessions.find(s => s.id === this.selectedSessionId);
+        if (session) filterTexts.push(`الجلسة: ${session.title}`);
+      }
+      if (this.selectedStatus) {
+        const statusMap: { [key: string]: string } = {
+          'PRESENT': 'حاضر',
+          'ABSENT': 'غائب',
+          'LATE': 'متأخر',
+          'EXCUSED': 'معتذر'
+        };
+        const statusTitle = statusMap[this.selectedStatus];
+        if (statusTitle) {
+          filterTexts.push(`حالة الحضور: ${statusTitle}`);
+        }
+      }
+      if (this.selectedDay) {
+        const dayMap: { [key: string]: string } = {
+          'SATURDAY': 'السبت',
+          'SUNDAY': 'الأحد',
+          'MONDAY': 'الإثنين',
+          'TUESDAY': 'الثلاثاء',
+          'WEDNESDAY': 'الأربعاء',
+          'THURSDAY': 'الخميس',
+          'FRIDAY': 'الجمعة'
+        };
+        const dayTitle = dayMap[this.selectedDay];
+        if (dayTitle) {
+          filterTexts.push(`اليوم: ${dayTitle}`);
+        }
+      }
+      if (this.fromDate) {
+        filterTexts.push(`من تاريخ: ${this.fromDate}`);
+      }
+      if (this.toDate) {
+        filterTexts.push(`إلى تاريخ: ${this.toDate}`);
+      }
+    }
+
+    const total = dataToPrint.length;
+    const present = dataToPrint.filter(a => a.status?.id === 1).length;
+    const exportStats = {
+      total,
+      present,
+      absent: dataToPrint.filter(a => a.status?.id === 2).length,
+      late: dataToPrint.filter(a => a.status?.id === 3).length,
+      excused: dataToPrint.filter(a => a.status?.id === 4).length,
+      attendanceRate: total > 0 ? Math.round((present / total) * 100) : 0
     };
-    const statusStyle = statusStyles[statusClass] || '';
 
-    const checkInFormatted = convertTo12HourFormat(item.checkInTime);
-    const checkOutFormatted = convertTo12HourFormat(item.checkOutTime);
-    const trainerName = this.getTrainerDisplayName(item.session.trainer);
+    let tableRows = '';
+    dataToPrint.forEach((item: TraineeAttendanceListItem, index: number) => {
+      const statusClass = this.getStatusClass(item.status?.id);
+      const statusStyles: { [key: string]: string } = {
+        present: 'background-color: #d1fae5; color: #065f46;',
+        absent: 'background-color: #fee2e2; color: #991b1b;',
+        late: 'background-color: #fef3c7; color: #92400e;',
+        excused: 'background-color: #dbeafe; color: #1e40af;'
+      };
+      const statusStyle = statusStyles[statusClass] || '';
 
-    tableRows += `
-      <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getTraineeNationalId(item.trainee)}</td>
-        <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${this.getTraineeDisplayName(item.trainee)}</td>
-        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.session.course.title || '-'}</td>
-        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.session.title || '-'}</td>
-        <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${trainerName}</td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getDayDisplay(item.session.sessionDay)}</td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
-          ${item.status?.title || '-'}
-        </td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkInFormatted}</td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkOutFormatted}</td>
-        <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.lateTime ? item.lateTime + ' دقيقة' : '-'}</td>
-      </tr>
+      const checkInFormatted = convertTo12HourFormat(item.checkInTime);
+      const checkOutFormatted = convertTo12HourFormat(item.checkOutTime);
+      const trainerName = this.getTrainerDisplayName(item.session.trainer);
+
+      tableRows += `
+        <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getTraineeNationalId(item.trainee)}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd; font-weight: bold;">${this.getTraineeDisplayName(item.trainee)}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.session.course.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${item.session.title || '-'}</td>
+          <td style="text-align: right; padding: 8px; border: 1px solid #ddd;">${trainerName}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${this.getDayDisplay(item.session.sessionDay)}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd; ${statusStyle}">
+            ${item.status?.title || '-'}
+          </td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkInFormatted}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${checkOutFormatted}</td>
+          <td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${item.lateTime ? item.lateTime + ' دقيقة' : '-'}</td>
+        </tr>
+      `;
+    });
+
+    const printContainer = document.createElement('div');
+    printContainer.style.direction = 'rtl';
+    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+    printContainer.style.padding = '20px';
+    printContainer.style.backgroundColor = 'white';
+    printContainer.style.maxWidth = '1200px';
+    printContainer.style.margin = '0 auto';
+
+    const roleText = this.isTraineeRole ? ' - (سجلاتي فقط)' : '';
+
+    printContainer.innerHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>تقرير حضور المتدربين</title>
+        <style>
+          * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
+          @media print {
+            body { margin: 0; padding: 20px; background: #f0f4f8; }
+            .no-print { display: none; }
+            .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          }
+          .header h1 { margin: 0; font-size: 28px; font-weight: 800; }
+          .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.85; }
+          .filters {
+            margin-bottom: 20px;
+            padding: 14px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+          }
+          .filters strong { color: #0f3460; margin-left: 8px; }
+          .stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+          }
+          .stat-item {
+            text-align: center;
+            padding: 16px 12px;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+          }
+          .stat-value { font-size: 24px; font-weight: 800; color: #8b5cf6; display: block; }
+          .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500; }
+          .stat-value.present { color: #10b981; }
+          .stat-value.absent { color: #ef4444; }
+          .stat-value.late { color: #f59e0b; }
+          .stat-value.excused { color: #3b82f6; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+          }
+          th {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            padding: 14px 12px;
+            border: none;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+          }
+          td { padding: 10px 12px; border: 1px solid #e2e8f0; }
+          .total-row td {
+            font-weight: 700;
+            background: #f8fafc;
+            border-top: 2px solid #8b5cf6;
+          }
+          .no-print {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+          }
+          .no-print button {
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+          }
+          .no-print button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139,92,246,0.3);
+          }
+          @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(3, 1fr); }
+          }
+          @media (max-width: 480px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📋 تقرير حضور المتدربين${roleText}</h1>
+          <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+          <p style="opacity:0.7; font-size:13px;">عدد السجلات: ${dataToPrint.length} سجل</p>
+        </div>
+        ${filterTexts.length ? `<div class="filters"><strong>🔍 الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
+        <div class="stats">
+          <div class="stat-item"><span class="stat-value">${exportStats.total}</span><span class="stat-label">📋 إجمالي السجلات</span></div>
+          <div class="stat-item"><span class="stat-value present">${exportStats.present}</span><span class="stat-label">✅ حاضر</span></div>
+          <div class="stat-item"><span class="stat-value absent">${exportStats.absent}</span><span class="stat-label">❌ غائب</span></div>
+          <div class="stat-item"><span class="stat-value late">${exportStats.late}</span><span class="stat-label">⏰ متأخر</span></div>
+          <div class="stat-item"><span class="stat-value excused">${exportStats.excused}</span><span class="stat-label">📝 معتذر</span></div>
+          <div class="stat-item"><span class="stat-value">${exportStats.attendanceRate}%</span><span class="stat-label">📊 نسبة الحضور</span></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>رقم الهوية</th>
+              <th>المتدرب</th>
+              <th>الدورة</th>
+              <th>الجلسة</th>
+              <th>المدرب</th>
+              <th>اليوم</th>
+              <th>الحالة</th>
+              <th>وقت الدخول</th>
+              <th>وقت الخروج</th>
+              <th>وقت التأخير</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+            <tr class="total-row">
+              <td colspan="11" style="text-align:center; font-weight:700; color:#8b5cf6; font-size:14px;">
+                إجمالي عدد السجلات: ${dataToPrint.length}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 16px; padding: 8px 12px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+          <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <span style="font-weight: 700; color: #1e293b;">⚡ CoreStack Solutions</span>
+            <span>📱 01069911181</span>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+            © ${new Date().getFullYear()} CoreStack Solutions. جميع الحقوق محفوظة
+          </div>
+        </div>
+        
+        <div class="no-print">
+          <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
+        </div>
+      </body>
+      </html>
     `;
-  });
 
-  const printContainer = document.createElement('div');
-  printContainer.style.direction = 'rtl';
-  printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-  printContainer.style.padding = '20px';
-  printContainer.style.backgroundColor = 'white';
-  printContainer.style.maxWidth = '1200px';
-  printContainer.style.margin = '0 auto';
-
-  printContainer.innerHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>تقرير حضور المتدربين</title>
-      <style>
-        * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
-        @media print {
-          body { margin: 0; padding: 20px; background: #f0f4f8; }
-          .no-print { display: none; }
-          .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 25px;
-          padding: 30px 20px;
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-          color: white;
-          border-radius: 16px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-        .header h1 { margin: 0; font-size: 28px; font-weight: 800; }
-        .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.85; }
-        .filters {
-          margin-bottom: 20px;
-          padding: 14px 20px;
-          background: #ffffff;
-          border-radius: 12px;
-          font-size: 13px;
-          color: #1e293b;
-          border: 1px solid #e2e8f0;
-        }
-        .filters strong { color: #0f3460; margin-left: 8px; }
-        .stats {
-          display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 16px;
-          margin-bottom: 24px;
-        }
-        .stat-item {
-          text-align: center;
-          padding: 16px 12px;
-          background: white;
-          border-radius: 14px;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .stat-value { font-size: 24px; font-weight: 800; color: #8b5cf6; display: block; }
-        .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500; }
-        .stat-value.present { color: #10b981; }
-        .stat-value.absent { color: #ef4444; }
-        .stat-value.late { color: #f59e0b; }
-        .stat-value.excused { color: #3b82f6; }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          direction: rtl;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        }
-        th {
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-          color: white;
-          padding: 14px 12px;
-          border: none;
-          text-align: center;
-          font-weight: 700;
-          font-size: 13px;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-        }
-        td { padding: 10px 12px; border: 1px solid #e2e8f0; }
-        .total-row td {
-          font-weight: 700;
-          background: #f8fafc;
-          border-top: 2px solid #8b5cf6;
-        }
-        .no-print {
-          text-align: center;
-          margin-top: 20px;
-          padding: 10px;
-        }
-        .no-print button {
-          padding: 12px 32px;
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-          color: white;
-          border: none;
-          border-radius: 12px;
-          cursor: pointer;
-          font-size: 16px;
-          font-weight: 600;
-          transition: all 0.3s;
-        }
-        .no-print button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(139,92,246,0.3);
-        }
-        @media (max-width: 768px) {
-          .stats { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 480px) {
-          .stats { grid-template-columns: repeat(2, 1fr); }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>📋 تقرير حضور المتدربين</h1>
-        <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
-        <p style="opacity:0.7; font-size:13px;">عدد السجلات: ${dataToPrint.length} سجل</p>
-      </div>
-      ${filterTexts.length ? `<div class="filters"><strong>🔍 الفلاتر المطبقة:</strong> ${filterTexts.join(' | ')}</div>` : ''}
-      <div class="stats">
-        <div class="stat-item"><span class="stat-value">${exportStats.total}</span><span class="stat-label">📋 إجمالي السجلات</span></div>
-        <div class="stat-item"><span class="stat-value present">${exportStats.present}</span><span class="stat-label">✅ حاضر</span></div>
-        <div class="stat-item"><span class="stat-value absent">${exportStats.absent}</span><span class="stat-label">❌ غائب</span></div>
-        <div class="stat-item"><span class="stat-value late">${exportStats.late}</span><span class="stat-label">⏰ متأخر</span></div>
-        <div class="stat-item"><span class="stat-value excused">${exportStats.excused}</span><span class="stat-label">📝 معتذر</span></div>
-        <div class="stat-item"><span class="stat-value">${exportStats.attendanceRate}%</span><span class="stat-label">📊 نسبة الحضور</span></div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>رقم الهوية</th>
-            <th>المتدرب</th>
-            <th>الدورة</th>
-            <th>الجلسة</th>
-            <th>المدرب</th>
-            <th>اليوم</th>
-            <th>الحالة</th>
-            <th>وقت الدخول</th>
-            <th>وقت الخروج</th>
-            <th>وقت التأخير</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${tableRows}
-          <tr class="total-row">
-            <td colspan="11" style="text-align:center; font-weight:700; color:#8b5cf6; font-size:14px;">
-              إجمالي عدد السجلات: ${dataToPrint.length}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      
-      <!-- Footer -->
-      <div style="text-align: center; margin-top: 16px; padding: 8px 12px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
-          <span style="font-weight: 700; color: #1e293b;">⚡ CoreStack Solutions</span>
-          <span>📱 01069911181</span>
-        </div>
-        <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; padding-top: 4px; border-top: 1px solid #f1f5f9;">
-          © ${new Date().getFullYear()} CoreStack Solutions. جميع الحقوق محفوظة
-        </div>
-      </div>
-      
-      <div class="no-print">
-        <button onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const printWindow = window.open('', '_blank', 'width=1200,height=900,scrollbars=yes');
-  if (printWindow) {
-    printWindow.document.write(printContainer.innerHTML);
-    printWindow.document.close();
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
-  } else {
-    document.body.appendChild(printContainer);
-    window.print();
-    setTimeout(() => { document.body.removeChild(printContainer); }, 500);
-    this.isLoading = false;
-    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    const printWindow = window.open('', '_blank', 'width=1200,height=900,scrollbars=yes');
+    if (printWindow) {
+      printWindow.document.write(printContainer.innerHTML);
+      printWindow.document.close();
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    } else {
+      document.body.appendChild(printContainer);
+      window.print();
+      setTimeout(() => { document.body.removeChild(printContainer); }, 500);
+      this.isLoading = false;
+      this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+    }
   }
-}
+
   // ==========================================================================
   // HELPER METHODS
   // ==========================================================================
@@ -3420,5 +3135,33 @@ async exportToPDF(): Promise<void> {
       4: 'excused'
     };
     return classes[statusId] || '';
+  }
+
+  // ==========================================================================
+  // ROLE-BASED CHECK METHODS FOR TEMPLATE
+  // ==========================================================================
+
+  canAddAttendance(): boolean {
+    return !this.isTraineeRole;
+  }
+
+  canDeleteAttendance(): boolean {
+    return this.isAdminOrSuperAdmin;
+  }
+
+  canUseBarcodeSearch(): boolean {
+    return !this.isTraineeRole;
+  }
+
+  canUseFastAttendance(): boolean {
+    return this.isAdminOrSuperAdmin;
+  }
+
+  showFilters(): boolean {
+    return !this.isTraineeRole;
+  }
+
+  showAddButton(): boolean {
+    return !this.isTraineeRole;
   }
 }

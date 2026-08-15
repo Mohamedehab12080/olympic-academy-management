@@ -1,4 +1,4 @@
-// trainee-wizard-modal.component.ts - Updated with academic year as string
+// trainee-wizard-modal.component.ts - COMPLETE WITH ROLE-BASED ACCESS CONTROL
 
 import { Component, OnInit, Inject, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -23,6 +23,7 @@ import { TraineeService } from '../../../../core/services/trainee.service';
 import { CourseService } from '../../../../core/services/course.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { FileService } from '../../../../core/services/file.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { FileDomain } from '../../../../core/models/file.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { 
@@ -130,6 +131,8 @@ interface EnumMapping {
 export interface TraineeWizardData {
   traineeId?: number;
   traineeData?: any;
+  isTraineeRole?: boolean;
+  traineeUserId?: number;
 }
 
 interface ContactFormGroup {
@@ -171,7 +174,9 @@ interface ContactFormGroup {
       <div class="wizard-header">
         <div class="header-title">
           <mat-icon>{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
-          <h2>{{ isEditMode ? 'تعديل متدرب' : 'إضافة متدرب جديد' }}</h2>
+          <h2>
+            {{ isTraineeRole ? (isEditMode ? 'تعديل ملفي الشخصي' : 'إكمال الملف الشخصي') : (isEditMode ? 'تعديل متدرب' : 'إضافة متدرب جديد') }}
+          </h2>
         </div>
         <div class="header-actions">
           <button mat-icon-button (click)="printPreview()" matTooltip="معاينة الطباعة" *ngIf="isEditMode">
@@ -199,7 +204,7 @@ interface ContactFormGroup {
             </ng-template>
             <div class="step-content">
               <form [formGroup]="basicInfoForm">
-                <!-- Image Upload - VALIDATION REMOVED -->
+                <!-- Image Upload -->
                 <div class="image-upload-section">
                   <label class="upload-label">صورة المتدرب</label>
                   <app-file-upload
@@ -255,8 +260,8 @@ interface ContactFormGroup {
                     <input matInput formControlName="address" placeholder="أدخل العنوان">
                   </mat-form-field>
 
-                  <!-- Status Toggle - Only visible in Edit Mode -->
-                  <div class="full-width status-toggle" *ngIf="isEditMode">
+                  <!-- Status Toggle - HIDDEN for TRAINEE role -->
+                  <div class="full-width status-toggle" *ngIf="isEditMode && !isTraineeRole">
                     <mat-slide-toggle 
                       [color]="'primary'"
                       [checked]="basicInfoForm.get('isActive')?.value"
@@ -269,6 +274,17 @@ interface ContactFormGroup {
                         {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
                       </div>
                     </mat-slide-toggle>
+                  </div>
+                  
+                  <!-- Status Display for TRAINEE role - Read only -->
+                  <div class="full-width status-display" *ngIf="isEditMode && isTraineeRole">
+                    <div class="status-info">
+                      <mat-icon>account_circle</mat-icon>
+                      <span>الحالة: </span>
+                      <span class="status-value" [class.active]="basicInfoForm.get('isActive')?.value">
+                        {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -480,7 +496,7 @@ interface ContactFormGroup {
                     <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
                     <div><strong>الجنس:</strong> {{ getGenderTitle(basicInfoForm.get('gender')?.value) || '-' }}</div>
                     <div><strong>العنوان:</strong> {{ basicInfoForm.get('address')?.value || '-' }}</div>
-                    <div *ngIf="isEditMode"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
+                    <div *ngIf="isEditMode && !isTraineeRole"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
                   </div>
                 </mat-card>
 
@@ -536,7 +552,7 @@ interface ContactFormGroup {
               </button>
               <button mat-raised-button color="primary" (click)="submitTrainee()" [disabled]="isSubmitting">
                 <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
-                <span *ngIf="!isSubmitting">{{ isEditMode ? 'تحديث' : 'تأكيد الإضافة' }}</span>
+                <span *ngIf="!isSubmitting">{{ isTraineeRole ? (isEditMode ? 'تحديث ملفي الشخصي' : 'إكمال الملف الشخصي') : (isEditMode ? 'تحديث' : 'تأكيد الإضافة') }}</span>
               </button>
               <button mat-stroked-button color="accent" (click)="printPreview()" [disabled]="isSubmitting" *ngIf="isEditMode">
                 <mat-icon>print</mat-icon>
@@ -715,6 +731,42 @@ interface ContactFormGroup {
     }
 
     .toggle-status.active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-display {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 12px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .status-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .status-info mat-icon {
+      color: #667eea;
+    }
+
+    .status-value {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-value.active {
       background: #d1fae5;
       color: #065f46;
     }
@@ -919,6 +971,10 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   traineeId: number | null = null;
   traineeData: any = null;
   
+  // ========== ROLE-BASED ACCESS ==========
+  isTraineeRole: boolean = false;
+  traineeUserId: number | null = null;
+  
   // Track deleted contacts for edit mode
   private deletedContactIds: number[] = [];
   
@@ -940,11 +996,24 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
     private courseService: CourseService,
     private notification: NotificationService,
     private fileService: FileService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {
+    // ============================================================
+    // ROLE-BASED ACCESS INITIALIZATION
+    // ============================================================
+    this.isTraineeRole = data?.isTraineeRole || this.authService.hasRole('ROLE_TRAINEE');
+    this.traineeUserId = data?.traineeUserId || this.authService.currentUser?.userId || null;
+    
     this.isEditMode = !!data?.traineeId;
     this.traineeId = data?.traineeId || null;
     this.traineeData = data?.traineeData || null;
+
+    console.log('🔐 Trainee Wizard Role-based access:');
+    console.log('  - isTraineeRole:', this.isTraineeRole);
+    console.log('  - isEditMode:', this.isEditMode);
+    console.log('  - traineeUserId:', this.traineeUserId);
+    console.log('  - traineeId:', this.traineeId);
     
     // Initialize forms
     this.basicInfoForm = this.fb.group({
@@ -979,6 +1048,11 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
     } else {
       // Add one empty contact for new trainee
       this.addContact();
+      
+      // For TRAINEE role creating new profile, set a default active status
+      if (this.isTraineeRole) {
+        this.basicInfoForm.get('isActive')?.setValue(true);
+      }
     }
   }
 
@@ -991,18 +1065,18 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   // LOADING METHODS
   // ============================================================
 
-loadSelectOptions(): void {
-  this.genderOptions = [
-    { id: 1, title: 'ذكر', enumName: 'MALE' },
-    { id: 2, title: 'انثي', enumName: 'FEMALE' }
-  ];
+  loadSelectOptions(): void {
+    this.genderOptions = [
+      { id: 1, title: 'ذكر', enumName: 'MALE' },
+      { id: 2, title: 'انثي', enumName: 'FEMALE' }
+    ];
 
-  this.contactTypeOptions = [
-    { id: 1, title: 'بريد إلكتروني', enumName: 'EMAIL' },
-    { id: 2, title: 'جوال', enumName: 'PHONE' },
-    { id: 3, title: 'واتساب', enumName: 'WHATSAPP' }
-  ];
-}
+    this.contactTypeOptions = [
+      { id: 1, title: 'بريد إلكتروني', enumName: 'EMAIL' },
+      { id: 2, title: 'جوال', enumName: 'PHONE' },
+      { id: 3, title: 'واتساب', enumName: 'WHATSAPP' }
+    ];
+  }
 
   loadCourses(): void {
     this.courseService.getAllCoursesLookup().subscribe({
@@ -1030,18 +1104,37 @@ loadSelectOptions(): void {
     }
     
     console.log('🔄 Loading trainee from API');
-    this.traineeService.getTraineeById(this.traineeId!).subscribe({
-      next: (t: any) => {
-        console.log('✅ Trainee loaded from API');
-        this.patchTraineeData(t);
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('❌ Error loading trainee data:', err);
-        this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
-        this.isLoading = false;
-      }
-    });
+    
+    // For TRAINEE role, use getTraineeUserById
+    if (this.isTraineeRole && this.traineeUserId) {
+      this.traineeService.getTraineeUserById(this.traineeUserId).subscribe({
+        next: (t: any) => {
+          console.log('✅ Trainee loaded from API (user endpoint)');
+          this.patchTraineeData(t);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('❌ Error loading trainee data:', err);
+          this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
+          this.isLoading = false;
+        }
+      });
+    } else if (this.traineeId) {
+      this.traineeService.getTraineeById(this.traineeId).subscribe({
+        next: (t: any) => {
+          console.log('✅ Trainee loaded from API');
+          this.patchTraineeData(t);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('❌ Error loading trainee data:', err);
+          this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.isLoading = false;
+    }
   }
 
   private patchTraineeData(t: TraineeVTO): void {
@@ -1437,7 +1530,7 @@ loadSelectOptions(): void {
         <div class="profile-container">
           <div class="header">
             <h1>ملف متدرب</h1>
-            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</p>
           </div>
           <div class="profile-details">
             <div><strong>رقم الملف:</strong> ${data.isNewTrainee ? 'جديد' : '#' + data.id}</div>
@@ -1461,7 +1554,7 @@ loadSelectOptions(): void {
             <div class="signature-box"><div class="signature-line"></div><div>توقيع ولي الأمر</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
@@ -1485,7 +1578,7 @@ loadSelectOptions(): void {
   }
 
   // ============================================================
-  // SUBMIT - WITH FULL CONTACT CRUD
+  // SUBMIT - WITH ROLE-BASED ACCESS
   // ============================================================
 
   submitTrainee(): void {
@@ -1499,6 +1592,7 @@ loadSelectOptions(): void {
     
     const genderValue = this.basicInfoForm.get('gender')?.value;
     const academicYearValue = this.basicInfoForm.get('academicYear')?.value;
+    const isActiveValue = this.basicInfoForm.get('isActive')?.value;
     
     const formData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
@@ -1507,7 +1601,7 @@ loadSelectOptions(): void {
       birthDate: this.basicInfoForm.get('birthDate')?.value,
       gender: genderValue,
       address: this.basicInfoForm.get('address')?.value,
-      isActive: this.basicInfoForm.get('isActive')?.value,
+      isActive: isActiveValue !== undefined ? isActiveValue : true,
       certificates: this.getCertificatesList().map(cert => ({
         certificateName: cert.certificateName,
         certificateNumber: cert.certificateNumber,
@@ -1521,65 +1615,129 @@ loadSelectOptions(): void {
     
     console.log('Submitting trainee data:', formData);
     
-    if (this.isEditMode && this.traineeId) {
-      // UPDATE MODE
-      this.traineeService.updateTrainee(this.traineeId, formData as any)
-        .pipe(finalize(() => {
-          this.isSubmitting = false;
-        }))
-        .subscribe({
-          next: () => {
-            this.processContacts(this.traineeId!)
-              .then(() => {
-                this.notification.showSuccess('تم تحديث المتدرب وجميع جهات الاتصال بنجاح');
-                this.dialogRef.close(true);
-              })
-              .catch((error) => {
-                console.error('Error processing contacts:', error);
-                this.notification.showError('حدث خطأ في تحديث جهات الاتصال');
-              });
-          },
-          error: (err) => {
-            console.error('Update error:', err);
-            // ✅ Show backend error message
-            const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في تحديث المتدرب';
-            this.notification.showError(errorMsg);
-          }
-        });
-    } else {
-      // CREATE MODE
-      this.traineeService.createTrainee(formData as any)
-        .pipe(finalize(() => {
-          this.isSubmitting = false;
-        }))
-        .subscribe({
-          next: (res: any) => {
-            this.createdTraineeId = res.id;
-            
-            if (!this.createdTraineeId) {
-              this.notification.showError('حدث خطأ في إضافة المتدرب');
-              this.dialogRef.close(false);
-              return;
+    // ============================================================
+    // FOR TRAINEE ROLE: Use createTraineeUser / updateTraineeUser
+    // ============================================================
+    
+    if (this.isTraineeRole) {
+      // TRAINEE role - use user-specific endpoints
+      if (this.isEditMode && this.traineeUserId) {
+        // UPDATE for TRAINEE role
+        this.traineeService.updateTraineeUser(this.traineeUserId, formData as any)
+          .pipe(finalize(() => {
+            this.isSubmitting = false;
+          }))
+          .subscribe({
+            next: (res) => {
+              this.notification.showSuccess('تم تحديث ملفك الشخصي بنجاح');
+              this.dialogRef.close({ success: true, data: res });
+            },
+            error: (err) => {
+              console.error('Update error:', err);
+              const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في تحديث الملف الشخصي';
+              this.notification.showError(errorMsg);
             }
-            
-            this.processContactsForNewTrainee(this.createdTraineeId)
-              .then(() => {
-                this.notification.showSuccess('تم إضافة المتدرب وجميع جهات الاتصال بنجاح');
-                this.openEnrollmentWizard(this.createdTraineeId!);
-              })
-              .catch((error) => {
-                console.error('Error creating contacts:', error);
-                this.notification.showError('حدث خطأ في إضافة جهات الاتصال');
-                this.openEnrollmentWizard(this.createdTraineeId!);
-              });
-          },
-          error: (err) => {
-            console.error('Create error:', err);
-            // ✅ Show backend error message
-            const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في إضافة المتدرب';
-            this.notification.showError(errorMsg);
-          }
-        });
+          });
+      } else if (this.traineeUserId) {
+        // CREATE for TRAINEE role
+        this.traineeService.createTraineeUser(this.traineeUserId, formData as any)
+          .pipe(finalize(() => {
+            this.isSubmitting = false;
+          }))
+          .subscribe({
+            next: (res: any) => {
+              this.createdTraineeId = res.id;
+              
+              if (!this.createdTraineeId) {
+                this.notification.showError('حدث خطأ في إضافة الملف الشخصي');
+                this.dialogRef.close(false);
+                return;
+              }
+              
+              this.processContactsForNewTrainee(this.createdTraineeId)
+                .then(() => {
+                  this.notification.showSuccess('تم إضافة ملفك الشخصي بنجاح');
+                  this.dialogRef.close({ success: true, data: res, traineeId: this.createdTraineeId });
+                })
+                .catch((error) => {
+                  console.error('Error creating contacts:', error);
+                  this.notification.showError('حدث خطأ في إضافة جهات الاتصال');
+                  this.dialogRef.close({ success: true, data: res, traineeId: this.createdTraineeId });
+                });
+            },
+            error: (err) => {
+              console.error('Create error:', err);
+              const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في إضافة الملف الشخصي';
+              this.notification.showError(errorMsg);
+            }
+          });
+      } else {
+        this.notification.showError('لم يتم العثور على معرف المستخدم');
+        this.isSubmitting = false;
+      }
+    } else {
+      // ============================================================
+      // NON-TRAINEE ROLE: Use regular trainee endpoints
+      // ============================================================
+      
+      if (this.isEditMode && this.traineeId) {
+        // UPDATE MODE
+        this.traineeService.updateTrainee(this.traineeId, formData as any)
+          .pipe(finalize(() => {
+            this.isSubmitting = false;
+          }))
+          .subscribe({
+            next: () => {
+              this.processContacts(this.traineeId!)
+                .then(() => {
+                  this.notification.showSuccess('تم تحديث المتدرب وجميع جهات الاتصال بنجاح');
+                  this.dialogRef.close(true);
+                })
+                .catch((error) => {
+                  console.error('Error processing contacts:', error);
+                  this.notification.showError('حدث خطأ في تحديث جهات الاتصال');
+                });
+            },
+            error: (err) => {
+              console.error('Update error:', err);
+              const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في تحديث المتدرب';
+              this.notification.showError(errorMsg);
+            }
+          });
+      } else {
+        // CREATE MODE
+        this.traineeService.createTrainee(formData as any)
+          .pipe(finalize(() => {
+            this.isSubmitting = false;
+          }))
+          .subscribe({
+            next: (res: any) => {
+              this.createdTraineeId = res.id;
+              
+              if (!this.createdTraineeId) {
+                this.notification.showError('حدث خطأ في إضافة المتدرب');
+                this.dialogRef.close(false);
+                return;
+              }
+              
+              this.processContactsForNewTrainee(this.createdTraineeId)
+                .then(() => {
+                  this.notification.showSuccess('تم إضافة المتدرب وجميع جهات الاتصال بنجاح');
+                  this.openEnrollmentWizard(this.createdTraineeId!);
+                })
+                .catch((error) => {
+                  console.error('Error creating contacts:', error);
+                  this.notification.showError('حدث خطأ في إضافة جهات الاتصال');
+                  this.openEnrollmentWizard(this.createdTraineeId!);
+                });
+            },
+            error: (err) => {
+              console.error('Create error:', err);
+              const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في إضافة المتدرب';
+              this.notification.showError(errorMsg);
+            }
+          });
+      }
     }
   }
 
@@ -1613,7 +1771,7 @@ loadSelectOptions(): void {
   }
 
   // ============================================================
-  // OPEN ENROLLMENT WIZARD
+  // OPEN ENROLLMENT WIZARD (Only for non-TRAINEE roles)
   // ============================================================
 
   private openEnrollmentWizard(traineeId: number): void {

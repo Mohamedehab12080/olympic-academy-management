@@ -118,9 +118,17 @@
             <artifactId>mapstruct</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>bs.lib.security</groupId>
             <artifactId>security-adapter-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>bs.lib.rest</groupId>
+            <artifactId>rest-adapter-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

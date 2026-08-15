@@ -477,6 +477,52 @@ components:
         note:
           type: string
 
+    EnrollmentPatchDTO:
+      type: object
+      properties:
+        enrollmentIds:
+          type: array
+          item:
+            type: integer
+            format: int32
+        trainerId:
+          type: integer
+          format: int32
+        enrollmentTypeId:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        enrollmentStatus:
+          $ref: '#/components/schemas/EnrollmentStatus'
+        paymentStatus:
+          $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/schemas/PaymentStatus'
+        subscriptionValue:
+          type: integer
+          format: int32
+        discountAmount:
+          type: integer
+          format: int32
+        discountPercentage:
+          type: number
+          format: float
+        finalSubscriptionValue:
+          type: integer
+          format: int32
+        remainedSubscriptionValue:
+          type: integer
+          format: int32
+        isActive:
+          type: boolean
+        isAutoUpdate:
+          type: boolean
+        note:
+          type: string
+
     EnrollmentVTO:
       type: object
       properties:

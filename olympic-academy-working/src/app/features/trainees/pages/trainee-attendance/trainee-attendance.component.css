@@ -1,4 +1,4 @@
-/* trainee-attendance.component.css */
+/* trainee-attendance.component.css - COMPLETE WITH ROLE-BASED ACCESS STYLES */
 
 /* ==========================================================================
    MAIN CONTAINER
@@ -133,6 +133,24 @@
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+
+/* ==========================================================================
+   TRAINEE EXPORT ACTIONS
+   ========================================================================== */
+
+.trainee-export-actions {
+  width: 100%;
+  justify-content: center;
+  gap: 16px;
+}
+
+.trainee-export-actions .export-btn {
+  min-width: 140px;
+}
+
+/* ==========================================================================
+   RESET & EXPORT BUTTONS
+   ========================================================================== */
 
 .reset-btn,
 .export-btn {
@@ -293,6 +311,29 @@
     opacity: 1;
     transform: translateX(0) scale(1);
   }
+}
+
+/* ==========================================================================
+   TRAINEE BADGE
+   ========================================================================== */
+
+.trainee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #8b5cf6;
+  color: white;
+  padding: 2px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.trainee-badge mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: white;
 }
 
 /* ==========================================================================
@@ -601,6 +642,12 @@
   font-size: 16px;
 }
 
+.no-data-hint {
+  color: #94a3b8;
+  font-size: 14px !important;
+  margin: 0 !important;
+}
+
 .no-data-actions {
   display: flex;
   gap: 16px;
@@ -821,6 +868,16 @@
   .custom-paginator ::ng-deep .mat-paginator-range-label {
     margin: 4px 0;
   }
+  
+  .trainee-export-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .trainee-export-actions .export-btn {
+    width: 100%;
+    min-width: unset;
+  }
 }
 
 @media (max-width: 480px) {
@@ -872,6 +929,10 @@
   }
 }
 
+/* ==========================================================================
+   DATE INFO
+   ========================================================================== */
+
 .date-info {
   display: flex;
   align-items: center;
@@ -883,4 +944,65 @@
   width: 16px;
   height: 16px;
   color: #94a3b8;
+}
+
+/* ==========================================================================
+   TIME INFO
+   ========================================================================== */
+
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.time-info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   TRAINER INFO
+   ========================================================================== */
+
+.trainer-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trainer-info .no-trainer {
+  color: #9ca3af;
+}
+
+/* ==========================================================================
+   FILTERS CARD - TRAINEE ROLE ADJUSTMENT
+   ========================================================================== */
+
+.filters-card .filters-row:last-child {
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   SCROLLBAR STYLING
+   ========================================================================== */
+
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
 }

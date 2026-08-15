@@ -1,4 +1,4 @@
-// app.routes.ts - WITHOUT CHANGING LINKS
+// app.routes.ts - COMPLETE WITH PROPER TRAINEE HANDLING
 
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
@@ -47,30 +47,121 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     canActivate: [AuthGuard],
     children: [
-      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.HomeComponent) },
-      { path: 'constants', loadChildren: () => import('./features/constant/constant.module').then(m => m.ConstantModule) },
-      { path: 'departments', loadChildren: () => import('./features/departments/department.module').then(m => m.DepartmentsModule) },
-      { path: 'courses', loadChildren: () => import('./features/courses/course.module').then(m => m.CoursesModule) },
-      { path: 'employees', loadChildren: () => import('./features/employees/employees.module').then(m => m.EmployeesModule) },
-      { path: 'trainees', loadChildren: () => import('./features/trainees/trainees.module').then(m => m.TraineesModule) },
-      { path: 'enrollments', loadChildren: () => import('./features/enrollments/enrollments.module').then(m => m.EnrollmentsModule) },
-      { path: 'places', loadChildren: () => import('./features/places/places.module').then(m => m.PlacesModule) },
-      { path: 'financial', loadChildren: () => import('./features/financial/financial.module').then(m => m.FinancialModule) },
-      { path: 'attendance/employee', loadComponent: () => import('./features/employees/pages/employee-attendance/employee-attendance.component').then(m => m.EmployeeAttendanceComponent) },
-      { path: 'trainees/attendance', loadComponent: () => import('./features/trainees/pages/trainee-attendance/trainee-attendance.component').then(m => m.TraineeAttendanceComponent) },
-      { path: 'sessions', loadChildren: () => import('./features/course-session/course-session.module').then(m => m.CourseSessionModule) },
-      { path: 'reports/attendance', loadComponent: () => import('./features/employees/reports/attendance-report/attendance-report.component').then(m => m.AttendanceReportComponent) },
-      { path: 'reports/employee', loadComponent: () => import('./features/employees/reports/employee-report/employee-report.component').then(m => m.EmployeeReportComponent) },
-      { path: 'reports/trainee', loadComponent: () => import('./features/trainees/reports/trainee-report/trainee-report.component').then(m => m.TraineeReportComponent) },
-      { path: 'reports/enrollment', loadComponent: () => import('./features/enrollments/reports/enrollment-report/enrollment-report.component').then(m => m.EnrollmentReportComponent) },
-      { path: 'reports/course', loadComponent: () => import('./features/courses/reports/courses-reports/course-report.component').then(m => m.CourseReportComponent) },
-      { path: 'reports/financial', loadComponent: () => import('./features/financial/reports/financial-report/financial-report.component').then(m => m.FinancialReportComponent) },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+      // ========== DEFAULT REDIRECT ==========
+      // MainLayoutComponent handles role-based redirect in ngOnInit
+      { 
+        path: '', 
+        redirectTo: 'dashboard', 
+        pathMatch: 'full' 
+      },
+
+      // ========== ADMIN / SUPER_ADMIN ROUTES ==========
+      { 
+        path: 'dashboard', 
+        loadComponent: () => import('./features/dashboard/dashboard.component')
+          .then(m => m.HomeComponent) 
+      },
+      { 
+        path: 'constants', 
+        loadChildren: () => import('./features/constant/constant.module')
+          .then(m => m.ConstantModule) 
+      },
+      { 
+        path: 'departments', 
+        loadChildren: () => import('./features/departments/department.module')
+          .then(m => m.DepartmentsModule) 
+      },
+      { 
+        path: 'courses', 
+        loadChildren: () => import('./features/courses/course.module')
+          .then(m => m.CoursesModule) 
+      },
+      { 
+        path: 'employees', 
+        loadChildren: () => import('./features/employees/employees.module')
+          .then(m => m.EmployeesModule) 
+      },
+      { 
+        path: 'trainees', 
+        loadChildren: () => import('./features/trainees/trainees.module')
+          .then(m => m.TraineesModule) 
+      },
+      { 
+        path: 'enrollments', 
+        loadChildren: () => import('./features/enrollments/enrollments.module')
+          .then(m => m.EnrollmentsModule) 
+      },
+      { 
+        path: 'places', 
+        loadChildren: () => import('./features/places/places.module')
+          .then(m => m.PlacesModule) 
+      },
+      { 
+        path: 'financial', 
+        loadChildren: () => import('./features/financial/financial.module')
+          .then(m => m.FinancialModule) 
+      },
+      { 
+        path: 'attendance/employee', 
+        loadComponent: () => import('./features/employees/pages/employee-attendance/employee-attendance.component')
+          .then(m => m.EmployeeAttendanceComponent) 
+      },
+      { 
+        path: 'sessions', 
+        loadChildren: () => import('./features/course-session/course-session.module')
+          .then(m => m.CourseSessionModule) 
+      },
+      { 
+        path: 'reports/attendance', 
+        loadComponent: () => import('./features/employees/reports/attendance-report/attendance-report.component')
+          .then(m => m.AttendanceReportComponent) 
+      },
+      { 
+        path: 'reports/employee', 
+        loadComponent: () => import('./features/employees/reports/employee-report/employee-report.component')
+          .then(m => m.EmployeeReportComponent) 
+      },
+      { 
+        path: 'reports/trainee', 
+        loadComponent: () => import('./features/trainees/reports/trainee-report/trainee-report.component')
+          .then(m => m.TraineeReportComponent) 
+      },
+      { 
+        path: 'reports/enrollment', 
+        loadComponent: () => import('./features/enrollments/reports/enrollment-report/enrollment-report.component')
+          .then(m => m.EnrollmentReportComponent) 
+      },
+      { 
+        path: 'reports/course', 
+        loadComponent: () => import('./features/courses/reports/courses-reports/course-report.component')
+          .then(m => m.CourseReportComponent) 
+      },
+      { 
+        path: 'reports/financial', 
+        loadComponent: () => import('./features/financial/reports/financial-report/financial-report.component')
+          .then(m => m.FinancialReportComponent) 
+      },
+
+      // ========== TRAINEE ROUTES ==========
+      // Only attendance page as a route - profile handled via modals
+      { 
+        path: 'trainee/attendance', 
+        loadComponent: () => import('./features/trainees/pages/trainee-attendance/trainee-attendance.component')
+          .then(m => m.TraineeAttendanceComponent) 
+      },
+
+      // ========== FALLBACK FOR PROTECTED AREA ==========
+      // Any unknown route redirects to dashboard
+      // MainLayoutComponent will then handle role-based redirect
+      { 
+        path: '**', 
+        redirectTo: 'dashboard' 
+      }
     ]
   },
 
   // ============================================
-  // REDIRECTS
+  // GLOBAL FALLBACK - CATCHES ALL UNMATCHED ROUTES
   // ============================================
   { path: '**', redirectTo: 'login' }
 ];

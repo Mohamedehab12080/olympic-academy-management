@@ -15,13 +15,13 @@ public class CourseLookupControllerImpl implements CourseLookupController {
     private final CourseService courseService;
 
     @Override
-    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<LookupResultSet> _getAllCourseTypesLookup() {
         return ResponseEntity.ok(courseService.getAllCoursesTypesLookup());
     }
 
     @Override
-    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
+    @Secured(value ={"ROLE_ADMIN","ROLE_SUPER_ADMIN","ROLE_TRAINEE"})
     public ResponseEntity<LookupResultSet> _getAllCoursesLookup() {
         return ResponseEntity.ok(courseService.getAllCoursesLookup());
     }
