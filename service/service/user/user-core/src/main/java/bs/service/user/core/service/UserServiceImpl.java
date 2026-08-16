@@ -35,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,8 +57,8 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.base.url}")
-    private String baseUrl;
+    @Value("${app.frontend.url:http://localhost:4200}")
+    private String frontendUrl;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -442,7 +444,8 @@ public class UserServiceImpl implements UserService {
 
     // Private helper methods for sending emails
     private void sendActivationEmail(User user, String activationToken) {
-        String activationUrl = "http://localhost:4200/auth/activate?token=" + activationToken+"&email="+user.getEmail();
+        String activationUrl = frontendUrl + "/auth/activate?token=" + activationToken
+                + "&email=" + URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
 
         Context context = new Context();
         context.setVariable("fullName", user.getFullName());
@@ -461,8 +464,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void sendPasswordResetEmail(User user, String resetToken) {
-//        String resetUrl = baseUrl + "/api/auth/reset-verify?token=" + resetToken;
-        String resetLink = "http://localhost:4200/auth/reset-verify?token=" + resetToken;
+        String resetLink = frontendUrl + "/auth/reset-verify?token=" + resetToken;
 
         Context context = new Context();
         context.setVariable("fullName", user.getFullName());

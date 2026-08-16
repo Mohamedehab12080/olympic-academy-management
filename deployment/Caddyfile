@@ -1,0 +1,22 @@
+127.0.0.1:8080 {
+	root * D:/BOB Projects/OlympicAcadmyManagement/olympic-academy-management/olympic-academy-working/dist/olympic-academy-working
+
+	# Angular navigation requests accept HTML. API requests do not, which lets
+	# frontend and backend keep overlapping paths such as /auth/activate.
+	@backend {
+		not header Accept *text/html*
+		path /attendances* /auth* /constants* /courses* /departments* /domains* /employees* /enrollment-payments* /enrollment-refunds* /enrollment-types* /enrollments* /expense-types* /expenses* /files* /lookup* /payment-methods* /place-rent-payments* /places* /rent-types* /salary-deductions* /salary-incentives* /super-admin* /totals* /trainee-attendances* /trainees* /trainers* /actuator/health /actuator/info
+	}
+
+	reverse_proxy @backend 127.0.0.1:7002
+
+	try_files {path} /index.html
+	file_server
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+}

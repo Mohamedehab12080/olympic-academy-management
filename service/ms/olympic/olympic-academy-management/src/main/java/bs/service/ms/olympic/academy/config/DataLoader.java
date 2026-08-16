@@ -40,9 +40,35 @@ public class DataLoader implements CommandLineRunner {
     @Value("${backup.mysqldump.path:}")
     private String mysqldumpPathConfig;
 
+    @Value("${backup.enabled:true}")
+    private boolean backupEnabled;
+
+    @Value("${backup.interval.days:30}")
+    private int backupIntervalDays;
+
+    @Value("${app.bootstrap.enabled:false}")
+    private boolean bootstrapEnabled;
+
+    @Value("${app.bootstrap.super-admin.email:}")
+    private String superAdminEmail;
+
+    @Value("${app.bootstrap.super-admin.password:}")
+    private String superAdminPassword;
+
+    @Value("${app.bootstrap.admin.email:}")
+    private String adminEmail;
+
+    @Value("${app.bootstrap.admin.password:}")
+    private String adminPassword;
+
+    @Value("${app.bootstrap.demo.email:}")
+    private String demoUserEmail;
+
+    @Value("${app.bootstrap.demo.password:}")
+    private String demoUserPassword;
+
     private static final String BACKUP_PATH = "./backup";
     private static final String BACKUP_FILE = BACKUP_PATH + "/database_backup.sql";
-    private static final int BACKUP_INTERVAL_DAYS = 30;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private String mysqldumpPath;
@@ -53,13 +79,17 @@ public class DataLoader implements CommandLineRunner {
         log.info("🚀 Starting Olympic Academy DataLoader...");
         log.info("=".repeat(60));
 
-        createSuperAdminIfNotExists();
-        createAdminIfNotExists();
-        createDemoUserIfNotExists();
-        printDefaultUsers();
+        if (bootstrapEnabled) {
+            validateBootstrapConfiguration();
+            createSuperAdminIfNotExists();
+            createAdminIfNotExists();
+            createDemoUserIfNotExists();
+        }
         runEmployeeSalaryUpdateIfEnabled();
         runEnrollmentActivationUpdate();
-        performBackupIfNeeded();
+        if (backupEnabled) {
+            performBackupIfNeeded();
+        }
 
         log.info("=".repeat(60));
         log.info("✅ DataLoader completed successfully!");
@@ -67,15 +97,13 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void createSuperAdminIfNotExists() {
-        String superAdminEmail = "mohamedehab12080@gmail.com";
-
         if (!userRepository.existsByEmail(superAdminEmail)) {
             log.info("=".repeat(60));
             log.info("Creating Super Admin user...");
 
             User superAdmin = User.builder()
                     .email(superAdminEmail)
-                    .password(passwordEncoder.encode("25251436Mh%"))
+                    .password(passwordEncoder.encode(superAdminPassword))
                     .fullName("Mohamed Ehab")
                     .mobileNumber("+201234567890")
                     .role(Role.ROLE_SUPER_ADMIN)
@@ -85,7 +113,6 @@ public class DataLoader implements CommandLineRunner {
             userRepository.insert(superAdmin);
             log.info("✅ Super Admin created successfully!");
             log.info("   Email: {}", superAdminEmail);
-            log.info("   Password: 25251436Mh%");
             log.info("   Role: SUPER_ADMIN");
             log.info("=".repeat(60));
         } else {
@@ -94,15 +121,13 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void createAdminIfNotExists() {
-        String adminEmail = "m.ehab.rabea@gmail.com";
-
         if (!userRepository.existsByEmail(adminEmail)) {
             log.info("=".repeat(60));
             log.info("Creating Admin user...");
 
             User admin = User.builder()
                     .email(adminEmail)
-                    .password(passwordEncoder.encode("25251436Mh%"))
+                    .password(passwordEncoder.encode(adminPassword))
                     .fullName("Mohamed Ehab Rabea")
                     .mobileNumber("+201234567891")
                     .role(Role.ROLE_ADMIN)
@@ -112,7 +137,6 @@ public class DataLoader implements CommandLineRunner {
             userRepository.insert(admin);
             log.info("✅ Admin created successfully!");
             log.info("   Email: {}", adminEmail);
-            log.info("   Password: 25251436Mh%");
             log.info("   Role: ADMIN");
             log.info("=".repeat(60));
         } else {
@@ -121,15 +145,13 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void createDemoUserIfNotExists() {
-        String demoUserEmail = "demo@travelplanner.com";
-
         if (!userRepository.existsByEmail(demoUserEmail)) {
             log.info("=".repeat(60));
             log.info("Creating Demo User...");
 
             User demoUser = User.builder()
                     .email(demoUserEmail)
-                    .password(passwordEncoder.encode("Demo@123"))
+                    .password(passwordEncoder.encode(demoUserPassword))
                     .fullName("Demo User")
                     .mobileNumber("+201234567892")
                     .role(Role.ROLE_USER)
@@ -139,7 +161,6 @@ public class DataLoader implements CommandLineRunner {
             userRepository.insert(demoUser);
             log.info("✅ Demo User created successfully!");
             log.info("   Email: {}", demoUserEmail);
-            log.info("   Password: Demo@123");
             log.info("   Role: USER");
             log.info("=".repeat(60));
         } else {
@@ -147,27 +168,12 @@ public class DataLoader implements CommandLineRunner {
         }
     }
 
-    private void printDefaultUsers() {
-        log.info("");
-        log.info("📋 ========== DEFAULT USERS ==========");
-        log.info("");
-        log.info("🔴 SUPER ADMIN:");
-        log.info("   Email: mohamedehab12080@gmail.com");
-        log.info("   Password: 25251436Mh%");
-        log.info("");
-        log.info("🔵 ADMIN:");
-        log.info("   Email: m.ehab.rabea@gmail.com");
-        log.info("   Password: 25251436Mh%");
-        log.info("");
-        log.info("🟢 DEMO USER (for testing):");
-        log.info("   Email: demo@travelplanner.com");
-        log.info("   Password: Demo@123");
-        log.info("");
-        log.info("=====================================");
-        log.info("");
-        log.info("💡 Tip: Regular users can register via the registration page.");
-        log.info("   Activation email will be sent to their email address.");
-        log.info("");
+    private void validateBootstrapConfiguration() {
+        if (superAdminEmail.isBlank() || superAdminPassword.isBlank()
+                || adminEmail.isBlank() || adminPassword.isBlank()
+                || demoUserEmail.isBlank() || demoUserPassword.isBlank()) {
+            throw new IllegalStateException("Bootstrap is enabled but one or more bootstrap credentials are missing");
+        }
     }
 
     private void runEnrollmentActivationUpdate() {
@@ -282,15 +288,15 @@ public class DataLoader implements CommandLineRunner {
             log.info("📅 Last backup was on: {}", lastBackupTime.format(DATE_FORMATTER));
             log.info("📊 Days since last backup: {} days", daysSinceLastBackup);
 
-            if (daysSinceLastBackup >= BACKUP_INTERVAL_DAYS) {
+            if (daysSinceLastBackup >= backupIntervalDays) {
                 log.info("📋 Last backup is {} days old (threshold: {} days). Creating new backup...",
-                        daysSinceLastBackup, BACKUP_INTERVAL_DAYS);
+                        daysSinceLastBackup, backupIntervalDays);
                 createDatabaseBackup();
             } else {
                 log.info("✅ Backup is recent enough ({} days old). No backup needed.",
                         daysSinceLastBackup);
                 log.info("ℹ️ Next backup due in {} days",
-                        BACKUP_INTERVAL_DAYS - daysSinceLastBackup);
+                        backupIntervalDays - daysSinceLastBackup);
             }
 
         } catch (Exception e) {
@@ -382,7 +388,6 @@ public class DataLoader implements CommandLineRunner {
         String[] command = {
                 mysqldump,
                 "-u", username,
-                "-p" + password,
                 "--add-drop-table",
                 "--single-transaction",
                 "--routines",
@@ -396,6 +401,7 @@ public class DataLoader implements CommandLineRunner {
             log.info("🔧 Executing mysqldump for database: {}", databaseName);
 
             ProcessBuilder pb = new ProcessBuilder(command);
+            pb.environment().put("MYSQL_PWD", password);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
