@@ -33,6 +33,10 @@ public class TrainerDepartmentQueryBuilder  extends AbstractQueryBuilderV2<Emplo
             qbConditions.add(QBCondition.builder().placeHolder("departmentId").value(filters.getDepartmentId())
                     .condition("item.department.id = :PH").build());
 
+        if (filters.getDepartmentIds() != null && !filters.getDepartmentIds().isEmpty())
+            qbConditions.add(QBCondition.builder().placeHolder("departmentIds").value(filters.getDepartmentIds())
+                    .condition("item.department.id IN :PH").build());
+
         if (filters.getCreatedOnFrom() != null)
             qbConditions.add(QBCondition.builder().placeHolder("createdOnFrom").value(filters.getCreatedOnFrom())
                     .condition("item.createdOn >= :PH").build());

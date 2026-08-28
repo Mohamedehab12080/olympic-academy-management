@@ -17,6 +17,7 @@ import { finalize } from 'rxjs';
 import { EmployeeService } from '../../../../../core/services/employee.service';
 import { CourseService } from '../../../../../core/services/course.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
+import { extractErrorMessage } from '../../../../../core/utils/error-util';
 import { SearchableSelectComponent, SelectOption } from '../../../../../shared/components/searchable-select/searchable-select.component';
 import { AssignCourseDTO } from '../../../../../core/models/employee.model';
 
@@ -371,8 +372,10 @@ export class AssignCourseWizardModalComponent implements OnInit {
           label: item.title || item.fullName || `مدرب #${item.id}`
         }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل المدربين');
+      error: (err) => {
+              console.error('Error loading trainers:', err);
+              const errorMessage = extractErrorMessage(err);
+              this.notification.showError(errorMessage);
       }
     });
   }
@@ -385,8 +388,10 @@ export class AssignCourseWizardModalComponent implements OnInit {
           label: item.title || `دورة #${item.id}`
         }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الدورات');
+      error: (err) => {
+              console.error('Error loading trainers:', err);
+              const errorMessage = extractErrorMessage(err);
+              this.notification.showError(errorMessage);
       }
     });
   }
@@ -427,20 +432,11 @@ export class AssignCourseWizardModalComponent implements OnInit {
           this.notification.showSuccess('تم إسناد الدورة للمدرب بنجاح');
           this.dialogRef.close(true);
         },
-        error: (error) => {
-          console.error('❌ Error assigning course:', error);
-          
-          let errorMessage = 'حدث خطأ في إسناد الدورة';
-          if (error.error?.messageEn) {
-            errorMessage = error.error.messageEn;
-          } else if (error.error?.messageAr) {
-            errorMessage = error.error.messageAr;
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-          
-          this.notification.showError(errorMessage);
-          this.isSubmitting = false;
+        error: (err) => {
+              console.error('Error loading trainers:', err);
+              const errorMessage = extractErrorMessage(err);
+              this.notification.showError(errorMessage);
+                this.isSubmitting = false;
         }
       });
   }

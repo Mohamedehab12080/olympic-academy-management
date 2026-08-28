@@ -47,7 +47,9 @@ public enum EmployeeErrors implements Errors {
     TRAINER_HAS_OVERLAPPING_SESSION(EmployeeDomains.COURSE_SESSION,"0013",
             "Trainer {0} already has a session on {1} from {2} to {3} which overlaps with the requested time"),
 
-    EMPLOYEE_DEPARTMENT_NOT_FOUND(EmployeeDomains.EMPLOYEE_DEPARTMENT, "0001", "هذا القسم غير موجود{0}");
+    EMPLOYEE_DEPARTMENT_NOT_FOUND(EmployeeDomains.EMPLOYEE_DEPARTMENT, "0001", "هذا القسم غير موجود{0}"),
+    EMPLOYEE_DEPARTMENT_ALREADY_ASSIGNED(EmployeeDomains.EMPLOYEE_DEPARTMENT, "0002", "هذا القسم معين بالفعل للموظف {0}");
+
 
     private final Domains domain;
     private final String code;

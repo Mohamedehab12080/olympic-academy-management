@@ -22,6 +22,7 @@ import { EmployeeService } from '../../../../../core/services/employee.service';
 import { DepartmentService } from '../../../../../core/services/department.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
 import { TrainerDepartmentVTO } from '../../../../../core/models/employee.model';
+import { extractErrorMessage } from '../../../../../core/utils/error-util';
 import { AssignDepartmentWizardModalComponent } from '../assign-department-wizard/assign-department-wizard-modal.component';
 
 @Component({
@@ -499,22 +500,23 @@ export class TrainerDepartmentsListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  unassignDepartment(item: TrainerDepartmentVTO): void {
-    if (!item.id) return;
+ unassignDepartment(item: TrainerDepartmentVTO): void {
+  if (!item.id) return;
 
-    const confirmMessage = `هل أنت متأكد من إلغاء إسناد القسم "${item.department?.title}" من المدرب "${item.trainer?.title}"؟`;
-    
-    if (confirm(confirmMessage)) {
-      this.employeeService.unassignDepartmentFromTrainer(item.id).subscribe({
-        next: () => {
-          this.notification.showSuccess('تم إلغاء إسناد القسم بنجاح');
-          this.loadData();
-        },
-        error: (err) => {
-          console.error('Error unassigning department:', err);
-          this.notification.showError('حدث خطأ في إلغاء إسناد القسم');
-        }
-      });
-    }
+  const confirmMessage = `هل أنت متأكد من إلغاء إسناد القسم "${item.department?.title}" من المدرب "${item.trainer?.title}"؟`;
+  
+  if (confirm(confirmMessage)) {
+    this.employeeService.unassignDepartmentFromTrainer(item.id).subscribe({
+      next: () => {
+        this.notification.showSuccess('تم إلغاء إسناد القسم بنجاح');
+        this.loadData();
+      },
+      error: (err) => {
+        console.error('Error unassigning department:', err);
+        const errorMessage = extractErrorMessage(err);
+        this.notification.showError(errorMessage);
+      }
+    });
   }
+}
 }

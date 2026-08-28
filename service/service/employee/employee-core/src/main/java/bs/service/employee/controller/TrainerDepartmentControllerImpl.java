@@ -9,6 +9,7 @@ import bs.service.employee.model.generated.TrainerDepartmentResultSet;
 import bs.service.employee.model.generated.TrainerDepartmentVTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,28 +22,33 @@ public class TrainerDepartmentControllerImpl implements TrainerDepartmentControl
 
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<List<NewRecordVTO>> _assignDepartmentToTrainer(Integer trainerId, AssignDepartmentDTO assignDepartmentDTO) {
         return ResponseEntity.ok(trainerDepartmentService.assignDepartmentToTrainer(trainerId, assignDepartmentDTO));
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<TrainerDepartmentVTO> _getTrainerDepartmentById(Integer trainerDepartmentId) {
         return ResponseEntity.ok(trainerDepartmentService.getTrainerDepartmentById(trainerDepartmentId));
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<TrainerDepartmentResultSet> _getTrainerDepartments(Integer trainerId, Integer departmentId, String quickSearch, Integer pageNum, Integer pageSize, OrderDirections orderDir, String orderBy) {
         return ResponseEntity.ok(trainerDepartmentService.getAllTrainerDepartmentsByFilters(trainerId, departmentId, quickSearch, pageNum, pageSize, orderDir, orderBy));
     }
 
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _unassignDepartmentFromTrainer(Integer trainerDepartmentId) {
         trainerDepartmentService.deleteTrainerDepartmentById(trainerDepartmentId);
         return ResponseEntity.noContent().build();
     }
 
     @Override
+    @Secured(value = {"ROLE_ADMIN","ROLE_SUPER_ADMIN"})
     public ResponseEntity<Void> _updateTrainerDepartment(Integer trainerDepartmentId, AssignDepartmentDTO assignDepartmentDTO) {
         trainerDepartmentService.updateTrainerDepartment(trainerDepartmentId, assignDepartmentDTO);
         return ResponseEntity.noContent().build();

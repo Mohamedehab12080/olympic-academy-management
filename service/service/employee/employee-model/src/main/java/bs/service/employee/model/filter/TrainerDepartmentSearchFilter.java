@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @SuperBuilder
@@ -23,6 +24,7 @@ public class TrainerDepartmentSearchFilter extends SearchFilter<TrainerDepartmen
     private LocalDate createdOnTo;
     private Integer trainerId;
     private Integer departmentId;
+    private List<Integer> departmentIds;
 
     @Getter
     @AllArgsConstructor

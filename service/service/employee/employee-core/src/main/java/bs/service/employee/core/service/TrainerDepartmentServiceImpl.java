@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static bs.service.department.model.enums.DepartmentErrors.DEPARTMENT_NOT_FOUND;
-import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_DEPARTMENT_NOT_FOUND;
-import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_NOT_FOUND;
+import static bs.service.employee.model.enums.EmployeeErrors.*;
 
 @Service
 @AllArgsConstructor
@@ -47,6 +46,14 @@ public class TrainerDepartmentServiceImpl implements TrainerDepartmentService {
             throw new BusinessException(DEPARTMENT_NOT_FOUND,assignDepartmentDTO.getDepartmentId());
         }
         assert departments != null;
+        TrainerDepartmentSearchFilter departmentSearchFilter=TrainerDepartmentSearchFilter.builder()
+                .departmentIds(departments.stream().map(Department::getId).toList()).pagination(PaginationInfo.noPagination())
+                .trainerId(employee.getId())
+                .build();
+        List<EmployeeDepartment> employeeDepartments=trainerDepartmentRepository.selectAllByFilters(departmentSearchFilter);
+        if(employeeDepartments!=null || !employeeDepartments.isEmpty()){
+            throw new BusinessException(EMPLOYEE_DEPARTMENT_ALREADY_ASSIGNED,employee.getId());
+        }
         for(Department department:departments){
             EmployeeDepartment employeeDepartment=EmployeeDepartment.builder().employee(employee).department(department).build();
             employeeDepartment=trainerDepartmentRepository.insert(employeeDepartment);

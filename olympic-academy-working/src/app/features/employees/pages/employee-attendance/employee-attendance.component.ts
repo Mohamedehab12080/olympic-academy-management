@@ -25,6 +25,7 @@ import { EmployeeService } from '../../../../core/services/employee.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReportService } from '../../../../core/services/report.service';
 import { FileService } from '../../../../core/services/file.service';
+import { extractErrorMessage } from '../../../../core/utils/error-util';
 import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { EmployeeLookupVTO, ATTENDANCE_STATUSES } from '../../../../core/models/employee.model';
 import { LookupVTO, LookupResultSet } from '../../../../core/models/common.model';
@@ -69,28 +70,6 @@ export function convertTo12HourFormat(timeStr: string | undefined | null): strin
   }
 }
 
-// ============================================================================
-// ERROR HANDLING HELPER
-// ============================================================================
-
-function extractErrorMessage(error: any): string {
-  if (error?.error?.messageEn) {
-    return error.error.messageEn;
-  }
-  if (error?.error?.reqBodyErrors && Array.isArray(error.error.reqBodyErrors) && error.error.reqBodyErrors.length > 0) {
-    return error.error.reqBodyErrors.join(', ');
-  }
-  if (error?.error?.code) {
-    return error.error.code;
-  }
-  if (typeof error?.error === 'string') {
-    return error.error;
-  }
-  if (error?.message) {
-    return error.message;
-  }
-  return 'حدث خطأ غير متوقع';
-}
 
 // ============================================================================
 // EMPLOYEE SELECTION DIALOG
@@ -1362,10 +1341,11 @@ export class EmployeeAttendanceDialogComponent {
         this.selectEmployeeInDialog(employee);
         this.notification.showSuccess(`تم العثور على الموظف: ${employee.fullName}`);
       },
-      error: () => {
-        this.setBarcodeSearchResult(false, 'حدث خطأ في البحث عن الموظف');
-        this.notification.showError('حدث خطأ في البحث عن الموظف');
-      }
+      error: (err) => {
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
+        }
     });
   }
 
@@ -1684,9 +1664,10 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
         console.log('✅ Employees loaded:', this.employees.length);
       },
       error: (err) => {
-        console.error('❌ Error loading employees:', err);
-        this.notification.showError(extractErrorMessage(err));
-      }
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
+        }
     });
   }
 
@@ -1708,9 +1689,10 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
         console.log('✅ Attendance statuses loaded:', this.attendanceStatuses.length);
       },
       error: (err) => {
-        console.error('❌ Error loading attendance statuses:', err);
-        this.notification.showError(extractErrorMessage(err));
-      }
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
+        }
     });
   }
 
@@ -1819,7 +1801,10 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
           this.imageUrls.set(employeeId, blobUrl);
           this.cdr.detectChanges();
         },
-        error: () => {
+        error: (err) => {
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
           this.imageUrls.set(employeeId, '');
           this.cdr.detectChanges();
         }
@@ -1889,8 +1874,10 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
         this.notification.showSuccess(`تم البحث عن سجلات حضور للموظف: ${foundEmployee.fullName}`);
         this.clearBarcodeSearch();
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في البحث عن الموظف');
+      error: (err) => {
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
         this.isLoading = false;
       }
     });
@@ -1988,8 +1975,9 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
           this.openDialog();
         },
         error: (err) => {
-          console.error('❌ Error loading attendance for edit:', err);
-          this.notification.showError(extractErrorMessage(err));
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
         }
       });
     } else {
@@ -2037,9 +2025,10 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
               this.loadAttendances();
             },
             error: (err) => {
-              console.error('❌ Update error:', err);
-              this.notification.showError(extractErrorMessage(err));
-            }
+              
+              const errorMessage = extractErrorMessage(err);
+              this.notification.showError(errorMessage);
+          }
           });
         } else {
           this.employeeService.createEmployeeAttendance(employeeId, result).subscribe({
@@ -2048,8 +2037,9 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
               this.loadAttendances();
             },
             error: (err) => {
-              console.error('❌ Create error:', err);
-              this.notification.showError(extractErrorMessage(err));
+              
+              const errorMessage = extractErrorMessage(err);
+              this.notification.showError(errorMessage);
             }
           });
         }
@@ -2077,7 +2067,9 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
           this.loadAttendances();
         },
         error: (err) => {
-          this.notification.showError(extractErrorMessage(err));
+          
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
         }
       });
     }

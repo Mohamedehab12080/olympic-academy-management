@@ -16,6 +16,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { EmployeeService } from '../../../../../core/services/employee.service';
 import { DepartmentService } from '../../../../../core/services/department.service';
 import { NotificationService } from '../../../../../core/services/notification.service'; 
+import { extractErrorMessage } from '../../../../../core/utils/error-util'; 
 import { SearchableSelectComponent, SelectOption } from '../../../../../shared/components/searchable-select/searchable-select.component';
 import { AssignDepartmentDTO } from '../../../../../core/models/employee.model';
 
@@ -317,9 +318,10 @@ export class AssignDepartmentWizardModalComponent implements OnInit {
           label: item.title || item.fullName
         }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل المدربين');
-      }
+      error: (err) => {
+        console.error('Error loading trainers:', err);
+        const errorMessage = extractErrorMessage(err);
+        this.notification.showError(errorMessage);      }
     });
   }
 
@@ -331,9 +333,10 @@ export class AssignDepartmentWizardModalComponent implements OnInit {
           label: item.title
         }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الأقسام');
-      }
+      error: (err) => {
+        console.error('Error loading trainers:', err);
+        const errorMessage = extractErrorMessage(err);
+        this.notification.showError(errorMessage);      }
     });
   }
 
@@ -362,8 +365,9 @@ export class AssignDepartmentWizardModalComponent implements OnInit {
         this.dialogRef.close(true);
       },
       error: (err) => {
-        console.error('Error assigning department:', err);
-        this.notification.showError(err.error?.messageEn || 'حدث خطأ في إسناد القسم');
+        console.error('Error loading trainers:', err);
+        const errorMessage = extractErrorMessage(err);
+        this.notification.showError(errorMessage);
         this.isSubmitting = false;
       }
     });
