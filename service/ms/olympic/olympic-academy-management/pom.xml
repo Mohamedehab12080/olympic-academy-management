@@ -48,12 +48,6 @@
 
         <dependency>
             <groupId>bs.service.file</groupId>
-            <artifactId>file-api</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>bs.service.file</groupId>
             <artifactId>file-core</artifactId>
         </dependency>
 

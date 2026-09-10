@@ -39,6 +39,12 @@ export const routes: Routes = [
       .then(m => m.ResetPasswordComponent) 
   },
 
+  { 
+  path: 'auth/reset-verify', 
+  loadComponent: () => import('./core/auth/pages/reset-password/reset-password.component')
+    .then(m => m.ResetPasswordComponent) 
+  },
+
   // ============================================
   // PROTECTED ROUTES - WITH GUARD
   // ============================================

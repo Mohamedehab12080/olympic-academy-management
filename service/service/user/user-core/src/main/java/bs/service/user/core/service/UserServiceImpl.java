@@ -307,18 +307,18 @@ public class UserServiceImpl implements UserService {
         log.info("Reset password user with token: {}", token);
 
         Token verificationToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new BusinessException(INVALID_ACTIVATION_TOKEN));
+                .orElseThrow(() -> new BusinessException(TOKEN_NOT_FOUND));
 
         if(!verificationToken.getTokenType().equals(TokenTypes.PASSWORD_RESET))
             throw new BusinessException(INVALID_RESET_PASSWORD_TOKEN);
 
-        if (verificationToken.isUsed()) {
+        if (verificationToken.isUsed())
             throw new BusinessException(TOKEN_ALREADY_USED);
-        }
 
-        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+
+        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now()))
             throw new BusinessException(TOKEN_EXPIRED);
-        }
+
     }
 
     @Override

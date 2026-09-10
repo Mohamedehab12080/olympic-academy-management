@@ -32,7 +32,6 @@
         <dependency>
             <groupId>bs.service.file</groupId>
             <artifactId>file-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
 

@@ -19,7 +19,8 @@ public enum UserErrors implements Errors {
     INVALID_ACTIVATION_TOKEN(USER,"0008", "Invalid activation token"),
     TOKEN_ALREADY_USED(USER, "0009","Token already used"),
     TOKEN_EXPIRED(USER, "0010","Token has expired"),
-    INVALID_RESET_PASSWORD_TOKEN(USER, "0011","Invalid reset password");
+    INVALID_RESET_PASSWORD_TOKEN(USER, "0011","Invalid reset password"),
+    TOKEN_NOT_FOUND(USER,"0011","TOKEN_NOT_FOUND");
 
 
     private final Domains domain;
