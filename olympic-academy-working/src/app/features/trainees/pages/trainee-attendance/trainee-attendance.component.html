@@ -78,7 +78,10 @@
 
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>بحث عام</mat-label>
-            <input matInput (keyup)="applyFilter($event)" placeholder="ابحث باسم المتدرب...">
+            <input matInput
+                  [(ngModel)]="generalSearch"
+                  (keyup.enter)="onGeneralSearch()"
+                  placeholder="ابحث باسم المتدرب أو رقم الهوية...">
             <mat-icon matSuffix>search</mat-icon>
           </mat-form-field>
         </div>

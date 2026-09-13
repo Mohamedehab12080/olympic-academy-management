@@ -36,6 +36,7 @@ import { TraineeAttendanceDetailsModalComponent } from './trainee-attendance-det
 import { EnrollmentListItem } from '../../../../core/models/enrollment.model';
 import { LightUserVTO } from '../../../../core/models/common.model';
 import { FastAttendanceDialogComponent } from './dialog/fast-attendance-dialog.component';
+import { extractErrorMessage } from '../../../../core/utils/error-util';
 
 // ============================================================================
 // CONSTANTS
@@ -1852,9 +1853,9 @@ export class TraineeAttendanceDialogComponent implements OnInit {
         this.selectTraineeInDialog(trainee);
         this.notification.showSuccess(`تم العثور على المتدرب: ${trainee.title || trainee.fullName}`);
       },
-      error: () => {
-        this.setBarcodeSearchResult(false, 'حدث خطأ في البحث عن المتدرب');
-        this.notification.showError('حدث خطأ في البحث عن المتدرب');
+      error: (err) => {
+          const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
       }
     });
   }
@@ -2028,6 +2029,8 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   barcodeSearch: string = '';
   isBarcodeMode: boolean = false;
 
+  generalSearch: string = '';
+
   // Options
   attendanceStatuses = TRAINEE_ATTENDANCE_STATUSES;
   courseOptions: SelectOption[] = [];
@@ -2195,8 +2198,8 @@ openFastAttendanceDialog(): void {
       });
     },
     error: (error) => {
-      console.error('Error loading sessions:', error);
-      this.notification.showError('حدث خطأ في تحميل الجلسات');
+       const errorMessage = extractErrorMessage(error);
+       this.notification.showError(errorMessage);
     }
   });
 }
@@ -2244,6 +2247,8 @@ openFastAttendanceDialog(): void {
         // Set a placeholder to avoid repeated attempts
         this.traineeImageCache.set(trainee.id, this.sanitizer.bypassSecurityTrustUrl(''));
         this.cdr.detectChanges();
+        const errorMessage = extractErrorMessage(error);
+        this.notification.showError(errorMessage);
       }
     });
     
@@ -2371,6 +2376,11 @@ openFastAttendanceDialog(): void {
   // LOAD ATTENDANCES - UPDATED WITH DAY FILTER
   // ==========================================================================
 
+  onGeneralSearch(): void {
+  this.currentPage = 0;      // reset to first page
+  this.loadAttendances();
+}
+
   loadAttendances(): void {
     this.isLoading = true;
     const params: any = {};
@@ -2399,6 +2409,11 @@ openFastAttendanceDialog(): void {
     // If barcode search is active, add traineeNationalId filter
     if (this.barcodeSearch?.trim()) {
       params.traineeNationalId = this.barcodeSearch.trim();
+    }
+
+    // General search
+    if (this.generalSearch?.trim()) {
+      params.quickSearch = this.generalSearch.trim();
     }
 
     // Pagination parameters - use current values
@@ -2430,8 +2445,8 @@ openFastAttendanceDialog(): void {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Load attendances error:', error);
-        this.notification.showError('حدث خطأ في تحميل بيانات الحضور');
+        const errorMessage = extractErrorMessage(error);
+        this.notification.showError(errorMessage);
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -2555,9 +2570,9 @@ openFastAttendanceDialog(): void {
         this.clearBarcodeSearch();
       },
       error: (error) => {
-        console.error('Barcode search error:', error);
+        const errorMessage = extractErrorMessage(error);
+        this.notification.showError(errorMessage);
         this.isLoading = false;
-        this.notification.showError('حدث خطأ في البحث عن سجلات الحضور');
         this.cdr.detectChanges();
       }
     });
@@ -2615,7 +2630,10 @@ openFastAttendanceDialog(): void {
           ...this.courses.map(c => ({ value: c.id, label: c.title }))
         ];
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل الدورات')
+      error: (error) => {
+        const errorMessage = extractErrorMessage(error);
+       this.notification.showError(errorMessage);
+      }
     });
   }
 
@@ -2631,7 +2649,10 @@ openFastAttendanceDialog(): void {
         });
         this.trainees = Array.from(uniqueTrainees.values());
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل المتدربين')
+      error: (error) => {
+        const errorMessage = extractErrorMessage(error);
+       this.notification.showError(errorMessage);
+      }
     });
   }
 
@@ -2663,8 +2684,8 @@ openFastAttendanceDialog(): void {
         this.loadSessionsForCourses(courseIds);
       },
       error: (error) => {
-        console.error('Load trainee sessions error:', error);
-        this.notification.showError('حدث خطأ في تحميل تسجيلات المتدرب');
+        const errorMessage = extractErrorMessage(error);
+       this.notification.showError(errorMessage);
         this.isLoading = false;
         this.updateDialogSessions();
       }
@@ -2693,7 +2714,8 @@ openFastAttendanceDialog(): void {
           }
         },
         error: (error) => {
-          console.error(`Error loading sessions:`, error);
+          const errorMessage = extractErrorMessage(error);
+          this.notification.showError(errorMessage);
           completed++;
           if (completed === courseIds.length) {
             this.setSessions(allSessions);
@@ -2770,7 +2792,10 @@ openFastAttendanceDialog(): void {
             this.openDialog();
           }
         },
-        error: () => this.notification.showError('حدث خطأ في تحميل البيانات')
+        error: (error) => {
+          const errorMessage = extractErrorMessage(error);
+          this.notification.showError(errorMessage);
+        }
       });
       return;
     }
@@ -2846,7 +2871,9 @@ openFastAttendanceDialog(): void {
                 this.openDialog();
               }
             },
-            error: () => {
+            error: (error) => {
+              const errorMessage = extractErrorMessage(error);
+              this.notification.showError(errorMessage);
               completed++;
               if (completed === courseIds.length) {
                 this.sessions = allSessions;
@@ -2861,7 +2888,9 @@ openFastAttendanceDialog(): void {
           });
         });
       },
-      error: () => {
+      error: (error) => {
+        const errorMessage = extractErrorMessage(error);
+       this.notification.showError(errorMessage);
         this.sessions = [];
         this.sessionOptions = [];
         this.openDialog();
@@ -2899,7 +2928,10 @@ openFastAttendanceDialog(): void {
             );
             this.loadAttendances();
           },
-          error: (err) => this.notification.showError(err.error?.messageEn || 'حدث خطأ في حفظ سجل الحضور')
+          error: (err) => {
+            const errorMessage = extractErrorMessage(err);
+           this.notification.showError(errorMessage);
+          }
         });
       }
     });
@@ -2923,7 +2955,10 @@ openFastAttendanceDialog(): void {
           maxWidth: '90vw'
         });
       },
-      error: () => this.notification.showError('حدث خطأ في تحميل بيانات سجل الحضور')
+      error: (err) => {
+        const errorMessage = extractErrorMessage(err);
+           this.notification.showError(errorMessage);
+      }
     });
   }
 
@@ -2934,7 +2969,10 @@ openFastAttendanceDialog(): void {
           this.notification.showSuccess('تم حذف سجل الحضور بنجاح');
           this.loadAttendances();
         },
-        error: () => this.notification.showError('حدث خطأ في حذف سجل الحضور')
+        error: (err) => {
+          const errorMessage = extractErrorMessage(err);
+           this.notification.showError(errorMessage);
+        }
       });
     }
   }
@@ -2963,8 +3001,8 @@ openFastAttendanceDialog(): void {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Load sessions error:', error);
-          this.notification.showError('حدث خطأ في تحميل الجلسات');
+          const errorMessage = extractErrorMessage(error);
+           this.notification.showError(errorMessage);
         }
       });
     } else {
@@ -3057,8 +3095,8 @@ openFastAttendanceDialog(): void {
           allData.push(...res.items);
         }
       } catch (error) {
-        console.error(`Error fetching page ${page}:`, error);
-        this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
+        const errorMessage = extractErrorMessage(error);
+        this.notification.showError(errorMessage);
       }
     }
 

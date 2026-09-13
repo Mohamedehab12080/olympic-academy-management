@@ -31,6 +31,7 @@ import {
   TraineeVTO 
 } from '../../../../core/models/trainee.model';
 import { EnrollmentWizardModalComponent } from '../../../enrollments/pages/enrollment-wizard/enrollment-wizard-modal.component';
+import { extractErrorMessage } from '../../../../core/utils/error-util';
 
 // ============ HELPER FUNCTIONS ============
 
@@ -1009,8 +1010,9 @@ loadSelectOptions(): void {
       next: (res: any) => {
         this.courseOptions = (res.list || []).map((c: any) => ({ value: c.id, label: c.title }));
       },
-      error: () => {
-        this.notification.showError('حدث خطأ في تحميل الدورات');
+      error: (error) => {
+          const errorMessage = extractErrorMessage(error);
+          this.notification.showError(errorMessage);
       }
     });
   }
@@ -1037,9 +1039,9 @@ loadSelectOptions(): void {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('❌ Error loading trainee data:', err);
-        this.notification.showError('حدث خطأ في تحميل بيانات المتدرب');
-        this.isLoading = false;
+        const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
+         this.isLoading = false;
       }
     });
   }
@@ -1093,8 +1095,8 @@ loadSelectOptions(): void {
         this.loadContactsToForm(contacts);
       },
       error: (err) => {
-        console.error('❌ Error loading contacts:', err);
-        this.notification.showWarning('حدث خطأ في تحميل جهات الاتصال');
+        const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
         this.addContact();
       }
     });
@@ -1229,7 +1231,8 @@ loadSelectOptions(): void {
           resolve();
         })
         .catch((error) => {
-          console.error('❌ Error processing contacts:', error);
+          const errorMessage = extractErrorMessage(error);
+          this.notification.showError(errorMessage);
           reject(error);
         });
     });
@@ -1361,8 +1364,8 @@ loadSelectOptions(): void {
           imagePreviewUrl = URL.createObjectURL(blob);
         }
       } catch (error) {
-        console.error('Failed to load image for preview:', error);
-        this.notification.showWarning('تعذر تحميل الصورة للطباعة');
+        const errorMessage = extractErrorMessage(error);
+          this.notification.showError(errorMessage);
       }
     }
     
@@ -1535,15 +1538,13 @@ loadSelectOptions(): void {
                 this.dialogRef.close(true);
               })
               .catch((error) => {
-                console.error('Error processing contacts:', error);
-                this.notification.showError('حدث خطأ في تحديث جهات الاتصال');
+                const errorMessage = extractErrorMessage(error);
+                this.notification.showError(errorMessage);
               });
           },
           error: (err) => {
-            console.error('Update error:', err);
-            // ✅ Show backend error message
-            const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في تحديث المتدرب';
-            this.notification.showError(errorMsg);
+            const errorMessage = extractErrorMessage(err);
+            this.notification.showError(errorMessage);
           }
         });
     } else {
@@ -1568,16 +1569,14 @@ loadSelectOptions(): void {
                 this.openEnrollmentWizard(this.createdTraineeId!);
               })
               .catch((error) => {
-                console.error('Error creating contacts:', error);
-                this.notification.showError('حدث خطأ في إضافة جهات الاتصال');
+                const errorMessage = extractErrorMessage(error);
+                this.notification.showError(errorMessage);
                 this.openEnrollmentWizard(this.createdTraineeId!);
               });
           },
           error: (err) => {
-            console.error('Create error:', err);
-            // ✅ Show backend error message
-            const errorMsg = err.error?.messageEn || err.error?.messageAr || 'حدث خطأ في إضافة المتدرب';
-            this.notification.showError(errorMsg);
+            const errorMessage = extractErrorMessage(err);
+          this.notification.showError(errorMessage);
           }
         });
     }
@@ -1606,7 +1605,8 @@ loadSelectOptions(): void {
           resolve();
         })
         .catch((error) => {
-          console.error('❌ Error creating contacts:', error);
+          const errorMessage = extractErrorMessage(error);
+          this.notification.showError(errorMessage);
           reject(error);
         });
     });

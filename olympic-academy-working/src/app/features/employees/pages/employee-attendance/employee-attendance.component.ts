@@ -1342,7 +1342,6 @@ export class EmployeeAttendanceDialogComponent {
         this.notification.showSuccess(`تم العثور على الموظف: ${employee.fullName}`);
       },
       error: (err) => {
-          
           const errorMessage = extractErrorMessage(err);
           this.notification.showError(errorMessage);
         }
@@ -2156,8 +2155,8 @@ export class EmployeeAttendanceComponent implements OnInit, OnDestroy {
           allData.push(...res.items);
         }
       } catch (error) {
-        console.error(`Error fetching page ${page}:`, error);
-        this.notification.showError(`حدث خطأ في تحميل الصفحة ${page + 1}`);
+        const errorMessage = extractErrorMessage(error);
+        this.notification.showError(errorMessage);
       }
     }
 

@@ -1863,7 +1863,7 @@ private generateCardsPrintOptimized(
 
   const today = new Date().toLocaleDateString('ar-EG');
   let cardsHtml = '';
-  const logoPath = 'assets/images/mainLogo.jpeg';
+  const logoPath = 'assets/images/simpleLogoSvg.svg';
 
   trainees.forEach((trainee, index) => {
     const imageUrl = imageUrls[index] || '';

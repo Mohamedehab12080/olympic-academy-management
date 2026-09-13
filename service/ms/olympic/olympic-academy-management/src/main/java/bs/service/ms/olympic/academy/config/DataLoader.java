@@ -434,23 +434,56 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private String extractDatabaseName(String url) {
-        try {
-            int lastSlash = url.lastIndexOf('/');
-            if (lastSlash != -1) {
-                String dbPart = url.substring(lastSlash + 1);
-                int questionMark = dbPart.indexOf('?');
-                if (questionMark != -1) {
-                    return dbPart.substring(0, questionMark);
-                }
-                int semicolon = dbPart.indexOf(';');
-                if (semicolon != -1) {
-                    return dbPart.substring(0, semicolon);
-                }
-                return dbPart;
-            }
-        } catch (Exception e) {
-            log.warn("⚠️ Could not extract database name from URL: {}", url);
+        if (url == null || url.isEmpty()) {
+            log.warn("⚠️ Datasource URL is null or empty");
+            return "database";
         }
-        return "database";
+
+        try {
+            // Strip the JDBC prefix and query string
+            // jdbc:mysql://host:port/dbname?params  →  dbname
+            String withoutPrefix = url;
+            int jdbcIdx = withoutPrefix.indexOf("jdbc:");
+            if (jdbcIdx != -1) {
+                withoutPrefix = withoutPrefix.substring(jdbcIdx + "jdbc:".length());
+            }
+
+            // Cut off query params (everything after '?')
+            int questionMark = withoutPrefix.indexOf('?');
+            if (questionMark != -1) {
+                withoutPrefix = withoutPrefix.substring(0, questionMark);
+            }
+
+            // Cut off semicolon params (SQL Server style)
+            int semicolon = withoutPrefix.indexOf(';');
+            if (semicolon != -1) {
+                withoutPrefix = withoutPrefix.substring(0, semicolon);
+            }
+
+            // Now find the FIRST slash after the host:port portion
+            // Format: mysql://host:port/dbname
+            int schemeIdx = withoutPrefix.indexOf("//");
+            int searchStart = (schemeIdx != -1) ? schemeIdx + 2 : 0;
+            int slashIdx = withoutPrefix.indexOf('/', searchStart);
+
+            if (slashIdx == -1 || slashIdx == withoutPrefix.length() - 1) {
+                log.warn("⚠️ Could not extract database name from URL: {}", url);
+                return "database";
+            }
+
+            String dbName = withoutPrefix.substring(slashIdx + 1).trim();
+
+            if (dbName.isEmpty()) {
+                log.warn("⚠️ Empty database name extracted from URL: {}", url);
+                return "database";
+            }
+
+            log.debug("📊 Extracted database name '{}' from URL", dbName);
+            return dbName;
+
+        } catch (Exception e) {
+            log.warn("⚠️ Could not extract database name from URL: {}", url, e);
+            return "database";
+        }
     }
 }

@@ -110,28 +110,27 @@ export interface SelectOption {
           </mat-option>
           
           <!-- Options -->
-          <div class="options-scroll-container" *ngIf="!isLoading">
-            <mat-option 
-              *ngFor="let option of filteredOptions" 
-              [value]="option.value" 
-              [disabled]="option.disabled"
-              (click)="$event.stopPropagation()"
-              [class.selected-option]="isSelected(option.value)"
-              [class.disabled-option]="option.disabled"
-              @fadeInOut>
-              
-              <div class="option-content">
-                <mat-icon *ngIf="option.icon" class="option-icon">{{ option.icon }}</mat-icon>
-                <div class="option-text-wrapper">
-                  <span class="option-text">{{ option.label }}</span>
-                  <span class="option-sub-label" *ngIf="option.subLabel">{{ option.subLabel }}</span>
+
+          <ng-container *ngIf="!isLoading">
+              <mat-option 
+                *ngFor="let option of filteredOptions; trackBy: trackByValue" 
+                [value]="option.value" 
+                [disabled]="option.disabled"
+                [class.selected-option]="isSelected(option.value)"
+                [class.disabled-option]="option.disabled">
+                
+                <div class="option-content">
+                  <mat-icon *ngIf="option.icon" class="option-icon">{{ option.icon }}</mat-icon>
+                  <div class="option-text-wrapper">
+                    <span class="option-text">{{ option.label }}</span>
+                    <span class="option-sub-label" *ngIf="option.subLabel">{{ option.subLabel }}</span>
+                  </div>
+                  <span class="check-mark" *ngIf="isSelected(option.value)">✓</span>
+                  <span class="option-color-indicator" *ngIf="option.color" [style.background-color]="option.color"></span>
                 </div>
-                <span class="check-mark" *ngIf="isSelected(option.value)">✓</span>
-                <span class="option-color-indicator" *ngIf="option.color" [style.background-color]="option.color"></span>
-              </div>
-            </mat-option>
-          </div>
-          
+              </mat-option>
+            </ng-container>
+
           <!-- No Results -->
           <mat-option *ngIf="filteredOptions.length === 0 && searchTerm && !isLoading" disabled class="no-results">
             <div class="no-results-content">
@@ -630,6 +629,10 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnInit, 
       this.filteredOptions = this.filteredOptions.slice(0, this.maxDisplayItems);
     }
   }
+
+  trackByValue(_index: number, option: SelectOption): any {
+  return option.value;
+}
 
   isSelected(value: any): boolean {
     if (this.multiple && Array.isArray(this.selectedValue)) {

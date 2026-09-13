@@ -56,7 +56,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   passwordStrength = 0;
   passwordStrengthText = '';
   currentYear = new Date().getFullYear();
-  logoPath = 'assets/images/mainLogo.jpeg';
+  logoPath = 'assets/images/simpleLogoSvg.svg';
   roles: RoleLookup[] = [];
   
   private destroy$ = new Subject<void>();

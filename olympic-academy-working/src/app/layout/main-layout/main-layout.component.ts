@@ -19,7 +19,7 @@ import { AuthService } from '../../core/auth/auth.service';
             <!-- Logo Image - Blue Theme -->
             <div class="logo-wrapper">
               <img
-                src="assets/images/mainLogoSvg.svg"
+                src="assets/images/simpleLogoSvg.svg"
                 alt="الأكاديمية الأولمبية"
                 class="logo-image"
                 [class.collapsed]="!sidebarExpanded"

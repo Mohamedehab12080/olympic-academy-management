@@ -22,6 +22,7 @@ import { TraineeAttendanceService } from '../../../../../core/services/trainee-a
 import { TraineeService } from '../../../../../core/services/trainee.service';
 import { EnrollmentService } from '../../../../../core/services/enrollment.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
+import {extractErrorMessage} from '../../../../../core/utils/error-util';
 
 // ============================================================================
 // TYPES & CONSTANTS
@@ -2071,6 +2072,8 @@ export class FastAttendanceDialogComponent implements OnInit, AfterViewInit, OnD
         console.error('Error creating attendance:', err);
         this.handleScanError(err.error?.messageEn || 'حدث خطأ في تسجيل الحضور');
         this.addRecentScan(trainee, false, err.error?.messageEn || 'فشل التسجيل');
+        const errorMessage = extractErrorMessage(err);
+        this.notification.showError(errorMessage);
       }
     });
   }
