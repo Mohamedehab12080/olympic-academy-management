@@ -17,7 +17,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { Subject, takeUntil, forkJoin, finalize } from 'rxjs';
+import { Subject, finalize } from 'rxjs';
+import { SearchableSelectComponent, SelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 
 import { TraineeService } from '../../../../core/services/trainee.service';
 import { CourseService } from '../../../../core/services/course.service';
@@ -25,6 +26,9 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { FileService } from '../../../../core/services/file.service';
 import { FileDomain } from '../../../../core/models/file.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
+import { EmployeeService } from '../../../../core/services/employee.service';
+import { EmployeeLookupVTO } from '../../../../core/models/employee.model';
+
 import { 
   TraineeContactDTO, 
   TraineeContactVTO,
@@ -147,25 +151,26 @@ interface ContactFormGroup {
   selector: 'app-trainee-wizard-modal',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatStepperModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatProgressSpinnerModule,
-    MatDividerModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatSlideToggleModule,
-    FileUploadComponent
-  ],
+  CommonModule,
+  FormsModule,
+  ReactiveFormsModule,
+  MatDialogModule,
+  MatButtonModule,
+  MatIconModule,
+  MatFormFieldModule,
+  MatInputModule,
+  MatSelectModule,
+  MatStepperModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
+  MatProgressSpinnerModule,
+  MatDividerModule,
+  MatCardModule,
+  MatTooltipModule,
+  MatSlideToggleModule,
+  SearchableSelectComponent,
+  FileUploadComponent
+],
   template: `
     <div class="wizard-container" dir="rtl">
       <!-- Header -->
@@ -255,6 +260,18 @@ interface ContactFormGroup {
                     <mat-label>العنوان</mat-label>
                     <input matInput formControlName="address" placeholder="أدخل العنوان">
                   </mat-form-field>
+
+                  <app-searchable-select
+                    class="full-width"
+                    formControlName="referralEmployeeId"
+                    label="الموظف المُحيل"
+                    placeholder="ابحث بالاسم أو رقم الهوية..."
+                    [options]="employeeSelectOptions"
+                    [clearable]="true"
+                    [showStats]="true"
+                    hint="اختر الموظف الذي أحال المتدرب"
+                    hintIcon="person_search">
+                  </app-searchable-select>
 
                   <!-- Status Toggle - Only visible in Edit Mode -->
                   <div class="full-width status-toggle" *ngIf="isEditMode">
@@ -481,6 +498,7 @@ interface ContactFormGroup {
                     <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
                     <div><strong>الجنس:</strong> {{ getGenderTitle(basicInfoForm.get('gender')?.value) || '-' }}</div>
                     <div><strong>العنوان:</strong> {{ basicInfoForm.get('address')?.value || '-' }}</div>
+                    <div><strong>الموظف المُحيل:</strong> {{ getEmployeeName(basicInfoForm.get('referralEmployeeId')?.value) || '-' }}</div>
                     <div *ngIf="isEditMode"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
                   </div>
                 </mat-card>
@@ -899,6 +917,8 @@ interface ContactFormGroup {
 export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   @ViewChild('stepper') stepper!: MatStepper;
   
+  employeeSelectOptions: SelectOption[] = [];
+  employeeOptions: EmployeeLookupVTO[] = [];
   // Form Groups
   basicInfoForm: FormGroup;
   contactsForm: FormGroup;
@@ -934,29 +954,31 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   get healthConditionsArray() { return this.healthConditionsForm.get('healthConditions') as FormArray; }
 
   constructor(
-    private dialogRef: MatDialogRef<TraineeWizardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: TraineeWizardData,
-    private fb: FormBuilder,
-    private traineeService: TraineeService,
-    private courseService: CourseService,
-    private notification: NotificationService,
-    private fileService: FileService,
-    private dialog: MatDialog
-  ) {
+  private dialogRef: MatDialogRef<TraineeWizardModalComponent>,
+  @Inject(MAT_DIALOG_DATA) private data: TraineeWizardData,
+  private fb: FormBuilder,
+  private traineeService: TraineeService,
+  private courseService: CourseService,
+  private employeeService: EmployeeService,  
+  private notification: NotificationService,
+  private fileService: FileService,
+  private dialog: MatDialog
+) {
     this.isEditMode = !!data?.traineeId;
     this.traineeId = data?.traineeId || null;
     this.traineeData = data?.traineeData || null;
     
     // Initialize forms
     this.basicInfoForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(3)]],
-      nationalId: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
-      academicYear: [''],
-      birthDate: [''],
-      gender: [null],
-      address: [''],
-      isActive: [true]
-    });
+    fullName: ['', [Validators.required, Validators.minLength(3)]],
+    nationalId: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+    academicYear: [''],
+    birthDate: [''],
+    gender: [null],
+    address: [''],
+    referralEmployeeId: [null], 
+    isActive: [true]
+  });
     
     this.contactsForm = this.fb.group({
       contacts: this.fb.array([])
@@ -972,16 +994,17 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadSelectOptions();
-    this.loadCourses();
-    
-    if (this.isEditMode) {
-      this.loadTraineeData();
-    } else {
-      // Add one empty contact for new trainee
-      this.addContact();
-    }
+  this.loadSelectOptions();
+  this.loadCourses();
+  this.loadEmployees();          
+  
+  if (this.isEditMode) {
+    this.loadTraineeData();
+  } else {
+    // Add one empty contact for new trainee
+    this.addContact();
   }
+}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -991,6 +1014,24 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   // ============================================================
   // LOADING METHODS
   // ============================================================
+
+ loadEmployees(): void {
+  this.employeeService.getAllEmployeesLookup().subscribe({
+    next: (res: EmployeeLookupVTO[]) => {
+      this.employeeOptions = res || [];
+      this.employeeSelectOptions = this.employeeOptions.map(e => ({
+        value: e.id,
+        label: e.fullName || '',
+        subLabel: e.nationalId || '',
+        icon: 'person'
+      }));
+    },
+    error: (error) => {
+      const errorMessage = extractErrorMessage(error);
+      this.notification.showError(errorMessage);
+    }
+  });
+}
 
 loadSelectOptions(): void {
   this.genderOptions = [
@@ -1063,6 +1104,7 @@ loadSelectOptions(): void {
       birthDate: t.birthDate || null,
       gender: genderEnum,
       address: t.address || '',
+      referralEmployeeId: t.referralEmployee?.id ?? null,  
       isActive: t.isActive !== undefined ? t.isActive : true
     });
     
@@ -1344,6 +1386,22 @@ loadSelectOptions(): void {
     return found ? found.title : null;
   }
 
+  /** Get employee fullName by id (for summary / print) */
+getEmployeeName(id: number | null): string {
+  if (id === null || id === undefined) return '';
+  const emp = this.employeeOptions.find(e => e.id === id);
+  return emp ? (emp.fullName || '') : '';
+}
+
+/** Ensure only a valid id is submitted */
+private getValidReferralEmployeeId(): number | null {
+  const value = this.basicInfoForm.get('referralEmployeeId')?.value;
+  if (typeof value === 'number' && this.employeeOptions.some(e => e.id === value)) {
+    return value;
+  }
+  return null;
+}
+
   getContactTypeTitle(enumName: string | null): string | null {
     if (!enumName) return null;
     const found = this.contactTypeOptions.find(c => c.enumName === enumName);
@@ -1371,6 +1429,7 @@ loadSelectOptions(): void {
     
     const previewData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
+      referralEmployeeName: this.getEmployeeName(this.basicInfoForm.get('referralEmployeeId')?.value),
       nationalId: this.basicInfoForm.get('nationalId')?.value,
       academicYear: this.basicInfoForm.get('academicYear')?.value,
       birthDate: this.basicInfoForm.get('birthDate')?.value,
@@ -1457,6 +1516,7 @@ loadSelectOptions(): void {
             <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${data.gender || '-'}</div></div>
             <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${this.escapeHtml(data.academicYear) || '-'}</div></div>
             <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${this.escapeHtml(data.address) || '-'}</div></div>
+            <div class="info-item"><div class="info-label">الموظف المُحيل</div><div class="info-value">${this.escapeHtml(data.referralEmployeeName) || '-'}</div></div>
             ${!data.isNewTrainee ? `<div class="info-item"><div class="info-label">الحالة</div><div class="info-value">${data.isActive ? 'نشط' : 'غير نشط'}</div></div>` : ''}
           </div>
           <div class="signature-section">
@@ -1505,6 +1565,7 @@ loadSelectOptions(): void {
     
     const formData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
+      referralEmployeeId: this.getValidReferralEmployeeId(),   // <-- ADD
       nationalId: this.basicInfoForm.get('nationalId')?.value,
       academicYear: academicYearValue || '',
       birthDate: this.basicInfoForm.get('birthDate')?.value,

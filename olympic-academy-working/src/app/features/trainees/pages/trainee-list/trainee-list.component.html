@@ -43,6 +43,20 @@
         </div>
 
         <div class="filters-row">
+          <!-- Referral Employee Filter -->
+          <div class="referral-filter">
+            <app-searchable-select
+              label="الموظف المُحيل"
+              placeholder="ابحث بالاسم أو رقم الهوية..."
+              [options]="employeeSelectOptions"
+              [clearable]="true"
+              [showStats]="true"
+              [ngModel]="referralEmployeeIdFilter"
+              (selectionChange)="onReferralEmployeeChange($event)"
+              hint="تصفية حسب الموظف الذي أحال المتدرب"
+              hintIcon="person_search">
+            </app-searchable-select>
+          </div>
           <div class="filter-actions">
             <button mat-stroked-button (click)="clearFilters()" class="reset-btn">
               <mat-icon>refresh</mat-icon>
@@ -162,6 +176,17 @@
                 <mat-icon>{{ trainee.gender?.title === 'ذكر' ? 'male' : 'female' }}</mat-icon>
                 <span>{{ trainee.gender?.title || '-' }}</span>
               </div>
+            </td>
+          </ng-container>
+
+            <!-- Referral Employee -->
+          <ng-container matColumnDef="referralEmployee">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف المُحيل</th>
+            <td mat-cell *matCellDef="let trainee">
+              <span *ngIf="trainee.referralEmployee?.fullName; else noReferral">
+                {{ trainee.referralEmployee.fullName }}
+              </span>
+              <ng-template #noReferral>-</ng-template>
             </td>
           </ng-container>
 

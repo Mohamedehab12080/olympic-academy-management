@@ -34,6 +34,8 @@ public class TraineeVTO implements Serializable {
 
     private String fullName;
 
+    private LightUserVTO referralEmployee;
+
     private String nationalId;
 
     private String academicYear;
@@ -111,6 +113,27 @@ public class TraineeVTO implements Serializable {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public TraineeVTO referralEmployee(LightUserVTO referralEmployee) {
+        this.referralEmployee = referralEmployee;
+        return this;
+    }
+
+    /**
+     * Get referralEmployee
+     *
+     * @return referralEmployee
+     */
+    @Valid
+    @Schema(name = "referralEmployee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("referralEmployee")
+    public LightUserVTO getReferralEmployee() {
+        return referralEmployee;
+    }
+
+    public void setReferralEmployee(LightUserVTO referralEmployee) {
+        this.referralEmployee = referralEmployee;
     }
 
     public TraineeVTO nationalId(String nationalId) {
@@ -470,6 +493,7 @@ public class TraineeVTO implements Serializable {
         }
         TraineeVTO traineeVTO = (TraineeVTO) o;
         return Objects.equals(this.id, traineeVTO.id) && Objects.equals(this.fullName, traineeVTO.fullName)
+                && Objects.equals(this.referralEmployee, traineeVTO.referralEmployee)
                 && Objects.equals(this.nationalId, traineeVTO.nationalId)
                 && Objects.equals(this.academicYear, traineeVTO.academicYear)
                 && Objects.equals(this.birthDate, traineeVTO.birthDate)
@@ -488,9 +512,9 @@ public class TraineeVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, academicYear, birthDate, gender, isActive, address, imageUrl,
-                enrollments, contacts, certificates, healthConditions, createdOn, createdBy, lastModifiedOn,
-                lastModifiedBy);
+        return Objects.hash(id, fullName, referralEmployee, nationalId, academicYear, birthDate, gender, isActive,
+                address, imageUrl, enrollments, contacts, certificates, healthConditions, createdOn, createdBy,
+                lastModifiedOn, lastModifiedBy);
     }
 
     @Override
@@ -499,6 +523,7 @@ public class TraineeVTO implements Serializable {
         sb.append("class TraineeVTO {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
+        sb.append("    referralEmployee: ").append(toIndentedString(referralEmployee)).append("\n");
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
         sb.append("    academicYear: ").append(toIndentedString(academicYear)).append("\n");
         sb.append("    birthDate: ").append(toIndentedString(birthDate)).append("\n");

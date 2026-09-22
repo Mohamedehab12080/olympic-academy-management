@@ -21,6 +21,13 @@ public class TrainerCourseQueryBuilder extends AbstractQueryBuilderV2<TrainerCou
     public List<QBCondition> evaluateWhereConditions(TrainerCourseSearchFilter filters) {
         List<QBCondition> qbConditions = new ArrayList<>();
 
+        if (filters.getQuickSearch() != null)
+            qbConditions.add(QBCondition.builder()
+                    .placeHolder("quickSearch")
+                    .value("%" + filters.getQuickSearch() + "%")
+                    .condition("(LOWER(item.trainer.fullName) LIKE LOWER(:PH) OR LOWER(item.course.title) LIKE LOWER(:PH))")
+                    .build());
+
         if (filters.getTrainerId() != null)
             qbConditions.add(QBCondition.builder().placeHolder("trainerId").value(filters.getTrainerId())
                     .condition("item.trainer.id = :PH").build());

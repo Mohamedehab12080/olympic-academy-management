@@ -138,12 +138,13 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public TraineeResultSet getAllTraineesByFilter(String quickSearch, Boolean isActive, Gender gender, String academicYear,
+    public TraineeResultSet getAllTraineesByFilter(String quickSearch,Integer referralEmployeeId, Boolean isActive, Gender gender, String academicYear,
                                                    LocalDate createdOnFrom, LocalDate createdOnTo,
                                                    Integer pageNum, Integer pageSize,
                                                    OrderDirections orderDir, String orderBy) {
         TraineeSearchFilter filter = TraineeSearchFilter.builder()
                 .quickSearchQuery(quickSearch)
+                .referralEmployeeId(referralEmployeeId)
                 .gender(gender)
                 .isDeleted(false)
                 .academicYear(academicYear)

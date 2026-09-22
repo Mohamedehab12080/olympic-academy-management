@@ -31,6 +31,8 @@ public class TraineeDTO implements Serializable {
 
     private String nationalId;
 
+    private Integer referralEmployeeId;
+
     private String academicYear;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -87,6 +89,27 @@ public class TraineeDTO implements Serializable {
 
     public void setNationalId(String nationalId) {
         this.nationalId = nationalId;
+    }
+
+    public TraineeDTO referralEmployeeId(Integer referralEmployeeId) {
+        this.referralEmployeeId = referralEmployeeId;
+        return this;
+    }
+
+    /**
+     * Get referralEmployeeId
+     *
+     * @return referralEmployeeId
+     */
+
+    @Schema(name = "referralEmployeeId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("referralEmployeeId")
+    public Integer getReferralEmployeeId() {
+        return referralEmployeeId;
+    }
+
+    public void setReferralEmployeeId(Integer referralEmployeeId) {
+        this.referralEmployeeId = referralEmployeeId;
     }
 
     public TraineeDTO academicYear(String academicYear) {
@@ -255,6 +278,7 @@ public class TraineeDTO implements Serializable {
         TraineeDTO traineeDTO = (TraineeDTO) o;
         return Objects.equals(this.fullName, traineeDTO.fullName)
                 && Objects.equals(this.nationalId, traineeDTO.nationalId)
+                && Objects.equals(this.referralEmployeeId, traineeDTO.referralEmployeeId)
                 && Objects.equals(this.academicYear, traineeDTO.academicYear)
                 && Objects.equals(this.birthDate, traineeDTO.birthDate)
                 && Objects.equals(this.gender, traineeDTO.gender) && Objects.equals(this.address, traineeDTO.address)
@@ -265,8 +289,8 @@ public class TraineeDTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(fullName, nationalId, academicYear, birthDate, gender, address, imageUrl, isActive,
-                contacts);
+        return Objects.hash(fullName, nationalId, referralEmployeeId, academicYear, birthDate, gender, address,
+                imageUrl, isActive, contacts);
     }
 
     @Override
@@ -275,6 +299,7 @@ public class TraineeDTO implements Serializable {
         sb.append("class TraineeDTO {\n");
         sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
+        sb.append("    referralEmployeeId: ").append(toIndentedString(referralEmployeeId)).append("\n");
         sb.append("    academicYear: ").append(toIndentedString(academicYear)).append("\n");
         sb.append("    birthDate: ").append(toIndentedString(birthDate)).append("\n");
         sb.append("    gender: ").append(toIndentedString(gender)).append("\n");

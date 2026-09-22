@@ -36,6 +36,7 @@ export interface TraineeLookupResultSet {
 
 export interface TraineeDTO {
   fullName: string;
+  referralEmployeeId:number;
   nationalId: string;
   academicYear?: string;  
   birthDate?: string;
@@ -66,6 +67,7 @@ export interface HealthConditionDTO {
 export interface TraineeVTO {
   id: number;
   fullName: string;
+  referralEmployee:LightUserVTO;
   nationalId: string;
   academicYear?: string;  // Changed from string to AcademicYear object
   birthDate?: string;
@@ -116,6 +118,7 @@ export interface TraineeResultSet {
 export interface TraineeListItem {
   id: number;
   fullName: string;
+  referralEmployee:LightUserVTO;
   nationalId: string;
   isActive: boolean;
   academicYear: string;  

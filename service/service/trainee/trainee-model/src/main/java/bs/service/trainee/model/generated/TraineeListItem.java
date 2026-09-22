@@ -1,6 +1,7 @@
 package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
@@ -26,6 +27,8 @@ public class TraineeListItem implements Serializable {
     private Integer id;
 
     private String fullName;
+
+    private LightUserVTO referralEmployee;
 
     private String imageUrl;
 
@@ -77,6 +80,27 @@ public class TraineeListItem implements Serializable {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public TraineeListItem referralEmployee(LightUserVTO referralEmployee) {
+        this.referralEmployee = referralEmployee;
+        return this;
+    }
+
+    /**
+     * Get referralEmployee
+     *
+     * @return referralEmployee
+     */
+    @Valid
+    @Schema(name = "referralEmployee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("referralEmployee")
+    public LightUserVTO getReferralEmployee() {
+        return referralEmployee;
+    }
+
+    public void setReferralEmployee(LightUserVTO referralEmployee) {
+        this.referralEmployee = referralEmployee;
     }
 
     public TraineeListItem imageUrl(String imageUrl) {
@@ -194,6 +218,7 @@ public class TraineeListItem implements Serializable {
         }
         TraineeListItem traineeListItem = (TraineeListItem) o;
         return Objects.equals(this.id, traineeListItem.id) && Objects.equals(this.fullName, traineeListItem.fullName)
+                && Objects.equals(this.referralEmployee, traineeListItem.referralEmployee)
                 && Objects.equals(this.imageUrl, traineeListItem.imageUrl)
                 && Objects.equals(this.nationalId, traineeListItem.nationalId)
                 && Objects.equals(this.isActive, traineeListItem.isActive)
@@ -203,7 +228,7 @@ public class TraineeListItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, imageUrl, nationalId, isActive, academicYear, gender);
+        return Objects.hash(id, fullName, referralEmployee, imageUrl, nationalId, isActive, academicYear, gender);
     }
 
     @Override
@@ -212,6 +237,7 @@ public class TraineeListItem implements Serializable {
         sb.append("class TraineeListItem {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
+        sb.append("    referralEmployee: ").append(toIndentedString(referralEmployee)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");

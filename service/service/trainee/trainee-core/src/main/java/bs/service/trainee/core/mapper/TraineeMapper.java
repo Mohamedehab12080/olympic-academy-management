@@ -145,6 +145,7 @@ public abstract class TraineeMapper {
 
     // DTO to Entity - convert LookupVTO to ID
     @Mapping(target = "gender", source = "gender.id")
+    @Mapping(target="referralEmployee.id",source="referralEmployeeId")
     public abstract Trainee toTrainee(TraineeDTO traineeDTO);
 
     // Entity to VTO - use qualifiedByName to specify which converter to use
@@ -155,6 +156,7 @@ public abstract class TraineeMapper {
     // List Item mapping - use qualifiedByName
     @Mapping(target = "gender", qualifiedByName = "genderToLookup")
     @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "referralEmployee", source = "referralEmployee")
     public abstract TraineeListItem toTraineeListItem(Trainee trainee);
 
     public abstract List<TraineeListItem> toTraineeListItems(List<Trainee> trainees);

@@ -23,7 +23,7 @@ public class TraineeQueryBuilder extends AbstractQueryBuilderV2<Trainee, Trainee
 
         if (filters.getQuickSearchQuery() != null && !filters.getQuickSearchQuery().trim().isEmpty())
             qbConditions.add(QBCondition.builder().placeHolder("fullName").value("%" + filters.getQuickSearchQuery() + "%")
-                    .condition("(LOWER(item.fullName) LIKE LOWER(:PH) OR item.nationalId LIKE :PH)").build());
+                    .condition("(LOWER(item.fullName) LIKE LOWER(:PH) OR item.nationalId LIKE :PH OR LOWER(item.referralEmployee.fullName) LIKE LOWER(:PH) OR item.referralEmployee.nationalId LIKE :PH)").build());
 
         if (filters.getIsDeleted() != null)
             qbConditions.add(QBCondition.builder().placeHolder("isDeleted").value(filters.getIsDeleted())

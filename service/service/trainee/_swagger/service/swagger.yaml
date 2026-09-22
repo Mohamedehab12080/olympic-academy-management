@@ -48,6 +48,7 @@ paths:
       operationId: getAllTraineesByFilter
       parameters:
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPQuickSearch'
+        - $ref: '#/components/parameters/QPReferralEmployeeId'
         - $ref: '../../../../../lib/common/_swagger/service/swagger.yaml#/components/parameters/QPIsActive'
         - $ref: '#/components/parameters/QPGender'
         - $ref: '#/components/parameters/QPAcademicYear'
@@ -643,6 +644,13 @@ components:
       schema:
         type: integer
         format: int32
+    QPReferralEmployeeId:
+      name: referralEmployeeId
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
     QPGender:
       name: gender
       in: query
@@ -742,6 +750,9 @@ components:
           type: string
         nationalId:
           type: string
+        referralEmployeeId:
+          type: integer
+          format: int32
         academicYear:
           type: string
         birthDate:
@@ -867,6 +878,8 @@ components:
           format: int32
         fullName:
           type: string
+        referralEmployee:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
         nationalId:
           type: string
         academicYear:
@@ -1010,6 +1023,8 @@ components:
           format: int32
         fullName:
           type: string
+        referralEmployee:
+          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
         imageUrl:
           type: string
         nationalId:

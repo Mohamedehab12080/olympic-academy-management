@@ -76,6 +76,8 @@ public interface TraineeController {
      *
      * @param quickSearch
      *            (optional)
+     * @param referralEmployeeId
+     *            (optional)
      * @param isActive
      *            (optional)
      * @param gender
@@ -106,6 +108,7 @@ public interface TraineeController {
 
     ResponseEntity<TraineeResultSet> _getAllTraineesByFilter(
             @Parameter(name = "quickSearch", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "quickSearch", required = false) String quickSearch,
+            @Parameter(name = "referralEmployeeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "referralEmployeeId", required = false) Integer referralEmployeeId,
             @Parameter(name = "isActive", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "isActive", required = false) Boolean isActive,
             @Parameter(name = "gender", description = "", in = ParameterIn.QUERY) @Valid Gender gender,
             @Parameter(name = "academicYear", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "academicYear", required = false) String academicYear,

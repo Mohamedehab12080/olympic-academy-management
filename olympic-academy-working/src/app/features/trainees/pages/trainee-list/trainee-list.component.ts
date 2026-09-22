@@ -43,6 +43,9 @@ import { TraineeWizardModalComponent } from '../trainee-wizard/trainee-wizard-mo
 import { TraineeListItem } from '../../../../core/models/trainee.model';
 import * as JsBarcode from 'jsbarcode';
 
+import { EmployeeService } from '../../../../core/services/employee.service';
+import { EmployeeLookupVTO } from '../../../../core/models/employee.model';
+
 // ============================================================================
 // PAGE SELECTION DIALOG COMPONENT - ENHANCED COLORS
 // ============================================================================
@@ -693,15 +696,16 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   Math = Math;
 
   displayedColumns: string[] = [
-    'index',
-    'image',
-    'fullName',
-    'nationalId',
-    'academicYear',
-    'gender',
-    'status',
-    'actions',
-  ];
+  'index',
+  'image',
+  'fullName',
+  'nationalId',
+  'academicYear',
+  'gender',
+  'referralEmployee',
+  'status',
+  'actions',
+];
   dataSource = new MatTableDataSource<TraineeListItem>([]);
   allTrainees: TraineeListItem[] = [];
   imageUrls: Map<number, string> = new Map();
@@ -722,7 +726,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   genderFilter: string | null = null;
   statusFilter: boolean | null = null;
   academicYearFilter: string | null = null;
-
+  referralEmployeeIdFilter: number | null = null;
+  employeeSelectOptions: SelectOption[] = [];
+  employeeOptions: EmployeeLookupVTO[] = [];
   // Options for selects
   genderOptions: SelectOption[] = [];
   statusOptions: SelectOption[] = [];
@@ -736,16 +742,18 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private traineeService: TraineeService,
-    private reportService: ReportService,
-    private notification: NotificationService,
-    private dialog: MatDialog,
-    private fileService: FileService,
-    private cdr: ChangeDetectorRef,
-  ) {}
+  private traineeService: TraineeService,
+  private reportService: ReportService,
+  private notification: NotificationService,
+  private dialog: MatDialog,
+  private fileService: FileService,
+  private cdr: ChangeDetectorRef,
+  private employeeService: EmployeeService,
+) {}
 
   ngOnInit(): void {
     this.loadSelectOptions();
+    this.loadEmployees();   // <-- ADD
     this.loadTrainees();
   }
 
@@ -757,6 +765,26 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     });
     this.imageUrls.clear();
   }
+
+  loadEmployees(): void {
+  this.employeeService.getAllEmployeesLookup().subscribe({
+    next: (res: EmployeeLookupVTO[]) => {
+      this.employeeOptions = res || [];
+      this.employeeSelectOptions = [
+        { value: null, label: 'الكل' },
+        ...this.employeeOptions.map(e => ({
+          value: e.id,
+          label: e.fullName || '',
+          subLabel: e.nationalId || '',
+          icon: 'person'
+        }))
+      ];
+    },
+    error: () => {
+      // Silent fail — filter is optional
+    }
+  });
+}
 
   loadSelectOptions(): void {
     this.genderOptions = [
@@ -851,6 +879,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
       params.academicYear = this.academicYearFilter.trim();
     }
+    if (this.referralEmployeeIdFilter !== null) {
+  params.referralEmployeeId = this.referralEmployeeIdFilter; 
+}
 
     params.pageNum = this.currentPage;
     params.pageSize = this.pageSize;
@@ -974,6 +1005,13 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     this.loadTrainees();
   }
 
+  onReferralEmployeeChange(value: number | null): void {
+  console.log('👤 Referral employee filter changed:', value);
+  this.referralEmployeeIdFilter = value;
+  this.currentPage = 0;
+  this.loadTrainees();
+}
+
   onAcademicYearChange(value: string): void {
     console.log('📚 Academic year filter changed:', value);
     this.academicYearFilter = value;
@@ -982,15 +1020,15 @@ export class TraineeListComponent implements OnInit, OnDestroy {
   }
 
   clearFilters(): void {
-    console.log('🧹 Clearing all filters');
-    this.searchText = '';
-    this.genderFilter = null;
-    this.statusFilter = null;
-    this.academicYearFilter = null;
-    this.currentPage = 0;
-    this.loadTrainees();
-    this.notification.showSuccess('تم مسح جميع الفلاتر');
-  }
+  this.searchText = '';
+  this.genderFilter = null;
+  this.statusFilter = null;
+  this.academicYearFilter = null;
+  this.referralEmployeeIdFilter = null; 
+  this.currentPage = 0;
+  this.loadTrainees();
+  this.notification.showSuccess('تم مسح جميع الفلاتر');
+}
 
   // ==========================================================================
   // TRAINEE OPERATIONS
@@ -1110,6 +1148,9 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       if (this.academicYearFilter && this.academicYearFilter.trim() !== '') {
         params.academicYear = this.academicYearFilter.trim();
       }
+      if (this.referralEmployeeIdFilter !== null) {
+  params.referralEmployeeId = this.referralEmployeeIdFilter; 
+}
 
       params.pageNum = page;
       params.pageSize = this.pageSize;
@@ -1170,6 +1211,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       'رقم الهوية': t.nationalId,
       'السنة الدراسية': this.getAcademicYearDisplay(t.academicYear),
       الجنس: t.gender?.title || '-',
+      'الموظف المُحيل': t.referralEmployee?.fullName || '-',   // <-- ADD
       الحالة: t.isActive ? 'نشط' : 'غير نشط',
     }));
 
@@ -1259,6 +1301,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${t.fullName || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${t.nationalId || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${this.getAcademicYearDisplay(t.academicYear)}</td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${t.referralEmployee?.fullName || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${genderStyle}">${t.gender?.title || '-'}</span></td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${statusStyle}">${t.isActive ? 'نشط' : 'غير نشط'}</span></td>
           </tr>
@@ -1315,11 +1358,12 @@ export class TraineeListComponent implements OnInit, OnDestroy {
               <thead>
                 <tr>
                   <th style="width: 4%;">#</th>
-                  <th style="width: 25%;">الاسم</th>
-                  <th style="width: 18%;">رقم الهوية</th>
-                  <th style="width: 16%;">السنة الدراسية</th>
-                  <th style="width: 15%;">الجنس</th>
-                  <th style="width: 22%;">الحالة</th>
+                  <th style="width: 22%;">الاسم</th>
+                  <th style="width: 15%;">رقم الهوية</th>
+                  <th style="width: 13%;">السنة الدراسية</th>
+                  <th style="width: 12%;">الجنس</th>
+                  <th style="width: 18%;">الموظف المُحيل</th>   <!-- NEW -->
+                  <th style="width: 16%;">الحالة</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,6 +1,7 @@
 package bs.service.trainee.model.entity;
 
 import bs.lib.common.model.enums.Gender;
+import bs.service.employee.model.entity.Employee;
 import bs.service.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -66,6 +67,10 @@ public class Trainee {
     @ManyToOne
     @JoinColumn(name = "last_modified_by_id")
     private User lastModifiedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "referral_employee_id")
+    private Employee referralEmployee;
 
     @Column(name = "is_active")
     @Basic

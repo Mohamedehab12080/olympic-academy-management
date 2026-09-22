@@ -38,6 +38,9 @@ import { LightUserVTO } from '../../../../core/models/common.model';
 import { FastAttendanceDialogComponent } from './dialog/fast-attendance-dialog.component';
 import { extractErrorMessage } from '../../../../core/utils/error-util';
 
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -2095,13 +2098,23 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
   // LIFECYCLE HOOKS
   // ==========================================================================
 
+  private searchSubject = new Subject<string>();
+
   ngOnInit(): void {
     this.loadSelectOptions();
     this.loadDayOptions();
     this.loadCourses();
     this.loadTrainees();
     this.loadAttendances();
+     this.searchSubject.pipe(
+    debounceTime(400),
+    distinctUntilChanged()
+  ).subscribe(() => this.onGeneralSearch());
   }
+
+  onSearchInput(): void {
+  this.searchSubject.next(this.generalSearch);
+}
 
   ngAfterViewInit(): void {
     if (this.barcodeInput) {
@@ -2125,6 +2138,7 @@ export class TraineeAttendanceComponent implements OnInit, AfterViewInit, OnDest
     });
     this.traineeImageCache.clear();
     this.traineeImageLoading.clear();
+    this.searchSubject.complete();
   }
 
   // ==========================================================================
@@ -2377,7 +2391,7 @@ openFastAttendanceDialog(): void {
   // ==========================================================================
 
   onGeneralSearch(): void {
-  this.currentPage = 0;      // reset to first page
+  this.currentPage = 0;     // reset to first page
   this.loadAttendances();
 }
 
@@ -3027,6 +3041,7 @@ openFastAttendanceDialog(): void {
     this.barcodeSearch = '';
     this.isBarcodeMode = false;
     this.currentPage = 0;
+    this.generalSearch='';
     this.loadAttendances();
     this.updateDialogSessions();
     this.notification.showSuccess('تم مسح جميع الفلاتر');
@@ -3070,38 +3085,41 @@ openFastAttendanceDialog(): void {
     });
   }
 
-  private async fetchPagesForExport(startPage: number, endPage: number): Promise<TraineeAttendanceListItem[]> {
-    const allData: TraineeAttendanceListItem[] = [];
-    const totalPages = this.getTotalPages();
-    
-    for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
-      const params: any = {};
+private async fetchPagesForExport(startPage: number, endPage: number): Promise<TraineeAttendanceListItem[]> {
+  const allData: TraineeAttendanceListItem[] = [];
+  const totalPages = this.getTotalPages();
 
-      if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
-      if (this.selectedStatus) params.status = this.selectedStatus;
-      if (this.selectedDay) params.sessionDay = this.selectedDay;
-      if (this.fromDate) params.fromDate = this.formatDateForAPI(this.fromDate);
-      if (this.toDate) params.toDate = this.formatDateForAPI(this.toDate);
+  for (let page = startPage; page <= Math.min(endPage, totalPages - 1); page++) {
+    const params: any = {};
 
-      params.pageNum = page;
-      params.pageSize = this.pageSize;
+    if (this.selectedSessionId) params.courseSessionId = this.selectedSessionId;
+    if (this.selectedStatus) params.status = this.selectedStatus;
+    if (this.selectedDay) params.sessionDay = this.selectedDay;
+    if (this.fromDate) params.fromDate = this.formatDateForAPI(this.fromDate);
+    if (this.toDate) params.toDate = this.formatDateForAPI(this.toDate);
 
-      if (this.sortBy) params.orderBy = this.sortBy;
-      if (this.sortDir) params.orderDir = this.sortDir;
+    // 👇 ADD THESE — they were missing
+    if (this.barcodeSearch?.trim()) params.traineeNationalId = this.barcodeSearch.trim();
+    if (this.generalSearch?.trim()) params.quickSearch = this.generalSearch.trim();
 
-      try {
-        const res = await this.traineeAttendanceService.getAllAttendances(params).toPromise();
-        if (res && res.items) {
-          allData.push(...res.items);
-        }
-      } catch (error) {
-        const errorMessage = extractErrorMessage(error);
-        this.notification.showError(errorMessage);
+    params.pageNum = page;
+    params.pageSize = this.pageSize;
+
+    if (this.sortBy) params.orderBy = this.sortBy;
+    if (this.sortDir) params.orderDir = this.sortDir;
+
+    try {
+      const res = await this.traineeAttendanceService.getAllAttendances(params).toPromise();
+      if (res && res.items) {
+        allData.push(...res.items);
       }
+    } catch (error) {
+      this.notification.showError(extractErrorMessage(error));
     }
-
-    return allData;
   }
+
+  return allData;
+}
 
 async exportToExcel(): Promise<void> {
   const result = await this.showExportPageSelection(false);
@@ -3171,6 +3189,10 @@ async exportToPDF(): Promise<void> {
 
   const filterTexts: string[] = [];
   
+  if (this.generalSearch?.trim()) {
+  filterTexts.push(`بحث عام: ${this.generalSearch.trim()}`);
+}
+
   if (this.selectedCourseId) {
     const course = this.courses.find(c => c.id === this.selectedCourseId);
     if (course) filterTexts.push(`الدورة: ${course.title}`);

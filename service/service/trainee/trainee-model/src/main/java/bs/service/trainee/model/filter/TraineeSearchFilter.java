@@ -18,6 +18,7 @@ import java.time.LocalDate;
 public class TraineeSearchFilter extends SearchFilter<TraineeSearchFilter.OrderByAttributes> {
 
     private String quickSearchQuery;
+    private Integer referralEmployeeId;
     private Boolean isActive;
     private Boolean isDeleted;
     private Gender gender;
