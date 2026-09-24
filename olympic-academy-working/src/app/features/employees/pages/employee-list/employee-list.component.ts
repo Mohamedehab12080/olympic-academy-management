@@ -43,7 +43,7 @@ import {
   SearchableSelectComponent,
   SelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
-import { EMPLOYEE_TYPES } from '../../../../core/models/employee.model';
+import { EMPLOYEE_TYPES,EmployeeListItem} from '../../../../core/models/employee.model';
 import { EmployeeDetailsModalComponent } from '../employee-details/employee-details-modal.component';
 import { EmployeeWizardModalComponent } from '../employee-form/employee-wizard-modal.component';
 import { ErrorVTO } from '../../../../core/models/common.model';
@@ -597,25 +597,6 @@ export class ExportPageSelectDialogComponent {
   }
 }
 
-// ============================================================================
-// MAIN EMPLOYEE LIST COMPONENT - UPDATED
-// ============================================================================
-
-interface EmployeeListItem {
-  id: number;
-  fullName: string;
-  nationalId: string;
-  imageUrl: string;
-  gender: { id: number; title: string };
-  employeeType: { id: number; title: string };
-  hireDate: string;
-  isActive: boolean;
-  isMonthlyUpdated: boolean; // ✅ Added
-  updatePeriodInDays: number; // ✅ Added
-  salary: number; // ✅ Added
-  remainedSalary: number; // ✅ Added
-}
-
 @Component({
   selector: 'app-employee-list',
   standalone: true,
@@ -649,21 +630,22 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   Math = Math;
 
   // ✅ Updated columns to include new fields
-  displayedColumns: string[] = [
-    'index',
-    'image',
-    'fullName',
-    'nationalId',
-    'employeeType',
-    'gender',
-    'hireDate',
-    'salary',
-    'remainedSalary',
-    'isMonthlyUpdated',
-    'updatePeriodInDays',
-    'status',
-    'actions',
-  ];
+displayedColumns: string[] = [
+  'index',
+  'image',
+  'fullName',
+  'nationalId',
+  'employeeType',
+  'hireDate',
+  'salary',
+  'remainedSalary',
+  'referralAmount',              // ✅ NEW
+  'totalRemainReferralAmount',   // ✅ NEW
+  'isMonthlyUpdated',
+  'updatePeriodInDays',
+  'status',
+  'actions',
+];
   dataSource = new MatTableDataSource<EmployeeListItem>([]);
   allEmployees: EmployeeListItem[] = [];
   imageUrls: Map<number, string> = new Map();
@@ -696,6 +678,21 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
   // ✅ Statistics with new fields
   get trainerCount(): number {
     return this.allEmployees.filter((e) => e.employeeType?.id === 1).length;
+  }
+
+  get totalReferralAmount(): number {
+    return this.allEmployees.reduce((sum, e) => sum + (e.referralAmount || 0), 0);
+  }
+
+  get totalRemainReferralAmount(): number {
+    return this.allEmployees.reduce(
+      (sum, e) => sum + (e.totalRemainReferralAmount || 0),
+      0,
+    );
+  }
+
+  get percentReferralCount(): number {
+    return this.allEmployees.filter((e) => e.isPercentReferral === true).length;
   }
 
   get managerCount(): number {
@@ -1189,166 +1186,188 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const exportData = dataToExport.map(
-      (employee: EmployeeListItem, index: number) => ({
-        '#': index + 1,
-        الاسم: employee.fullName,
-        'رقم الهوية': employee.nationalId,
-        النوع: employee.employeeType?.title || '-',
-        الجنس: employee.gender?.title || '-',
-        'تاريخ التوظيف': employee.hireDate || '-',
-        'الراتب': employee.salary || 0,
-        'الراتب المتبقي': employee.remainedSalary || 0,
-        'تحديث شهري': employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل',
-        'فترة التحديث (أيام)': employee.updatePeriodInDays || 0,
-        الحالة: employee.isActive ? 'نشط' : 'غير نشط',
-      }),
-    );
+const exportData = dataToExport.map(
+  (employee: EmployeeListItem, index: number) => ({
+    '#': index + 1,
+    الاسم: employee.fullName,
+    'رقم الهوية': employee.nationalId,
+    النوع: employee.employeeType?.title || '-',
+    'تاريخ التوظيف': employee.hireDate || '-',
+    الراتب: employee.salary || 0,
+    'الراتب المتبقي': employee.remainedSalary || 0,
+    // ✅ NEW
+    'مبلغ الإحالة': employee.referralAmount ?? 0,
+    'نوع الإحالة': employee.isPercentReferral ? 'نسبة %' : 'مبلغ ثابت',
+    'إجمالي الإحالة المتبقي': employee.totalRemainReferralAmount ?? 0,
+    'تحديث شهري': employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل',
+    'فترة التحديث (أيام)': employee.updatePeriodInDays || 0,
+    الحالة: employee.isActive ? 'نشط' : 'غير نشط',
+  }),
+);
 
     this.reportService.exportToExcel(exportData, 'employees-list', 'الموظفين');
     this.notification.showSuccess(`تم تصدير ${exportData.length} سجل بنجاح`);
   }
 
-  async exportToPDF(): Promise<void> {
-    const result = await this.showExportPageSelection(false);
+async exportToPDF(): Promise<void> {
+  const result = await this.showExportPageSelection(false);
+  if (!result) return;
 
-    if (!result) {
-      return;
-    }
+  this.isLoading = true;
 
-    this.isLoading = true;
+  let dataToPrint: EmployeeListItem[] = [];
 
-    let dataToPrint: EmployeeListItem[] = [];
+  if (result.option === 'all') {
+    dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
+  } else if (result.option === 'current') {
+    dataToPrint = this.allEmployees;
+  } else if (result.option === 'range') {
+    dataToPrint = await this.fetchPagesForExport(result.startPage, result.endPage);
+  }
 
-    if (result.option === 'all') {
-      dataToPrint = await this.fetchPagesForExport(0, this.getTotalPages() - 1);
-    } else if (result.option === 'current') {
-      dataToPrint = this.allEmployees;
-    } else if (result.option === 'range') {
-      dataToPrint = await this.fetchPagesForExport(
-        result.startPage,
-        result.endPage,
-      );
-    }
+  if (dataToPrint.length === 0) {
+    this.notification.showWarning('لا توجد بيانات لتصديرها');
+    this.isLoading = false;
+    return;
+  }
 
-    if (dataToPrint.length === 0) {
-      this.notification.showWarning('لا توجد بيانات لتصديرها');
-      this.isLoading = false;
-      return;
-    }
+  // ===== Filter summary =====
+  const filterTexts: string[] = [];
+  if (this.employeeTypeFilter) {
+    const type =
+      this.employeeTypeFilter === 'TRAINER'
+        ? 'مدرب'
+        : this.employeeTypeFilter === 'LECTURER'
+        ? 'محاضر'
+        : 'مدير';
+    filterTexts.push(`نوع الموظف: ${type}`);
+  }
+  if (this.statusFilter !== null) {
+    filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
+  }
+  if (this.isMonthlyUpdatedFilter !== null) {
+    filterTexts.push(
+      `تحديث شهري: ${this.isMonthlyUpdatedFilter ? 'مفعل' : 'غير مفعل'}`
+    );
+  }
+  if (this.hireDateFrom) {
+    const d = this.formatDateForBackend(this.hireDateFrom);
+    if (d) filterTexts.push(`من تاريخ التوظيف: ${d}`);
+  }
+  if (this.hireDateTo) {
+    const d = this.formatDateForBackend(this.hireDateTo);
+    if (d) filterTexts.push(`إلى تاريخ التوظيف: ${d}`);
+  }
+  if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
 
-    const filterTexts: string[] = [];
-    if (this.employeeTypeFilter) {
-      const type = this.employeeTypeFilter === 'TRAINER' ? 'مدرب' : 'مدير';
-      filterTexts.push(`نوع الموظف: ${type}`);
-    }
-    if (this.statusFilter !== null) {
-      filterTexts.push(`الحالة: ${this.statusFilter ? 'نشط' : 'غير نشط'}`);
-    }
-    if (this.isMonthlyUpdatedFilter !== null) {
-      filterTexts.push(`تحديث شهري: ${this.isMonthlyUpdatedFilter ? 'مفعل' : 'غير مفعل'}`);
-    }
-    if (this.hireDateFrom) {
-      const formattedDate = this.formatDateForBackend(this.hireDateFrom);
-      if (formattedDate) filterTexts.push(`من تاريخ التوظيف: ${formattedDate}`);
-    }
-    if (this.hireDateTo) {
-      const formattedDate = this.formatDateForBackend(this.hireDateTo);
-      if (formattedDate)
-        filterTexts.push(`إلى تاريخ التوظيف: ${formattedDate}`);
-    }
-    if (this.searchText) filterTexts.push(`بحث: ${this.searchText}`);
+  // ===== Totals =====
+  const totalEmployees = dataToPrint.length;
+  const totalTrainers = dataToPrint.filter((e) => e.employeeType?.id === 1).length;
+  const totalManagers = dataToPrint.filter((e) => e.employeeType?.id === 2).length;
+  const totalActive = dataToPrint.filter((e) => e.isActive).length;
+  const totalMonthlyUpdated = dataToPrint.filter((e) => e.isMonthlyUpdated).length;
+  const totalSalary = dataToPrint.reduce((s, e) => s + (e.salary || 0), 0);
+  const totalRemainedSalary = dataToPrint.reduce(
+    (s, e) => s + (e.remainedSalary || 0),
+    0
+  );
+  const totalReferralAmount = dataToPrint.reduce(
+    (s, e) => s + (e.referralAmount || 0),
+    0
+  );
+  const totalRemainReferralAmount = dataToPrint.reduce(
+    (s, e) => s + (e.totalRemainReferralAmount || 0),
+    0
+  );
 
-    // Calculate totals
-    const totalEmployees = dataToPrint.length;
-    const totalTrainers = dataToPrint.filter(
-      (e) => e.employeeType?.id === 1,
-    ).length;
-    const totalManagers = dataToPrint.filter(
-      (e) => e.employeeType?.id === 2,
-    ).length;
-    const totalActive = dataToPrint.filter((e) => e.isActive).length;
-    const totalMonthlyUpdated = dataToPrint.filter((e) => e.isMonthlyUpdated).length;
-    const totalSalary = dataToPrint.reduce((sum, e) => sum + (e.salary || 0), 0);
-    const totalRemainedSalary = dataToPrint.reduce((sum, e) => sum + (e.remainedSalary || 0), 0);
+  // ===== Paginate =====
+  const rowsPerPage = 18;
+  const pages: EmployeeListItem[][] = [];
+  for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
+    pages.push(dataToPrint.slice(i, i + rowsPerPage));
+  }
 
-    // Split data into pages
-    const rowsPerPage = 18;
-    const pages: EmployeeListItem[][] = [];
-    for (let i = 0; i < dataToPrint.length; i += rowsPerPage) {
-      pages.push(dataToPrint.slice(i, i + rowsPerPage));
-    }
+  let allPagesHTML = '';
 
-    let allPagesHTML = '';
+  pages.forEach((pageData, pageIndex) => {
+    let tableRows = '';
 
-    pages.forEach((pageData: EmployeeListItem[], pageIndex: number) => {
-      let tableRows = '';
-      pageData.forEach((employee: EmployeeListItem, index: number) => {
-        const globalIndex = pageIndex * rowsPerPage + index + 1;
-        const statusStyle = employee.isActive
-          ? 'background: #d1fae5; color: #065f46; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
-          : 'background: #fee2e2; color: #991b1b; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+    pageData.forEach((employee, index) => {
+      const globalIndex = pageIndex * rowsPerPage + index + 1;
 
-        const monthlyUpdatedStyle = employee.isMonthlyUpdated
-          ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
-          : 'background: #f3f4f6; color: #6b7280; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+      const statusStyle = employee.isActive
+        ? 'background:#d1fae5;color:#065f46;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;'
+        : 'background:#fee2e2;color:#991b1b;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;';
 
-        const typeStyle =
-          employee.employeeType?.id === 1
-            ? 'background: #dbeafe; color: #1e40af; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;'
-            : 'background: #fef3c7; color: #92400e; border-radius: 16px; padding: 3px 12px; display: inline-block; font-weight: 600; font-size: 11px;';
+      const monthlyUpdatedStyle = employee.isMonthlyUpdated
+        ? 'background:#dbeafe;color:#1e40af;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;'
+        : 'background:#f3f4f6;color:#6b7280;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;';
 
-        tableRows += `
+      const typeStyle =
+        employee.employeeType?.id === 1
+          ? 'background:#dbeafe;color:#1e40af;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;'
+          : employee.employeeType?.id === 3
+          ? 'background:#ede9fe;color:#5b21b6;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;'
+          : 'background:#fef3c7;color:#92400e;border-radius:16px;padding:3px 12px;display:inline-block;font-weight:600;font-size:11px;';
+
+      const referralCell =
+        employee.referralAmount != null
+          ? employee.referralAmount.toLocaleString('ar-EG') +
+            (employee.isPercentReferral ? ' %' : ' جم')
+          : '-';
+
+      tableRows += `
         <tr>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${globalIndex}</td>
-          <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${this.escapeHtml(employee.fullName) || '-'}</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.nationalId || '-'}</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${typeStyle}">${employee.employeeType?.title || '-'}</span></td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.gender?.title || '-'}</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.hireDate || '-'}</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 700; color: #0f3460;">${(employee.salary || 0).toLocaleString('ar-EG')} جم</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent; font-weight: 600; color: ${employee.remainedSalary === 0 ? '#10b981' : '#d97706'};">${(employee.remainedSalary || 0).toLocaleString('ar-EG')} جم</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${monthlyUpdatedStyle}">${employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل'}</span></td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${employee.updatePeriodInDays || 0}</td>
-          <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${statusStyle}">${employee.isActive ? 'نشط' : 'غير نشط'}</span></td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;">${globalIndex}</td>
+          <td style="text-align:right;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-weight:600;font-size:11px;">${this.escapeHtml(employee.fullName) || '-'}</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;">${employee.nationalId || '-'}</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;"><span style="${typeStyle}">${employee.employeeType?.title || '-'}</span></td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;">${employee.hireDate || '-'}</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;font-weight:700;color:#0f3460;">${(employee.salary || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;font-weight:600;color:${employee.remainedSalary === 0 ? '#10b981' : '#d97706'};">${(employee.remainedSalary || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;font-weight:700;color:#7c3aed;">${referralCell}</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;font-weight:600;color:#7c3aed;">${(employee.totalRemainReferralAmount || 0).toLocaleString('ar-EG')} جم</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;"><span style="${monthlyUpdatedStyle}">${employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل'}</span></td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;">${employee.updatePeriodInDays || 0}</td>
+          <td style="text-align:center;padding:6px 5px;border:1px solid rgba(229,231,235,0.3);font-size:11px;"><span style="${statusStyle}">${employee.isActive ? 'نشط' : 'غير نشط'}</span></td>
         </tr>
       `;
-      });
+    });
 
-      allPagesHTML += `
-      <div class="page-container">
-        <div class="watermark-wrapper">
-          <div class="watermark-container">
-            <img src="assets/images/simpleLogoSvg.svg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
-          </div>
-          <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+    allPagesHTML += `
+    <div class="page-container">
+      <div class="watermark-wrapper">
+        <div class="watermark-container">
+          <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية لعلوم الرياضة">
         </div>
-        
-        <div class="content">
-          <div class="header">
-            <h1>📋 قائمة الموظفين</h1>
-            <p>${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p style="font-size: 10px; opacity: 0.8;">صفحة ${pageIndex + 1} من ${pages.length}</p>
-          </div>
-          
-          ${filterTexts.length > 0 && pageIndex === 0 ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>` : ''}
-          
-          ${
-            pageIndex === 0
-              ? `
+        <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+      </div>
+
+      <div class="content">
+        <div class="header">
+          <h1>📋 قائمة الموظفين</h1>
+          <p>${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p style="font-size:10px;opacity:0.8;">صفحة ${pageIndex + 1} من ${pages.length}</p>
+        </div>
+
+        ${filterTexts.length > 0 && pageIndex === 0
+          ? `<div class="filters"><strong>🔍 الفلاتر:</strong> ${filterTexts.join(' | ')}</div>`
+          : ''}
+
+        ${pageIndex === 0 ? `
           <div class="totals-grid">
             <div class="total-card total-all">
               <span class="total-icon">👥</span>
               <span class="total-value">${totalEmployees}</span>
-              <span class="total-label">إجمالي</span>
+              <span class="total-label">إجمالي الموظفين</span>
             </div>
             <div class="total-card total-trainers">
-              <span class="total-icon">🏊</span>
+              <span class="total-icon">🏋️</span>
               <span class="total-value">${totalTrainers}</span>
               <span class="total-label">مدربين</span>
             </div>
             <div class="total-card total-managers">
-              <span class="total-icon">👔</span>
+              <span class="total-icon">💼</span>
               <span class="total-value">${totalManagers}</span>
               <span class="total-label">مديرين</span>
             </div>
@@ -1367,464 +1386,318 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
               <span class="total-value">${totalSalary.toLocaleString('ar-EG')} جم</span>
               <span class="total-label">إجمالي الرواتب</span>
             </div>
+            <div class="total-card total-referral">
+              <span class="total-icon">🎁</span>
+              <span class="total-value">${totalRemainReferralAmount.toLocaleString('ar-EG')} جم</span>
+              <span class="total-label">إحالة متبقية</span>
+            </div>
           </div>
-          `
-              : ''
-          }
-          
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 3%;">#</th>
-                <th style="width: 13%;">الاسم</th>
-                <th style="width: 10%;">رقم الهوية</th>
-                <th style="width: 9%;">النوع</th>
-                <th style="width: 8%;">الجنس</th>
-                <th style="width: 10%;">تاريخ التوظيف</th>
-                <th style="width: 10%;">الراتب</th>
-                <th style="width: 10%;">المتبقي</th>
-                <th style="width: 9%;">تحديث شهري</th>
-                <th style="width: 8%;">فترة التحديث</th>
-                <th style="width: 10%;">الحالة</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-          
-          <div class="footer">
-             الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} موظف
-          </div>
+        ` : ''}
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:3%;">#</th>
+              <th style="width:15%;">الاسم</th>
+              <th style="width:10%;">رقم الهوية</th>
+              <th style="width:8%;">النوع</th>
+              <th style="width:9%;">تاريخ التوظيف</th>
+              <th style="width:9%;">الراتب</th>
+              <th style="width:9%;">المتبقي</th>
+              <th style="width:9%;">مبلغ الإحالة</th>
+              <th style="width:9%;">الإحالة المتبقية</th>
+              <th style="width:7%;">تحديث شهري</th>
+              <th style="width:6%;">فترة التحديث</th>
+              <th style="width:6%;">الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} موظف
         </div>
       </div>
+    </div>
     `;
-    });
+  });
 
-    const printContainer = document.createElement('div');
-    printContainer.style.direction = 'rtl';
-    printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
-    printContainer.style.padding = '0';
-    printContainer.style.backgroundColor = 'white';
-    printContainer.style.position = 'relative';
-    printContainer.style.width = '100%';
+  const printContainer = document.createElement('div');
+  printContainer.style.direction = 'rtl';
+  printContainer.style.fontFamily = 'Cairo, "Segoe UI", Tahoma, sans-serif';
+  printContainer.style.padding = '0';
+  printContainer.style.backgroundColor = 'white';
+  printContainer.style.position = 'relative';
+  printContainer.style.width = '100%';
 
-    printContainer.innerHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>قائمة الموظفين</title>
-      <style>
-        * { 
-          font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
-          margin: 0; 
-          padding: 0; 
-          box-sizing: border-box; 
-        }
-        
-        html, body {
-          width: 100%;
-          min-height: 100vh;
-          background: white;
-          margin: 0;
-          padding: 0;
-        }
-        
-        @page { 
-          size: A4 landscape; 
-          margin: 8mm;
-        }
-        
-        .page-container {
-          position: relative;
-          width: 100%;
-          min-height: 100vh;
-          page-break-after: always;
-          background: white;
-          overflow: hidden;
-        }
-        
-        .page-container:last-child {
-          page-break-after: auto;
-        }
-        
-        .watermark-wrapper {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-          z-index: 0;
-          overflow: hidden;
-        }
-        
-        .watermark-container {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg);
-          width: 60%;
-          height: 60%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0.10;
-        }
-        
-        .watermark-container img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          filter: grayscale(0%) sepia(20%) saturate(150%) hue-rotate(220deg);
-        }
-        
-        .watermark-text {
-          position: absolute;
-          top: 56%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-25deg);
-          font-size: 50px;
-          font-weight: 900;
-          color: #f59e0b;
-          letter-spacing: 6px;
-          text-transform: uppercase;
-          white-space: nowrap;
-          opacity: 0.05;
-          text-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
-        }
-        
-        .content {
-          position: relative;
-          z-index: 1;
-          padding: 12px;
-          background: transparent;
-          min-height: 100vh;
-        }
-        
-        @media print {
-          html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-          }
-          .no-print { display: none !important; }
-          .page-container {
-            min-height: 100vh !important;
-            page-break-after: always !important;
-          }
-          .page-container:last-child {
-            page-break-after: auto !important;
-          }
-          .watermark-container {
-            opacity: 0.12 !important;
-            width: 65% !important;
-            height: 65% !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .watermark-container img {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .watermark-text {
-            opacity: 0.06 !important;
-            font-size: 55px !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .header {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          th {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .totals-grid {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .total-card {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          td {
-            background: transparent !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          tr {
-            background: transparent !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          tbody {
-            background: transparent !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-        
-        .header {
-          text-align: center;
-          margin-bottom: 10px;
-          padding: 10px 16px;
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-          color: white;
-          border-radius: 8px;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .header h1 { 
-          margin: 0; 
-          font-size: 18px; 
-          font-weight: 700;
-          letter-spacing: 1px;
-        }
-        .header p { 
-          margin: 2px 0 0 0; 
-          font-size: 11px; 
-          opacity: 0.9;
-        }
-        
-        .filters {
-          margin-bottom: 8px;
-          padding: 6px 12px;
-          background: rgba(248, 250, 252, 0.8);
-          border-radius: 6px;
-          font-size: 10px;
-          border: 1px solid rgba(229, 231, 235, 0.5);
-        }
-        .filters strong {
-          color: #1e293b;
-        }
-        
-        .totals-grid {
-          display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 5px;
-          margin-bottom: 8px;
-        }
-        
-        .total-card {
-          background: rgba(255, 255, 255, 0.9);
-          border-radius: 6px;
-          padding: 5px 8px;
-          text-align: center;
-          border: 1px solid rgba(229, 231, 235, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 4px;
-          min-height: 30px;
-          backdrop-filter: blur(4px);
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        
-        .total-card .total-icon {
-          font-size: 13px;
-          flex-shrink: 0;
-        }
-        
-        .total-card .total-value {
-          font-size: 14px;
-          font-weight: 700;
-          color: #1e293b;
-          line-height: 1.2;
-        }
-        
-        .total-card .total-label {
-          font-size: 9px;
-          color: #64748b;
-          margin-right: 2px;
-          font-weight: 500;
-        }
-        
-        .total-card.total-all {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-          color: white;
-          border-color: #f59e0b;
-        }
-        .total-card.total-all .total-value {
-          color: white;
-        }
-        .total-card.total-all .total-label {
-          color: rgba(255, 255, 255, 0.85);
-        }
-        
-        .total-card.total-trainers {
-          background: rgba(219, 234, 254, 0.9);
-          border-color: rgba(147, 197, 253, 0.5);
-        }
-        .total-card.total-trainers .total-value {
-          color: #2563eb;
-        }
-        
-        .total-card.total-managers {
-          background: rgba(254, 243, 199, 0.9);
-          border-color: rgba(252, 211, 77, 0.5);
-        }
-        .total-card.total-managers .total-value {
-          color: #92400e;
-        }
-        
-        .total-card.total-active {
-          background: rgba(209, 250, 229, 0.9);
-          border-color: rgba(110, 231, 183, 0.5);
-        }
-        .total-card.total-active .total-value {
-          color: #059669;
-        }
-        
-        .total-card.total-monthly-updated {
-          background: rgba(219, 234, 254, 0.9);
-          border-color: rgba(147, 197, 253, 0.5);
-        }
-        .total-card.total-monthly-updated .total-value {
-          color: #2563eb;
-        }
-        
-        .total-card.total-salary {
-          background: rgba(254, 243, 199, 0.9);
-          border-color: rgba(252, 211, 77, 0.5);
-        }
-        .total-card.total-salary .total-value {
-          color: #d97706;
-        }
-        
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          direction: rtl;
-          margin-top: 4px;
-          font-size: 10px;
-          background: transparent;
-        }
-        th {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-          color: white;
-          padding: 5px 4px;
-          border: 1px solid #d97706;
-          text-align: center;
-          font-weight: 700;
-          font-size: 10px;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        td { 
-          padding: 4px 4px; 
-          border: 1px solid rgba(229, 231, 235, 0.3);
-          font-size: 10px;
-          background: transparent !important;
-        }
-        tr {
-          background: transparent !important;
-        }
-        tbody {
-          background: transparent !important;
-        }
-        tr:nth-child(even) td {
-          background: rgba(250, 251, 252, 0.5) !important;
-        }
-        
-        .footer {
-          text-align: center;
-          margin-top: 8px;
-          padding: 5px;
-          font-size: 8px;
-          color: rgba(148, 163, 184, 0.8);
-          border-top: 1px solid rgba(229, 231, 235, 0.3);
-        }
-        
-        @media (max-width: 768px) {
-          .watermark-container {
-            width: 80% !important;
-            height: 80% !important;
-          }
-          .watermark-text {
-            font-size: 30px !important;
-          }
-          .totals-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-          }
-          .total-card {
-            padding: 4px 6px;
-            min-height: 26px;
-          }
-          .total-card .total-value {
-            font-size: 12px;
-          }
-          table { 
-            font-size: 9px; 
-          }
-          th, td { 
-            padding: 3px 2px; 
-          }
-          .header h1 {
-            font-size: 15px;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .totals-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .watermark-container {
-            width: 90% !important;
-            height: 90% !important;
-          }
-          .watermark-text {
-            font-size: 20px !important;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      ${allPagesHTML}
-      
-      <div class="no-print" style="text-align: center; margin-top: 10px; padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 9999;">
-        <button onclick="window.print();" style="padding: 8px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);">
-          🖨️ طباعة / PDF
-        </button>
-        <button onclick="window.close();" style="padding: 8px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 10px;">
-          ✖ إغلاق
-        </button>
-      </div>
-    </body>
-    </html>
+  printContainer.innerHTML = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>قائمة الموظفين</title>
+    <style>
+      * {
+        font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 100%;
+        min-height: 100vh;
+        background: white;
+        margin: 0;
+        padding: 0;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+
+      .page-container {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+        page-break-after: always;
+        background: white;
+        overflow: hidden;
+      }
+
+      .page-container:last-child {
+        page-break-after: auto;
+      }
+
+      .watermark-wrapper {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .watermark-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-25deg);
+        width: 60%;
+        height: 60%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.10;
+      }
+
+      .watermark-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .watermark-text {
+        position: absolute;
+        top: 56%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-25deg);
+        font-size: 50px;
+        font-weight: 900;
+        color: #f59e0b;
+        letter-spacing: 6px;
+        white-space: nowrap;
+        opacity: 0.05;
+      }
+
+      .content {
+        position: relative;
+        z-index: 1;
+        padding: 12px;
+        min-height: 100vh;
+      }
+
+      @media print {
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+        .no-print { display: none !important; }
+        .page-container { min-height: 100vh !important; page-break-after: always !important; }
+        .page-container:last-child { page-break-after: auto !important; }
+        .watermark-container { opacity: 0.12 !important; width: 65% !important; height: 65% !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .watermark-container img { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .watermark-text { opacity: 0.06 !important; font-size: 55px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .totals-grid, .total-card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        td, tr, tbody { background: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 10px;
+        padding: 10px 16px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border-radius: 8px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+      .header p { margin: 2px 0 0 0; font-size: 11px; opacity: 0.9; }
+
+      .filters {
+        margin-bottom: 8px;
+        padding: 6px 12px;
+        background: rgba(248, 250, 252, 0.8);
+        border-radius: 6px;
+        font-size: 10px;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+      }
+      .filters strong { color: #1e293b; }
+
+      /* ========== TOTALS GRID — now 7 columns to match the 7 cards ========== */
+      .totals-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        margin-bottom: 8px;
+      }
+
+      .total-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 6px;
+        padding: 5px 8px;
+        text-align: center;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        min-height: 38px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .total-card .total-icon { font-size: 13px; flex-shrink: 0; line-height: 1; }
+      .total-card .total-value { font-size: 12px; font-weight: 700; color: #1e293b; line-height: 1.2; white-space: nowrap; }
+      .total-card .total-label { font-size: 8.5px; color: #64748b; font-weight: 500; line-height: 1.1; white-space: nowrap; }
+
+      .total-card.total-all { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-color: #f59e0b; }
+      .total-card.total-all .total-value { color: white; }
+      .total-card.total-all .total-label { color: rgba(255, 255, 255, 0.85); }
+
+      .total-card.total-trainers { background: rgba(219, 234, 254, 0.9); border-color: rgba(147, 197, 253, 0.5); }
+      .total-card.total-trainers .total-value { color: #2563eb; }
+
+      .total-card.total-managers { background: rgba(254, 243, 199, 0.9); border-color: rgba(252, 211, 77, 0.5); }
+      .total-card.total-managers .total-value { color: #92400e; }
+
+      .total-card.total-active { background: rgba(209, 250, 229, 0.9); border-color: rgba(110, 231, 183, 0.5); }
+      .total-card.total-active .total-value { color: #059669; }
+
+      .total-card.total-monthly-updated { background: rgba(219, 234, 254, 0.9); border-color: rgba(147, 197, 253, 0.5); }
+      .total-card.total-monthly-updated .total-value { color: #2563eb; }
+
+      .total-card.total-salary { background: rgba(254, 243, 199, 0.9); border-color: rgba(252, 211, 77, 0.5); }
+      .total-card.total-salary .total-value { color: #d97706; }
+
+      .total-card.total-referral { background: rgba(237, 233, 254, 0.9); border-color: rgba(196, 181, 253, 0.5); }
+      .total-card.total-referral .total-value { color: #7c3aed; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        direction: rtl;
+        margin-top: 4px;
+        font-size: 10px;
+        table-layout: fixed;
+      }
+      th {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 5px 4px;
+        border: 1px solid #d97706;
+        text-align: center;
+        font-weight: 700;
+        font-size: 10px;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      td {
+        padding: 4px 4px;
+        border: 1px solid rgba(229, 231, 235, 0.3);
+        font-size: 10px;
+        background: transparent !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      tr, tbody { background: transparent !important; }
+      tr:nth-child(even) td { background: rgba(250, 251, 252, 0.5) !important; }
+
+      .footer {
+        text-align: center;
+        margin-top: 8px;
+        padding: 5px;
+        font-size: 8px;
+        color: rgba(148, 163, 184, 0.8);
+        border-top: 1px solid rgba(229, 231, 235, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .watermark-container { width: 80% !important; height: 80% !important; }
+        .watermark-text { font-size: 30px !important; }
+        .totals-grid { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .total-card { padding: 4px 6px; min-height: 34px; }
+        .total-card .total-value { font-size: 11px; }
+        .total-card .total-label { font-size: 8px; }
+        table { font-size: 9px; }
+        th, td { padding: 3px 2px; }
+        .header h1 { font-size: 15px; }
+      }
+
+      @media (max-width: 480px) {
+        .totals-grid { grid-template-columns: repeat(2, 1fr); }
+        .watermark-container { width: 90% !important; height: 90% !important; }
+        .watermark-text { font-size: 20px !important; }
+      }
+    </style>
+  </head>
+  <body>
+    ${allPagesHTML}
+
+    <div class="no-print" style="text-align:center;margin-top:10px;padding:10px;position:fixed;bottom:0;left:0;right:0;background:white;box-shadow:0 -2px 10px rgba(0,0,0,0.1);z-index:9999;">
+      <button onclick="window.print();" style="padding:8px 24px;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 2px 10px rgba(245,158,11,0.3);">
+        🖨️ طباعة / PDF
+      </button>
+      <button onclick="window.close();" style="padding:8px 24px;background:#f1f5f9;color:#475569;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;margin-right:10px;">
+        ✖ إغلاق
+      </button>
+    </div>
+  </body>
+  </html>
   `;
 
-    const printWindow = window.open(
-      '',
-      '_blank',
-      'width=1100,height=850,scrollbars=yes',
-    );
-    if (printWindow) {
-      printWindow.document.write(printContainer.innerHTML);
-      printWindow.document.close();
-      this.isLoading = false;
-      this.notification.showSuccess(
-        `تم فتح التقرير - ${dataToPrint.length} سجل`,
-      );
-    } else {
-      document.body.appendChild(printContainer);
-      window.print();
-      setTimeout(() => {
-        if (document.body.contains(printContainer)) {
-          document.body.removeChild(printContainer);
-        }
-      }, 500);
-      this.isLoading = false;
-      this.notification.showSuccess(
-        `تم فتح التقرير - ${dataToPrint.length} سجل`,
-      );
-    }
+  const printWindow = window.open('', '_blank', 'width=1100,height=850,scrollbars=yes');
+  if (printWindow) {
+    printWindow.document.write(printContainer.innerHTML);
+    printWindow.document.close();
+    this.isLoading = false;
+    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
+  } else {
+    document.body.appendChild(printContainer);
+    window.print();
+    setTimeout(() => {
+      if (document.body.contains(printContainer)) {
+        document.body.removeChild(printContainer);
+      }
+    }, 500);
+    this.isLoading = false;
+    this.notification.showSuccess(`تم فتح التقرير - ${dataToPrint.length} سجل`);
   }
+}
 
   // ==========================================================================
   // PRINT EMPLOYEE CARDS
@@ -1905,7 +1778,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     employees.forEach((employee, index) => {
       const imageUrl = imageUrls[index] || '';
-      const genderDisplay = employee.gender?.title || '-';
       const employeeTypeDisplay = employee.employeeType?.title || '-';
       const isActive = employee.isActive;
       const isMonthlyUpdated = employee.isMonthlyUpdated;
@@ -1981,10 +1853,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
                 <td class="thermal-value">${employeeTypeDisplay}</td>
               </tr>
               <tr>
-                <td class="thermal-label">👤 الجنس</td>
-                <td class="thermal-value">${genderDisplay}</td>
-              </tr>
-              <tr>
                 <td class="thermal-label">📅 التوظيف</td>
                 <td class="thermal-value">${hireDate}</td>
               </tr>
@@ -1995,6 +1863,16 @@ export class EmployeeListComponent implements OnInit, AfterViewInit, OnDestroy {
               <tr>
                 <td class="thermal-label">💳 المتبقي</td>
                 <td class="thermal-value ${remainedSalary === 0 ? 'remaining-zero' : 'remaining'}">${remainedSalary.toLocaleString()} جم</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">🎁 مبلغ الإحالة</td>
+                <td class="thermal-value">${employee.referralAmount != null
+                  ? employee.referralAmount.toLocaleString() + (employee.isPercentReferral ? ' %' : ' جم')
+                  : '-'}</td>
+              </tr>
+              <tr>
+                <td class="thermal-label">📊 الإحالة المتبقية</td>
+                <td class="thermal-value">${(employee.totalRemainReferralAmount || 0).toLocaleString()} جم</td>
               </tr>
               <tr>
                 <td class="thermal-label">🔄 تحديث شهري</td>

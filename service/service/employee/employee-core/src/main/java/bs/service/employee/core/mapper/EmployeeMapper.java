@@ -112,6 +112,9 @@ public abstract class EmployeeMapper {
     @Mapping(target = "employeeType", source = "employeeDTO.employeeType.id")
     @Mapping(target = "salaryType", source = "employeeDTO.salaryType.id")
     @Mapping(target = "gender", source = "employeeDTO.gender.id")
+    @Mapping(target = "referralAmount", source = "employeeDTO.referralAmount")
+    @Mapping(target = "isPercentReferral", source = "employeeDTO.isPercentReferral")
+    @Mapping(target = "totalRemainReferralAmount", source = "employeeDTO.totalRemainReferralAmount")
     public abstract Employee toEmployee(EmployeeDTO employeeDTO);
     @Mapping(target = "employeeType", expression= "java(toLookupVTOFromEmployeeType(employee.getEmployeeType()))")
     @Mapping(target = "salaryType", expression= "java(toLookupVTOFromSalaryType(employee.getSalaryType()))")

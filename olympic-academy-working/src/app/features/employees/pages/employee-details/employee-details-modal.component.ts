@@ -197,34 +197,66 @@ import * as JsBarcode from 'jsbarcode';
           </div>
         </mat-tab>
 
-        <!-- Financial Info Tab -->
-        <mat-tab label="المعلومات المالية">
-          <div class="tab-content" *ngIf="employee">
-            <div class="financial-cards">
-              <div class="financial-card">
-                <mat-icon>attach_money</mat-icon>
-                <div>
-                  <label>الراتب الأساسي</label>
-                  <h3>{{ employee.salary | currency: 'EGP' }}</h3>
-                </div>
-              </div>
-              <div class="financial-card warning">
-                <mat-icon>account_balance_wallet</mat-icon>
-                <div>
-                  <label>الراتب المتبقي</label>
-                  <h3>{{ employee.remainedSalary | currency: 'EGP' }}</h3>
-                </div>
-              </div>
-              <div class="financial-card info">
-                <mat-icon>trending_up</mat-icon>
-                <div>
-                  <label>نوع الراتب</label>
-                  <h3>{{ employee.salaryType?.title || '-' }}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-        </mat-tab>
+<!-- Financial Info Tab -->
+<mat-tab label="المعلومات المالية">
+  <div class="tab-content" *ngIf="employee">
+    <div class="financial-cards">
+      <div class="financial-card">
+        <mat-icon>attach_money</mat-icon>
+        <div>
+          <label>الراتب الأساسي</label>
+          <h3>{{ employee.salary | currency: 'EGP' }}</h3>
+        </div>
+      </div>
+      <div class="financial-card warning">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <div>
+          <label>الراتب المتبقي</label>
+          <h3>{{ employee.remainedSalary | currency: 'EGP' }}</h3>
+        </div>
+      </div>
+      <div class="financial-card info">
+        <mat-icon>trending_up</mat-icon>
+        <div>
+          <label>نوع الراتب</label>
+          <h3>{{ employee.salaryType?.title || '-' }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Referral Information -->
+    <h4 class="section-heading">
+      <mat-icon>card_giftcard</mat-icon>
+      معلومات الإحالة
+    </h4>
+    <div class="financial-cards referral-cards">
+      <div class="financial-card referral">
+        <mat-icon>{{ employee.isPercentReferral ? 'percent' : 'payments' }}</mat-icon>
+        <div>
+          <label>مبلغ الإحالة</label>
+          <h3>
+            {{ employee.referralAmount ?? 0 | number:'1.0-2' }}
+            {{ employee.isPercentReferral ? '%' : 'جم' }}
+          </h3>
+        </div>
+      </div>
+      <div class="financial-card referral-dark">
+        <mat-icon>savings</mat-icon>
+        <div>
+          <label>إجمالي الإحالة المتبقي</label>
+          <h3>{{ (employee.totalRemainReferralAmount || 0) | currency:'EGP':'symbol':'1.0-2' }}</h3>
+        </div>
+      </div>
+      <div class="financial-card referral-light">
+        <mat-icon>rule</mat-icon>
+        <div>
+          <label>نوع الإحالة</label>
+          <h3>{{ employee.isPercentReferral ? 'نسبة مئوية' : 'مبلغ ثابت' }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-tab>
 
         <!-- Contacts Tab -->
         <mat-tab label="جهات الاتصال">
@@ -671,10 +703,53 @@ import * as JsBarcode from 'jsbarcode';
       .financial-card.info {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       }
+      /* ✅ Referral section heading */
+        .section-heading {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 20px 0 12px 0;
+          font-size: 14px;
+          font-weight: 700;
+          color: #7c3aed;
+        }
+
+      .section-heading mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ✅ Referral cards */
+      .financial-card.referral {
+        background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      }
+
+      .financial-card.referral-dark {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      }
+
+      .financial-card.referral-light {
+        background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);
+        color: #3b0764;
+      }
+
+      .financial-card.referral-light mat-icon {
+        color: #3b0764;
+      }
+
+      .financial-card.referral-light label {
+        color: rgba(59, 7, 100, 0.8);
+      }
+
+      .financial-card.referral-light h3 {
+        color: #3b0764;
+      }
       .financial-card label {
         font-size: 11px;
         opacity: 0.9;
       }
+
       .financial-card h3 {
         margin: 4px 0 0;
         font-size: 18px;
@@ -1346,6 +1421,10 @@ export class EmployeeDetailsModalComponent
               color: #f59e0b; 
               font-weight: 700; 
             }
+            .thermal-value.referral { 
+              color: #7c3aed; 
+              font-weight: 700; 
+            }
             .thermal-value.status-active { 
               color: #10b981; 
             }
@@ -1495,32 +1574,43 @@ export class EmployeeDetailsModalComponent
               <div class="thermal-divider"></div>
               
               <table class="thermal-table">
-                <tr>
-                  <td class="thermal-label">🧑 النوع</td>
-                  <td class="thermal-value">${employeeTypeDisplay}</td>
-                </tr>
-                <tr>
-                  <td class="thermal-label">👤 الجنس</td>
-                  <td class="thermal-value">${genderDisplay}</td>
-                </tr>
-                <tr>
-                  <td class="thermal-label">📅 التوظيف</td>
-                  <td class="thermal-value">${t.hireDate ? new Date(t.hireDate).toLocaleDateString('ar-EG') : '-'}</td>
-                </tr>
-                <tr>
-                  <td class="thermal-label">🏢 الأقسام</td>
-                  <td class="thermal-value" style="font-size:6px;">${departmentsText}</td>
-                </tr>
-                <tr>
-                  <td class="thermal-label">💰 الراتب</td>
-                  <td class="thermal-value amount">${salaryDisplay} جم</td>
-                </tr>
-                <tr>
-                  <td class="thermal-label">✓ الحالة</td>
-                  <td class="thermal-value ${t.isActive ? 'status-active' : 'status-inactive'}">${t.isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
-                </tr>
-              </table>
-              
+  <tr>
+    <td class="thermal-label">🧑 النوع</td>
+    <td class="thermal-value">${employeeTypeDisplay}</td>
+  </tr>
+  <tr>
+    <td class="thermal-label">👤 الجنس</td>
+    <td class="thermal-value">${genderDisplay}</td>
+  </tr>
+  <tr>
+    <td class="thermal-label">📅 التوظيف</td>
+    <td class="thermal-value">${t.hireDate ? new Date(t.hireDate).toLocaleDateString('ar-EG') : '-'}</td>
+  </tr>
+  <tr>
+    <td class="thermal-label">🏢 الأقسام</td>
+    <td class="thermal-value" style="font-size:6px;">${departmentsText}</td>
+  </tr>
+  <tr>
+    <td class="thermal-label">💰 الراتب</td>
+    <td class="thermal-value amount">${salaryDisplay} جم</td>
+  </tr>
+  <tr>
+    <td class="thermal-label">🎁 الإحالة</td>
+    <td class="thermal-value referral">
+      ${t.referralAmount != null
+        ? t.referralAmount.toLocaleString('ar-EG') + (t.isPercentReferral ? ' %' : ' جم')
+        : '-'}
+    </td>
+  </tr>
+  <tr>
+    <td class="thermal-label">📊 الإحالة المتبقية</td>
+    <td class="thermal-value referral">${(t.totalRemainReferralAmount || 0).toLocaleString('ar-EG')} جم</td>
+  </tr>
+  <tr>
+    <td class="thermal-label">✓ الحالة</td>
+    <td class="thermal-value ${t.isActive ? 'status-active' : 'status-inactive'}">${t.isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
+  </tr>
+</table>
               <div class="thermal-divider"></div>
               
               <div class="thermal-barcode">
@@ -1712,6 +1802,7 @@ export class EmployeeDetailsModalComponent
             .info-item .label { font-weight: 600; color: #475569; }
             .info-item .value { color: #0f172a; font-weight: 500; }
             .info-item .value.amount { color: #f59e0b; font-weight: 700; }
+            .info-item .value.referral { color: #7c3aed; font-weight: 700; }
             .full-width { grid-column: span 3; }
             .session-table {
               width: 100%;
@@ -1800,7 +1891,12 @@ export class EmployeeDetailsModalComponent
               <span class="badge ${t.employeeType?.id === 1 ? 'trainer' : 'manager'}">${employeeTypeDisplay}</span>
               <span class="badge" style="background:#f1f5f9;color:#475569;">${t.nationalId}</span>
               <span class="badge" style="background:#fef3c7;color:#92400e;">${genderDisplay}</span>
-            </div>
+              ${t.referralAmount != null ? `
+  <span class="badge" style="background:#ede9fe;color:#6d28d9;">
+    🎁 ${t.referralAmount.toLocaleString('ar-EG')}${t.isPercentReferral ? '%' : ' جم'}
+  </span>
+` : ''}
+              </div>
           </div>
 
           <h2>📋 المعلومات الشخصية</h2>
@@ -1817,11 +1913,31 @@ export class EmployeeDetailsModalComponent
           </div>
 
           <h2>💰 المعلومات المالية</h2>
-          <div class="info-grid">
-            <div class="info-item"><span class="label">الراتب الأساسي</span><span class="value amount">${t.salary?.toLocaleString('ar-EG') || 0} جم</span></div>
-            <div class="info-item"><span class="label">الراتب المتبقي</span><span class="value">${t.remainedSalary?.toLocaleString('ar-EG') || 0} جم</span></div>
-            <div class="info-item"><span class="label">نوع الراتب</span><span class="value">${salaryTypeDisplay}</span></div>
-          </div>
+<div class="info-grid">
+  <div class="info-item"><span class="label">الراتب الأساسي</span><span class="value amount">${t.salary?.toLocaleString('ar-EG') || 0} جم</span></div>
+  <div class="info-item"><span class="label">الراتب المتبقي</span><span class="value">${t.remainedSalary?.toLocaleString('ar-EG') || 0} جم</span></div>
+  <div class="info-item"><span class="label">نوع الراتب</span><span class="value">${salaryTypeDisplay}</span></div>
+</div>
+
+<h2>🎁 معلومات الإحالة</h2>
+<div class="info-grid">
+  <div class="info-item">
+    <span class="label">مبلغ الإحالة</span>
+    <span class="value amount referral">
+      ${t.referralAmount != null
+        ? t.referralAmount.toLocaleString('ar-EG') + (t.isPercentReferral ? ' %' : ' جم')
+        : '-'}
+    </span>
+  </div>
+  <div class="info-item">
+    <span class="label">إجمالي الإحالة المتبقي</span>
+    <span class="value referral">${(t.totalRemainReferralAmount || 0).toLocaleString('ar-EG')} جم</span>
+  </div>
+  <div class="info-item">
+    <span class="label">نوع الإحالة</span>
+    <span class="value">${t.isPercentReferral ? 'نسبة مئوية' : 'مبلغ ثابت'}</span>
+  </div>
+</div>
 
           <h2>🏢 الأقسام</h2>
           <div class="info-grid">

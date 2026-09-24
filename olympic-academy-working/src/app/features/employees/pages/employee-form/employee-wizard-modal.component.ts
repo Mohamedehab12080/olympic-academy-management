@@ -204,13 +204,16 @@ export class EmployeeWizardModalComponent implements OnInit, OnDestroy {
       isActive: [true]
     });
     
-    this.financialForm = this.fb.group({
-      salary: [null],
-      remainedSalary: [null],
-      salaryType: [null],
-      isMonthlyUpdated: [false],
-      updatePeriodInDays: [30]
-    });
+  this.financialForm = this.fb.group({
+  salary: [null],
+  remainedSalary: [null],
+  salaryType: [null],
+  isMonthlyUpdated: [false],
+  updatePeriodInDays: [30],
+  referralAmount: [null],
+  totalRemainReferralAmount: [null],
+  isPercentReferral: [false]
+});
     
     this.departmentsForm = this.fb.group({});
     this.coursesForm = this.fb.group({});
@@ -359,21 +362,24 @@ export class EmployeeWizardModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  private patchFinancialInfo(emp: EmployeeVTO): void {
-    let salaryTypeObj: SalaryType | null = null;
-    if (emp.salaryType?.id) {
-      salaryTypeObj = SALARY_TYPES.find(s => s.id === emp.salaryType?.id) || null;
-    }
-    
-    this.financialForm.patchValue({
-      salary: emp.salary || null,
-      remainedSalary: emp.remainedSalary || null,
-      salaryType: salaryTypeObj,
-      isMonthlyUpdated: emp.isMonthlyUpdated !== undefined ? emp.isMonthlyUpdated : false,
-      updatePeriodInDays: emp.updatePeriodInDays || 30
-    });
+private patchFinancialInfo(emp: EmployeeVTO): void {
+  let salaryTypeObj: SalaryType | null = null;
+  if (emp.salaryType?.id) {
+    salaryTypeObj = SALARY_TYPES.find(s => s.id === emp.salaryType?.id) || null;
   }
-
+  
+  this.financialForm.patchValue({
+    salary: emp.salary || null,
+    remainedSalary: emp.remainedSalary || null,
+    salaryType: salaryTypeObj,
+    isMonthlyUpdated: emp.isMonthlyUpdated !== undefined ? emp.isMonthlyUpdated : false,
+    updatePeriodInDays: emp.updatePeriodInDays || 30,
+    // ✅ NEW referral fields
+    referralAmount: emp.referralAmount ?? null,
+    totalRemainReferralAmount: emp.totalRemainReferralAmount ?? null,
+    isPercentReferral: emp.isPercentReferral ?? false
+  });
+}
   private processDepartmentAssignments(items: any[]): void {
     items.forEach((item: any) => {
       const deptId = item.department?.id;
@@ -636,25 +642,29 @@ private addContactFormGroup(data: ContactFormData): void {
     }
   }
   
-  const previewData = {
-    fullName: this.basicInfoForm.get('fullName')?.value || '-',
-    nationalId: this.basicInfoForm.get('nationalId')?.value || '-',
-    birthDate: this.basicInfoForm.get('birthDate')?.value,
-    gender: this.basicInfoForm.get('gender')?.value,
-    employeeType: this.basicInfoForm.get('employeeType')?.value,
-    hireDate: this.basicInfoForm.get('hireDate')?.value,
-    salary: this.financialForm.get('salary')?.value,
-    remainedSalary: this.financialForm.get('remainedSalary')?.value,
-    salaryType: this.financialForm.get('salaryType')?.value,
-    isMonthlyUpdated: this.financialForm.get('isMonthlyUpdated')?.value,
-    updatePeriodInDays: this.financialForm.get('updatePeriodInDays')?.value,
-    departments: this.selectedDepartments,
-    courses: this.selectedCourses,
-    contacts: this.contactsList,
-    imageUrl: imagePreviewUrl,
-    isNewEmployee: !this.isEditMode,
-    isActive: this.basicInfoForm.get('isActive')?.value
-  };
+const previewData = {
+  fullName: this.basicInfoForm.get('fullName')?.value || '-',
+  nationalId: this.basicInfoForm.get('nationalId')?.value || '-',
+  birthDate: this.basicInfoForm.get('birthDate')?.value,
+  gender: this.basicInfoForm.get('gender')?.value,
+  employeeType: this.basicInfoForm.get('employeeType')?.value,
+  hireDate: this.basicInfoForm.get('hireDate')?.value,
+  salary: this.financialForm.get('salary')?.value,
+  remainedSalary: this.financialForm.get('remainedSalary')?.value,
+  salaryType: this.financialForm.get('salaryType')?.value,
+  isMonthlyUpdated: this.financialForm.get('isMonthlyUpdated')?.value,
+  updatePeriodInDays: this.financialForm.get('updatePeriodInDays')?.value,
+  // ✅ NEW referral fields
+  referralAmount: this.financialForm.get('referralAmount')?.value,
+  totalRemainReferralAmount: this.financialForm.get('totalRemainReferralAmount')?.value,
+  isPercentReferral: this.financialForm.get('isPercentReferral')?.value,
+  departments: this.selectedDepartments,
+  courses: this.selectedCourses,
+  contacts: this.contactsList,
+  imageUrl: imagePreviewUrl,
+  isNewEmployee: !this.isEditMode,
+  isActive: this.basicInfoForm.get('isActive')?.value
+};
   
   this.generatePrintDocument(previewData);
   
@@ -756,13 +766,19 @@ private addContactFormGroup(data: ContactFormData): void {
           </div>
           
           <h2>💰 المعلومات المالية</h2>
-          <div class="grid">
-            <div class="item"><div class="label">الراتب</div><div class="value amount">${data.salary || 0} جم</div></div>
-            <div class="item"><div class="label">الراتب المتبقي</div><div class="value">${data.remainedSalary || 0} جم</div></div>
-            <div class="item"><div class="label">نوع الراتب</div><div class="value">${data.salaryType?.title || '-'}</div></div>
-            <div class="item"><div class="label">تحديث شهري</div><div class="value">${data.isMonthlyUpdated ? 'مفعل' : 'غير مفعل'}</div></div>
-            <div class="item"><div class="label">فترة التحديث</div><div class="value">${data.updatePeriodInDays || 0} يوم</div></div>
-          </div>
+            <div class="grid">
+              <div class="item"><div class="label">الراتب</div><div class="value amount">${data.salary || 0} جم</div></div>
+              <div class="item"><div class="label">الراتب المتبقي</div><div class="value">${data.remainedSalary || 0} جم</div></div>
+              <div class="item"><div class="label">نوع الراتب</div><div class="value">${data.salaryType?.title || '-'}</div></div>
+              <div class="item"><div class="label">تحديث شهري</div><div class="value">${data.isMonthlyUpdated ? 'مفعل' : 'غير مفعل'}</div></div>
+              <div class="item"><div class="label">فترة التحديث</div><div class="value">${data.updatePeriodInDays || 0} يوم</div></div>
+              ${data.referralAmount != null ? `
+                <div class="item"><div class="label">مبلغ الإحالة</div><div class="value amount">${data.referralAmount}${data.isPercentReferral ? ' %' : ' جم'}</div></div>
+              ` : ''}
+              ${data.totalRemainReferralAmount != null ? `
+                <div class="item"><div class="label">إجمالي مبلغ الإحالة المتبقي</div><div class="value">${data.totalRemainReferralAmount} جم</div></div>
+              ` : ''}
+            </div>
           
           ${data.departments?.length > 0 ? `
             <h2>🏢 الأقسام (${data.departments.length})</h2>
@@ -822,50 +838,58 @@ private addContactFormGroup(data: ContactFormData): void {
   // PAYLOAD BUILDER
   // ============================================================
   
-  private buildEmployeePayload(): any {
-    const genderObj = this.basicInfoForm.get('gender')?.value;
-    const employeeTypeObj = this.basicInfoForm.get('employeeType')?.value;
-    const salaryTypeObj = this.financialForm.get('salaryType')?.value;
-    
-    const formatDate = (date: any): string | null => {
-      if (!date) return null;
-      const d = new Date(date);
-      if (isNaN(d.getTime())) return null;
-      return d.toISOString().split('T')[0];
-    };
-    
-    const genderEnum = genderObj ? (genderObj.id === 1 ? 'MALE' : 'FEMALE') : null;
-    const employeeTypeEnum = employeeTypeObj ? 
-      (employeeTypeObj.id === 1 ? 'TRAINER' : 
-       employeeTypeObj.id === 3 ? 'LECTURER' : 'MANAGER') : null;
+private buildEmployeePayload(): any {
+  const genderObj = this.basicInfoForm.get('gender')?.value;
+  const employeeTypeObj = this.basicInfoForm.get('employeeType')?.value;
+  const salaryTypeObj = this.financialForm.get('salaryType')?.value;
+  
+  const formatDate = (date: any): string | null => {
+    if (!date) return null;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString().split('T')[0];
+  };
+  
+  const genderEnum = genderObj ? (genderObj.id === 1 ? 'MALE' : 'FEMALE') : null;
+  const employeeTypeEnum = employeeTypeObj ? 
+    (employeeTypeObj.id === 1 ? 'TRAINER' : 
+     employeeTypeObj.id === 3 ? 'LECTURER' : 'MANAGER') : null;
 
-    let salaryTypeEnum = null;
-    if (salaryTypeObj) {
-      switch(salaryTypeObj.id) {
-        case 1: salaryTypeEnum = 'MONTHLY'; break;
-        case 2: salaryTypeEnum = 'HOURLY'; break;
-        case 3: salaryTypeEnum = 'DAILY'; break;
-        case 4: salaryTypeEnum = 'PERCENTAGE'; break;
-        default: salaryTypeEnum = 'MONTHLY';
-      }
+  let salaryTypeEnum = null;
+  if (salaryTypeObj) {
+    switch(salaryTypeObj.id) {
+      case 1: salaryTypeEnum = 'MONTHLY'; break;
+      case 2: salaryTypeEnum = 'HOURLY'; break;
+      case 3: salaryTypeEnum = 'DAILY'; break;
+      case 4: salaryTypeEnum = 'PERCENTAGE'; break;
+      default: salaryTypeEnum = 'MONTHLY';
     }
-    
-    return {
-      fullName: this.basicInfoForm.get('fullName')?.value?.trim(),
-      nationalId: this.basicInfoForm.get('nationalId')?.value?.trim(),
-      birthDate: formatDate(this.basicInfoForm.get('birthDate')?.value),
-      gender: genderEnum,
-      employeeType: employeeTypeEnum,
-      salary: Number(this.financialForm.get('salary')?.value) || 0,
-      remainedSalary: Number(this.financialForm.get('remainedSalary')?.value) || 0,
-      salaryType: salaryTypeEnum,
-      hireDate: formatDate(this.basicInfoForm.get('hireDate')?.value),
-      departmentIds: this.selectedDepartments.map(d => d.id),
-      imageUrl: this.employeeImageFid,
-      isMonthlyUpdated: this.financialForm.get('isMonthlyUpdated')?.value || false,
-      updatePeriodInDays: Number(this.financialForm.get('updatePeriodInDays')?.value) || 30
-    };
   }
+  
+  return {
+    fullName: this.basicInfoForm.get('fullName')?.value?.trim(),
+    nationalId: this.basicInfoForm.get('nationalId')?.value?.trim(),
+    birthDate: formatDate(this.basicInfoForm.get('birthDate')?.value),
+    gender: genderEnum,
+    employeeType: employeeTypeEnum,
+    salary: Number(this.financialForm.get('salary')?.value) || 0,
+    remainedSalary: Number(this.financialForm.get('remainedSalary')?.value) || 0,
+    salaryType: salaryTypeEnum,
+    hireDate: formatDate(this.basicInfoForm.get('hireDate')?.value),
+    departmentIds: this.selectedDepartments.map(d => d.id),
+    imageUrl: this.employeeImageFid,
+    isMonthlyUpdated: this.financialForm.get('isMonthlyUpdated')?.value || false,
+    updatePeriodInDays: Number(this.financialForm.get('updatePeriodInDays')?.value) || 30,
+    // ✅ NEW referral fields
+    referralAmount: this.financialForm.get('referralAmount')?.value != null
+      ? Number(this.financialForm.get('referralAmount')?.value)
+      : null,
+    totalRemainReferralAmount: this.financialForm.get('totalRemainReferralAmount')?.value != null
+      ? Number(this.financialForm.get('totalRemainReferralAmount')?.value)
+      : null,
+    isPercentReferral: this.financialForm.get('isPercentReferral')?.value || false
+  };
+}
 
   // ============================================================
   // CREATE EMPLOYEE

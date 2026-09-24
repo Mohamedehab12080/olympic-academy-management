@@ -33,6 +33,12 @@ public class EmployeeLookupVTO implements Serializable {
 
     private Integer remainedSalary;
 
+    private Double totalRemainReferralAmount;
+
+    private Double referralAmount;
+
+    private Boolean isPercentReferral;
+
     private LookupVTO salaryType;
 
     private LookupVTO employeeType;
@@ -144,6 +150,69 @@ public class EmployeeLookupVTO implements Serializable {
         this.remainedSalary = remainedSalary;
     }
 
+    public EmployeeLookupVTO totalRemainReferralAmount(Double totalRemainReferralAmount) {
+        this.totalRemainReferralAmount = totalRemainReferralAmount;
+        return this;
+    }
+
+    /**
+     * Get totalRemainReferralAmount
+     *
+     * @return totalRemainReferralAmount
+     */
+
+    @Schema(name = "totalRemainReferralAmount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalRemainReferralAmount")
+    public Double getTotalRemainReferralAmount() {
+        return totalRemainReferralAmount;
+    }
+
+    public void setTotalRemainReferralAmount(Double totalRemainReferralAmount) {
+        this.totalRemainReferralAmount = totalRemainReferralAmount;
+    }
+
+    public EmployeeLookupVTO referralAmount(Double referralAmount) {
+        this.referralAmount = referralAmount;
+        return this;
+    }
+
+    /**
+     * Get referralAmount
+     *
+     * @return referralAmount
+     */
+
+    @Schema(name = "referralAmount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("referralAmount")
+    public Double getReferralAmount() {
+        return referralAmount;
+    }
+
+    public void setReferralAmount(Double referralAmount) {
+        this.referralAmount = referralAmount;
+    }
+
+    public EmployeeLookupVTO isPercentReferral(Boolean isPercentReferral) {
+        this.isPercentReferral = isPercentReferral;
+        return this;
+    }
+
+    /**
+     * Get isPercentReferral
+     *
+     * @return isPercentReferral
+     */
+
+    @Schema(name = "isPercentReferral", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isPercentReferral")
+    public Boolean getIsPercentReferral() {
+        return isPercentReferral;
+    }
+
+    public void setIsPercentReferral(Boolean isPercentReferral) {
+        this.isPercentReferral = isPercentReferral;
+    }
+
     public EmployeeLookupVTO salaryType(LookupVTO salaryType) {
         this.salaryType = salaryType;
         return this;
@@ -221,6 +290,9 @@ public class EmployeeLookupVTO implements Serializable {
                 && Objects.equals(this.nationalId, employeeLookupVTO.nationalId)
                 && Objects.equals(this.salary, employeeLookupVTO.salary)
                 && Objects.equals(this.remainedSalary, employeeLookupVTO.remainedSalary)
+                && Objects.equals(this.totalRemainReferralAmount, employeeLookupVTO.totalRemainReferralAmount)
+                && Objects.equals(this.referralAmount, employeeLookupVTO.referralAmount)
+                && Objects.equals(this.isPercentReferral, employeeLookupVTO.isPercentReferral)
                 && Objects.equals(this.salaryType, employeeLookupVTO.salaryType)
                 && Objects.equals(this.employeeType, employeeLookupVTO.employeeType)
                 && Objects.equals(this.imageUrl, employeeLookupVTO.imageUrl);
@@ -228,7 +300,8 @@ public class EmployeeLookupVTO implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fullName, nationalId, salary, remainedSalary, salaryType, employeeType, imageUrl);
+        return Objects.hash(id, fullName, nationalId, salary, remainedSalary, totalRemainReferralAmount, referralAmount,
+                isPercentReferral, salaryType, employeeType, imageUrl);
     }
 
     @Override
@@ -240,6 +313,9 @@ public class EmployeeLookupVTO implements Serializable {
         sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
         sb.append("    salary: ").append(toIndentedString(salary)).append("\n");
         sb.append("    remainedSalary: ").append(toIndentedString(remainedSalary)).append("\n");
+        sb.append("    totalRemainReferralAmount: ").append(toIndentedString(totalRemainReferralAmount)).append("\n");
+        sb.append("    referralAmount: ").append(toIndentedString(referralAmount)).append("\n");
+        sb.append("    isPercentReferral: ").append(toIndentedString(isPercentReferral)).append("\n");
         sb.append("    salaryType: ").append(toIndentedString(salaryType)).append("\n");
         sb.append("    employeeType: ").append(toIndentedString(employeeType)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");

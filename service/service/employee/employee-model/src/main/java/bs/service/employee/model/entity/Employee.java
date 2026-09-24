@@ -41,6 +41,18 @@ public class Employee {
     @Column(name = "gender")
     private Integer gender;
 
+    @Column(name = "referral_amount")
+    @Basic
+    private Double referralAmount;
+
+    @Column(name = "is_percent_referral")
+    @Basic
+    private Boolean isPercentReferral;
+
+    @Column(name = "total_remain_referral_amount")
+    @Basic
+    private Integer totalRemainReferralAmount;
+
     @Column(name = "salary")
     @Basic
     private Integer salary;

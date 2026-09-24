@@ -132,6 +132,11 @@ function getDisplayTitle(
               }}</mat-icon>
               {{ getGenderDisplay(trainee.gender) }}
             </mat-chip>
+
+           <mat-chip *ngIf="trainee.referralEmployee" class="referral-chip">
+            <mat-icon>person_search</mat-icon>
+            {{ trainee.referralEmployee.fullName }}
+          </mat-chip>
           </div>
         </div>
       </div>
@@ -191,6 +196,14 @@ function getDisplayTitle(
                 <div>
                   <label>العنوان</label>
                   <p>{{ trainee.address || '-' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>person_search</mat-icon>
+                <div>
+                  <label>الموظف المُحيل</label>
+                  <p>{{ trainee.referralEmployee?.fullName || '-' }}</p>
                 </div>
               </div>
 
@@ -768,7 +781,13 @@ function getDisplayTitle(
         height: 48px;
         margin-bottom: 12px;
       }
-
+      .referral-chip {
+        background: #f3e8ff !important;
+        color: #6b21a8 !important;
+      }
+      .referral-chip mat-icon {
+        color: #6b21a8 !important;
+      }
       /* Barcode Tab */
       .barcode-tab {
         display: flex;
@@ -1431,6 +1450,10 @@ printTraineeCard(): void {
                 <td class="thermal-value" style="font-size:5.5px;">${(t.address || '').substring(0, 25)}</td>
               </tr>
               <tr>
+                <td class="thermal-label">👤 المُحيل</td>
+                <td class="thermal-value" style="font-size:5.5px;">${(t.referralEmployee?.fullName || '-').substring(0, 20)}</td>
+              </tr>
+              <tr>
                 <td class="thermal-label">✓ الحالة</td>
                 <td class="thermal-value ${t.isActive ? 'status-active' : 'status-inactive'}">${t.isActive ? '✅ نشط' : '⛔ غير نشط'}</td>
               </tr>
@@ -1831,6 +1854,7 @@ printTraineeCard(): void {
               <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${genderDisplay}</div></div>
               <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${academicYearDisplay}</div></div>
               <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${t.address || '-'}</div></div>
+              <div class="info-item"><div class="info-label">الموظف المُحيل</div><div class="info-value">${t.referralEmployee?.fullName || '-'}</div></div>
               <div class="info-item"><div class="info-label">تاريخ التسجيل</div><div class="info-value">${t.createdOn ? new Date(t.createdOn).toLocaleDateString('ar-EG') : '-'}</div></div>
               <div class="info-item"><div class="info-label">تمت الإضافة بواسطة</div><div class="info-value">${t.createdBy?.fullName || '-'}</div></div>
               ${t.lastModifiedOn ? `<div class="info-item"><div class="info-label">آخر تحديث</div><div class="info-value">${new Date(t.lastModifiedOn).toLocaleDateString('ar-EG')}</div></div>` : ''}

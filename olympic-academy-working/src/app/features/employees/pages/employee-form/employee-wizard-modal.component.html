@@ -205,6 +205,51 @@
                 </mat-card-content>
               </mat-card>
             </div>
+
+            <!-- ✅ Referral Information -->
+<div class="referral-section">
+  <mat-card class="referral-card">
+    <mat-card-content>
+      <div class="section-title">
+        <mat-icon>card_giftcard</mat-icon>
+        <span>معلومات الإحالة</span>
+      </div>
+
+      <div class="referral-grid">
+        <!-- Referral Amount -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>مبلغ الإحالة</mat-label>
+          <input matInput type="number" formControlName="referralAmount" placeholder="أدخل مبلغ الإحالة">
+          <span matSuffix>{{ financialForm.get('isPercentReferral')?.value ? '%' : 'جم' }}</span>
+        </mat-form-field>
+
+        <!-- Total Remain Referral Amount -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>إجمالي مبلغ الإحالة المتبقي</mat-label>
+          <input matInput type="number" formControlName="totalRemainReferralAmount" placeholder="أدخل إجمالي المبلغ المتبقي">
+          <span matSuffix>جم</span>
+        </mat-form-field>
+
+        <!-- Is Percent Referral Toggle -->
+        <div class="referral-toggle-item">
+          <mat-slide-toggle
+            [color]="'primary'"
+            formControlName="isPercentReferral"
+            class="auto-update-toggle">
+            <div class="toggle-label">
+              <mat-icon>percent</mat-icon>
+              <span>نسبة مئوية</span>
+            </div>
+          </mat-slide-toggle>
+          <div class="toggle-status" [class.active]="financialForm.get('isPercentReferral')?.value">
+            {{ financialForm.get('isPercentReferral')?.value ? 'نسبة %' : 'مبلغ ثابت' }}
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
           </form>
         </div>
         <div class="step-actions">
@@ -417,15 +462,28 @@
             </mat-card>
 
             <mat-card class="summary-card">
-              <mat-card-title>المعلومات المالية</mat-card-title>
-              <div class="summary-grid">
-                <div><strong>الراتب:</strong> {{ financialForm.get('salary')?.value | currency:'EGP' }}</div>
-                <div><strong>الراتب المتبقي:</strong> {{ financialForm.get('remainedSalary')?.value | currency:'EGP' }}</div>
-                <div><strong>نوع الراتب:</strong> {{ financialForm.get('salaryType')?.value?.title || '-' }}</div>
-                <div><strong>تحديث شهري:</strong> {{ financialForm.get('isMonthlyUpdated')?.value ? 'مفعل' : 'غير مفعل' }}</div>
-                <div><strong>فترة التحديث:</strong> {{ financialForm.get('updatePeriodInDays')?.value || 0 }} يوم</div>
-              </div>
-            </mat-card>
+  <mat-card-title>المعلومات المالية</mat-card-title>
+  <div class="summary-grid">
+    <div><strong>الراتب:</strong> {{ financialForm.get('salary')?.value | currency:'EGP' }}</div>
+    <div><strong>الراتب المتبقي:</strong> {{ financialForm.get('remainedSalary')?.value | currency:'EGP' }}</div>
+    <div><strong>نوع الراتب:</strong> {{ financialForm.get('salaryType')?.value?.title || '-' }}</div>
+    <div><strong>تحديث شهري:</strong> {{ financialForm.get('isMonthlyUpdated')?.value ? 'مفعل' : 'غير مفعل' }}</div>
+    <div><strong>فترة التحديث:</strong> {{ financialForm.get('updatePeriodInDays')?.value || 0 }} يوم</div>
+    <!-- ✅ NEW referral rows -->
+    <div *ngIf="financialForm.get('referralAmount')?.value != null">
+      <strong>مبلغ الإحالة:</strong>
+      {{ financialForm.get('referralAmount')?.value }}
+      {{ financialForm.get('isPercentReferral')?.value ? '%' : 'جم' }}
+    </div>
+    <div *ngIf="financialForm.get('totalRemainReferralAmount')?.value != null">
+      <strong>إجمالي مبلغ الإحالة المتبقي:</strong>
+      {{ financialForm.get('totalRemainReferralAmount')?.value | currency:'EGP' }}
+    </div>
+    <div><strong>نوع الإحالة:</strong>
+      {{ financialForm.get('isPercentReferral')?.value ? 'نسبة مئوية' : 'مبلغ ثابت' }}
+    </div>
+  </div>
+</mat-card>
 
             <mat-card class="summary-card" *ngIf="selectedDepartments.length > 0">
               <mat-card-title>الأقسام ({{ selectedDepartments.length }})</mat-card-title>

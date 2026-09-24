@@ -1301,8 +1301,8 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             <td style="text-align: right; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-weight: 600; font-size: 11px; background: transparent;">${t.fullName || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${t.nationalId || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${this.getAcademicYearDisplay(t.academicYear)}</td>
-            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${t.referralEmployee?.fullName || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${genderStyle}">${t.gender?.title || '-'}</span></td>
+            <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;">${t.referralEmployee?.fullName || '-'}</td>
             <td style="text-align: center; padding: 6px 5px; border: 1px solid rgba(229, 231, 235, 0.3); font-size: 11px; background: transparent;"><span style="${statusStyle}">${t.isActive ? 'نشط' : 'غير نشط'}</span></td>
           </tr>
         `;
@@ -1362,7 +1362,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
                   <th style="width: 15%;">رقم الهوية</th>
                   <th style="width: 13%;">السنة الدراسية</th>
                   <th style="width: 12%;">الجنس</th>
-                  <th style="width: 18%;">الموظف المُحيل</th>   <!-- NEW -->
+                  <th style="width: 18%;">الموظف المُحيل</th>
                   <th style="width: 16%;">الحالة</th>
                 </tr>
               </thead>

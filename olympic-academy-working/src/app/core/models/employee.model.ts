@@ -6,7 +6,7 @@ import { LookupVTO, LightUserVTO, Gender, ContactType, SalaryType } from './../m
 export interface EmployeeType {
   id: number;
   title: string; // "مدرب" أو "مدير"
-}
+}                                 
 
 export const EMPLOYEE_TYPES: EmployeeType[] = [
   { id: 1, title: 'مدرب' },
@@ -48,6 +48,9 @@ export interface EmployeeContactDTO {
 export interface EmployeeDTO {
   fullName: string;
   nationalId: string;
+  referralAmount?:number;
+  totalRemainReferralAmount?:number;
+  isPercentReferral?:boolean;
   birthDate?: string;
   gender?: Gender;  // From common.model
   salary?: number;
@@ -93,6 +96,9 @@ export interface EmployeeLookupVTO {
   nationalId: string;
   salary?: number;
   remainedSalary?: number;
+  referralAmount?:number;
+  totalRemainReferralAmount?:number;
+  isPercentReferral?:boolean;
   salaryType?: LookupVTO;  // From common.model
   employeeType: LookupVTO;
   imageUrl?: string;
@@ -101,6 +107,9 @@ export interface EmployeeLookupVTO {
 export interface EmployeeVTO {
   id: number;
   fullName: string;
+  referralAmount?:number;
+  totalRemainReferralAmount?:number;
+  isPercentReferral?:boolean;
   nationalId: string;
   birthDate?: string;
   gender?: LookupVTO;  // From common.model
@@ -214,6 +223,9 @@ export interface EmployeeListItem {
   id: number;
   fullName: string;
   nationalId: string;
+  referralAmount?:number;
+  totalRemainReferralAmount?:number;
+  isPercentReferral?:boolean;
   imageUrl: string;
   gender: LookupVTO;
   employeeType: LookupVTO;

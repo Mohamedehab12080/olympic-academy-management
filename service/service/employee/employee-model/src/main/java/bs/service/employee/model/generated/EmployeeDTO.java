@@ -48,6 +48,12 @@ public class EmployeeDTO implements Serializable {
 
     private Boolean isActive;
 
+    private Double referralAmount;
+
+    private Double totalRemainReferralAmount;
+
+    private Boolean isPercentReferral;
+
     private Boolean isMonthlyUpdated;
 
     private Integer updatePeriodInDays;
@@ -253,6 +259,69 @@ public class EmployeeDTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public EmployeeDTO referralAmount(Double referralAmount) {
+        this.referralAmount = referralAmount;
+        return this;
+    }
+
+    /**
+     * Get referralAmount
+     *
+     * @return referralAmount
+     */
+
+    @Schema(name = "referralAmount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("referralAmount")
+    public Double getReferralAmount() {
+        return referralAmount;
+    }
+
+    public void setReferralAmount(Double referralAmount) {
+        this.referralAmount = referralAmount;
+    }
+
+    public EmployeeDTO totalRemainReferralAmount(Double totalRemainReferralAmount) {
+        this.totalRemainReferralAmount = totalRemainReferralAmount;
+        return this;
+    }
+
+    /**
+     * Get totalRemainReferralAmount
+     *
+     * @return totalRemainReferralAmount
+     */
+
+    @Schema(name = "totalRemainReferralAmount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("totalRemainReferralAmount")
+    public Double getTotalRemainReferralAmount() {
+        return totalRemainReferralAmount;
+    }
+
+    public void setTotalRemainReferralAmount(Double totalRemainReferralAmount) {
+        this.totalRemainReferralAmount = totalRemainReferralAmount;
+    }
+
+    public EmployeeDTO isPercentReferral(Boolean isPercentReferral) {
+        this.isPercentReferral = isPercentReferral;
+        return this;
+    }
+
+    /**
+     * Get isPercentReferral
+     *
+     * @return isPercentReferral
+     */
+
+    @Schema(name = "isPercentReferral", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isPercentReferral")
+    public Boolean getIsPercentReferral() {
+        return isPercentReferral;
+    }
+
+    public void setIsPercentReferral(Boolean isPercentReferral) {
+        this.isPercentReferral = isPercentReferral;
+    }
+
     public EmployeeDTO isMonthlyUpdated(Boolean isMonthlyUpdated) {
         this.isMonthlyUpdated = isMonthlyUpdated;
         return this;
@@ -413,6 +482,9 @@ public class EmployeeDTO implements Serializable {
                 && Objects.equals(this.salaryType, employeeDTO.salaryType)
                 && Objects.equals(this.employeeType, employeeDTO.employeeType)
                 && Objects.equals(this.isActive, employeeDTO.isActive)
+                && Objects.equals(this.referralAmount, employeeDTO.referralAmount)
+                && Objects.equals(this.totalRemainReferralAmount, employeeDTO.totalRemainReferralAmount)
+                && Objects.equals(this.isPercentReferral, employeeDTO.isPercentReferral)
                 && Objects.equals(this.isMonthlyUpdated, employeeDTO.isMonthlyUpdated)
                 && Objects.equals(this.updatePeriodInDays, employeeDTO.updatePeriodInDays)
                 && Objects.equals(this.imageUrl, employeeDTO.imageUrl)
@@ -424,7 +496,8 @@ public class EmployeeDTO implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(fullName, nationalId, birthDate, gender, salary, remainedSalary, salaryType, employeeType,
-                isActive, isMonthlyUpdated, updatePeriodInDays, imageUrl, hireDate, departmentIds, contacts);
+                isActive, referralAmount, totalRemainReferralAmount, isPercentReferral, isMonthlyUpdated,
+                updatePeriodInDays, imageUrl, hireDate, departmentIds, contacts);
     }
 
     @Override
@@ -440,6 +513,9 @@ public class EmployeeDTO implements Serializable {
         sb.append("    salaryType: ").append(toIndentedString(salaryType)).append("\n");
         sb.append("    employeeType: ").append(toIndentedString(employeeType)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    referralAmount: ").append(toIndentedString(referralAmount)).append("\n");
+        sb.append("    totalRemainReferralAmount: ").append(toIndentedString(totalRemainReferralAmount)).append("\n");
+        sb.append("    isPercentReferral: ").append(toIndentedString(isPercentReferral)).append("\n");
         sb.append("    isMonthlyUpdated: ").append(toIndentedString(isMonthlyUpdated)).append("\n");
         sb.append("    updatePeriodInDays: ").append(toIndentedString(updatePeriodInDays)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
