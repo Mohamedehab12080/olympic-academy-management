@@ -212,20 +212,20 @@
     <mat-card-content>
       <div class="section-title">
         <mat-icon>card_giftcard</mat-icon>
-        <span>معلومات الإحالة</span>
+        <span>معلومات النسبة</span>
       </div>
 
       <div class="referral-grid">
         <!-- Referral Amount -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>مبلغ الإحالة</mat-label>
-          <input matInput type="number" formControlName="referralAmount" placeholder="أدخل مبلغ الإحالة">
+          <mat-label>مبلغ النسبة</mat-label>
+          <input matInput type="number" formControlName="referralAmount" placeholder="أدخل مبلغ النسبة">
           <span matSuffix>{{ financialForm.get('isPercentReferral')?.value ? '%' : 'جم' }}</span>
         </mat-form-field>
 
         <!-- Total Remain Referral Amount -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>إجمالي مبلغ الإحالة المتبقي</mat-label>
+          <mat-label>إجمالي مبلغ النسبة المتبقي</mat-label>
           <input matInput type="number" formControlName="totalRemainReferralAmount" placeholder="أدخل إجمالي المبلغ المتبقي">
           <span matSuffix>جم</span>
         </mat-form-field>
@@ -471,15 +471,15 @@
     <div><strong>فترة التحديث:</strong> {{ financialForm.get('updatePeriodInDays')?.value || 0 }} يوم</div>
     <!-- ✅ NEW referral rows -->
     <div *ngIf="financialForm.get('referralAmount')?.value != null">
-      <strong>مبلغ الإحالة:</strong>
+      <strong>مبلغ النسبة:</strong>
       {{ financialForm.get('referralAmount')?.value }}
       {{ financialForm.get('isPercentReferral')?.value ? '%' : 'جم' }}
     </div>
     <div *ngIf="financialForm.get('totalRemainReferralAmount')?.value != null">
-      <strong>إجمالي مبلغ الإحالة المتبقي:</strong>
+      <strong>إجمالي مبلغ النسبة المتبقي:</strong>
       {{ financialForm.get('totalRemainReferralAmount')?.value | currency:'EGP' }}
     </div>
-    <div><strong>نوع الإحالة:</strong>
+    <div><strong>نوع النسبة:</strong>
       {{ financialForm.get('isPercentReferral')?.value ? 'نسبة مئوية' : 'مبلغ ثابت' }}
     </div>
   </div>

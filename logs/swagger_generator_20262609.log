@@ -1,0 +1,88 @@
+ 
+ 
+ 
+============================================= 
+            SWAGGER GENERATOR LOG             
+============================================= 
+Timestamp: Sat 09/26/2026  0:34:36.73 
+ 
+ 
+ 
+============================================= 
+        Start Parsing Generator Input         
+============================================= 
+ 
+[ 0:34:36.80] [DEBUG] Parsing: --project 
+[ 0:34:36.80] [INFO] Project Name	: service 
+ 
+[ 0:34:36.82] [DEBUG] Parsing: --module 
+[ 0:34:36.83] [INFO] Module Name	: trainee 
+ 
+[ 0:34:36.85] [DEBUG] Parsing: --model 
+[ 0:34:36.86] [DEBUG] Parsing: --core 
+[ 0:34:36.88] [INFO] Tasks		:  model core 
+ 
+[ 0:34:36.89] [INFO] Executing task: model 
+ 
+ 
+============================================= 
+           Start Generating Models            
+============================================= 
+ 
+[ 0:34:36.93] [INFO] Entering directory... 
+[ 0:34:36.94] [INFO] Clearing generated model package... 
+[ 0:34:36.95] [INFO] ✓ Generated directory cleared 
+[ 0:34:36.95] [INFO] Found pom.xml, executing Maven... 
+[ 0:34:36.95] [INFO] Command: mvn generate-sources -Pservice-swagger-models -Dproject-name.dot-separated=service -Dservice-name.dot-separated=trainee -Dservice-name.dash-separated=trainee -Dservice-name.slash-separated=trainee 
+ 
+--- MAVEN OUTPUT --- 
+[ 0:34:50.51] [INFO] Maven execution successful 
+[ 0:34:50.53] [INFO] Module name			: trainee 
+[ 0:34:50.53] [INFO] Project name			: service 
+[ 0:34:50.54] [INFO] Model Folder Path	: D:\BOB Projects\OlympicAcadmyManagement\olympic-academy-management\_scripts\swagger\..\..\service\service\trainee\trainee-model\src\main\java\bs\service\trainee\model\generated 
+ 
+============================================= 
+       Start Cleaning the Unused Models       
+============================================= 
+ 
+[ 0:34:50.58] [INFO] Entering generated package directory... 
+[ 0:34:50.58] [INFO] Checking module-specific files for deletion... 
+[ 0:34:50.59] [INFO] Deleted: ErrorVTO.java 
+[ 0:34:50.60] [INFO] Deleted: LookupResultSet.java 
+[ 0:34:50.60] [INFO] Deleted: LookupVTO.java 
+[ 0:34:50.61] [INFO] Deleted: NewRecordVTO.java 
+[ 0:34:50.62] [INFO] Deleted: Gender.java 
+[ 0:34:50.63] [INFO] Deleted: ContactTypes.java 
+[ 0:34:50.67] [INFO] Deleted: TraineeAttendanceStatus.java 
+[ 0:34:50.68] [INFO] Deleted: CommonEnrollmentVTO.java 
+[ 0:34:50.69] [INFO] Deleted: LightUserVTO.java 
+[ 0:34:50.71] [INFO] Deleted: OrderDirections.java 
+[ 0:34:50.73] [INFO] Deleted: CourseSessionLookupVTO.java 
+[ 0:34:50.74] [INFO] Deleted: EmployeeLookupVTO.java 
+[ 0:34:50.75] [INFO] Cleanup completed for module: trainee 
+[ 0:34:50.76] [INFO] Completed task: model 
+ 
+[ 0:34:50.76] [INFO] Executing task: core 
+ 
+ 
+============================================= 
+         Start Generating Controllers         
+============================================= 
+ 
+[ 0:34:50.80] [INFO] Entering directory... 
+[ 0:34:50.81] [INFO] Clearing generated controller package... 
+[ 0:34:50.81] [INFO] Generated directory cleared 
+[ 0:34:50.81] [INFO] Found pom.xml, executing Maven... 
+[ 0:34:50.82] [INFO] Command: mvn generate-sources -Pservice-swagger-controllers -Dproject-name.dot-separated=service -Dservice-name.dot-separated=trainee -Dservice-name.dash-separated=trainee -Dservice-name.slash-separated=trainee 
+ 
+--- MAVEN OUTPUT --- 
+[ 0:34:59.99] [INFO] Maven execution successful 
+[ 0:35:00.00] [INFO] Completed task: core 
+ 
+ 
+ 
+============================================= 
+        SWAGGER Generation Completed          
+============================================= 
+All tasks processed successfully 
+Log file: D:\BOB Projects\OlympicAcadmyManagement\olympic-academy-management\_scripts\swagger\..\..\logs\swagger_generator_20262609.log 

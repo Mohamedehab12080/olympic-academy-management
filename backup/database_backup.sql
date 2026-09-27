@@ -46,109 +46,111 @@ CREATE TABLE `databasechangelog` (
 
 LOCK TABLES `databasechangelog` WRITE;
 /*!40000 ALTER TABLE `databasechangelog` DISABLE KEYS */;
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/user/_liquibase/changes/changeset-2026-04-03.xml','2026-07-17 00:09:57',1,'EXECUTED','9:158ac77f1bd53f8b1d3832165919881a','createTable tableName=oa_user; addForeignKeyConstraint baseTableName=oa_user, constraintName=fk_user_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_user, constraintName=fk_user_last_modified_by_id, referencedTabl...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/user/_liquibase/changes/changeset-2026-04-04.xml','2026-07-17 00:09:57',2,'EXECUTED','9:2ecfc1b06024f4972966d17ec506250b','createTable tableName=oa_token; addForeignKeyConstraint baseTableName=oa_token, constraintName=fk_user_token, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','ahmed.kasim','../../../../lib/service-context/_liquibase/changes/changeset-2025-06-25.xml','2026-07-17 00:09:57',3,'EXECUTED','9:cda0617c75b7fd5cd3f0ab2a549cfa2e','createTable tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','ahmed.kasim','../../../../lib/service-context/_liquibase/changes/changeset-2025-06-25.xml','2026-07-17 00:09:57',4,'EXECUTED','9:b87216be6ab5635828e64683afe8ef2f','createTable tableName=sc_event','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-14.xml','2026-07-17 00:09:57',5,'EXECUTED','9:84397c736b9ca1dffb07c3dbe07fde6f','createTable tableName=fl_domain_config; addForeignKeyConstraint baseTableName=fl_domain_config, constraintName=fk_fl_file_sc_domain, referencedTableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-14.xml','2026-07-17 00:09:58',6,'EXECUTED','9:7298b1c6d4c356283285f57641430d79','createTable tableName=fl_file; addForeignKeyConstraint baseTableName=fl_file, constraintName=fk_fl_file_domain_config, referencedTableName=fl_domain_config; addForeignKeyConstraint baseTableName=fl_file, constraintName=fk_fl_file_created_by_id, re...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-14.xml','2026-07-17 00:09:58',7,'EXECUTED','9:0ec8cf65135ef5e4d98b90e7ade64dd1','createTable tableName=fl_file_version; addForeignKeyConstraint baseTableName=fl_file_version, constraintName=fk_file_version_fl_file, referencedTableName=fl_file; addForeignKeyConstraint baseTableName=fl_file_version, constraintName=fk_file_versio...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('4','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-07-17 00:09:59',8,'EXECUTED','9:f4e54597deb8fce71cc7a2287345fa6d','dropNotNullConstraint columnName=created_on, tableName=fl_file; dropNotNullConstraint columnName=created_by_id, tableName=fl_file; dropNotNullConstraint columnName=last_modified_on, tableName=fl_file; dropNotNullConstraint columnName=last_modified...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('5','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-07-17 00:09:59',9,'EXECUTED','9:f7b62bcf43283f4f16f716d289358919','dropNotNullConstraint columnName=last_modified_on, tableName=fl_domain_config; dropNotNullConstraint columnName=last_modified_by_id, tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('6','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-07-17 00:09:59',10,'EXECUTED','9:fdfa875c087f2379e77d4f2356290644','addColumn tableName=fl_file_version','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('7','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-07-17 00:09:59',11,'EXECUTED','9:4e94b1af6089539379e2673d0efff35b','dropNotNullConstraint columnName=created_on, tableName=fl_file_version; dropNotNullConstraint columnName=created_by_id, tableName=fl_file_version; dropNotNullConstraint columnName=version, tableName=fl_file_version; dropNotNullConstraint columnNam...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('9','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-21.xml','2026-07-17 00:09:59',12,'EXECUTED','9:c0b8e05cfea4728d64949ac03f319ed9','dropColumn columnName=original_filename, tableName=fl_file_version','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('10','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-22.xml','2026-07-17 00:09:59',13,'EXECUTED','9:312821320d6f1ed4eab4e0fd0ec77a3b','createTable tableName=fl_daily_counter; addDefaultValue columnName=count, tableName=fl_daily_counter; insert tableName=fl_daily_counter','Creates daily_counter table for tracking file ID generation sequence',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('11','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-07-17 00:09:59',14,'EXECUTED','9:414dfde4c7f20e0e885bcfea621ac747','addColumn tableName=fl_file_version','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('12','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-07-17 00:10:00',15,'EXECUTED','9:98b56347dee4602073b9015f5888e9d9','addNotNullConstraint columnName=domain_id, tableName=fl_file; addNotNullConstraint columnName=fid, tableName=fl_file; addNotNullConstraint columnName=version, tableName=fl_file_version; addNotNullConstraint columnName=size, tableName=fl_file_versi...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('13','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-07-17 00:10:00',16,'EXECUTED','9:b1e48be534377a65f2662c744e4046af','addDefaultValue columnName=created_on, tableName=fl_file; addDefaultValue columnName=last_modified_on, tableName=fl_file; addDefaultValue columnName=last_modified_on, tableName=fl_domain_config; addDefaultValue columnName=created_on, tableName=fl_...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('14','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-07-17 00:10:00',17,'EXECUTED','9:0866f6f7291bffc0663d549a6258c1ba','dropColumn columnName=title, tableName=fl_file','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('11','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-08-27.xml','2026-07-17 00:10:00',18,'EXECUTED','9:fcf107f65a9a29d71e0b40513bad5fde','addColumn tableName=fl_domain_config','Add label column to sc_domain table',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('12','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-27.xml','2026-07-17 00:10:00',19,'EXECUTED','9:2ed0032d815e16027c70a5fbb37dc7b8','modifyDataType columnName=max_size, tableName=fl_domain_config','update max_size type in sc_domain table',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('13','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-31.xml','2026-07-17 00:10:00',20,'EXECUTED','9:963c346fe37c3dc1e1bc003126dba761','dropTable tableName=fl_daily_counter','Drop dailyCounter table',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('14','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-09-15.xml','2026-07-17 00:10:00',21,'EXECUTED','9:4b5d71247f06d2eb4e7fae6e954fed61','createTable tableName=fl_daily_counter; insert tableName=fl_daily_counter','Recreates daily_counter table for tracking file ID generation sequence',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('15','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-09-15.xml','2026-07-17 00:10:00',22,'EXECUTED','9:492086221e8748807c9f56f98b78b181','dropColumn columnName=last_modified_on, tableName=fl_domain_config; dropColumn columnName=last_modified_by_id, tableName=fl_domain_config','Remove last_modified_on and last_modified_by_id columns from sc_domain table',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('16','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-09-15.xml','2026-07-17 00:10:00',23,'EXECUTED','9:2d43fd94a91d4a32e6db756deb24fb16','addColumn tableName=fl_file','Add entity_id column to fl_file table to track entity relationships',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('17','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-09-18.xml','2026-07-17 00:10:00',24,'EXECUTED','9:bebaeb30ef0322c094b3ce267ddef8b1','renameColumn newColumnName=last_modified_on, oldColumnName=last_updated, tableName=fl_daily_counter','Rename last_updated to last_modified_on in daily_counter table',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('11','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-09-19.xml','2026-07-17 00:10:00',25,'EXECUTED','9:10562be79986da013930dfc6dc339755','addColumn tableName=fl_domain_config; addColumn tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','shadhd.abdelnaby','../../../service/file/_liquibase/changes/changeset-2025-09-22.xml','2026-07-17 00:10:01',26,'EXECUTED','9:402e73149e442e708563b6f24d0bfbcf','dropNotNullConstraint columnName=last_modified_on, tableName=fl_domain_config; dropNotNullConstraint columnName=last_modified_by_id, tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('12','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-09-23.xml','2026-07-17 00:10:01',27,'EXECUTED','9:5806be75dd82cd5227a9a10afcf8c5a3','modifyDataType columnName=last_modified_on, tableName=fl_domain_config; modifyDataType columnName=last_modified_by_id, tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-07-17 00:10:01',28,'EXECUTED','9:861a897b4ea15d2ee55460070cf385db','insert tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-07-17 00:10:01',29,'EXECUTED','9:03beab13c19530966460f40158958a38','insert tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','alaa.esam','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-07-17 00:10:01',30,'EXECUTED','9:fee17aa74869d116a52995b2d5de713b','insert tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('4','alaa.esam','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-07-17 00:10:01',31,'EXECUTED','9:81ee2be8b8b536cc02fa937cfe4134bc','insert tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/file/_liquibase/changes/employee/changeset-2026-06-12.xml','2026-07-17 00:10:01',32,'EXECUTED','9:99794ab794ecd3b5e44475201d939f47','insert tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','alaa.esam','../../../service/file/_liquibase/changes/employee/changeset-2026-06-12.xml','2026-07-17 00:10:01',33,'EXECUTED','9:9cee499d20a01de6248588d7dd2cfa3e','insert tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/department/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:01',34,'EXECUTED','9:cea9553c5a15f8a7f3a67c346a8c59f9','createTable tableName=oa_department; addForeignKeyConstraint baseTableName=oa_department, constraintName=fk_department_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_department, constraintName=fk_department_modif...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/course/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:02',35,'EXECUTED','9:e0ecf71c3e761c1ac277e4864b79c681','createTable tableName=oa_course; addForeignKeyConstraint baseTableName=oa_course, constraintName=fk_course_department, referencedTableName=oa_department; addForeignKeyConstraint baseTableName=oa_course, constraintName=fk_course_created_by, referen...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:02',36,'EXECUTED','9:d3f2687a71d9be84fc13cc07aa102fcb','createTable tableName=oa_employee; addForeignKeyConstraint baseTableName=oa_employee, constraintName=fk_employee_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_employee, constraintName=fk_employee_modified_by, re...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:02',37,'EXECUTED','9:038ef54a498cd076fdcde8f48566b03a','createTable tableName=oa_employee_contact; addForeignKeyConstraint baseTableName=oa_employee_contact, constraintName=fk_emp_contact_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_employee_contact, constraintNam...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:02',38,'EXECUTED','9:49e75465206a4410b2ac361269507b89','createTable tableName=oa_employee_department; addForeignKeyConstraint baseTableName=oa_employee_department, constraintName=fk_employee_department_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_employee_department...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:03',39,'EXECUTED','9:62091dbdd906aa6a57ae9782cc90a506','createTable tableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee, constraintName=fk_trainee_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_trainee, constraintName=fk_trainee_modified_by, referen...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:03',40,'EXECUTED','9:579445041b0f04e4be96ca5a45f72dcf','createTable tableName=oa_trainee_contact; addForeignKeyConstraint baseTableName=oa_trainee_contact, constraintName=fk_trainee_contact_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee_contact, constraintName...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:04',41,'EXECUTED','9:0075ef993dc44cf81cfee71cd605129d','createTable tableName=oa_trainee_certificate; addForeignKeyConstraint baseTableName=oa_trainee_certificate, constraintName=fk_certificate_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee_certificate, constr...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('4','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:04',42,'EXECUTED','9:48d3a36f152e91d5ca964ba06a41fa78','createTable tableName=oa_health_condition; addForeignKeyConstraint baseTableName=oa_health_condition, constraintName=fk_health_condition_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_health_condition, constraint...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/enrollment/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:04',43,'EXECUTED','9:884999945b11c5e2d78ae1c98e8f3ab9','createTable tableName=oa_enrollment_type','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/enrollment/_liquibase/changes/changeset-2026-05-24.xml','2026-07-17 00:10:05',44,'EXECUTED','9:22f915cb17c465b01e438eb845e750a1','createTable tableName=oa_enrollment; addUniqueConstraint constraintName=uq_trainee_course, tableName=oa_enrollment; addForeignKeyConstraint baseTableName=oa_enrollment, constraintName=fk_enrollment_type, referencedTableName=oa_enrollment_type; add...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml','2026-07-17 00:10:05',45,'EXECUTED','9:5738430842b260bebfb46ef76ca87861','createTable tableName=oa_payment_method','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml','2026-07-17 00:10:05',46,'EXECUTED','9:056ab2d1aeda8318a45a98036cf94420','createTable tableName=oa_enrollment_payment; addForeignKeyConstraint baseTableName=oa_enrollment_payment, constraintName=fk_enrollment_payment_enrollment, referencedTableName=oa_enrollment; addForeignKeyConstraint baseTableName=oa_enrollment_payme...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml','2026-07-17 00:10:06',47,'EXECUTED','9:5a5c25bb9b58113abd2b342e96b650df','createTable tableName=oa_enrollment_refund; addForeignKeyConstraint baseTableName=oa_enrollment_refund, constraintName=fk_enrollment_refund_enrollment, referencedTableName=oa_enrollment; addForeignKeyConstraint baseTableName=oa_enrollment_refund, ...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/expenses/changeset-2026-05-24.xml','2026-07-17 00:10:06',48,'EXECUTED','9:eadcfd45143bb369b0d41eb06a6335e7','createTable tableName=oa_expense_type; addForeignKeyConstraint baseTableName=oa_expense_type, constraintName=fk_expense_type_created_by, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/expenses/changeset-2026-05-24.xml','2026-07-17 00:10:07',49,'EXECUTED','9:919e0958fbbd74a16da34846bd8f275c','createTable tableName=oa_expense; addForeignKeyConstraint baseTableName=oa_expense, constraintName=fk_expense_payment_method, referencedTableName=oa_payment_method; addForeignKeyConstraint baseTableName=oa_expense, constraintName=fk_expense_create...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/salariesAndIncentives/changeset-2026-05-25.xml','2026-07-17 00:10:07',50,'EXECUTED','9:02dd52195fc3d79322430883128dc3e7','createTable tableName=oa_salary_incentive; addForeignKeyConstraint baseTableName=oa_salary_incentive, constraintName=fk_salary_incentive_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_salary_incentive, constrai...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/salaryDeduction/changeset-2026-05-25.xml','2026-07-17 00:10:07',51,'EXECUTED','9:69752b48d8b12f8a1e4325361893f568','createTable tableName=oa_salary_deduction; addForeignKeyConstraint baseTableName=oa_salary_deduction, constraintName=fk_salary_deduction_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_salary_deduction, constrai...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/place/_liquibase/changes/changeset-2026-05-26.xml','2026-07-17 00:10:08',52,'EXECUTED','9:a37ab0b2f42a57658e1e5a703809e8b0','createTable tableName=oa_place; addForeignKeyConstraint baseTableName=oa_place, constraintName=fk_place_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_place, constraintName=fk_place_modified_by, referencedTableNa...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml','2026-07-17 00:10:08',53,'EXECUTED','9:e22678bec95adeb895d560d4bf55d895','createTable tableName=oa_employee_attendance; addForeignKeyConstraint baseTableName=oa_employee_attendance, constraintName=fk_employee_attendance_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_employee_attendan...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml','2026-07-17 00:10:08',54,'EXECUTED','9:311699b2c40a165159a876917704c23f','createTable tableName=oa_course_session; addUniqueConstraint constraintName=uq_employee_course, tableName=oa_course_session; addForeignKeyConstraint baseTableName=oa_course_session, constraintName=fk_session_created_by, referencedTableName=oa_user...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml','2026-07-17 00:10:09',55,'EXECUTED','9:3d3e7b15dcbd9609772033e66c87441e','createTable tableName=oa_trainer_course; addForeignKeyConstraint baseTableName=oa_trainer_course, constraintName=fk_trainer_course_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_trainer_course, constraintName=f...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/trainee/_liquibase/changes/attendance/changeset-2026-05-26.xml','2026-07-17 00:10:09',56,'EXECUTED','9:0d0335cc2f589fc1f6a88296deb95e38','createTable tableName=oa_trainee_attendance; addForeignKeyConstraint baseTableName=oa_trainee_attendance, constraintName=fk_trainee_attendance_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee_attendance, co...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/place/changeset-2026-05-26.xml','2026-07-17 00:10:09',57,'EXECUTED','9:c9d90b99fe27c17a0318f002c31f0b9d','createTable tableName=oa_rent_type; addForeignKeyConstraint baseTableName=oa_rent_type, constraintName=fk_rent_type_created_by, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/place/changeset-2026-05-26.xml','2026-07-17 00:10:10',58,'EXECUTED','9:be723aadcb7f454c8db4fc35f42af9ef','createTable tableName=oa_place_rent_payment; addForeignKeyConstraint baseTableName=oa_place_rent_payment, constraintName=fk_place_rent_payment_rent_type, referencedTableName=oa_rent_type; addForeignKeyConstraint baseTableName=oa_place_rent_payment...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-06-21.xml','2026-07-17 00:10:10',59,'EXECUTED','9:dd6c282f451da5d20495078aa5f3e678','addColumn tableName=oa_course_session','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-06-23.xml','2026-07-17 00:10:10',60,'EXECUTED','9:feaeaf8ceb0781de70f38bd27b1caf72','dropUniqueConstraint constraintName=uq_employee_course, tableName=oa_course_session; addUniqueConstraint constraintName=uq_employee_course_session_day, tableName=oa_course_session','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','changes/common/changeset-2026-06-28.xml','2026-07-17 00:10:10',61,'EXECUTED','9:a5ac65a1eb0153b51bc7dd88af949217','createTable tableName=oa_constant; addForeignKeyConstraint baseTableName=oa_constant, constraintName=fk_constant_created_by, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','changes/common/changeset-2026-06-28.xml','2026-07-17 00:10:10',62,'EXECUTED','9:bc756163f110256cec930e3879f69981','addColumn tableName=oa_constant','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-07-01-.xml','2026-07-17 00:10:11',63,'EXECUTED','9:12b2844f0b934f52166b564a33a88366','createTable tableName=oa_trainer_course_session; addForeignKeyConstraint baseTableName=oa_trainer_course_session, constraintName=fk_trainer_course_session_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_trainer_...','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',64,'EXECUTED','9:406d7978a1134c3047c95ac692802587','createIndex indexName=idx_session_employee_day_time, tableName=oa_course_session','Add composite index for scheduling conflict detection (employee + day + time)',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',65,'EXECUTED','9:140087e51c3b2568bb4a4b0c271adde8','createIndex indexName=idx_session_course_status, tableName=oa_course_session','Add index for active course sessions per course',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',66,'EXECUTED','9:3d7cb701db6399b944c4063a962d46c1','createIndex indexName=idx_course_session_course_id, tableName=oa_course_session','Add index on course_id for faster session lookups',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('4','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',67,'EXECUTED','9:a8645c9d3078b3c856e38cd23b68b548','createIndex indexName=idx_course_session_employee_id, tableName=oa_course_session','Add index on employee_id for trainer schedule lookups',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('5','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',68,'EXECUTED','9:cd68f77eb4cf53dd54fcc11153f4e83d','createIndex indexName=idx_course_session_place_id, tableName=oa_course_session','Add index on place_id for venue-based queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('6','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',69,'EXECUTED','9:1010db11d9a6aaaba64f2f6b7630f9aa','createIndex indexName=idx_enrollment_trainee_status, tableName=oa_enrollment','Add composite index for trainee enrollments with status',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('7','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',70,'EXECUTED','9:e0ee5e30cbd18423c47c10cbff94c4d4','createIndex indexName=idx_enrollment_course_dates, tableName=oa_enrollment','Add composite index for course enrollments with date range',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('8','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',71,'EXECUTED','9:7e17b5095897e07b717e0b87d8c4dd91','createIndex indexName=idx_enrollment_payment_status, tableName=oa_enrollment','Add index for payment status financial reporting',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('9','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',72,'EXECUTED','9:bfe3c147740b8d1f3d47e283548802ce','createIndex indexName=idx_enrollment_trainer_active, tableName=oa_enrollment','Add index for trainer workload management',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('10','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',73,'EXECUTED','9:4a38f88b9551c8e68fba26460accd0a2','createIndex indexName=idx_enrollment_created_active, tableName=oa_enrollment','Add index for enrollment dashboard count queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('11','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',74,'EXECUTED','9:ed5bdee7013fc887b7a599282b4eec3b','createIndex indexName=idx_enrollment_created_status, tableName=oa_enrollment','Add index for enrollment status dashboard queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('12','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:11',75,'EXECUTED','9:bb4699c8215bbc6333e7b8bef421fc8d','createIndex indexName=idx_attendance_trainee_date, tableName=oa_trainee_attendance','Add composite index for trainee attendance history by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('13','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',76,'EXECUTED','9:a34a373da948c62c8ccd906037afd9c2','createIndex indexName=idx_attendance_session_status, tableName=oa_trainee_attendance','Add index for session attendance summaries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('14','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',77,'EXECUTED','9:dcd62b76a0f9c1a6d6a1dcd7936e4c38','createIndex indexName=idx_attendance_date_status, tableName=oa_trainee_attendance','Add index for date range attendance reports',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('15','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',78,'EXECUTED','9:28bddf3ebb9daad7aa6b668a9dd78240','createIndex indexName=idx_employee_contact_value, tableName=oa_employee_contact','Add index for contact value searches (phone/email lookups)',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('16','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',79,'EXECUTED','9:a3061563bd35612e520df5bcda9c13b7','createIndex indexName=idx_employee_contact_type, tableName=oa_employee_contact','Add composite index for employee contacts by type',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('17','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',80,'EXECUTED','9:c44886d44aee8881be6ff42fd3afe71b','createIndex indexName=idx_trainee_contact_value, tableName=oa_trainee_contact','Add index for trainee contact value searches',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('18','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',81,'EXECUTED','9:2c6119d37bcd64ea5c4df39e3fe6302d','createIndex indexName=idx_trainer_course_employee_course, tableName=oa_trainer_course','Add composite index for trainer-course assignments',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('19','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',82,'EXECUTED','9:ade72bbd7deae4e803f3a2d1442232e7','createIndex indexName=idx_emp_dept_employee_department, tableName=oa_employee_department','Add composite index for department memberships',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('20','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',83,'EXECUTED','9:9944877e52176629d53f221569a184b9','createIndex indexName=idx_course_department_active, tableName=oa_course','Add index for department courses with active status',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('21','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',84,'EXECUTED','9:34a87669463b90d7bdf542e931522c07','createIndex indexName=idx_course_dates_active, tableName=oa_course','Add index for course date range queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('22','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',85,'EXECUTED','9:a601c04dd6a4cdf4eca707fc078d48c9','createIndex indexName=idx_employee_active, tableName=oa_employee','Add index for active employee lookups',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('23','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',86,'EXECUTED','9:c98ee35ac3552307500c9d0cba2a3903','createIndex indexName=idx_employee_type_active, tableName=oa_employee','Add composite index for employee type queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('24','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',87,'EXECUTED','9:285a22ca2aca57ce24ea00c0ace63aab','createIndex indexName=idx_trainee_active, tableName=oa_trainee','Add index for active trainee lookups',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('25','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',88,'EXECUTED','9:21d11fa9cee88b1f259e29e1cad69d21','createIndex indexName=idx_emp_attendance_employee_date, tableName=oa_employee_attendance','Add index for employee attendance by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('26','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',89,'EXECUTED','9:07ff2f1664568eedc6108ff778ab8395','createIndex indexName=idx_enrollment_payment_date, tableName=oa_enrollment_payment','Add index for enrollment payments by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('27','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',90,'EXECUTED','9:311ae210f4ed17f6e266363bebdb8c27','createIndex indexName=idx_enrollment_payment_status, tableName=oa_enrollment_payment','Add index for payment status queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('28','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',91,'EXECUTED','9:bdd2cfc1539c38c10f40a9a213702ef8','createIndex indexName=idx_salary_incentive_emp_date, tableName=oa_salary_incentive','Add index for employee salary transactions by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('29','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',92,'EXECUTED','9:6dcda3ee220a3665823af2c4bc2b4e18','createIndex indexName=idx_salary_incentive_date_type, tableName=oa_salary_incentive','Add index for salary reporting with type and date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('30','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',93,'EXECUTED','9:620e09b8b6786e01eee64cc5f7c5be1a','createIndex indexName=idx_salary_incentive_emp_type_date, tableName=oa_salary_incentive','Add index for employee salary type reporting',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('31','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:12',94,'EXECUTED','9:3d713ed2091a9a7ea455afd6470aa725','createIndex indexName=idx_salary_deduction_emp_date, tableName=oa_salary_deduction','Add index for employee deductions by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('32','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:13',95,'EXECUTED','9:af52805c2ed0bc03389cd643d51d4f76','createIndex indexName=idx_expense_date, tableName=oa_expense','Add index for expense date range queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('33','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:13',96,'EXECUTED','9:9e63dbfdd94827ed3a421eeeb7a19956','createIndex indexName=idx_expense_type, tableName=oa_expense','Add index for expense type queries',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('34','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:13',97,'EXECUTED','9:45748c8dcf2ff8f387a1d4e91362275d','createIndex indexName=idx_expense_date_deleted, tableName=oa_expense','Add index for expense date and deleted status',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('35','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:13',98,'EXECUTED','9:fe7de5b2309462da1a96ef544186a44d','createIndex indexName=idx_place_rent_payment_date, tableName=oa_place_rent_payment','Add index for place rent payments by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('36','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:13',99,'EXECUTED','9:60e1b4eda627ace352c6d00832ee2b0b','createIndex indexName=idx_place_rent_payment_date_deleted, tableName=oa_place_rent_payment','Add index for rent payment with deleted status',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('37','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-07-17 00:10:13',100,'EXECUTED','9:586d514963a49cf84c7ec1bb48a49fb4','createIndex indexName=idx_enrollment_refund_date, tableName=oa_enrollment_refund','Add index for enrollment refunds by date',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/place/changeset-2026-07-15.xml','2026-07-17 00:10:13',101,'EXECUTED','9:91150fed39df7d1ada0d8211957e284a','addColumn tableName=oa_rent_type','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-07-15.xml','2026-07-17 00:10:13',102,'EXECUTED','9:8e194f1648f0d5ae9117d3e0504f6019','addColumn tableName=oa_employee','',NULL,'4.27.0',NULL,NULL,'4236197021');
-INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/enrollment/_liquibase/changes/changeset-2026-07-15.xml','2026-07-17 00:10:13',103,'EXECUTED','9:a6eb227730d24cd61335cee88be36fc8','addColumn tableName=oa_enrollment','',NULL,'4.27.0',NULL,NULL,'4236197021');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/user/_liquibase/changes/changeset-2026-04-03.xml','2026-09-11 12:35:15',1,'EXECUTED','9:158ac77f1bd53f8b1d3832165919881a','createTable tableName=oa_user; addForeignKeyConstraint baseTableName=oa_user, constraintName=fk_user_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_user, constraintName=fk_user_last_modified_by_id, referencedTabl...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/user/_liquibase/changes/changeset-2026-04-04.xml','2026-09-11 12:35:15',2,'EXECUTED','9:2ecfc1b06024f4972966d17ec506250b','createTable tableName=oa_token; addForeignKeyConstraint baseTableName=oa_token, constraintName=fk_user_token, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','ahmed.kasim','../../../../lib/service-context/_liquibase/changes/changeset-2025-06-25.xml','2026-09-11 12:35:15',3,'EXECUTED','9:cda0617c75b7fd5cd3f0ab2a549cfa2e','createTable tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','ahmed.kasim','../../../../lib/service-context/_liquibase/changes/changeset-2025-06-25.xml','2026-09-11 12:35:15',4,'EXECUTED','9:b87216be6ab5635828e64683afe8ef2f','createTable tableName=sc_event','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-14.xml','2026-09-11 12:35:16',5,'EXECUTED','9:84397c736b9ca1dffb07c3dbe07fde6f','createTable tableName=fl_domain_config; addForeignKeyConstraint baseTableName=fl_domain_config, constraintName=fk_fl_file_sc_domain, referencedTableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-14.xml','2026-09-11 12:35:17',6,'EXECUTED','9:7298b1c6d4c356283285f57641430d79','createTable tableName=fl_file; addForeignKeyConstraint baseTableName=fl_file, constraintName=fk_fl_file_domain_config, referencedTableName=fl_domain_config; addForeignKeyConstraint baseTableName=fl_file, constraintName=fk_fl_file_created_by_id, re...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-14.xml','2026-09-11 12:35:17',7,'EXECUTED','9:0ec8cf65135ef5e4d98b90e7ade64dd1','createTable tableName=fl_file_version; addForeignKeyConstraint baseTableName=fl_file_version, constraintName=fk_file_version_fl_file, referencedTableName=fl_file; addForeignKeyConstraint baseTableName=fl_file_version, constraintName=fk_file_versio...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('4','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-09-11 12:35:19',8,'EXECUTED','9:f4e54597deb8fce71cc7a2287345fa6d','dropNotNullConstraint columnName=created_on, tableName=fl_file; dropNotNullConstraint columnName=created_by_id, tableName=fl_file; dropNotNullConstraint columnName=last_modified_on, tableName=fl_file; dropNotNullConstraint columnName=last_modified...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('5','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-09-11 12:35:20',9,'EXECUTED','9:f7b62bcf43283f4f16f716d289358919','dropNotNullConstraint columnName=last_modified_on, tableName=fl_domain_config; dropNotNullConstraint columnName=last_modified_by_id, tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('6','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-09-11 12:35:20',10,'EXECUTED','9:fdfa875c087f2379e77d4f2356290644','addColumn tableName=fl_file_version','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('7','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-18.xml','2026-09-11 12:35:20',11,'EXECUTED','9:4e94b1af6089539379e2673d0efff35b','dropNotNullConstraint columnName=created_on, tableName=fl_file_version; dropNotNullConstraint columnName=created_by_id, tableName=fl_file_version; dropNotNullConstraint columnName=version, tableName=fl_file_version; dropNotNullConstraint columnNam...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('9','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-21.xml','2026-09-11 12:35:20',12,'EXECUTED','9:c0b8e05cfea4728d64949ac03f319ed9','dropColumn columnName=original_filename, tableName=fl_file_version','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('10','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-22.xml','2026-09-11 12:35:20',13,'EXECUTED','9:312821320d6f1ed4eab4e0fd0ec77a3b','createTable tableName=fl_daily_counter; addDefaultValue columnName=count, tableName=fl_daily_counter; insert tableName=fl_daily_counter','Creates daily_counter table for tracking file ID generation sequence',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('11','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-09-11 12:35:21',14,'EXECUTED','9:414dfde4c7f20e0e885bcfea621ac747','addColumn tableName=fl_file_version','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('12','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-09-11 12:35:22',15,'EXECUTED','9:98b56347dee4602073b9015f5888e9d9','addNotNullConstraint columnName=domain_id, tableName=fl_file; addNotNullConstraint columnName=fid, tableName=fl_file; addNotNullConstraint columnName=version, tableName=fl_file_version; addNotNullConstraint columnName=size, tableName=fl_file_versi...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('13','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-09-11 12:35:22',16,'EXECUTED','9:b1e48be534377a65f2662c744e4046af','addDefaultValue columnName=created_on, tableName=fl_file; addDefaultValue columnName=last_modified_on, tableName=fl_file; addDefaultValue columnName=last_modified_on, tableName=fl_domain_config; addDefaultValue columnName=created_on, tableName=fl_...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('14','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-23.xml','2026-09-11 12:35:22',17,'EXECUTED','9:0866f6f7291bffc0663d549a6258c1ba','dropColumn columnName=title, tableName=fl_file','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('11','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-08-27.xml','2026-09-11 12:35:22',18,'EXECUTED','9:fcf107f65a9a29d71e0b40513bad5fde','addColumn tableName=fl_domain_config','Add label column to sc_domain table',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('12','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-27.xml','2026-09-11 12:35:22',19,'EXECUTED','9:2ed0032d815e16027c70a5fbb37dc7b8','modifyDataType columnName=max_size, tableName=fl_domain_config','update max_size type in sc_domain table',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('13','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-08-31.xml','2026-09-11 12:35:22',20,'EXECUTED','9:963c346fe37c3dc1e1bc003126dba761','dropTable tableName=fl_daily_counter','Drop dailyCounter table',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('14','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-09-15.xml','2026-09-11 12:35:22',21,'EXECUTED','9:4b5d71247f06d2eb4e7fae6e954fed61','createTable tableName=fl_daily_counter; insert tableName=fl_daily_counter','Recreates daily_counter table for tracking file ID generation sequence',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('15','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-09-15.xml','2026-09-11 12:35:23',22,'EXECUTED','9:492086221e8748807c9f56f98b78b181','dropColumn columnName=last_modified_on, tableName=fl_domain_config; dropColumn columnName=last_modified_by_id, tableName=fl_domain_config','Remove last_modified_on and last_modified_by_id columns from sc_domain table',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('16','mohamed.ehab','../../../service/file/_liquibase/changes/changeset-2025-09-15.xml','2026-09-11 12:35:23',23,'EXECUTED','9:2d43fd94a91d4a32e6db756deb24fb16','addColumn tableName=fl_file','Add entity_id column to fl_file table to track entity relationships',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('17','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-09-18.xml','2026-09-11 12:35:23',24,'EXECUTED','9:bebaeb30ef0322c094b3ce267ddef8b1','renameColumn newColumnName=last_modified_on, oldColumnName=last_updated, tableName=fl_daily_counter','Rename last_updated to last_modified_on in daily_counter table',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('11','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-09-19.xml','2026-09-11 12:35:24',25,'EXECUTED','9:10562be79986da013930dfc6dc339755','addColumn tableName=fl_domain_config; addColumn tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','shadhd.abdelnaby','../../../service/file/_liquibase/changes/changeset-2025-09-22.xml','2026-09-11 12:35:24',26,'EXECUTED','9:402e73149e442e708563b6f24d0bfbcf','dropNotNullConstraint columnName=last_modified_on, tableName=fl_domain_config; dropNotNullConstraint columnName=last_modified_by_id, tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('12','mahmoud.zain','../../../service/file/_liquibase/changes/changeset-2025-09-23.xml','2026-09-11 12:35:24',27,'EXECUTED','9:5806be75dd82cd5227a9a10afcf8c5a3','modifyDataType columnName=last_modified_on, tableName=fl_domain_config; modifyDataType columnName=last_modified_by_id, tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-09-11 12:35:24',28,'EXECUTED','9:861a897b4ea15d2ee55460070cf385db','insert tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-09-11 12:35:24',29,'EXECUTED','9:03beab13c19530966460f40158958a38','insert tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','alaa.esam','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-09-11 12:35:24',30,'EXECUTED','9:fee17aa74869d116a52995b2d5de713b','insert tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('4','alaa.esam','../../../service/file/_liquibase/changes/trainee/changeset-2025-11-7.xml','2026-09-11 12:35:24',31,'EXECUTED','9:81ee2be8b8b536cc02fa937cfe4134bc','insert tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/file/_liquibase/changes/employee/changeset-2026-06-12.xml','2026-09-11 12:35:24',32,'EXECUTED','9:99794ab794ecd3b5e44475201d939f47','insert tableName=sc_domain','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','alaa.esam','../../../service/file/_liquibase/changes/employee/changeset-2026-06-12.xml','2026-09-11 12:35:24',33,'EXECUTED','9:9cee499d20a01de6248588d7dd2cfa3e','insert tableName=fl_domain_config','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/department/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:25',34,'EXECUTED','9:cea9553c5a15f8a7f3a67c346a8c59f9','createTable tableName=oa_department; addForeignKeyConstraint baseTableName=oa_department, constraintName=fk_department_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_department, constraintName=fk_department_modif...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/course/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:26',35,'EXECUTED','9:e0ecf71c3e761c1ac277e4864b79c681','createTable tableName=oa_course; addForeignKeyConstraint baseTableName=oa_course, constraintName=fk_course_department, referencedTableName=oa_department; addForeignKeyConstraint baseTableName=oa_course, constraintName=fk_course_created_by, referen...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:26',36,'EXECUTED','9:d3f2687a71d9be84fc13cc07aa102fcb','createTable tableName=oa_employee; addForeignKeyConstraint baseTableName=oa_employee, constraintName=fk_employee_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_employee, constraintName=fk_employee_modified_by, re...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:27',37,'EXECUTED','9:038ef54a498cd076fdcde8f48566b03a','createTable tableName=oa_employee_contact; addForeignKeyConstraint baseTableName=oa_employee_contact, constraintName=fk_emp_contact_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_employee_contact, constraintNam...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:27',38,'EXECUTED','9:49e75465206a4410b2ac361269507b89','createTable tableName=oa_employee_department; addForeignKeyConstraint baseTableName=oa_employee_department, constraintName=fk_employee_department_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_employee_department...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:27',39,'EXECUTED','9:62091dbdd906aa6a57ae9782cc90a506','createTable tableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee, constraintName=fk_trainee_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_trainee, constraintName=fk_trainee_modified_by, referen...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:28',40,'EXECUTED','9:579445041b0f04e4be96ca5a45f72dcf','createTable tableName=oa_trainee_contact; addForeignKeyConstraint baseTableName=oa_trainee_contact, constraintName=fk_trainee_contact_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee_contact, constraintName...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:28',41,'EXECUTED','9:0075ef993dc44cf81cfee71cd605129d','createTable tableName=oa_trainee_certificate; addForeignKeyConstraint baseTableName=oa_trainee_certificate, constraintName=fk_certificate_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee_certificate, constr...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('4','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:29',42,'EXECUTED','9:48d3a36f152e91d5ca964ba06a41fa78','createTable tableName=oa_health_condition; addForeignKeyConstraint baseTableName=oa_health_condition, constraintName=fk_health_condition_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_health_condition, constraint...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/enrollment/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:29',43,'EXECUTED','9:884999945b11c5e2d78ae1c98e8f3ab9','createTable tableName=oa_enrollment_type','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/enrollment/_liquibase/changes/changeset-2026-05-24.xml','2026-09-11 12:35:29',44,'EXECUTED','9:22f915cb17c465b01e438eb845e750a1','createTable tableName=oa_enrollment; addUniqueConstraint constraintName=uq_trainee_course, tableName=oa_enrollment; addForeignKeyConstraint baseTableName=oa_enrollment, constraintName=fk_enrollment_type, referencedTableName=oa_enrollment_type; add...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml','2026-09-11 12:35:29',45,'EXECUTED','9:5738430842b260bebfb46ef76ca87861','createTable tableName=oa_payment_method','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml','2026-09-11 12:35:30',46,'EXECUTED','9:056ab2d1aeda8318a45a98036cf94420','createTable tableName=oa_enrollment_payment; addForeignKeyConstraint baseTableName=oa_enrollment_payment, constraintName=fk_enrollment_payment_enrollment, referencedTableName=oa_enrollment; addForeignKeyConstraint baseTableName=oa_enrollment_payme...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/financial/_liquibase/changes/enrollmentPayment/changeset-2026-05-24.xml','2026-09-11 12:35:30',47,'EXECUTED','9:5a5c25bb9b58113abd2b342e96b650df','createTable tableName=oa_enrollment_refund; addForeignKeyConstraint baseTableName=oa_enrollment_refund, constraintName=fk_enrollment_refund_enrollment, referencedTableName=oa_enrollment; addForeignKeyConstraint baseTableName=oa_enrollment_refund, ...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/expenses/changeset-2026-05-24.xml','2026-09-11 12:35:31',48,'EXECUTED','9:eadcfd45143bb369b0d41eb06a6335e7','createTable tableName=oa_expense_type; addForeignKeyConstraint baseTableName=oa_expense_type, constraintName=fk_expense_type_created_by, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/expenses/changeset-2026-05-24.xml','2026-09-11 12:35:31',49,'EXECUTED','9:919e0958fbbd74a16da34846bd8f275c','createTable tableName=oa_expense; addForeignKeyConstraint baseTableName=oa_expense, constraintName=fk_expense_payment_method, referencedTableName=oa_payment_method; addForeignKeyConstraint baseTableName=oa_expense, constraintName=fk_expense_create...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/salariesAndIncentives/changeset-2026-05-25.xml','2026-09-11 12:35:32',50,'EXECUTED','9:02dd52195fc3d79322430883128dc3e7','createTable tableName=oa_salary_incentive; addForeignKeyConstraint baseTableName=oa_salary_incentive, constraintName=fk_salary_incentive_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_salary_incentive, constrai...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/salaryDeduction/changeset-2026-05-25.xml','2026-09-11 12:35:32',51,'EXECUTED','9:69752b48d8b12f8a1e4325361893f568','createTable tableName=oa_salary_deduction; addForeignKeyConstraint baseTableName=oa_salary_deduction, constraintName=fk_salary_deduction_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_salary_deduction, constrai...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/place/_liquibase/changes/changeset-2026-05-26.xml','2026-09-11 12:35:32',52,'EXECUTED','9:a37ab0b2f42a57658e1e5a703809e8b0','createTable tableName=oa_place; addForeignKeyConstraint baseTableName=oa_place, constraintName=fk_place_created_by, referencedTableName=oa_user; addForeignKeyConstraint baseTableName=oa_place, constraintName=fk_place_modified_by, referencedTableNa...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml','2026-09-11 12:35:32',53,'EXECUTED','9:e22678bec95adeb895d560d4bf55d895','createTable tableName=oa_employee_attendance; addForeignKeyConstraint baseTableName=oa_employee_attendance, constraintName=fk_employee_attendance_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_employee_attendan...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml','2026-09-11 12:35:33',54,'EXECUTED','9:311699b2c40a165159a876917704c23f','createTable tableName=oa_course_session; addUniqueConstraint constraintName=uq_employee_course, tableName=oa_course_session; addForeignKeyConstraint baseTableName=oa_course_session, constraintName=fk_session_created_by, referencedTableName=oa_user...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-05-26.xml','2026-09-11 12:35:33',55,'EXECUTED','9:3d3e7b15dcbd9609772033e66c87441e','createTable tableName=oa_trainer_course; addForeignKeyConstraint baseTableName=oa_trainer_course, constraintName=fk_trainer_course_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_trainer_course, constraintName=f...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/trainee/_liquibase/changes/attendance/changeset-2026-05-26.xml','2026-09-11 12:35:34',56,'EXECUTED','9:0d0335cc2f589fc1f6a88296deb95e38','createTable tableName=oa_trainee_attendance; addForeignKeyConstraint baseTableName=oa_trainee_attendance, constraintName=fk_trainee_attendance_trainee, referencedTableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee_attendance, co...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/place/changeset-2026-05-26.xml','2026-09-11 12:35:34',57,'EXECUTED','9:c9d90b99fe27c17a0318f002c31f0b9d','createTable tableName=oa_rent_type; addForeignKeyConstraint baseTableName=oa_rent_type, constraintName=fk_rent_type_created_by, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','../../../service/financial/_liquibase/changes/place/changeset-2026-05-26.xml','2026-09-11 12:35:34',58,'EXECUTED','9:be723aadcb7f454c8db4fc35f42af9ef','createTable tableName=oa_place_rent_payment; addForeignKeyConstraint baseTableName=oa_place_rent_payment, constraintName=fk_place_rent_payment_rent_type, referencedTableName=oa_rent_type; addForeignKeyConstraint baseTableName=oa_place_rent_payment...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-06-21.xml','2026-09-11 12:35:35',59,'EXECUTED','9:dd6c282f451da5d20495078aa5f3e678','addColumn tableName=oa_course_session','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-06-23.xml','2026-09-11 12:35:35',60,'EXECUTED','9:feaeaf8ceb0781de70f38bd27b1caf72','dropUniqueConstraint constraintName=uq_employee_course, tableName=oa_course_session; addUniqueConstraint constraintName=uq_employee_course_session_day, tableName=oa_course_session','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','changes/common/changeset-2026-06-28.xml','2026-09-11 12:35:35',61,'EXECUTED','9:a5ac65a1eb0153b51bc7dd88af949217','createTable tableName=oa_constant; addForeignKeyConstraint baseTableName=oa_constant, constraintName=fk_constant_created_by, referencedTableName=oa_user','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','changes/common/changeset-2026-06-28.xml','2026-09-11 12:35:35',62,'EXECUTED','9:bc756163f110256cec930e3879f69981','addColumn tableName=oa_constant','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-07-01-.xml','2026-09-11 12:35:35',63,'EXECUTED','9:12b2844f0b934f52166b564a33a88366','createTable tableName=oa_trainer_course_session; addForeignKeyConstraint baseTableName=oa_trainer_course_session, constraintName=fk_trainer_course_session_employee, referencedTableName=oa_employee; addForeignKeyConstraint baseTableName=oa_trainer_...','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',64,'EXECUTED','9:406d7978a1134c3047c95ac692802587','createIndex indexName=idx_session_employee_day_time, tableName=oa_course_session','Add composite index for scheduling conflict detection (employee + day + time)',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('2','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',65,'EXECUTED','9:140087e51c3b2568bb4a4b0c271adde8','createIndex indexName=idx_session_course_status, tableName=oa_course_session','Add index for active course sessions per course',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('3','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',66,'EXECUTED','9:3d7cb701db6399b944c4063a962d46c1','createIndex indexName=idx_course_session_course_id, tableName=oa_course_session','Add index on course_id for faster session lookups',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('4','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',67,'EXECUTED','9:a8645c9d3078b3c856e38cd23b68b548','createIndex indexName=idx_course_session_employee_id, tableName=oa_course_session','Add index on employee_id for trainer schedule lookups',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('5','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',68,'EXECUTED','9:cd68f77eb4cf53dd54fcc11153f4e83d','createIndex indexName=idx_course_session_place_id, tableName=oa_course_session','Add index on place_id for venue-based queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('6','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',69,'EXECUTED','9:1010db11d9a6aaaba64f2f6b7630f9aa','createIndex indexName=idx_enrollment_trainee_status, tableName=oa_enrollment','Add composite index for trainee enrollments with status',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('7','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',70,'EXECUTED','9:e0ee5e30cbd18423c47c10cbff94c4d4','createIndex indexName=idx_enrollment_course_dates, tableName=oa_enrollment','Add composite index for course enrollments with date range',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('8','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',71,'EXECUTED','9:7e17b5095897e07b717e0b87d8c4dd91','createIndex indexName=idx_enrollment_payment_status, tableName=oa_enrollment','Add index for payment status financial reporting',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('9','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:35',72,'EXECUTED','9:bfe3c147740b8d1f3d47e283548802ce','createIndex indexName=idx_enrollment_trainer_active, tableName=oa_enrollment','Add index for trainer workload management',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('10','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',73,'EXECUTED','9:4a38f88b9551c8e68fba26460accd0a2','createIndex indexName=idx_enrollment_created_active, tableName=oa_enrollment','Add index for enrollment dashboard count queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('11','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',74,'EXECUTED','9:ed5bdee7013fc887b7a599282b4eec3b','createIndex indexName=idx_enrollment_created_status, tableName=oa_enrollment','Add index for enrollment status dashboard queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('12','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',75,'EXECUTED','9:bb4699c8215bbc6333e7b8bef421fc8d','createIndex indexName=idx_attendance_trainee_date, tableName=oa_trainee_attendance','Add composite index for trainee attendance history by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('13','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',76,'EXECUTED','9:a34a373da948c62c8ccd906037afd9c2','createIndex indexName=idx_attendance_session_status, tableName=oa_trainee_attendance','Add index for session attendance summaries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('14','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',77,'EXECUTED','9:dcd62b76a0f9c1a6d6a1dcd7936e4c38','createIndex indexName=idx_attendance_date_status, tableName=oa_trainee_attendance','Add index for date range attendance reports',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('15','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',78,'EXECUTED','9:28bddf3ebb9daad7aa6b668a9dd78240','createIndex indexName=idx_employee_contact_value, tableName=oa_employee_contact','Add index for contact value searches (phone/email lookups)',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('16','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',79,'EXECUTED','9:a3061563bd35612e520df5bcda9c13b7','createIndex indexName=idx_employee_contact_type, tableName=oa_employee_contact','Add composite index for employee contacts by type',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('17','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',80,'EXECUTED','9:c44886d44aee8881be6ff42fd3afe71b','createIndex indexName=idx_trainee_contact_value, tableName=oa_trainee_contact','Add index for trainee contact value searches',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('18','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',81,'EXECUTED','9:2c6119d37bcd64ea5c4df39e3fe6302d','createIndex indexName=idx_trainer_course_employee_course, tableName=oa_trainer_course','Add composite index for trainer-course assignments',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('19','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',82,'EXECUTED','9:ade72bbd7deae4e803f3a2d1442232e7','createIndex indexName=idx_emp_dept_employee_department, tableName=oa_employee_department','Add composite index for department memberships',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('20','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',83,'EXECUTED','9:9944877e52176629d53f221569a184b9','createIndex indexName=idx_course_department_active, tableName=oa_course','Add index for department courses with active status',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('21','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',84,'EXECUTED','9:34a87669463b90d7bdf542e931522c07','createIndex indexName=idx_course_dates_active, tableName=oa_course','Add index for course date range queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('22','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',85,'EXECUTED','9:a601c04dd6a4cdf4eca707fc078d48c9','createIndex indexName=idx_employee_active, tableName=oa_employee','Add index for active employee lookups',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('23','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',86,'EXECUTED','9:c98ee35ac3552307500c9d0cba2a3903','createIndex indexName=idx_employee_type_active, tableName=oa_employee','Add composite index for employee type queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('24','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',87,'EXECUTED','9:285a22ca2aca57ce24ea00c0ace63aab','createIndex indexName=idx_trainee_active, tableName=oa_trainee','Add index for active trainee lookups',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('25','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',88,'EXECUTED','9:21d11fa9cee88b1f259e29e1cad69d21','createIndex indexName=idx_emp_attendance_employee_date, tableName=oa_employee_attendance','Add index for employee attendance by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('26','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',89,'EXECUTED','9:07ff2f1664568eedc6108ff778ab8395','createIndex indexName=idx_enrollment_payment_date, tableName=oa_enrollment_payment','Add index for enrollment payments by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('27','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',90,'EXECUTED','9:311ae210f4ed17f6e266363bebdb8c27','createIndex indexName=idx_enrollment_payment_status, tableName=oa_enrollment_payment','Add index for payment status queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('28','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:36',91,'EXECUTED','9:bdd2cfc1539c38c10f40a9a213702ef8','createIndex indexName=idx_salary_incentive_emp_date, tableName=oa_salary_incentive','Add index for employee salary transactions by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('29','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',92,'EXECUTED','9:6dcda3ee220a3665823af2c4bc2b4e18','createIndex indexName=idx_salary_incentive_date_type, tableName=oa_salary_incentive','Add index for salary reporting with type and date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('30','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',93,'EXECUTED','9:620e09b8b6786e01eee64cc5f7c5be1a','createIndex indexName=idx_salary_incentive_emp_type_date, tableName=oa_salary_incentive','Add index for employee salary type reporting',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('31','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',94,'EXECUTED','9:3d713ed2091a9a7ea455afd6470aa725','createIndex indexName=idx_salary_deduction_emp_date, tableName=oa_salary_deduction','Add index for employee deductions by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('32','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',95,'EXECUTED','9:af52805c2ed0bc03389cd643d51d4f76','createIndex indexName=idx_expense_date, tableName=oa_expense','Add index for expense date range queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('33','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',96,'EXECUTED','9:9e63dbfdd94827ed3a421eeeb7a19956','createIndex indexName=idx_expense_type, tableName=oa_expense','Add index for expense type queries',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('34','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',97,'EXECUTED','9:45748c8dcf2ff8f387a1d4e91362275d','createIndex indexName=idx_expense_date_deleted, tableName=oa_expense','Add index for expense date and deleted status',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('35','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',98,'EXECUTED','9:fe7de5b2309462da1a96ef544186a44d','createIndex indexName=idx_place_rent_payment_date, tableName=oa_place_rent_payment','Add index for place rent payments by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('36','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',99,'EXECUTED','9:60e1b4eda627ace352c6d00832ee2b0b','createIndex indexName=idx_place_rent_payment_date_deleted, tableName=oa_place_rent_payment','Add index for rent payment with deleted status',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('37','mohamed.ehab','changes/common/changeset-2026-07-14.xml','2026-09-11 12:35:37',100,'EXECUTED','9:586d514963a49cf84c7ec1bb48a49fb4','createIndex indexName=idx_enrollment_refund_date, tableName=oa_enrollment_refund','Add index for enrollment refunds by date',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/financial/_liquibase/changes/place/changeset-2026-07-15.xml','2026-09-11 12:35:37',101,'EXECUTED','9:91150fed39df7d1ada0d8211957e284a','addColumn tableName=oa_rent_type','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-07-15.xml','2026-09-11 12:35:37',102,'EXECUTED','9:8e194f1648f0d5ae9117d3e0504f6019','addColumn tableName=oa_employee','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/enrollment/_liquibase/changes/changeset-2026-07-15.xml','2026-09-11 12:35:37',103,'EXECUTED','9:a6eb227730d24cd61335cee88be36fc8','addColumn tableName=oa_enrollment','',NULL,'4.27.0',NULL,NULL,'9119314910');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/trainee/_liquibase/changes/changeset-2026-09-22.xml','2026-09-22 16:59:19',104,'EXECUTED','9:aa185ce22a532a84b09a8d9e40b4bafd','addColumn tableName=oa_trainee; addForeignKeyConstraint baseTableName=oa_trainee, constraintName=fk_trainee_referral_employee, referencedTableName=oa_employee','',NULL,'4.27.0',NULL,NULL,'0085558826');
+INSERT INTO `databasechangelog` VALUES ('1','mohamed.ehab','../../../service/employee/_liquibase/changes/changeset-2026-09-24.xml','2026-09-24 15:23:58',105,'EXECUTED','9:63f7cc331ca5e06447d2dc7f95d35dbb','addColumn tableName=oa_employee','',NULL,'4.27.0',NULL,NULL,'0252638400');
 /*!40000 ALTER TABLE `databasechangelog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -199,7 +201,7 @@ CREATE TABLE `fl_daily_counter` (
 
 LOCK TABLES `fl_daily_counter` WRITE;
 /*!40000 ALTER TABLE `fl_daily_counter` DISABLE KEYS */;
-INSERT INTO `fl_daily_counter` VALUES (1,0,'2026-07-17');
+INSERT INTO `fl_daily_counter` VALUES (1,0,'2026-09-25');
 /*!40000 ALTER TABLE `fl_daily_counter` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -261,7 +263,7 @@ CREATE TABLE `fl_file` (
   CONSTRAINT `fk_fl_file_created_by_id` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_fl_file_domain_config` FOREIGN KEY (`domain_id`) REFERENCES `fl_domain_config` (`domain_id`),
   CONSTRAINT `fk_fl_file_last_modified_by_id` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,6 +272,9 @@ CREATE TABLE `fl_file` (
 
 LOCK TABLES `fl_file` WRITE;
 /*!40000 ALTER TABLE `fl_file` DISABLE KEYS */;
+INSERT INTO `fl_file` VALUES (2,5002,'jpg','500226092200002',1,'2026-09-22 19:31:52',1,'2026-09-22 19:32:31',1,'85');
+INSERT INTO `fl_file` VALUES (3,4002,'jpg','400226092400001',1,'2026-09-24 15:52:15',1,'2026-09-24 15:53:38',1,'14');
+INSERT INTO `fl_file` VALUES (4,4002,'jpg','400226092400002',1,'2026-09-24 15:57:22',1,'2026-09-24 15:58:47',1,'15');
 /*!40000 ALTER TABLE `fl_file` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -296,7 +301,7 @@ CREATE TABLE `fl_file_version` (
   KEY `fk_file_version_created_by_id` (`created_by_id`),
   CONSTRAINT `fk_file_version_created_by_id` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_file_version_fl_file` FOREIGN KEY (`file_id`) REFERENCES `fl_file` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -305,6 +310,9 @@ CREATE TABLE `fl_file_version` (
 
 LOCK TABLES `fl_file_version` WRITE;
 /*!40000 ALTER TABLE `fl_file_version` DISABLE KEYS */;
+INSERT INTO `fl_file_version` VALUES (2,2,1,127435,'trainee-500226092200002001.jpg','\\trainee','2026-09-22 19:31:52',1,'BOB.jpg','500226092200002001');
+INSERT INTO `fl_file_version` VALUES (3,3,1,82415,'employee-400226092400001001.jpg','\\employee','2026-09-24 15:52:15',1,'myPic.jpg','400226092400001001');
+INSERT INTO `fl_file_version` VALUES (4,4,1,99314,'employee-400226092400002001.jpg','\\employee','2026-09-24 15:57:23',1,'My.jpg','400226092400002001');
 /*!40000 ALTER TABLE `fl_file_version` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -421,7 +429,7 @@ CREATE TABLE `oa_course_session` (
   KEY `idx_course_session_place_id` (`place_id`),
   CONSTRAINT `fk_session_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_session_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -430,6 +438,10 @@ CREATE TABLE `oa_course_session` (
 
 LOCK TABLES `oa_course_session` WRITE;
 /*!40000 ALTER TABLE `oa_course_session` DISABLE KEYS */;
+INSERT INTO `oa_course_session` VALUES (1,'Test Session',2,1,1,NULL,'10:00:00','12:00:00',1,'','2026-09-13 15:36:45',NULL,1,NULL,0,'SUNDAY');
+INSERT INTO `oa_course_session` VALUES (2,'Test Session',2,1,1,NULL,'10:00:00','12:00:00',1,'','2026-09-13 15:36:45',NULL,1,NULL,0,'MONDAY');
+INSERT INTO `oa_course_session` VALUES (3,'Test Session',2,3,1,NULL,'10:00:00','12:00:00',1,'','2026-09-13 15:36:45',NULL,1,NULL,0,'SUNDAY');
+INSERT INTO `oa_course_session` VALUES (4,'Test Session',2,3,1,NULL,'10:00:00','12:00:00',1,'','2026-09-13 15:36:45',NULL,1,NULL,0,'MONDAY');
 /*!40000 ALTER TABLE `oa_course_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -497,6 +509,9 @@ CREATE TABLE `oa_employee` (
   `is_deleted` tinyint DEFAULT '0',
   `is_monthly_updated` tinyint NOT NULL DEFAULT '0',
   `update_period_in_days` int NOT NULL DEFAULT '30',
+  `referral_amount` double DEFAULT NULL,
+  `total_remain_referral_amount` double DEFAULT NULL,
+  `is_percent_referral` tinyint DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `national_id` (`national_id`),
   KEY `fk_employee_created_by` (`created_by_id`),
@@ -505,7 +520,7 @@ CREATE TABLE `oa_employee` (
   KEY `idx_employee_type_active` (`employee_type`,`is_active`),
   CONSTRAINT `fk_employee_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_employee_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -514,18 +529,20 @@ CREATE TABLE `oa_employee` (
 
 LOCK TABLES `oa_employee` WRITE;
 /*!40000 ALTER TABLE `oa_employee` DISABLE KEYS */;
-INSERT INTO `oa_employee` VALUES (1,'محمد ايهاب','30202102300714','2002-02-09',1,8000,8000,1,1,'400226061900001','2026-06-18',1,'2026-06-21 14:55:31','2026-06-23 18:24:13',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (3,'مريم الديب','01557044587',NULL,2,500,0,3,1,NULL,'2026-06-20',1,'2026-06-22 14:44:20','2026-06-25 17:30:22',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (4,'محمد البحار','01008518006',NULL,1,500,500,3,1,'400226062200001','2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 14:37:56',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (5,'ك حبيبة','01022967914',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:05:19',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (6,'ك باسل','01018943585',NULL,1,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:19:03',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (7,'ك احمد رجب','01069825907',NULL,1,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:21:43',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (8,'ك اسماء حمد','01154427999',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:28:19',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (9,'ك هايدي','01024503846',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:30:16',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (10,'ك زينب','01066940535',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:31:46',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (11,'محمد بريد','01006157460',NULL,1,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:35:43',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (12,'ك عبدالله مصطفي','30202102300521',NULL,1,500,500,3,1,NULL,'2026-06-22',1,'2026-06-22 14:44:20','2026-06-22 15:35:43',1,1,0,0,30);
-INSERT INTO `oa_employee` VALUES (13,'ك بسنت','01069955544',NULL,2,500,500,3,1,NULL,'2026-06-22',1,'2026-06-22 14:44:20','2026-06-22 15:35:43',1,1,0,0,30);
+INSERT INTO `oa_employee` VALUES (1,'محمد ايهاب','30202102300714','2002-02-09',1,8000,8000,1,1,'400226061900001','2026-06-18',1,'2026-06-21 14:55:31','2026-06-23 18:24:13',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (3,'مريم الديب','01557044587',NULL,2,500,0,3,1,NULL,'2026-06-20',1,'2026-06-22 14:44:20','2026-06-25 17:30:22',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (4,'محمد البحار','01008518006',NULL,1,500,500,3,1,'400226062200001','2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 14:37:56',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (5,'ك حبيبة','01022967914',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:05:19',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (6,'ك باسل','01018943585',NULL,1,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:19:03',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (7,'ك احمد رجب','01069825907',NULL,1,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:21:43',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (8,'ك اسماء حمد','01154427999',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:28:19',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (9,'ك هايدي','01024503846',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:30:16',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (10,'ك زينب','01066940535',NULL,2,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:31:46',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (11,'محمد بريد','01006157460',NULL,1,500,500,3,1,NULL,'2026-06-21',1,'2026-06-22 14:44:20','2026-06-22 15:35:43',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (12,'ك عبدالله مصطفي','30202102300521',NULL,1,500,500,4,1,NULL,'2026-06-22',1,'2026-06-22 14:44:20','2026-09-22 11:54:07',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (13,'ك بسنيت','01069955544',NULL,2,500,500,3,1,NULL,'2026-06-22',1,'2026-06-22 14:44:20','2026-06-22 15:35:43',1,1,0,0,30,NULL,NULL,0);
+INSERT INTO `oa_employee` VALUES (14,'BOB','01069911181','2026-09-25',1,500,500,1,1,'400226092400001','2026-09-12',1,'2026-09-24 12:53:38',NULL,1,NULL,0,0,30,NULL,NULL,NULL);
+INSERT INTO `oa_employee` VALUES (15,'Mohamed Test','01091499680','2026-09-24',1,500,500,1,1,'400226092400002','2026-09-21',1,'2026-09-24 12:58:46',NULL,1,NULL,0,0,30,200,200,0);
 /*!40000 ALTER TABLE `oa_employee` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -595,7 +612,7 @@ CREATE TABLE `oa_employee_contact` (
   CONSTRAINT `fk_emp_contact_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_emp_contact_employee` FOREIGN KEY (`employee_id`) REFERENCES `oa_employee` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_emp_contact_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -614,6 +631,8 @@ INSERT INTO `oa_employee_contact` VALUES (8,8,2,'01154427999','2026-06-22 15:28:
 INSERT INTO `oa_employee_contact` VALUES (9,9,2,'01024503846','2026-06-22 15:30:05',NULL,1,NULL,NULL);
 INSERT INTO `oa_employee_contact` VALUES (10,10,2,'01066940535','2026-06-22 15:31:33',NULL,1,NULL,NULL);
 INSERT INTO `oa_employee_contact` VALUES (11,11,2,'01006157460','2026-06-22 15:35:29',NULL,1,NULL,NULL);
+INSERT INTO `oa_employee_contact` VALUES (12,14,0,'m.ehab.rabea@gmail.com','2026-09-24 12:53:38',NULL,1,NULL,NULL);
+INSERT INTO `oa_employee_contact` VALUES (13,15,0,'m.ehab.rabea@gmail.com','2026-09-24 12:58:47',NULL,1,NULL,NULL);
 /*!40000 ALTER TABLE `oa_employee_contact` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -717,82 +736,82 @@ CREATE TABLE `oa_enrollment` (
 
 LOCK TABLES `oa_enrollment` WRITE;
 /*!40000 ALTER TABLE `oa_enrollment` DISABLE KEYS */;
-INSERT INTO `oa_enrollment` VALUES (2,5,2,1,1,'2026-06-19','2026-06-29',1,6,500,0,0.00,500,500,'',1,'2026-06-19 21:07:27','2026-06-23 18:13:53',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (3,24,2,1,1,'2026-06-19','2026-06-29',1,6,500,0,0.00,500,500,'',1,'2026-06-19 21:07:27','2026-06-29 10:12:48',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (4,7,2,3,1,'2026-06-19','2026-12-16',1,6,500,0,0.00,500,500,'',1,'2026-06-23 09:20:24','2026-07-02 06:02:54',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (5,25,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-23 13:52:19','2026-07-02 06:03:09',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (6,26,2,3,1,'2026-06-19','2026-12-14',1,6,500,0,0.00,500,500,'',1,'2026-06-23 15:15:28','2026-06-29 10:13:24',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (7,27,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-23 15:26:38','2026-06-29 10:13:35',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (8,31,2,3,1,'2026-06-19','2026-12-18',1,6,500,0,0.00,500,500,'',1,'2026-06-23 19:54:13',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (9,29,2,3,1,'2026-06-19','2026-12-18',1,6,500,0,0.00,500,500,'',1,'2026-06-23 20:00:14',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (10,30,2,3,1,'2026-06-19','2026-12-18',1,6,500,0,0.00,500,500,'',1,'2026-06-23 20:00:58',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (11,32,2,3,1,'2026-06-19','2026-12-18',1,6,500,0,0.00,500,500,'',1,'2026-06-23 20:03:07',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (12,33,2,3,1,'2026-06-19','2026-12-18',1,6,500,0,0.00,500,500,'',1,'2026-06-23 20:04:44',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (13,34,2,3,1,'2026-06-19','2026-12-18',3,4,500,0,0.00,500,0,'',1,'2026-06-23 20:06:28','2026-06-29 13:09:09',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (14,35,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:34:16',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (15,36,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:36:02','2026-06-25 19:36:28',1,1,0,0);
-INSERT INTO `oa_enrollment` VALUES (16,37,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:38:08',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (17,38,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:39:33',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (18,39,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:41:12',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (19,40,2,3,1,'2026-06-19','2026-12-14',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:43:10',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (20,41,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:44:33',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (21,42,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:46:12',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (22,43,2,3,1,'2026-06-19','2026-12-14',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:48:14',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (23,44,2,3,1,'2026-06-19','2026-12-15',1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:49:51',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (24,45,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:53:09',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (25,46,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:54:31',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (26,47,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-25 19:56:50',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (27,49,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:50:54',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (28,50,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:52:19',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (29,51,2,3,1,'2026-06-22',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:53:38',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (30,52,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:54:45',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (31,53,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:55:52',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (32,54,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:57:05',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (33,55,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:58:33',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (34,56,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 10:59:46',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (35,57,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 11:00:48',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (36,59,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:28:49',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (37,60,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:31:02',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (38,61,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:32:53',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (39,62,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:34:22',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (40,63,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:35:49',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (41,64,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:37:02',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (42,65,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:38:26',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (43,66,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:39:34',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (44,67,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:42:23',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (45,68,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:43:34',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (46,69,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:44:42',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (47,70,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:45:43',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (48,71,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:46:56',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (49,72,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:48:19',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (50,73,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:49:34',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (51,74,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:50:48',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (52,75,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:51:52',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (53,76,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:54:45',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (54,77,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 14:56:11',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (55,6,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:11:59',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (56,8,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:13:35',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (57,9,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:14:50',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (58,10,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:15:38',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (59,11,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:16:20',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (60,12,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:16:52',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (61,13,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:17:38',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (62,14,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:18:17',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (63,15,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:19:01',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (64,16,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:19:57',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (65,17,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:20:44',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (66,78,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:22:34',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (67,18,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:23:30',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (68,19,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:24:05',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (69,20,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:24:40',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (70,21,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:25:16',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (71,22,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:25:59',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (72,79,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:27:36',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (73,80,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:28:38',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (74,81,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:30:44',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (75,82,2,3,1,'2026-06-22',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:33:07',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (76,83,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:34:17',NULL,1,NULL,0,0);
-INSERT INTO `oa_enrollment` VALUES (77,84,2,3,1,'2026-06-19',NULL,1,6,500,0,0.00,500,500,'',1,'2026-06-26 16:35:49',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (2,5,2,1,1,'2026-06-19','2026-06-29',1,6,500,NULL,NULL,500,500,'',1,'2026-06-19 21:07:27','2026-06-23 18:13:53',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (3,24,2,1,1,'2026-06-19','2026-06-29',1,6,500,NULL,NULL,500,500,'',1,'2026-06-19 21:07:27','2026-06-29 10:12:48',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (4,7,2,3,1,'2026-06-19','2026-12-16',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 09:20:24','2026-07-02 06:02:54',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (5,25,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 13:52:19','2026-07-02 06:03:09',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (6,26,2,3,1,'2026-06-19','2026-12-14',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 15:15:28','2026-06-29 10:13:24',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (7,27,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 15:26:38','2026-06-29 10:13:35',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (8,31,2,3,1,'2026-06-19','2026-12-18',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 19:54:13',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (9,29,2,3,1,'2026-06-19','2026-12-18',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 20:00:14',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (10,30,2,3,1,'2026-06-19','2026-12-18',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 20:00:58',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (11,32,2,3,1,'2026-06-19','2026-12-18',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 20:03:07',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (12,33,2,3,1,'2026-06-19','2026-12-18',1,6,500,NULL,NULL,500,500,'',1,'2026-06-23 20:04:44',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (13,34,2,3,1,'2026-06-19','2026-12-18',3,4,500,NULL,NULL,500,0,'',1,'2026-06-23 20:06:28','2026-06-29 13:09:09',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (14,35,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:34:16',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (15,36,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:36:02','2026-06-25 19:36:28',1,1,0,0);
+INSERT INTO `oa_enrollment` VALUES (16,37,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:38:08',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (17,38,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:39:33',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (18,39,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:41:12',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (19,40,2,3,1,'2026-06-19','2026-12-14',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:43:10',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (20,41,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:44:33',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (21,42,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:46:12',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (22,43,2,3,1,'2026-06-19','2026-12-14',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:48:14',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (23,44,2,3,1,'2026-06-19','2026-12-15',1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:49:51',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (24,45,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:53:09',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (25,46,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:54:31',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (26,47,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-25 19:56:50',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (27,49,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:50:54',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (28,50,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:52:19',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (29,51,2,3,1,'2026-06-22',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:53:38',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (30,52,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:54:45',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (31,53,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:55:52',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (32,54,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:57:05',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (33,55,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:58:33',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (34,56,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 10:59:46',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (35,57,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 11:00:48',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (36,59,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:28:49',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (37,60,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:31:02',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (38,61,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:32:53',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (39,62,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:34:22',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (40,63,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:35:49',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (41,64,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:37:02',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (42,65,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:38:26',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (43,66,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:39:34',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (44,67,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:42:23',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (45,68,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:43:34',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (46,69,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:44:42',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (47,70,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:45:43',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (48,71,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:46:56',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (49,72,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:48:19',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (50,73,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:49:34',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (51,74,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:50:48',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (52,75,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:51:52',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (53,76,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:54:45',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (54,77,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 14:56:11',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (55,6,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:11:59',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (56,8,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:13:35',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (57,9,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:14:50',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (58,10,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:15:38',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (59,11,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:16:20',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (60,12,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:16:52',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (61,13,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:17:38',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (62,14,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:18:17',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (63,15,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:19:01',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (64,16,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:19:57',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (65,17,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:20:44',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (66,78,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:22:34',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (67,18,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:23:30',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (68,19,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:24:05',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (69,20,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:24:40',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (70,21,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:25:16',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (71,22,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:25:59',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (72,79,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:27:36',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (73,80,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:28:38',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (74,81,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:30:44',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (75,82,2,3,1,'2026-06-22',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:33:07',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (76,83,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:34:17',NULL,1,NULL,0,0);
+INSERT INTO `oa_enrollment` VALUES (77,84,2,3,1,'2026-06-19',NULL,1,6,500,NULL,NULL,500,500,'',1,'2026-06-26 16:35:49',NULL,1,NULL,0,0);
 /*!40000 ALTER TABLE `oa_enrollment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1077,7 +1096,7 @@ CREATE TABLE `oa_place` (
   KEY `fk_place_modified_by` (`last_modified_by_id`),
   CONSTRAINT `fk_place_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_place_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1086,6 +1105,7 @@ CREATE TABLE `oa_place` (
 
 LOCK TABLES `oa_place` WRITE;
 /*!40000 ALTER TABLE `oa_place` DISABLE KEYS */;
+INSERT INTO `oa_place` VALUES (1,'المقر',500,500,'مقر حي الجامعة','01091499680','2026-09-13 15:35:57',NULL,1,NULL,0);
 /*!40000 ALTER TABLE `oa_place` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1303,14 +1323,17 @@ CREATE TABLE `oa_trainee` (
   `last_modified_by_id` int DEFAULT NULL,
   `is_active` tinyint DEFAULT '1',
   `is_deleted` tinyint DEFAULT '0',
+  `referral_employee_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `national_id` (`national_id`),
   KEY `fk_trainee_created_by` (`created_by_id`),
   KEY `fk_trainee_modified_by` (`last_modified_by_id`),
   KEY `idx_trainee_active` (`is_active`),
+  KEY `fk_trainee_referral_employee` (`referral_employee_id`),
   CONSTRAINT `fk_trainee_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
-  CONSTRAINT `fk_trainee_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `fk_trainee_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`),
+  CONSTRAINT `fk_trainee_referral_employee` FOREIGN KEY (`referral_employee_id`) REFERENCES `oa_employee` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1319,85 +1342,86 @@ CREATE TABLE `oa_trainee` (
 
 LOCK TABLES `oa_trainee` WRITE;
 /*!40000 ALTER TABLE `oa_trainee` DISABLE KEYS */;
-INSERT INTO `oa_trainee` VALUES (5,'اسراء محمد عبدالتواب','01103352843',NULL,NULL,2,'الفيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:26:05',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (6,'امنية خالد قرني','01070678864','حجامة',NULL,2,'',NULL,'2026-06-20 10:08:27','2026-06-26 16:11:00',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (7,'سما خلف احمد','01091151856',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:36:52',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (8,'ايمان فتحي شعبان','01065651980',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:37:37',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (9,'روان عبدالتواب','30202102300759',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:38:01',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (10,'ايات رجب عبدالحليم','01012941047',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:38:53',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (11,'دعاء فتحي عيد','30202102300722',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:39:15',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (12,'شهد حميدة','30202102300733',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:39:40',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (13,'هاجر حسين احمد','01101486785','2',NULL,2,'',NULL,'2026-06-20 10:08:27','2026-06-26 14:53:44',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (14,'مريم عجمي','01061062904',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:40:27',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (15,'اميرة سيد جمعة','01004583286',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:40:48',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (16,'نسمة ممدوح فتحي','01030350853',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:41:10',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (17,'احمد محمد عويس','01122751270',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:35:25',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (18,'يوسف رجب عبدالرحمان','01122025584',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:35:43',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (19,'روان بدوي محمد','01116378125',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:41:35',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (20,'امال احمد محمد','01104378235',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:41:57',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (21,'عمر عبدالرحمن عبدالرحيم','01014906191',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:42:23',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (22,'عبدالرحمن الهواري','01096961309',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:42:46',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (23,'شروق احمد هاشم','01015052713','1',NULL,2,'فيوم',NULL,'2026-06-20 14:22:06',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (24,'نوال محمد موسي','01116237539',NULL,NULL,2,'فيوم',NULL,'2026-06-20 15:23:12',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (25,'حسناء اسلام علي مصطفي','01030053716','رابعة-سباحة',NULL,2,'فيوم',NULL,'2026-06-23 13:51:42',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (26,'اماني احمد كامل محمد','01015094389','1',NULL,2,'فيوم',NULL,'2026-06-23 15:14:48',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (27,'ليلي احمد عبدالحفيظ','01068282945','1',NULL,2,'فيوم',NULL,'2026-06-23 15:25:56',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (29,'سيف ياسر محمود','01094207970','1',NULL,2,'فيوم',NULL,'2026-06-23 15:37:02',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (30,'عبدالله محمد السيد','01289092076','1',NULL,1,'',NULL,'2026-06-23 15:38:42','2026-06-23 20:07:12',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (31,'بسنت علاء الدين','01000192954','1',NULL,2,'فيوم',NULL,'2026-06-23 19:53:15',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (32,'ايمان يحي','01070511467','1',NULL,2,'فيوم',NULL,'2026-06-23 20:02:33',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (33,'يوسف محمود احمد','01025205684','1',NULL,1,'',NULL,'2026-06-23 20:04:12','2026-06-23 20:06:47',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (34,'يوسف ياسر احمد','01010486106','1',NULL,1,'فيوم',NULL,'2026-06-23 20:06:01',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (35,'رحمة حسن حافظ','01006985108','1',NULL,2,'فيوم',NULL,'2026-06-25 19:33:25',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (36,'رحمة محمود السيد','01011089239','1',NULL,2,'فيوم',NULL,'2026-06-25 19:35:30',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (37,'عبدالله عماد العاطي','01009910342','1',NULL,1,'فيوم',NULL,'2026-06-25 19:37:36',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (38,'نوال محمد موسي','01008899582','1',NULL,2,'فيوم',NULL,'2026-06-25 19:38:57',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (39,'ندي محمد رشاد ','01016082191','1',NULL,2,'فيوم',NULL,'2026-06-25 19:40:40',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (40,'ندي محمد عبدالسلام','01115628605','1',NULL,2,'فيوم',NULL,'2026-06-25 19:42:30',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (41,'سندس حجازي محمد','01019027791','1',NULL,2,'فيوم',NULL,'2026-06-25 19:44:02',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (42,'حبيبة عصام هاشم','01120932927','1',NULL,2,'فيوم',NULL,'2026-06-25 19:45:28',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (43,'حبيبة عاشور عبدالقادر','01554404546','1',NULL,2,'فيوم',NULL,'2026-06-25 19:47:45',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (44,'مريم احمد علي احمد','01555374954','1',NULL,2,'فيوم',NULL,'2026-06-25 19:48:59',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (45,'عبدالرحمن عمر شوقي','01040784111','1',NULL,1,'فيوم',NULL,'2026-06-25 19:52:38',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (46,'امنية سيد فتحي','01128768344','1',NULL,2,'فيوم',NULL,'2026-06-25 19:54:00',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (47,'شروق احمد هاشم','01015057213','1',NULL,2,'فيوم',NULL,'2026-06-25 19:55:14',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (48,'فيروز لطفي عبدالرحمن','01050708162','1',NULL,2,'فيوم',NULL,'2026-06-26 10:29:59',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (49,'اسراء محمود عبدالله ','01092477242','مجموعة الاحد',NULL,2,'فيوم',NULL,'2026-06-26 10:50:25',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (50,'اية محمود فؤاد','01110898061','3',NULL,2,'فيوم',NULL,'2026-06-26 10:52:02',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (51,'يوسف عبدالحكيم اسماعيل','01123429207','1',NULL,1,'فيوم',NULL,'2026-06-26 10:53:05',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (52,'العايم رجب العايم','01034112430','1',NULL,1,'فيوم',NULL,'2026-06-26 10:54:29',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (53,'مريم تامر رجب','01120259008','2',NULL,2,'فيوم',NULL,'2026-06-26 10:55:36',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (54,'ملك عماد عبدالله','01040602201','1',NULL,2,'فيوم',NULL,'2026-06-26 10:56:45',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (55,'حنين حمدي محمد','01050110592','1',NULL,2,'فيوم',NULL,'2026-06-26 10:58:17',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (56,'رودينا تامر فوزي','01105838401','2',NULL,2,'فيوم',NULL,'2026-06-26 10:59:30',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (57,'عبدالله عماد سعد ','01095459576','4',NULL,1,'فيوم',NULL,'2026-06-26 11:00:34',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (58,'جني محمد مولي','0102866001','1',NULL,2,'فيوم',NULL,'2026-06-26 11:02:12',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (59,'جني هاني عادل','01092225851','1',NULL,2,'فيوم',NULL,'2026-06-26 14:28:19',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (60,'جني عادل محمد ','01029088932','1',NULL,2,'فيوم',NULL,'2026-06-26 14:30:34',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (61,'جني محمد رجائي ','01140764808','1',NULL,2,'فيوم',NULL,'2026-06-26 14:32:27',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (62,'سهام احمد محمد','01030842796','3',NULL,2,'فيوم',NULL,'2026-06-26 14:34:02',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (63,'اسماء شريف حسن','01019624043','1',NULL,2,'',NULL,'2026-06-26 14:35:27',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (64,'منة فرج نادي','01014568554','1',NULL,2,'فيوم',NULL,'2026-06-26 14:36:40',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (65,'ياسمين كارم احمد','01069056447','1',NULL,2,'فيوم',NULL,'2026-06-26 14:38:05',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (66,'هدير وائل ابراهيم','01070678740','2',NULL,2,'فيوم',NULL,'2026-06-26 14:39:12',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (67,'حبيبة عماد سعيد','01018323887','1',NULL,2,'فيوم',NULL,'2026-06-26 14:42:03',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (68,'جني خالد محمد سعد','01110156022','1',NULL,2,'فيوم',NULL,'2026-06-26 14:43:08',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (69,'ملك محمد صادق','01091910617','1',NULL,2,'فيوم',NULL,'2026-06-26 14:44:19',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (70,'الاء عمرو فتحي','01016606786','1',NULL,2,'فيوم',NULL,'2026-06-26 14:45:24',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (71,'جني خالد سيد','01000365166','1',NULL,2,'فيوم',NULL,'2026-06-26 14:46:33',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (72,'ملك محمد عبدالله','01029938912','1',NULL,2,'فيوم',NULL,'2026-06-26 14:47:58',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (73,'شادي عصام محمد','01035835829','1',NULL,1,'فيوم',NULL,'2026-06-26 14:49:12',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (74,'زياد عشري احمد','01094241134','1',NULL,1,'فيوم',NULL,'2026-06-26 14:50:24',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (75,'سارة محمد محمود','01030226166','1',NULL,2,'فيوم',NULL,'2026-06-26 14:51:30',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (76,'عمرو خالد سيد','01015569879','2',NULL,1,'',NULL,'2026-06-26 14:54:25','2026-06-26 14:56:35',1,1,1,0);
-INSERT INTO `oa_trainee` VALUES (77,'بسملة طه عبدالحميد','01154381017','1',NULL,2,'فيوم',NULL,'2026-06-26 14:55:52',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (78,'فاطمة مهدي محمد','01012950514','1',NULL,2,'فيوم',NULL,'2026-06-26 16:22:13',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (79,'مصطفي حمادة كمال','01095799456','1',NULL,1,'فيوم',NULL,'2026-06-26 16:27:17',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (80,'بسملة ايهاب فاروق','01013814997','1',NULL,2,'فيوم',NULL,'2026-06-26 16:28:18',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (81,'شروق وليد احمد','01092055314','1',NULL,2,'فيوم',NULL,'2026-06-26 16:29:34',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (82,'عمر عبدالناصر علي','01129312242','1',NULL,1,'فيوم',NULL,'2026-06-26 16:32:36',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (83,'دعاء فتحي عيد','01022937902','1',NULL,2,'فيوم',NULL,'2026-06-26 16:33:55',NULL,1,NULL,1,0);
-INSERT INTO `oa_trainee` VALUES (84,'سلمي محمد عبدالرحيم','01098368914','1',NULL,2,'فيوم',NULL,'2026-06-26 16:35:24',NULL,1,NULL,1,0);
+INSERT INTO `oa_trainee` VALUES (5,'اسراء محمد عبدالتواب','01103352843',NULL,NULL,2,'الفيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:26:05',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (6,'امنية خالد قرني','01070678864','حجامة',NULL,2,'',NULL,'2026-06-20 10:08:27','2026-06-26 16:11:00',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (7,'سما خلف احمد','01091151856',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:36:52',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (8,'ايمان فتحي شعبان','01065651980',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:37:37',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (9,'روان عبدالتواب','30202102300759',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:38:01',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (10,'ايات رجب عبدالحليم','01012941047',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:38:53',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (11,'دعاء فتحي عيد','30202102300722',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:39:15',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (12,'شهد حميدة','30202102300733',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:39:40',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (13,'هاجر حسين احمد','01101486785','2',NULL,2,'',NULL,'2026-06-20 10:08:27','2026-06-26 14:53:44',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (14,'مريم عجمي','01061062904',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:40:27',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (15,'اميرة سيد جمعة','01004583286',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:40:48',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (16,'نسمة ممدوح فتحي','01030350853',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:41:10',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (17,'احمد محمد عويس','01122751270',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:35:25',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (18,'يوسف رجب عبدالرحمن','01122025584',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:35:43',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (19,'روان بدوي محمد','01116378125',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:41:35',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (20,'امال احمد محمد','01104378235',NULL,NULL,2,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:41:57',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (21,'عمر عبدالرحمن عبدالرحيم','01014906191',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:42:23',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (22,'عبدالرحمن الهواري','01096961309',NULL,NULL,1,'فيوم',NULL,'2026-06-20 10:08:27','2026-06-20 14:42:46',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (23,'شروق احمد هاشم','01015052713','1',NULL,2,'فيوم',NULL,'2026-06-20 14:22:06',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (24,'نوال محمد موسي','01116237539',NULL,NULL,2,'فيوم',NULL,'2026-06-20 15:23:12',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (25,'حسناء اسلام علي مصطفي','01030053716','رابعة-سباحة',NULL,2,'فيوم',NULL,'2026-06-23 13:51:42',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (26,'اماني احمد كامل محمد','01015094389','1',NULL,2,'فيوم',NULL,'2026-06-23 15:14:48',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (27,'ليلي احمد عبدالحفيظ','01068282945','1',NULL,2,'فيوم',NULL,'2026-06-23 15:25:56',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (29,'سيف ياسر محمود','01094207970','1',NULL,2,'فيوم',NULL,'2026-06-23 15:37:02',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (30,'عبدالله محمد السيد','01289092076','1',NULL,1,'',NULL,'2026-06-23 15:38:42','2026-06-23 20:07:12',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (31,'بسنت علاء الدين','01000192954','1',NULL,2,'فيوم',NULL,'2026-06-23 19:53:15',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (32,'ايمان يحي','01070511467','1',NULL,2,'فيوم',NULL,'2026-06-23 20:02:33',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (33,'يوسف محمود احمد','01025205684','1',NULL,1,'',NULL,'2026-06-23 20:04:12','2026-06-23 20:06:47',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (34,'يوسف ياسر احمد','01010486106','1',NULL,1,'فيوم',NULL,'2026-06-23 20:06:01',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (35,'رحمة حسن حافظ','01006985108','1',NULL,2,'فيوم',NULL,'2026-06-25 19:33:25',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (36,'رحمة محمود السيد','01011089239','1',NULL,2,'فيوم',NULL,'2026-06-25 19:35:30',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (37,'عبدالله عماد العاطي','01009910342','1',NULL,1,'فيوم',NULL,'2026-06-25 19:37:36',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (38,'نوال محمد موسي','01008899582','1',NULL,2,'فيوم',NULL,'2026-06-25 19:38:57',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (39,'ندي محمد رشاد ','01016082191','1',NULL,2,'فيوم',NULL,'2026-06-25 19:40:40',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (40,'ندي محمد عبدالسلام','01115628605','1',NULL,2,'فيوم',NULL,'2026-06-25 19:42:30',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (41,'سندس حجازي محمد','01019027791','1',NULL,2,'فيوم',NULL,'2026-06-25 19:44:02',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (42,'حبيبة عصام هاشم','01120932927','1',NULL,2,'فيوم',NULL,'2026-06-25 19:45:28',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (43,'حبيبة عاشور عبدالقادر','01554404546','1',NULL,2,'فيوم',NULL,'2026-06-25 19:47:45',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (44,'مريم احمد علي احمد','01555374954','1',NULL,2,'فيوم',NULL,'2026-06-25 19:48:59',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (45,'عبدالرحمن عمر شوقي','01040784111','1',NULL,1,'فيوم',NULL,'2026-06-25 19:52:38',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (46,'امنية سيد فتحي','01128768344','1',NULL,2,'فيوم',NULL,'2026-06-25 19:54:00',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (47,'شروق احمد هاشم','01015057213','1',NULL,2,'فيوم',NULL,'2026-06-25 19:55:14',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (48,'فيروز لطفي عبدالرحمن','01050708162','1',NULL,2,'فيوم',NULL,'2026-06-26 10:29:59',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (49,'اسراء محمود عبدالله ','01092477242','مجموعة الاحد',NULL,2,'فيوم',NULL,'2026-06-26 10:50:25',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (50,'اية محمود فؤاد','01110898061','3',NULL,2,'فيوم',NULL,'2026-06-26 10:52:02',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (51,'يوسف عبدالحكيم اسماعيل','01123429207','1',NULL,1,'فيوم',NULL,'2026-06-26 10:53:05',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (52,'العايم رجب العايم','01034112430','1',NULL,1,'فيوم',NULL,'2026-06-26 10:54:29',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (53,'مريم تامر رجب','01120259008','2',NULL,2,'فيوم',NULL,'2026-06-26 10:55:36',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (54,'ملك عماد عبدالله','01040602201','1',NULL,2,'فيوم',NULL,'2026-06-26 10:56:45',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (55,'حنين حمدي محمد','01050110592','1',NULL,2,'فيوم',NULL,'2026-06-26 10:58:17',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (56,'رودينا تامر فوزي','01105838401','2',NULL,2,'فيوم',NULL,'2026-06-26 10:59:30',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (57,'عبدالله عماد سعد ','01095459576','4',NULL,1,'فيوم',NULL,'2026-06-26 11:00:34',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (58,'جني محمد مولى','0102866001','1',NULL,2,'فيوم',NULL,'2026-06-26 11:02:12',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (59,'جني هاني عادل','01092225851','1',NULL,2,'فيوم',NULL,'2026-06-26 14:28:19',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (60,'جني عادل محمد ','01029088932','1',NULL,2,'فيوم',NULL,'2026-06-26 14:30:34',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (61,'جني محمد رجائي ','01140764808','1',NULL,2,'فيوم',NULL,'2026-06-26 14:32:27',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (62,'سهام احمد محمد','01030842796','3',NULL,2,'فيوم',NULL,'2026-06-26 14:34:02',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (63,'اسماء شريف حسن','01019624043','1',NULL,2,'',NULL,'2026-06-26 14:35:27',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (64,'منة فرج نادي','01014568554','1',NULL,2,'فيوم',NULL,'2026-06-26 14:36:40',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (65,'ياسمين كرم احمد','01069056447','1',NULL,2,'فيوم',NULL,'2026-06-26 14:38:05',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (66,'هدير وائل ابراهيم','01070678740','2',NULL,2,'فيوم',NULL,'2026-06-26 14:39:12',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (67,'حبيبة عماد سعيد','01018323887','1',NULL,2,'فيوم',NULL,'2026-06-26 14:42:03',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (68,'جني خالد محمد سعد','01110156022','1',NULL,2,'فيوم',NULL,'2026-06-26 14:43:08',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (69,'ملك محمد صادق','01091910617','1',NULL,2,'فيوم',NULL,'2026-06-26 14:44:19',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (70,'الاء عمرو فتحي','01016606786','1',NULL,2,'فيوم',NULL,'2026-06-26 14:45:24',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (71,'جني خالد سيد','01000365166','1',NULL,2,'فيوم',NULL,'2026-06-26 14:46:33',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (72,'ملك محمد عبدالله','01029938912','1',NULL,2,'فيوم',NULL,'2026-06-26 14:47:58',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (73,'شادي عصام محمد','01035835829','1',NULL,1,'فيوم',NULL,'2026-06-26 14:49:12',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (74,'زياد عشري احمد','01094241134','1',NULL,1,'فيوم',NULL,'2026-06-26 14:50:24',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (75,'سارة محمد محمود','01030226166','1',NULL,2,'فيوم',NULL,'2026-06-26 14:51:30',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (76,'عمرو خالد سيد','01015569879','2',NULL,1,'',NULL,'2026-06-26 14:54:25','2026-06-26 14:56:35',1,1,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (77,'بسملة طه عبدالحميد','01154381017','1',NULL,2,'فيوم',NULL,'2026-06-26 14:55:52',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (78,'فاطمة مهدي محمد','01012950514','1',NULL,2,'فيوم',NULL,'2026-06-26 16:22:13',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (79,'مصطفي حمادة كمال','01095799456','1',NULL,1,'فيوم',NULL,'2026-06-26 16:27:17',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (80,'بسملة ايهاب فاروق','01013814997','1',NULL,2,'فيوم',NULL,'2026-06-26 16:28:18',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (81,'شروق وليد احمد','01092055314','1',NULL,2,'فيوم',NULL,'2026-06-26 16:29:34',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (82,'عمر عبدالناصر علي','01129312242','1',NULL,1,'فيوم',NULL,'2026-06-26 16:32:36',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (83,'دعاء فتحي عيد','01022937902','1',NULL,2,'فيوم',NULL,'2026-06-26 16:33:55',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (84,'سلمي محمد عبدالرحيم','01098368914','1',NULL,2,'فيوم',NULL,'2026-06-26 16:35:24',NULL,1,NULL,1,0,NULL);
+INSERT INTO `oa_trainee` VALUES (85,'Mohamed Ehab','01069911181','2',NULL,1,'','500226092200002','2026-09-22 16:32:31','2026-09-22 18:55:54',1,1,1,0,1);
 /*!40000 ALTER TABLE `oa_trainee` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1433,7 +1457,7 @@ CREATE TABLE `oa_trainee_attendance` (
   CONSTRAINT `fk_trainee_attendance_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_trainee_attendance_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_trainee_attendance_trainee` FOREIGN KEY (`trainee_id`) REFERENCES `oa_trainee` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1442,6 +1466,8 @@ CREATE TABLE `oa_trainee_attendance` (
 
 LOCK TABLES `oa_trainee_attendance` WRITE;
 /*!40000 ALTER TABLE `oa_trainee_attendance` DISABLE KEYS */;
+INSERT INTO `oa_trainee_attendance` VALUES (1,84,1,1,'2026-09-13',NULL,'10:00:00','12:00:00','تم التسجيل عبر المسح السريع','2026-09-13 15:40:42',NULL,1,NULL,0);
+INSERT INTO `oa_trainee_attendance` VALUES (2,84,2,1,'2026-09-13',NULL,'10:00:00','12:00:00','تم التسجيل عبر المسح السريع','2026-09-13 15:59:17',NULL,1,NULL,0);
 /*!40000 ALTER TABLE `oa_trainee_attendance` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1512,7 +1538,7 @@ CREATE TABLE `oa_trainee_contact` (
   CONSTRAINT `fk_trainee_contact_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_trainee_contact_modified_by` FOREIGN KEY (`last_modified_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_trainee_contact_trainee` FOREIGN KEY (`trainee_id`) REFERENCES `oa_trainee` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1597,6 +1623,7 @@ INSERT INTO `oa_trainee_contact` VALUES (76,81,2,'01092055314','2026-06-26 16:29
 INSERT INTO `oa_trainee_contact` VALUES (77,82,2,'01129312242','2026-06-26 16:32:36',NULL,1,NULL,0);
 INSERT INTO `oa_trainee_contact` VALUES (78,83,2,'01022937902','2026-06-26 16:33:55',NULL,1,NULL,0);
 INSERT INTO `oa_trainee_contact` VALUES (79,84,2,'01098368914','2026-06-26 16:35:24',NULL,1,NULL,0);
+INSERT INTO `oa_trainee_contact` VALUES (80,85,3,'01091499680',NULL,'2026-09-22 18:55:54',NULL,1,NULL);
 /*!40000 ALTER TABLE `oa_trainee_contact` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1621,7 +1648,7 @@ CREATE TABLE `oa_trainer_course` (
   CONSTRAINT `fk_trainer_course_course` FOREIGN KEY (`course_id`) REFERENCES `oa_course` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_trainer_course_created_by` FOREIGN KEY (`created_by_id`) REFERENCES `oa_user` (`id`),
   CONSTRAINT `fk_trainer_course_employee` FOREIGN KEY (`employee_id`) REFERENCES `oa_employee` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1630,6 +1657,9 @@ CREATE TABLE `oa_trainer_course` (
 
 LOCK TABLES `oa_trainer_course` WRITE;
 /*!40000 ALTER TABLE `oa_trainer_course` DISABLE KEYS */;
+INSERT INTO `oa_trainer_course` VALUES (1,1,2,'2026-09-11 14:25:50',1,0);
+INSERT INTO `oa_trainer_course` VALUES (2,14,2,'2026-09-24 12:53:38',1,0);
+INSERT INTO `oa_trainer_course` VALUES (3,15,2,'2026-09-24 12:58:47',1,0);
 /*!40000 ALTER TABLE `oa_trainer_course` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1774,4 +1804,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-17 15:05:22
+-- Dump completed on 2026-09-25 19:03:35

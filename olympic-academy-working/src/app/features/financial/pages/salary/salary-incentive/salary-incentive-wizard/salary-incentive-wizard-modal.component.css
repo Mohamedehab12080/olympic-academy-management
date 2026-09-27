@@ -226,6 +226,26 @@ form {
   animation: slideIn 0.3s ease;
 }
 
+/* Referral visual treatment */
+.preview-row.referral-row .value,
+.info-value.referral-value {
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.remained-info .info-card.referral-card {
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  border-right-color: #7c3aed;
+}
+
+.remained-info .info-card.referral-card mat-icon {
+  color: #7c3aed;
+}
+
+.remained-info .info-card.referral-card span {
+  color: #4c1d95;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;

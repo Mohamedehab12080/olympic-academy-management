@@ -87,6 +87,8 @@ public abstract class TraineeMapper {
 
     public abstract LightUserVTO toLightUserVTO(Trainee trainee);
 
+    @Mapping(target = "fullName",
+            expression = "java(String.format(\"%s (%s جم )\", employee.getFullName(), employee.getReferralAmount()))")
     public abstract LightUserVTO toLightUserVTO(Employee employee);
 
     public abstract LightUserVTO toLightUserVTO(User user);

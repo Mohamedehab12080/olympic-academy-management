@@ -74,6 +74,15 @@ export interface SelectOption {
           panelClass="searchable-select-panel"
           [compareWith]="compareWith">
           
+          <mat-select-trigger>
+            <span class="selected-trigger">
+                <mat-icon *ngIf="getSelectedOption()?.icon" class="trigger-icon">
+                  {{ getSelectedOption()?.icon }}
+                </mat-icon>
+                <span class="trigger-label">{{ getSelectedOption()?.label }}</span>
+              </span>
+          </mat-select-trigger>
+
           <!-- Search Header -->
           <div class="search-select-header" (click)="$event.stopPropagation()">
             <div class="search-wrapper">
@@ -207,6 +216,25 @@ export interface SelectOption {
       transition: all 0.2s;
     }
 
+    .selected-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .selected-trigger .trigger-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #64748b;
+      vertical-align: middle;
+    }
+
+    .selected-trigger .trigger-label {
+      font-size: 14px;
+      color: #1e293b;
+    }
+    
     .search-wrapper:focus-within {
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
@@ -609,6 +637,17 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnInit, 
     }
     return this.selectedValue !== null && this.selectedValue !== undefined && this.selectedValue !== '';
   }
+
+  getSelectedOption(): SelectOption | null {
+  if (this.selectedValue === null || this.selectedValue === undefined) return null;
+
+  if (this.multiple && Array.isArray(this.selectedValue)) {
+    const first = this.selectedValue[0];
+    return this.options.find(o => this.compareWith(o.value, first)) ?? null;
+  }
+
+  return this.options.find(o => this.compareWith(o.value, this.selectedValue)) ?? null;
+}
 
   filterOptions() {
     this.searchChange.emit(this.searchTerm);

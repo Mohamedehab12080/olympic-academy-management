@@ -28,6 +28,7 @@ import { FileDomain } from '../../../../core/models/file.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { EmployeeLookupVTO } from '../../../../core/models/employee.model';
+import { takeUntil } from 'rxjs/operators';
 
 import { 
   TraineeContactDTO, 
@@ -273,6 +274,35 @@ interface ContactFormGroup {
                     hintIcon="person_search">
                   </app-searchable-select>
 
+                  <!-- Referral Amount -->
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>مبلغ النسبة </mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="referralAmount"
+                      placeholder="أدخل مبلغ النسبة"
+                      min="0"
+                    />
+                    <mat-hint>يتم تحميله تلقائياً من بيانات الموظف المُحيل — يمكنك تعديله</mat-hint>
+                  </mat-form-field>
+
+                  <!-- Referral Confirmed Toggle -->
+                  <div class="full-width status-toggle">
+                    <mat-slide-toggle
+                      color="primary"
+                      [checked]="basicInfoForm.get('isReferralConfirmed')?.value"
+                      (change)="basicInfoForm.get('isReferralConfirmed')?.setValue($event.checked)">
+                      <div class="toggle-label">
+                        <mat-icon>verified</mat-icon>
+                        <span>تأكيد النسبة</span>
+                      </div>
+                      <div class="toggle-status" [class.active]="basicInfoForm.get('isReferralConfirmed')?.value">
+                        {{ basicInfoForm.get('isReferralConfirmed')?.value ? 'مؤكدة' : 'غير مؤكدة' }}
+                      </div>
+                    </mat-slide-toggle>
+                  </div>
+
                   <!-- Status Toggle - Only visible in Edit Mode -->
                   <div class="full-width status-toggle" *ngIf="isEditMode">
                     <mat-slide-toggle 
@@ -499,6 +529,16 @@ interface ContactFormGroup {
                     <div><strong>الجنس:</strong> {{ getGenderTitle(basicInfoForm.get('gender')?.value) || '-' }}</div>
                     <div><strong>العنوان:</strong> {{ basicInfoForm.get('address')?.value || '-' }}</div>
                     <div><strong>الموظف المُحيل:</strong> {{ getEmployeeName(basicInfoForm.get('referralEmployeeId')?.value) || '-' }}</div>
+                    <div>
+                          <strong>مبلغ النسبة:</strong>
+                          {{ basicInfoForm.get('referralAmount')?.value ?? '-' }} جم
+                        </div>
+                        <div>
+                          <strong>تأكيد النسبة:</strong>
+                          <span [style.color]="basicInfoForm.get('isReferralConfirmed')?.value ? '#10b981' : '#ef4444'">
+                            {{ basicInfoForm.get('isReferralConfirmed')?.value ? 'مؤكدة ✓' : 'غير مؤكدة ✗' }}
+                          </span>
+                        </div>
                     <div *ngIf="isEditMode"><strong>الحالة:</strong> {{ basicInfoForm.get('isActive')?.value ? 'نشط' : 'غير نشط' }}</div>
                   </div>
                 </mat-card>
@@ -970,15 +1010,17 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
     
     // Initialize forms
     this.basicInfoForm = this.fb.group({
-    fullName: ['', [Validators.required, Validators.minLength(3)]],
-    nationalId: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
-    academicYear: [''],
-    birthDate: [''],
-    gender: [null],
-    address: [''],
-    referralEmployeeId: [null], 
-    isActive: [true]
-  });
+      fullName: ['', [Validators.required, Validators.minLength(3)]],
+      nationalId: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+      academicYear: [''],
+      birthDate: [''],
+      gender: [null],
+      address: [''],
+      referralEmployeeId: [null],
+      referralAmount: [null],           
+      isReferralConfirmed: [false], 
+      isActive: [true]
+    });
     
     this.contactsForm = this.fb.group({
       contacts: this.fb.array([])
@@ -998,6 +1040,8 @@ export class TraineeWizardModalComponent implements OnInit, OnDestroy {
   this.loadCourses();
   this.loadEmployees();          
   
+  this.watchReferralEmployeeChanges();
+
   if (this.isEditMode) {
     this.loadTraineeData();
   } else {
@@ -1059,6 +1103,32 @@ loadSelectOptions(): void {
   }
 
   // ============================================================
+// REFERRAL EMPLOYEE → AUTO-LOAD referralAmount
+// ============================================================
+
+private watchReferralEmployeeChanges(): void {
+  this.basicInfoForm
+    .get('referralEmployeeId')!
+    .valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((employeeId: number | null) => {
+      if (employeeId == null) {
+        this.basicInfoForm.patchValue(
+          { referralAmount: null, isReferralConfirmed: false },
+          { emitEvent: false }
+        );
+        return;
+      }
+      const employee = this.employeeOptions.find(e => e.id === employeeId);
+      if (!employee) return;
+      this.basicInfoForm.patchValue(
+        { referralAmount: employee.referralAmount ?? null },
+        { emitEvent: false }
+      );
+    });
+}
+
+  // ============================================================
   // TRAINEE DATA LOADING WITH CONTACTS
   // ============================================================
 
@@ -1098,15 +1168,20 @@ loadSelectOptions(): void {
     
     // Patch basic info - academicYear is now a string
     this.basicInfoForm.patchValue({
-      fullName: t.fullName || '',
-      nationalId: t.nationalId || '',
-      academicYear: t.academicYear || '',
-      birthDate: t.birthDate || null,
-      gender: genderEnum,
-      address: t.address || '',
-      referralEmployeeId: t.referralEmployee?.id ?? null,  
-      isActive: t.isActive !== undefined ? t.isActive : true
-    });
+    fullName: t.fullName || '',
+    nationalId: t.nationalId || '',
+    academicYear: t.academicYear || '',
+    birthDate: t.birthDate || null,
+    gender: genderEnum,
+    address: t.address || '',
+    referralEmployeeId: t.referralEmployee?.id ?? null,
+    referralAmount:
+      (t as any).referralAmount           // if backend adds it to VTO later
+      ?? t.referralEmployee?.referralAmount
+      ?? null,
+    isReferralConfirmed: false,
+    isActive: t.isActive !== undefined ? t.isActive : true
+  });
     
     // Set image
     if (t.imageUrl) {
@@ -1393,6 +1468,20 @@ getEmployeeName(id: number | null): string {
   return emp ? (emp.fullName || '') : '';
 }
 
+/** Returns the referral amount as a number, or null if empty/invalid */
+private getValidReferralAmount(): number | null {
+  const v = this.basicInfoForm.get('referralAmount')?.value;
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return isNaN(n) ? null : n;
+}
+
+/** Confirm flag is only true when a referral employee is actually selected */
+private getReferralConfirmedFlag(): boolean {
+  if (this.getValidReferralEmployeeId() === null) return false;
+  return !!this.basicInfoForm.get('isReferralConfirmed')?.value;
+}
+
 /** Ensure only a valid id is submitted */
 private getValidReferralEmployeeId(): number | null {
   const value = this.basicInfoForm.get('referralEmployeeId')?.value;
@@ -1430,6 +1519,8 @@ private getValidReferralEmployeeId(): number | null {
     const previewData = {
       fullName: this.basicInfoForm.get('fullName')?.value,
       referralEmployeeName: this.getEmployeeName(this.basicInfoForm.get('referralEmployeeId')?.value),
+      referralAmount: this.basicInfoForm.get('referralAmount')?.value,
+      isReferralConfirmed: this.basicInfoForm.get('isReferralConfirmed')?.value,
       nationalId: this.basicInfoForm.get('nationalId')?.value,
       academicYear: this.basicInfoForm.get('academicYear')?.value,
       birthDate: this.basicInfoForm.get('birthDate')?.value,
@@ -1517,6 +1608,14 @@ private getValidReferralEmployeeId(): number | null {
             <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${this.escapeHtml(data.academicYear) || '-'}</div></div>
             <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${this.escapeHtml(data.address) || '-'}</div></div>
             <div class="info-item"><div class="info-label">الموظف المُحيل</div><div class="info-value">${this.escapeHtml(data.referralEmployeeName) || '-'}</div></div>
+            <div class="info-item">
+              <div class="info-label">مبلغ النسبة</div>
+              <div class="info-value">${data.referralAmount ?? '-'} جم</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">تأكيد النسبة</div>
+              <div class="info-value">${data.isReferralConfirmed ? 'مؤكدة ✓' : 'غير مؤكدة ✗'}</div>
+            </div>
             ${!data.isNewTrainee ? `<div class="info-item"><div class="info-label">الحالة</div><div class="info-value">${data.isActive ? 'نشط' : 'غير نشط'}</div></div>` : ''}
           </div>
           <div class="signature-section">
@@ -1563,26 +1662,27 @@ private getValidReferralEmployeeId(): number | null {
     const genderValue = this.basicInfoForm.get('gender')?.value;
     const academicYearValue = this.basicInfoForm.get('academicYear')?.value;
     
-    const formData = {
-      fullName: this.basicInfoForm.get('fullName')?.value,
-      referralEmployeeId: this.getValidReferralEmployeeId(),   // <-- ADD
-      nationalId: this.basicInfoForm.get('nationalId')?.value,
-      academicYear: academicYearValue || '',
-      birthDate: this.basicInfoForm.get('birthDate')?.value,
-      gender: genderValue,
-      address: this.basicInfoForm.get('address')?.value,
-      isActive: this.basicInfoForm.get('isActive')?.value,
-      certificates: this.getCertificatesList().map(cert => ({
-        certificateName: cert.certificateName,
-        certificateNumber: cert.certificateNumber,
-        courseId: cert.courseId,
-        issueDate: cert.issueDate,
-        grade: cert.grade
-      })),
-      healthConditions: this.getHealthConditionsList(),
-      imageUrl: this.traineeImageFid
-    };
-    
+  const formData = {
+  fullName: this.basicInfoForm.get('fullName')?.value,
+  nationalId: this.basicInfoForm.get('nationalId')?.value,
+  referralEmployeeId: this.getValidReferralEmployeeId(),
+  referralAmount: this.getValidReferralAmount(),          // <-- ADD
+  isReferralConfirmed: this.getReferralConfirmedFlag(),   // <-- ADD
+  academicYear: academicYearValue || '',
+  birthDate: this.basicInfoForm.get('birthDate')?.value,
+  gender: genderValue,
+  address: this.basicInfoForm.get('address')?.value,
+  isActive: this.basicInfoForm.get('isActive')?.value,
+  certificates: this.getCertificatesList().map(cert => ({
+    certificateName: cert.certificateName,
+    certificateNumber: cert.certificateNumber,
+    courseId: cert.courseId,
+    issueDate: cert.issueDate,
+    grade: cert.grade
+  })),
+  healthConditions: this.getHealthConditionsList(),
+  imageUrl: this.traineeImageFid
+};
     console.log('Submitting trainee data:', formData);
     
     if (this.isEditMode && this.traineeId) {

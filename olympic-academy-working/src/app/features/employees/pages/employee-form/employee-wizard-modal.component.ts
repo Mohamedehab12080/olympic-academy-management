@@ -773,10 +773,10 @@ const previewData = {
               <div class="item"><div class="label">تحديث شهري</div><div class="value">${data.isMonthlyUpdated ? 'مفعل' : 'غير مفعل'}</div></div>
               <div class="item"><div class="label">فترة التحديث</div><div class="value">${data.updatePeriodInDays || 0} يوم</div></div>
               ${data.referralAmount != null ? `
-                <div class="item"><div class="label">مبلغ الإحالة</div><div class="value amount">${data.referralAmount}${data.isPercentReferral ? ' %' : ' جم'}</div></div>
+                <div class="item"><div class="label">مبلغ النسبة</div><div class="value amount">${data.referralAmount}${data.isPercentReferral ? ' %' : ' جم'}</div></div>
               ` : ''}
               ${data.totalRemainReferralAmount != null ? `
-                <div class="item"><div class="label">إجمالي مبلغ الإحالة المتبقي</div><div class="value">${data.totalRemainReferralAmount} جم</div></div>
+                <div class="item"><div class="label">إجمالي مبلغ النسبة المتبقي</div><div class="value">${data.totalRemainReferralAmount} جم</div></div>
               ` : ''}
             </div>
           

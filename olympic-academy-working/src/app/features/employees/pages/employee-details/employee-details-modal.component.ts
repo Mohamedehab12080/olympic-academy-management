@@ -227,13 +227,13 @@ import * as JsBarcode from 'jsbarcode';
     <!-- ✅ Referral Information -->
     <h4 class="section-heading">
       <mat-icon>card_giftcard</mat-icon>
-      معلومات الإحالة
+      معلومات النسبة
     </h4>
     <div class="financial-cards referral-cards">
       <div class="financial-card referral">
         <mat-icon>{{ employee.isPercentReferral ? 'percent' : 'payments' }}</mat-icon>
         <div>
-          <label>مبلغ الإحالة</label>
+          <label>مبلغ النسبة</label>
           <h3>
             {{ employee.referralAmount ?? 0 | number:'1.0-2' }}
             {{ employee.isPercentReferral ? '%' : 'جم' }}
@@ -243,14 +243,14 @@ import * as JsBarcode from 'jsbarcode';
       <div class="financial-card referral-dark">
         <mat-icon>savings</mat-icon>
         <div>
-          <label>إجمالي الإحالة المتبقي</label>
+          <label>إجمالي النسبة المتبقي</label>
           <h3>{{ (employee.totalRemainReferralAmount || 0) | currency:'EGP':'symbol':'1.0-2' }}</h3>
         </div>
       </div>
       <div class="financial-card referral-light">
         <mat-icon>rule</mat-icon>
         <div>
-          <label>نوع الإحالة</label>
+          <label>نوع النسبة</label>
           <h3>{{ employee.isPercentReferral ? 'نسبة مئوية' : 'مبلغ ثابت' }}</h3>
         </div>
       </div>
@@ -1595,7 +1595,7 @@ export class EmployeeDetailsModalComponent
     <td class="thermal-value amount">${salaryDisplay} جم</td>
   </tr>
   <tr>
-    <td class="thermal-label">🎁 الإحالة</td>
+    <td class="thermal-label">🎁 النسبة</td>
     <td class="thermal-value referral">
       ${t.referralAmount != null
         ? t.referralAmount.toLocaleString('ar-EG') + (t.isPercentReferral ? ' %' : ' جم')
@@ -1603,7 +1603,7 @@ export class EmployeeDetailsModalComponent
     </td>
   </tr>
   <tr>
-    <td class="thermal-label">📊 الإحالة المتبقية</td>
+    <td class="thermal-label">📊 النسبة المتبقية</td>
     <td class="thermal-value referral">${(t.totalRemainReferralAmount || 0).toLocaleString('ar-EG')} جم</td>
   </tr>
   <tr>
@@ -1919,10 +1919,10 @@ export class EmployeeDetailsModalComponent
   <div class="info-item"><span class="label">نوع الراتب</span><span class="value">${salaryTypeDisplay}</span></div>
 </div>
 
-<h2>🎁 معلومات الإحالة</h2>
+<h2>🎁 معلومات النسبة</h2>
 <div class="info-grid">
   <div class="info-item">
-    <span class="label">مبلغ الإحالة</span>
+    <span class="label">مبلغ النسبة</span>
     <span class="value amount referral">
       ${t.referralAmount != null
         ? t.referralAmount.toLocaleString('ar-EG') + (t.isPercentReferral ? ' %' : ' جم')
@@ -1930,11 +1930,11 @@ export class EmployeeDetailsModalComponent
     </span>
   </div>
   <div class="info-item">
-    <span class="label">إجمالي الإحالة المتبقي</span>
+    <span class="label">إجمالي النسبة المتبقي</span>
     <span class="value referral">${(t.totalRemainReferralAmount || 0).toLocaleString('ar-EG')} جم</span>
   </div>
   <div class="info-item">
-    <span class="label">نوع الإحالة</span>
+    <span class="label">نوع النسبة</span>
     <span class="value">${t.isPercentReferral ? 'نسبة مئوية' : 'مبلغ ثابت'}</span>
   </div>
 </div>

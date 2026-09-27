@@ -46,6 +46,10 @@ public class TraineeDTO implements Serializable {
 
     private Boolean isActive;
 
+    private Boolean isReferralConfirmed;
+
+    private Double referralAmount;
+
     @Valid
     private List<@Valid TraineeContactDTO> contacts = new ArrayList<>();
 
@@ -238,6 +242,48 @@ public class TraineeDTO implements Serializable {
         this.isActive = isActive;
     }
 
+    public TraineeDTO isReferralConfirmed(Boolean isReferralConfirmed) {
+        this.isReferralConfirmed = isReferralConfirmed;
+        return this;
+    }
+
+    /**
+     * Get isReferralConfirmed
+     *
+     * @return isReferralConfirmed
+     */
+
+    @Schema(name = "isReferralConfirmed", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("isReferralConfirmed")
+    public Boolean getIsReferralConfirmed() {
+        return isReferralConfirmed;
+    }
+
+    public void setIsReferralConfirmed(Boolean isReferralConfirmed) {
+        this.isReferralConfirmed = isReferralConfirmed;
+    }
+
+    public TraineeDTO referralAmount(Double referralAmount) {
+        this.referralAmount = referralAmount;
+        return this;
+    }
+
+    /**
+     * Get referralAmount
+     *
+     * @return referralAmount
+     */
+
+    @Schema(name = "referralAmount", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonProperty("referralAmount")
+    public Double getReferralAmount() {
+        return referralAmount;
+    }
+
+    public void setReferralAmount(Double referralAmount) {
+        this.referralAmount = referralAmount;
+    }
+
     public TraineeDTO contacts(List<@Valid TraineeContactDTO> contacts) {
         this.contacts = contacts;
         return this;
@@ -284,13 +330,15 @@ public class TraineeDTO implements Serializable {
                 && Objects.equals(this.gender, traineeDTO.gender) && Objects.equals(this.address, traineeDTO.address)
                 && Objects.equals(this.imageUrl, traineeDTO.imageUrl)
                 && Objects.equals(this.isActive, traineeDTO.isActive)
+                && Objects.equals(this.isReferralConfirmed, traineeDTO.isReferralConfirmed)
+                && Objects.equals(this.referralAmount, traineeDTO.referralAmount)
                 && Objects.equals(this.contacts, traineeDTO.contacts);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(fullName, nationalId, referralEmployeeId, academicYear, birthDate, gender, address,
-                imageUrl, isActive, contacts);
+                imageUrl, isActive, isReferralConfirmed, referralAmount, contacts);
     }
 
     @Override
@@ -306,6 +354,8 @@ public class TraineeDTO implements Serializable {
         sb.append("    address: ").append(toIndentedString(address)).append("\n");
         sb.append("    imageUrl: ").append(toIndentedString(imageUrl)).append("\n");
         sb.append("    isActive: ").append(toIndentedString(isActive)).append("\n");
+        sb.append("    isReferralConfirmed: ").append(toIndentedString(isReferralConfirmed)).append("\n");
+        sb.append("    referralAmount: ").append(toIndentedString(referralAmount)).append("\n");
         sb.append("    contacts: ").append(toIndentedString(contacts)).append("\n");
         sb.append("}");
         return sb.toString();

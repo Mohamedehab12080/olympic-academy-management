@@ -7,6 +7,10 @@ import bs.lib.common.model.generated.NewRecordVTO;
 import bs.lib.sql.db.adapter.model.dto.PaginationInfo;
 import bs.lib.sql.db.adapter.model.dto.SortingInfo;
 import bs.lib.sql.db.adapter.model.generated.OrderDirections;
+import bs.service.employee.api.repository.EmployeeRepository;
+import bs.service.employee.api.service.EmployeeService;
+import bs.service.employee.model.entity.Employee;
+import bs.service.employee.model.generated.EmployeeDTO;
 import bs.service.enrollment.api.repository.EnrollmentRepository;
 import bs.service.enrollment.model.entity.Enrollment;
 import bs.service.enrollment.model.filter.EnrollmentSearchFilter;
@@ -36,6 +40,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import static bs.service.employee.model.enums.EmployeeErrors.EMPLOYEE_NOT_FOUND;
 import static bs.service.trainee.model.enums.TraineeErrors.NATIONAL_ID_ALREADY_EXISTS;
 import static bs.service.trainee.model.enums.TraineeErrors.TRAINEE_NOT_FOUND;
 
@@ -51,6 +56,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final TraineeCertificateRepository traineeCertificateRepository;
     private final HealthConditionRepository healthConditionRepository;
     private final AbstractTraineeConfig abstractTraineeConfig;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     @Transactional
@@ -64,6 +70,12 @@ public class TraineeServiceImpl implements TraineeService {
         trainee = traineeRepository.insert(trainee);
         if(traineeDTO.getImageUrl()!=null){
             fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(trainee.getId()), Collections.singletonList(trainee.getImageUrl()));
+        }
+        if(traineeDTO.getIsReferralConfirmed()){
+            Employee employee=employeeRepository.selectById(traineeDTO.getReferralEmployeeId()).orElseThrow(()-> new BusinessException(EMPLOYEE_NOT_FOUND));
+            employee.setReferralAmount(traineeDTO.getReferralAmount());
+            employee.setTotalRemainReferralAmount(Integer.valueOf(""+Math.round(employee.getTotalRemainReferralAmount()+traineeDTO.getReferralAmount())));
+            employeeRepository.update(employee);
         }
         return NewRecordVTO.builder().id(trainee.getId()).build();
     }

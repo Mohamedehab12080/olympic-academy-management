@@ -1909,119 +1909,111 @@ private generateCardsPrintOptimized(
   let cardsHtml = '';
   const logoPath = 'assets/images/simpleLogoSvg.svg';
 
-  trainees.forEach((trainee, index) => {
-    const imageUrl = imageUrls[index] || '';
-    const traineeName = trainee.fullName || '-';
-    const nationalId = trainee.nationalId || '-';
-    const genderDisplay = trainee.gender?.title || '-';
-    const academicYearDisplay = this.getAcademicYearDisplay(
-      trainee.academicYear,
-    );
-    const isActive = trainee.isActive;
+trainees.forEach((trainee, index) => {
+  const imageUrl = imageUrls[index] || '';
+  const traineeName = trainee.fullName || '-';
+  const nationalId = trainee.nationalId || '-';
+  const referralEmployeeDisplay = trainee.referralEmployee?.fullName || '-';
+  const academicYearDisplay = this.getAcademicYearDisplay(
+    trainee.academicYear,
+  );
+  const isActive = trainee.isActive;
 
-    // ✅ Generate barcode image using the same method as details modal
-    let barcodeImage = '';
-    try {
-      // Create temporary canvas
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 200;
-      tempCanvas.height = 40;
-      
-      // Use JsBarcode (same as details modal)
-      JsBarcode(tempCanvas, nationalId || '000000', {
-        format: 'CODE128',
-        lineColor: '#000000',
-        width: 1.5,
-        height: 40,
-        displayValue: true,
-        fontSize: 10,
-        font: 'monospace',
-        textAlign: 'center',
-        margin: 5
-      });
-      
-      barcodeImage = tempCanvas.toDataURL('image/png');
-    } catch (e) {
-      console.error('Barcode generation error:', e);
-      // Fallback: generate simple text barcode
-      barcodeImage = '';
-    }
+  // ✅ Generate barcode image using the same method as details modal
+  let barcodeImage = '';
+  try {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 200;
+    tempCanvas.height = 40;
 
-    // ✅ Only show photo section if imageUrl exists and is not empty
-    const hasImage = imageUrl && imageUrl.trim() !== '';
-    const photoSection = hasImage
-      ? `
-    <div class="card-photo">
-      <img src="${imageUrl}" alt="${traineeName}" onerror="this.style.display='none'">
-    </div>
-  `
-      : '';
+    JsBarcode(tempCanvas, nationalId || '000000', {
+      format: 'CODE128',
+      lineColor: '#000000',
+      width: 1.5,
+      height: 40,
+      displayValue: true,
+      fontSize: 10,
+      font: 'monospace',
+      textAlign: 'center',
+      margin: 5,
+    });
 
-    // ✅ Use the barcode image directly (like details modal)
-    const barcodeHtml = barcodeImage
-      ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
-      : `<span style="font-family:monospace;font-size:12px;color:#000;">${nationalId}</span>`;
+    barcodeImage = tempCanvas.toDataURL('image/png');
+  } catch (e) {
+    console.error('Barcode generation error:', e);
+    barcodeImage = '';
+  }
 
-    cardsHtml += `
-        <div class="card-wrapper">
-          <div class="card">
-            <!-- Watermark (transparent background) -->
-            <div class="card-watermark">
-              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
-            </div>
-            <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
-            
-            <!-- Card Content -->
-            <div class="card-content">
-              <!-- Logo at top - Colored and visible -->
-              <div class="card-logo-section">
-                <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
-                <div class="card-logo-text">
-                  <span class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</span>
-                  <span class="card-title">✦ بطاقة هوية متدرب ✦</span>
-                </div>
+  const hasImage = imageUrl && imageUrl.trim() !== '';
+  const photoSection = hasImage
+    ? `
+  <div class="card-photo">
+    <img src="${imageUrl}" alt="${traineeName}" onerror="this.style.display='none'">
+  </div>
+`
+    : '';
+
+  const barcodeHtml = barcodeImage
+    ? `<img src="${barcodeImage}" alt="Barcode" style="max-width:100%;height:auto;">`
+    : `<span style="font-family:monospace;font-size:12px;color:#000;">${nationalId}</span>`;
+
+  cardsHtml += `
+      <div class="card-wrapper">
+        <div class="card">
+          <div class="card-watermark">
+            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+          </div>
+          <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+          
+          <div class="card-content">
+            <div class="card-logo-section">
+              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
+              <div class="card-logo-text">
+                <span class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</span>
+                <span class="card-title">✦ بطاقة هوية متدرب ✦</span>
               </div>
-              
-              <div class="card-body">
-                ${photoSection}
-                <div class="card-info">
-                  <div class="card-name">${traineeName}</div>
-                  <div class="card-id">رقم الهوية: ${nationalId}</div>
-                  <div class="card-details">
-                    <div class="detail-row">
-                      <span class="detail-label">الجنس:</span>
-                      <span class="detail-value">${genderDisplay}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span class="detail-label">السنة الدراسية:</span>
-                      <span class="detail-value">${academicYearDisplay}</span>
-                    </div>
-                    <div class="detail-row">
-                      <span class="detail-label">الحالة:</span>
-                      <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
-                    </div>
+            </div>
+            
+            <div class="card-body">
+              ${photoSection}
+              <div class="card-info">
+                <div class="card-name">${traineeName}</div>
+                <div class="card-id">رقم الهوية: ${nationalId}</div>
+                <div class="card-details">
+                  <div class="detail-row">
+                    <span class="detail-label">الموظف المُحيل:</span>
+                    <span class="detail-value">${referralEmployeeDisplay}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">السنة الدراسية:</span>
+                    <span class="detail-value">${academicYearDisplay}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">الحالة:</span>
+                    <span class="detail-value status ${isActive ? 'active' : 'inactive'}">${isActive ? 'نشط' : 'غير نشط'}</span>
                   </div>
                 </div>
               </div>
-              <div class="card-footer">
-                <div class="card-barcode">
-                  ${barcodeHtml}
-                </div>
-                <div class="card-signature">
-                  <div class="signature-line"></div>
-                  <div class="signature-label">توقيع المتدرب</div>
-                </div>
-                <div class="card-signature">
-                  <div class="signature-line"></div>
-                  <div class="signature-label">ختم الأكاديمية</div>
-                </div>
-              </div>
-              <div class="card-issue-date">تاريخ الإصدار: ${today}</div>
             </div>
+            <div class="card-footer">
+              <div class="card-barcode">
+                ${barcodeHtml}
+              </div>
+              <div class="card-signature">
+                <div class="signature-line"></div>
+                <div class="signature-label">توقيع المتدرب</div>
+              </div>
+              <div class="card-signature">
+                <div class="signature-line"></div>
+                <div class="signature-label">ختم الأكاديمية</div>
+              </div>
+            </div>
+            <div class="card-issue-date">تاريخ الإصدار: ${today}</div>
           </div>
         </div>
-      `;
-  });
+      </div>
+    `;
+});
 
   printWindow.document.write(`
   <!DOCTYPE html>

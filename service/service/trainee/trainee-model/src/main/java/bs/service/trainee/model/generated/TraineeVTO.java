@@ -2,6 +2,7 @@ package bs.service.trainee.model.generated;
 
 import bs.lib.common.model.generated.CommonEnrollmentVTO;
 import bs.lib.common.model.generated.LookupVTO;
+import bs.service.employee.model.generated.EmployeeLookupVTO;
 import bs.service.user.model.generated.LightUserVTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,7 +35,7 @@ public class TraineeVTO implements Serializable {
 
     private String fullName;
 
-    private LightUserVTO referralEmployee;
+    private EmployeeLookupVTO referralEmployee;
 
     private String nationalId;
 
@@ -115,7 +116,7 @@ public class TraineeVTO implements Serializable {
         this.fullName = fullName;
     }
 
-    public TraineeVTO referralEmployee(LightUserVTO referralEmployee) {
+    public TraineeVTO referralEmployee(EmployeeLookupVTO referralEmployee) {
         this.referralEmployee = referralEmployee;
         return this;
     }
@@ -128,11 +129,11 @@ public class TraineeVTO implements Serializable {
     @Valid
     @Schema(name = "referralEmployee", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("referralEmployee")
-    public LightUserVTO getReferralEmployee() {
+    public EmployeeLookupVTO getReferralEmployee() {
         return referralEmployee;
     }
 
-    public void setReferralEmployee(LightUserVTO referralEmployee) {
+    public void setReferralEmployee(EmployeeLookupVTO referralEmployee) {
         this.referralEmployee = referralEmployee;
     }
 

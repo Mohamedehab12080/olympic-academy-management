@@ -131,6 +131,10 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
   isLoading = false;
   isSubmitting = false;
   
+  maxReferralAmount: number = 0;
+  totalRemainReferralAmount: number = 0;
+  isIncentiveTransaction: boolean = false;
+
   // Data collections
   employees: any[] = [];
   paymentMethods: any[] = [];
@@ -212,7 +216,8 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
         this.selectedTransactionType = type;
         this.transactionTypeName = type.title || '';
         this.isSalaryTransaction = type.id === 1;
-        
+        this.isIncentiveTransaction = type.id === 2;
+
         // Reset employee selection when transaction type changes
         if (!this.isEditMode) {
           this.transactionForm.patchValue({
@@ -355,7 +360,11 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     this.employeeService.getEmployeeById(employeeId).subscribe({
       next: (employee: any) => {
         const currentRemainedSalary = employee.remainedSalary || 0;
-        
+        const currentReferral = employee.totalRemainReferralAmount || 0; 
+
+        this.totalRemainReferralAmount = currentReferral;
+        this.maxReferralAmount = currentReferral;     
+
         if (this.isEditMode && currentAmount !== undefined) {
           const previousRemained = currentRemainedSalary + currentAmount;
           this.maxWithdrawAmount = previousRemained;
@@ -366,6 +375,11 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
             employeeRemainedSalary: previousRemained,
             newRemainedSalary: previousRemained - currentAmount
           });
+
+          if (this.isIncentiveTransaction) {
+            this.maxReferralAmount = currentReferral + currentAmount; 
+            this.totalRemainReferralAmount = this.maxReferralAmount;
+          }
         } else {
           this.maxWithdrawAmount = currentRemainedSalary;
           
@@ -376,13 +390,16 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
             newRemainedSalary: currentRemainedSalary
           });
         }
-        
+
         this.selectedEmployee = {
           fullName: employee.title || employee.fullName,
           salary: employee.salary || 0,
           remainedSalary: currentRemainedSalary,
           salaryType: employee.salaryType,
-          nationalId: employee.nationalId
+          nationalId: employee.nationalId,
+          totalRemainReferralAmount: currentReferral,
+          referralAmount: employee.referralAmount || 0,
+          isPercentReferral: employee.isPercentReferral === true
         };
         
         this.setAmountValidators();
@@ -396,24 +413,26 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     });
   }
 
-  setAmountValidators() {
-    const amountControl = this.transactionForm.get('amountWithdrawn');
-    if (amountControl) {
-      if (this.isSalaryTransaction) {
-        amountControl.setValidators([
-          Validators.required,
-          Validators.min(1),
-          Validators.max(this.maxWithdrawAmount || 0)
-        ]);
-      } else {
-        amountControl.setValidators([
-          Validators.required,
-          Validators.min(1)
-        ]);
-      }
-      amountControl.updateValueAndValidity();
-    }
+setAmountValidators() {
+  const amountControl = this.transactionForm.get('amountWithdrawn');
+  if (!amountControl) return;
+
+  const validators: any[] = [
+    Validators.required,
+    Validators.min(1)
+  ];
+
+  if (this.isSalaryTransaction) {
+    validators.push(Validators.max(this.maxWithdrawAmount || 0));
   }
+
+  if (this.isIncentiveTransaction) {
+    validators.push(Validators.max(this.maxReferralAmount || 0));
+  }
+
+  amountControl.setValidators(validators);
+  amountControl.updateValueAndValidity();
+}
 
   // ==========================================================================
   // BARCODE SEARCH METHODS
@@ -568,30 +587,38 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     
     this.isLoading = true;
     
-    this.employeeService.getEmployeeById(employeeId).subscribe({
-      next: (employee: any) => {
-        const currentRemainedSalary = employee.remainedSalary || 0;
-        this.maxWithdrawAmount = currentRemainedSalary;
-        
-        this.selectedEmployee = {
-          fullName: employee.title || employee.fullName,
-          salary: employee.salary || 0,
-          remainedSalary: currentRemainedSalary,
-          salaryType: employee.salaryType,
-          nationalId: employee.nationalId
-        };
-        
-        this.transactionForm.patchValue({
-          employeeFullName: employee.title || employee.fullName,
-          employeeSalary: employee.salary || 0,
-          employeeRemainedSalary: currentRemainedSalary,
-          amountWithdrawn: null,
-          newRemainedSalary: currentRemainedSalary
-        });
-        
-        this.setAmountValidators();
-        this.isLoading = false;
-      },
+   this.employeeService.getEmployeeById(employeeId).subscribe({
+  next: (employee: any) => {
+    const currentRemainedSalary = employee.remainedSalary || 0;
+    const currentReferral = employee.totalRemainReferralAmount || 0;   // ✅ NEW
+
+    this.maxWithdrawAmount = currentRemainedSalary;
+    this.totalRemainReferralAmount = currentReferral;                    // ✅ NEW
+    this.maxReferralAmount = currentReferral;                            // ✅ NEW
+
+    this.selectedEmployee = {
+      fullName: employee.title || employee.fullName,
+      salary: employee.salary || 0,
+      remainedSalary: currentRemainedSalary,
+      salaryType: employee.salaryType,
+      nationalId: employee.nationalId,
+      // ✅ NEW referral data on the preview object
+      totalRemainReferralAmount: currentReferral,
+      referralAmount: employee.referralAmount || 0,
+      isPercentReferral: employee.isPercentReferral === true
+    };
+
+    this.transactionForm.patchValue({
+      employeeFullName: employee.title || employee.fullName,
+      employeeSalary: employee.salary || 0,
+      employeeRemainedSalary: currentRemainedSalary,
+      amountWithdrawn: null,
+      newRemainedSalary: currentRemainedSalary
+    });
+
+    this.setAmountValidators();
+    this.isLoading = false;
+  },
       error: (err) => {
         console.error('Error fetching employee:', err);
         this.notification.showError('حدث خطأ في تحميل بيانات الموظف');
@@ -600,26 +627,54 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
     });
   }
 
-  calculateNewRemainedSalary() {
-    if (!this.isSalaryTransaction) {
-      this.transactionForm.get('newRemainedSalary')?.setValue(this.transactionForm.get('employeeRemainedSalary')?.value || 0);
-      return;
-    }
-    
-    const currentRemained = this.transactionForm.get('employeeRemainedSalary')?.value || 0;
-    const amountWithdrawn = this.transactionForm.get('amountWithdrawn')?.value || 0;
-    
-    if (amountWithdrawn > currentRemained && currentRemained > 0) {
-      this.transactionForm.get('amountWithdrawn')?.setErrors({ exceedsRemained: true });
-      this.notification.showWarning(`المبلغ المطلوب لا يمكن أن يتجاوز الراتب المتبقي (${currentRemained} جم)`);
-      return;
+calculateNewRemainedSalary() {
+  const amountWithdrawn = this.transactionForm.get('amountWithdrawn')?.value || 0;
+
+  // ✅ Incentive guard
+  if (this.isIncentiveTransaction) {
+    if (this.totalRemainReferralAmount > 0 && amountWithdrawn > this.totalRemainReferralAmount) {
+      this.transactionForm.get('amountWithdrawn')?.setErrors({ exceedsReferral: true });
+      this.notification.showWarning(
+        `المبلغ المطلوب لا يمكن أن يتجاوز النسبة المتبقية (${this.totalRemainReferralAmount} جم)`
+      );
     } else {
-      this.transactionForm.get('amountWithdrawn')?.setErrors(null);
+      // Clear only our custom error; leave validator errors alone
+      const ctrl = this.transactionForm.get('amountWithdrawn');
+      if (ctrl?.hasError('exceedsReferral')) {
+        ctrl.setErrors(null);
+        ctrl.updateValueAndValidity();
+      }
     }
-    
-    const newRemained = currentRemained - amountWithdrawn;
-    this.transactionForm.get('newRemainedSalary')?.setValue(Math.max(0, newRemained));
   }
+
+  // Salary → existing logic
+  if (!this.isSalaryTransaction) {
+    this.transactionForm.get('newRemainedSalary')?.setValue(
+      this.transactionForm.get('employeeRemainedSalary')?.value || 0
+    );
+    return;
+  }
+
+  const currentRemained = this.transactionForm.get('employeeRemainedSalary')?.value || 0;
+
+  if (amountWithdrawn > currentRemained && currentRemained > 0) {
+    this.transactionForm.get('amountWithdrawn')?.setErrors({ exceedsRemained: true });
+    this.notification.showWarning(
+      `المبلغ المطلوب لا يمكن أن يتجاوز الراتب المتبقي (${currentRemained} جم)`
+    );
+    return;
+  } else {
+    const ctrl = this.transactionForm.get('amountWithdrawn');
+    if (ctrl?.hasError('exceedsRemained')) {
+      ctrl.setErrors(null);
+      ctrl.updateValueAndValidity();
+    }
+  }
+
+  const newRemained = currentRemained - amountWithdrawn;
+  this.transactionForm.get('newRemainedSalary')?.setValue(Math.max(0, newRemained));
+}
+
 
   // ==========================================================================
   // STEP NAVIGATION
@@ -658,15 +713,27 @@ export class SalaryIncentiveWizardModalComponent implements OnInit {
       case 2:
         const amountWithdrawn = this.transactionForm.get('amountWithdrawn')?.value;
         const currentRemained = this.transactionForm.get('employeeRemainedSalary')?.value;
-        
+
         if (this.isSalaryTransaction) {
-          return this.transactionForm.get('amountWithdrawn')?.valid === true && 
-                 this.transactionForm.get('withdrawDate')?.valid === true &&
-                 amountWithdrawn <= currentRemained;
-        } else {
-          return this.transactionForm.get('amountWithdrawn')?.valid === true && 
-                 this.transactionForm.get('withdrawDate')?.valid === true;
+          return (
+            this.transactionForm.get('amountWithdrawn')?.valid === true &&
+            this.transactionForm.get('withdrawDate')?.valid === true &&
+            amountWithdrawn <= currentRemained
+          );
         }
+        if (this.isIncentiveTransaction) {
+            return (
+              this.transactionForm.get('amountWithdrawn')?.valid === true &&
+              this.transactionForm.get('withdrawDate')?.valid === true &&
+              (this.totalRemainReferralAmount === 0 ||
+                amountWithdrawn <= this.totalRemainReferralAmount)
+            );
+          }
+
+          return (
+            this.transactionForm.get('amountWithdrawn')?.valid === true &&
+            this.transactionForm.get('withdrawDate')?.valid === true
+          );
       case 3:
         return this.transactionForm.get('paymentMethodId')?.valid === true;
       default:
@@ -869,6 +936,16 @@ onSubmit(): void {
           this.isSubmitting = false;
         }
       });
+    }
+    if (
+      this.isIncentiveTransaction &&
+      this.totalRemainReferralAmount > 0 &&
+      amountWithdrawn > this.totalRemainReferralAmount
+    ) {
+      this.notification.showWarning(
+        `المبلغ المطلوب لا يمكن أن يتجاوز النسبة المتبقية (${this.totalRemainReferralAmount} جم)`
+      );
+      return;
     }
   }
 

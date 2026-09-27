@@ -83,8 +83,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new BusinessException(EMPLOYEE_NOT_FOUND, employeeId));
         Employee employeeToUpdate = employeeMapper.toEmployee(employeeDTO);
         employeeToUpdate.setId(employeeId);
-        employeeToUpdate.setIsActive(employeeDTO.getIsActive());
-        employeeToUpdate.setIsDeleted(false);
+        employeeToUpdate.setIsActive(employeeDTO.getIsActive()!=null ? employeeDTO.getIsActive():employee.getIsActive());
+        employeeToUpdate.setIsDeleted(employee.getIsDeleted());
         employeeToUpdate.setCreatedOn(employee.getCreatedOn());
         employeeToUpdate.setCreatedBy(employee.getCreatedBy());
         employeeRepository.update(employeeToUpdate);

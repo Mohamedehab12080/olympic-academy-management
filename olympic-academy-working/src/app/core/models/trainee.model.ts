@@ -1,5 +1,6 @@
 // trainee.model.ts
 import { LightUserVTO, LookupVTO, Gender, ContactType, CommonEnrollmentVTO } from './common.model';
+import { EmployeeLookupVTO } from './employee.model';
 
 // ==================== Enums (specific to Trainee module) ====================
 
@@ -37,6 +38,8 @@ export interface TraineeLookupResultSet {
 export interface TraineeDTO {
   fullName: string;
   referralEmployeeId:number;
+  isReferralConfirmed:boolean;
+  referralAmount:number;
   nationalId: string;
   academicYear?: string;  
   birthDate?: string;
@@ -62,12 +65,12 @@ export interface HealthConditionDTO {
   note?: string;
 }
 
-// ==================== VTOs (received from backend - use LookupVTO for enums) ====================
+// ==================== VTOs (received from backend - use LookupVTTraineeDTOO for enums) ====================
 
 export interface TraineeVTO {
   id: number;
   fullName: string;
-  referralEmployee:LightUserVTO;
+  referralEmployee:EmployeeLookupVTO;
   nationalId: string;
   academicYear?: string;  // Changed from string to AcademicYear object
   birthDate?: string;

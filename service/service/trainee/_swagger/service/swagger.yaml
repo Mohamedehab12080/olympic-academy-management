@@ -766,6 +766,11 @@ components:
           type: string
         isActive:
           type: boolean
+        isReferralConfirmed:
+          type: boolean
+        referralAmount:
+          type: number
+          format: double
         contacts:
           type: array
           items:
@@ -879,7 +884,7 @@ components:
         fullName:
           type: string
         referralEmployee:
-          $ref: '../../../../../service/service/user/_swagger/service/swagger.yaml#/components/schemas/LightUserVTO'
+          $ref: '../../../../../service/service/employee/_swagger/service/swagger.yaml#/components/schemas/EmployeeLookupVTO'
         nationalId:
           type: string
         academicYear:

@@ -50,6 +50,13 @@ public class SalaryIncentiveServiceImpl implements SalaryIncentiveService {
             employee.setRemainedSalary(employee.getRemainedSalary() - salaryIncentiveDTO.getAmountWithdrawn());
         }
 
+        if(salaryIncentiveDTO.getSalaryTransactionType()==SalaryTransactionType.INCENTIVE){
+            if(employee.getTotalRemainReferralAmount()<salaryIncentiveDTO.getAmountWithdrawn()){
+                throw new BusinessException(INSUFFICIENT_REMAINED_INCENTIVE);
+            }
+            employee.setTotalRemainReferralAmount(employee.getTotalRemainReferralAmount() - salaryIncentiveDTO.getAmountWithdrawn());
+        }
+
         employeeRepository.update(employee);
         incentive = salaryIncentiveRepository.insert(incentive);
 

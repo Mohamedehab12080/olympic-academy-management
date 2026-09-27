@@ -1196,9 +1196,9 @@ const exportData = dataToExport.map(
     الراتب: employee.salary || 0,
     'الراتب المتبقي': employee.remainedSalary || 0,
     // ✅ NEW
-    'مبلغ الإحالة': employee.referralAmount ?? 0,
-    'نوع الإحالة': employee.isPercentReferral ? 'نسبة %' : 'مبلغ ثابت',
-    'إجمالي الإحالة المتبقي': employee.totalRemainReferralAmount ?? 0,
+    'مبلغ النسبة': employee.referralAmount ?? 0,
+    'نوع النسبة': employee.isPercentReferral ? 'نسبة %' : 'مبلغ ثابت',
+    'إجمالي النسبة المتبقي': employee.totalRemainReferralAmount ?? 0,
     'تحديث شهري': employee.isMonthlyUpdated ? 'مفعل' : 'غير مفعل',
     'فترة التحديث (أيام)': employee.updatePeriodInDays || 0,
     الحالة: employee.isActive ? 'نشط' : 'غير نشط',
@@ -1404,8 +1404,8 @@ async exportToPDF(): Promise<void> {
               <th style="width:9%;">تاريخ التوظيف</th>
               <th style="width:9%;">الراتب</th>
               <th style="width:9%;">المتبقي</th>
-              <th style="width:9%;">مبلغ الإحالة</th>
-              <th style="width:9%;">الإحالة المتبقية</th>
+              <th style="width:9%;">مبلغ النسبة</th>
+              <th style="width:9%;">النسبة المتبقية</th>
               <th style="width:7%;">تحديث شهري</th>
               <th style="width:6%;">فترة التحديث</th>
               <th style="width:6%;">الحالة</th>
@@ -1865,13 +1865,13 @@ async exportToPDF(): Promise<void> {
                 <td class="thermal-value ${remainedSalary === 0 ? 'remaining-zero' : 'remaining'}">${remainedSalary.toLocaleString()} جم</td>
               </tr>
               <tr>
-                <td class="thermal-label">🎁 مبلغ الإحالة</td>
+                <td class="thermal-label">🎁 مبلغ النسبة</td>
                 <td class="thermal-value">${employee.referralAmount != null
                   ? employee.referralAmount.toLocaleString() + (employee.isPercentReferral ? ' %' : ' جم')
                   : '-'}</td>
               </tr>
               <tr>
-                <td class="thermal-label">📊 الإحالة المتبقية</td>
+                <td class="thermal-label">📊 النسبة المتبقية</td>
                 <td class="thermal-value">${(employee.totalRemainReferralAmount || 0).toLocaleString()} جم</td>
               </tr>
               <tr>

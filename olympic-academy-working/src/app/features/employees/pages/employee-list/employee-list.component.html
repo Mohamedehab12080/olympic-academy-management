@@ -118,7 +118,7 @@
         <div class="stat-icon">🎁</div>
         <div class="stat-info">
           <h3>{{ totalRemainReferralAmount | currency:'EGP':'symbol':'1.0-0' }}</h3>
-          <p>إجمالي الإحالة المتبقية</p>
+          <p>إجمالي النسبة المتبقية</p>
         </div>
       </div>
       <div class="stat-card info">
@@ -247,7 +247,7 @@
 
           <!-- ✅ Referral Amount Column (with % or جم) -->
 <ng-container matColumnDef="referralAmount">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>مبلغ الإحالة</th>
+  <th mat-header-cell *matHeaderCellDef mat-sort-header>مبلغ النسبة</th>
   <td mat-cell *matCellDef="let employee">
     <span
       *ngIf="employee.referralAmount != null"
@@ -262,7 +262,7 @@
 
 <!-- ✅ Total Remain Referral Amount Column -->
 <ng-container matColumnDef="totalRemainReferralAmount">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>الإحالة المتبقية</th>
+  <th mat-header-cell *matHeaderCellDef mat-sort-header>النسبة المتبقية</th>
   <td mat-cell *matCellDef="let employee">
     <span class="remain-referral-value">
       {{ (employee.totalRemainReferralAmount || 0) | currency:'EGP':'symbol':'1.0-0' }}

@@ -49,6 +49,7 @@ public enum FinancialErrors implements Errors {
     EMPLOYEE_NOT_FOUND_FOR_SALARY(FinancialDomains.SALARY_INCENTIVE, "0002", "الموظف غير موجود {0}"),
     INVALID_SALARY_TRANSACTION_TYPE(FinancialDomains.SALARY_INCENTIVE, "0003", "نوع المعاملة غير صالح"),
     INSUFFICIENT_REMAINED_SALARY(FinancialDomains.SALARY_INCENTIVE, "0004", "الراتب المتبقي غير كافي"),
+    INSUFFICIENT_REMAINED_INCENTIVE(FinancialDomains.SALARY_INCENTIVE, "0005", "النسبة المتبقية غير كافية"),
 
     // Salary Deduction Errors
     SALARY_DEDUCTION_NOT_FOUND(FinancialDomains.SALARY_DEDUCTION, "0001", "خصم الراتب غير موجود {0}"),
