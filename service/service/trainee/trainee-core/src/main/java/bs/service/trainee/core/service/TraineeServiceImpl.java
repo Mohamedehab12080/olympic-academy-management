@@ -73,7 +73,7 @@ public class TraineeServiceImpl implements TraineeService {
         }
         if(traineeDTO.getIsReferralConfirmed()){
             Employee employee=employeeRepository.selectById(traineeDTO.getReferralEmployeeId()).orElseThrow(()-> new BusinessException(EMPLOYEE_NOT_FOUND));
-            employee.setReferralAmount(traineeDTO.getReferralAmount());
+//            employee.setReferralAmount(traineeDTO.getReferralAmount());
             employee.setTotalRemainReferralAmount(Integer.valueOf(""+Math.round(employee.getTotalRemainReferralAmount()+traineeDTO.getReferralAmount())));
             employeeRepository.update(employee);
         }
@@ -94,6 +94,16 @@ public class TraineeServiceImpl implements TraineeService {
         traineeRepository.update(traineeToUpdate);
         if(traineeDTO.getImageUrl()!=null){
             fileService.updateFileUsage(TraineeDomains.TRAINEE.id(),String.valueOf(traineeToUpdate.getId()), Collections.singletonList(traineeToUpdate.getImageUrl()));
+        }
+        if(traineeDTO.getIsReferralConfirmed()){
+            Employee employee=employeeRepository.selectById(traineeDTO.getReferralEmployeeId()).orElseThrow(()-> new BusinessException(EMPLOYEE_NOT_FOUND));
+//            employee.setReferralAmount(traineeDTO.getReferralAmount());
+            if(employee.getTotalRemainReferralAmount()==null){
+                employee.setTotalRemainReferralAmount(Integer.valueOf(""+Math.round(traineeDTO.getReferralAmount())));
+            }else{
+                employee.setTotalRemainReferralAmount(Integer.valueOf(""+Math.round(employee.getTotalRemainReferralAmount()+traineeDTO.getReferralAmount())));
+            }
+            employeeRepository.update(employee);
         }
         return NewRecordVTO.builder().id(traineeId).build();
     }

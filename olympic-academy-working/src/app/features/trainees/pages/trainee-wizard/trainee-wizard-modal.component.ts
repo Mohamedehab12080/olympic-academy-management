@@ -265,7 +265,7 @@ interface ContactFormGroup {
                   <app-searchable-select
                     class="full-width"
                     formControlName="referralEmployeeId"
-                    label="الموظف المُحيل"
+                    label="موظف النسبة"
                     placeholder="ابحث بالاسم أو رقم الهوية..."
                     [options]="employeeSelectOptions"
                     [clearable]="true"
@@ -284,7 +284,7 @@ interface ContactFormGroup {
                       placeholder="أدخل مبلغ النسبة"
                       min="0"
                     />
-                    <mat-hint>يتم تحميله تلقائياً من بيانات الموظف المُحيل — يمكنك تعديله</mat-hint>
+                    <mat-hint>يتم تحميله تلقائياً من بيانات موظف النسبة — يمكنك تعديله</mat-hint>
                   </mat-form-field>
 
                   <!-- Referral Confirmed Toggle -->
@@ -528,7 +528,7 @@ interface ContactFormGroup {
                     <div><strong>تاريخ الميلاد:</strong> {{ basicInfoForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</div>
                     <div><strong>الجنس:</strong> {{ getGenderTitle(basicInfoForm.get('gender')?.value) || '-' }}</div>
                     <div><strong>العنوان:</strong> {{ basicInfoForm.get('address')?.value || '-' }}</div>
-                    <div><strong>الموظف المُحيل:</strong> {{ getEmployeeName(basicInfoForm.get('referralEmployeeId')?.value) || '-' }}</div>
+                    <div><strong>موظف النسبة:</strong> {{ getEmployeeName(basicInfoForm.get('referralEmployeeId')?.value) || '-' }}</div>
                     <div>
                           <strong>مبلغ النسبة:</strong>
                           {{ basicInfoForm.get('referralAmount')?.value ?? '-' }} جم
@@ -1607,7 +1607,7 @@ private getValidReferralEmployeeId(): number | null {
             <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${data.gender || '-'}</div></div>
             <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${this.escapeHtml(data.academicYear) || '-'}</div></div>
             <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${this.escapeHtml(data.address) || '-'}</div></div>
-            <div class="info-item"><div class="info-label">الموظف المُحيل</div><div class="info-value">${this.escapeHtml(data.referralEmployeeName) || '-'}</div></div>
+            <div class="info-item"><div class="info-label">موظف النسبة</div><div class="info-value">${this.escapeHtml(data.referralEmployeeName) || '-'}</div></div>
             <div class="info-item">
               <div class="info-label">مبلغ النسبة</div>
               <div class="info-value">${data.referralAmount ?? '-'} جم</div>

@@ -1211,7 +1211,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
       'رقم الهوية': t.nationalId,
       'السنة الدراسية': this.getAcademicYearDisplay(t.academicYear),
       الجنس: t.gender?.title || '-',
-      'الموظف المُحيل': t.referralEmployee?.fullName || '-',   // <-- ADD
+      'موظف النسبة': t.referralEmployee?.fullName || '-',   // <-- ADD
       الحالة: t.isActive ? 'نشط' : 'غير نشط',
     }));
 
@@ -1362,7 +1362,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
                   <th style="width: 15%;">رقم الهوية</th>
                   <th style="width: 13%;">السنة الدراسية</th>
                   <th style="width: 12%;">الجنس</th>
-                  <th style="width: 18%;">الموظف المُحيل</th>
+                  <th style="width: 18%;">موظف النسبة</th>
                   <th style="width: 16%;">الحالة</th>
                 </tr>
               </thead>
@@ -1388,7 +1388,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     printContainer.style.width = '100%';
 
     // Get the logo as base64 for reliable printing
-    const logoPath = 'assets/images/mainLogoSvg.svg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
     printContainer.innerHTML = `
       <!DOCTYPE html>
@@ -1907,7 +1907,7 @@ private generateCardsPrintOptimized(
 
   const today = new Date().toLocaleDateString('ar-EG');
   let cardsHtml = '';
-  const logoPath = 'assets/images/simpleLogoSvg.svg';
+  const logoPath = 'assets/images/mainLogo.jpeg';
 
 trainees.forEach((trainee, index) => {
   const imageUrl = imageUrls[index] || '';
@@ -1981,7 +1981,7 @@ trainees.forEach((trainee, index) => {
                 <div class="card-id">رقم الهوية: ${nationalId}</div>
                 <div class="card-details">
                   <div class="detail-row">
-                    <span class="detail-label">الموظف المُحيل:</span>
+                    <span class="detail-label">موظف النسبة:</span>
                     <span class="detail-value">${referralEmployeeDisplay}</span>
                   </div>
                   <div class="detail-row">

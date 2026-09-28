@@ -1351,7 +1351,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         trend: 0
       },
       { 
-        label: 'إجمالي الحوافز', 
+        label: 'إجمالي النسبة', 
         value: this.data.totalIncentives || 0, 
         icon: 'card_giftcard', 
         iconClass: 'incentives',
@@ -1616,7 +1616,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           <div class="print-grid">
             <div class="print-card"><div class="card-label">إجمالي الرواتب</div><div class="card-value financial">${this.formatCurrency(this.data?.totalSalary || 0)}</div></div>
             <div class="print-card"><div class="card-label">إجمالي السلف</div><div class="card-value financial">${this.formatCurrency(this.data?.totalAdvance || 0)}</div></div>
-            <div class="print-card"><div class="card-label">إجمالي الحوافز</div><div class="card-value financial">${this.formatCurrency(this.data?.totalIncentives || 0)}</div></div>
+            <div class="print-card"><div class="card-label">إجمالي النسبة</div><div class="card-value financial">${this.formatCurrency(this.data?.totalIncentives || 0)}</div></div>
             <div class="print-card"><div class="card-label">إيجارات الأماكن (مصروف)</div><div class="card-value expense">${this.formatCurrency(this.data?.totalPlacesRent || 0)}</div></div>
             <div class="print-card"><div class="card-label">إيجارات الأماكن (إيراد)</div><div class="card-value income">${this.formatCurrency(this.data?.totalPlacesGained || 0)}</div></div>
             <div class="print-card"><div class="card-label">مدفوعات التسجيل</div><div class="card-value income">${this.formatCurrency(this.data?.totalEnrollmentPayments || 0)}</div></div>

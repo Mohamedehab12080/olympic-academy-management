@@ -46,7 +46,7 @@
           <!-- Referral Employee Filter -->
           <div class="referral-filter">
             <app-searchable-select
-              label="الموظف المُحيل"
+              label="موظف النسبة"
               placeholder="ابحث بالاسم أو رقم الهوية..."
               [options]="employeeSelectOptions"
               [clearable]="true"
@@ -181,7 +181,7 @@
 
             <!-- Referral Employee -->
           <ng-container matColumnDef="referralEmployee">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>الموظف المُحيل</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>موظف النسبة</th>
             <td mat-cell *matCellDef="let trainee">
               <span *ngIf="trainee.referralEmployee?.fullName; else noReferral">
                 {{ trainee.referralEmployee.fullName }}

@@ -202,7 +202,7 @@ function getDisplayTitle(
               <div class="info-item">
                 <mat-icon>person_search</mat-icon>
                 <div>
-                  <label>الموظف المُحيل</label>
+                  <label>موظف النسبة</label>
                   <p>{{ trainee.referralEmployee?.fullName || '-' }}</p>
                 </div>
               </div>
@@ -1110,7 +1110,7 @@ printTraineeCard(): void {
     const today = new Date().toLocaleDateString('ar-EG');
     const genderDisplay = this.getGenderDisplay(t.gender);
     const academicYearDisplay = this.getAcademicYearDisplay(t.academicYear);
-    const logoPath = 'assets/images/simpleLogoSvg.svg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
     const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
 
     // Photo section - only shown if image exists
@@ -1854,7 +1854,7 @@ printTraineeCard(): void {
               <div class="info-item"><div class="info-label">الجنس</div><div class="info-value">${genderDisplay}</div></div>
               <div class="info-item"><div class="info-label">السنة الدراسية</div><div class="info-value">${academicYearDisplay}</div></div>
               <div class="info-item"><div class="info-label">العنوان</div><div class="info-value">${t.address || '-'}</div></div>
-              <div class="info-item"><div class="info-label">الموظف المُحيل</div><div class="info-value">${t.referralEmployee?.fullName || '-'}</div></div>
+              <div class="info-item"><div class="info-label">موظف النسبة</div><div class="info-value">${t.referralEmployee?.fullName || '-'}</div></div>
               <div class="info-item"><div class="info-label">تاريخ التسجيل</div><div class="info-value">${t.createdOn ? new Date(t.createdOn).toLocaleDateString('ar-EG') : '-'}</div></div>
               <div class="info-item"><div class="info-label">تمت الإضافة بواسطة</div><div class="info-value">${t.createdBy?.fullName || '-'}</div></div>
               ${t.lastModifiedOn ? `<div class="info-item"><div class="info-label">آخر تحديث</div><div class="info-value">${new Date(t.lastModifiedOn).toLocaleDateString('ar-EG')}</div></div>` : ''}

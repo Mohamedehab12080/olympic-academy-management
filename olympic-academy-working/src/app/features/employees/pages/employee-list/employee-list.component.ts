@@ -1338,7 +1338,7 @@ async exportToPDF(): Promise<void> {
     <div class="page-container">
       <div class="watermark-wrapper">
         <div class="watermark-container">
-          <img src="assets/images/simpleLogoSvg.svg" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+          <img src="assets/images/mainLogo.jpeg" alt="الأكاديمية الأولمبية لعلوم الرياضة">
         </div>
         <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
       </div>
@@ -1774,7 +1774,7 @@ async exportToPDF(): Promise<void> {
 
     const today = new Date().toLocaleDateString('ar-EG');
     let cardsHtml = '';
-    const logoPath = 'assets/images/simpleLogoSvg.svg';
+    const logoPath = 'assets/images/mainLogo.jpeg';
 
     employees.forEach((employee, index) => {
       const imageUrl = imageUrls[index] || '';

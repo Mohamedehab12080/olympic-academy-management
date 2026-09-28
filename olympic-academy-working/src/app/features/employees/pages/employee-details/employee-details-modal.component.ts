@@ -1213,7 +1213,7 @@ export class EmployeeDetailsModalComponent
           .join(', ') || '-';
       const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
 
-      const logoPath = 'assets/images/simpleLogoSvg.svg';
+      const logoPath = 'assets/images/mainLogo.jpeg';
 
       const photoSection = hasImage
         ? `
