@@ -74,7 +74,9 @@ public class TraineeServiceImpl implements TraineeService {
         if(traineeDTO.getIsReferralConfirmed()){
             Employee employee=employeeRepository.selectById(traineeDTO.getReferralEmployeeId()).orElseThrow(()-> new BusinessException(EMPLOYEE_NOT_FOUND));
 //            employee.setReferralAmount(traineeDTO.getReferralAmount());
-            employee.setTotalRemainReferralAmount(Integer.valueOf(""+Math.round(employee.getTotalRemainReferralAmount()+traineeDTO.getReferralAmount())));
+            if(employee.getTotalRemainReferralAmount()!=null){
+                employee.setTotalRemainReferralAmount(Integer.valueOf(""+Math.round(employee.getTotalRemainReferralAmount()+traineeDTO.getReferralAmount())));
+            }
             employeeRepository.update(employee);
         }
         return NewRecordVTO.builder().id(trainee.getId()).build();
