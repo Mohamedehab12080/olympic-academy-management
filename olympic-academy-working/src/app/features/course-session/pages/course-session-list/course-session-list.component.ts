@@ -1054,9 +1054,9 @@ export class CourseSessionListComponent
         <div class="page-container">
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="assets/images/mainLogo.jpeg" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+              <img src="assets/images/simpleLogo.jpeg" alt=" Olympic Sports Academy ">
             </div>
-            <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="watermark-text"> Olympic Sports Academy </div>
           </div>
           
           <div class="content">
@@ -1120,7 +1120,7 @@ export class CourseSessionListComponent
             </table>
             
             <div class="footer">
-               الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${totalSessions} جلسة
+               Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${totalSessions} جلسة
             </div>
           </div>
         </div>

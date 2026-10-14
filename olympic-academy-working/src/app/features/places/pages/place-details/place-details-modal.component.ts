@@ -1067,7 +1067,7 @@ export class PlaceDetailsModalComponent implements OnInit {
         <div class="container">
           <div class="header">
             <h1>تفاصيل الموقع</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة Olympic Sports Academy </p>
             <p style="font-size: 10px; margin-top: 4px;">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
           </div>
           
@@ -1144,7 +1144,7 @@ export class PlaceDetailsModalComponent implements OnInit {
           ` : ''}
           
           <div class="footer">
-            تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة<br>
+            تم التصدير من نظام إدارة Olympic Sports Academy <br>
             هذا المستند معتمد ويحتوي على جميع بيانات الموقع
           </div>
           

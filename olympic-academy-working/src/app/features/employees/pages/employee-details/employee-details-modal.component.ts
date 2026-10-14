@@ -1213,7 +1213,7 @@ export class EmployeeDetailsModalComponent
           .join(', ') || '-';
       const salaryDisplay = t.salary?.toLocaleString('ar-EG') || '0';
 
-      const logoPath = 'assets/images/mainLogo.jpeg';
+      const logoPath = 'assets/images/simpleLogo.jpeg';
 
       const photoSection = hasImage
         ? `
@@ -1553,15 +1553,15 @@ export class EmployeeDetailsModalComponent
         <body>
           <div class="thermal-card">
             <div class="card-watermark">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+              <img src="${logoPath}" alt="Olympic Sports Academy ">
             </div>
-            <div class="card-watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="card-watermark-text">Olympic Sports Academy </div>
             
             <div class="card-content">
               <div class="card-logo-section">
-                <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
+                <img src="${logoPath}" alt="Olympic Sports Academy " class="card-logo-image">
                 <div class="card-logo-text">
-                  <span class="academy-name">🏛️ الأكاديمية الأولمبية لعلوم الرياضة</span>
+                  <span class="academy-name">🏛️ Olympic Sports Academy </span>
                   <span class="card-type">✦ بطاقة هوية موظف ✦</span>
                 </div>
               </div>
@@ -1875,7 +1875,7 @@ export class EmployeeDetailsModalComponent
         <body>
           <div class="header">
             <h1>📋 ملف الموظف</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة Olympic Sports Academy </p>
           </div>
           
           <div class="profile-details">
@@ -1976,7 +1976,7 @@ export class EmployeeDetailsModalComponent
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
 
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="footer">تم التصدير من نظام إدارة Olympic Sports Academy </div>
           
           <div class="no-print" style="text-align:center;margin-top:12px;">
             <button onclick="window.print();" style="padding:8px 24px;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">🖨️ طباعة / حفظ كـ PDF</button>

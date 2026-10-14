@@ -19,14 +19,14 @@ import { AuthService } from '../../core/auth/auth.service';
             <!-- Logo Image - Blue Theme -->
             <div class="logo-wrapper">
               <img
-                src="assets/images/mainLogoSvg.svg"
-                alt="الأكاديمية الأولمبية"
+                src="assets/images/simpleLogoSvg.svg"
+                alt="Olympic Sports Academy"
                 class="logo-image"
                 [class.collapsed]="!sidebarExpanded"
               />
             </div>
             <span class="logo-text" *ngIf="sidebarExpanded"
-              >الأكاديمية الأولمبية</span
+              >Olympic Sports Academy</span
             >
           </div>
         </div>

@@ -1875,7 +1875,7 @@ export class CourseSessionDetailsModalComponent implements OnDestroy {
         </div>
 
         <div class="print-footer">
-          تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة
+          تم التصدير من نظام إدارة  Olympic Sports Academy 
         </div>
 
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px; position: sticky; bottom: 0; background: white; border-top: 1px solid #e5e7eb;">

@@ -719,7 +719,7 @@ export class FinancialReportComponent implements OnInit {
         <div class="report-container">
           <div class="header">
             <h1>التقرير المالي الشامل</h1>
-            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة  Olympic Sports Academy </p>
           </div>
           
           <div class="date-range">
@@ -826,7 +826,7 @@ export class FinancialReportComponent implements OnInit {
           </div>
           
           <div class="footer">
-            تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة
+            تم التصدير من نظام إدارة  Olympic Sports Academy 
           </div>
           
           <div class="print-btn no-print">

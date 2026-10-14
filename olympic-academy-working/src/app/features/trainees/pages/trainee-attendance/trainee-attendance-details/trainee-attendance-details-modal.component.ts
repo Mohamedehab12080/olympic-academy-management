@@ -837,7 +837,7 @@ export class TraineeAttendanceDetailsModalComponent {
         <div class="application-container">
           <div class="header">
             <h1>سجل حضور متدرب</h1>
-            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة  Olympic Sports Academy </p>
           </div>
           
           <div class="application-details">
@@ -889,7 +889,7 @@ export class TraineeAttendanceDetailsModalComponent {
           </div>
           
           <div class="footer">
-            تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة<br>
+            تم التصدير من نظام إدارة  Olympic Sports Academy <br>
             هذا المستند معتمد ويحتوي على بيانات حضور المتدرب
           </div>
         </div>

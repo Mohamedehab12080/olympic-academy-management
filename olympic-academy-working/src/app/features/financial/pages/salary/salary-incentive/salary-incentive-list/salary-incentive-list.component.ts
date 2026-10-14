@@ -883,7 +883,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
 
       <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 10px;">
         <h1 style="margin: 0; font-size: 18px;">إيصال صرف</h1>
-        <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+        <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.9;">نظام إدارة  Olympic Sports Academy </p>
       </div>
 
       <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; font-size: 12px;">
@@ -1008,8 +1008,8 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
   private printSalaryReceipt(transaction: SalaryIncentiveVTO, contactNumber: string): void {
     const today = new Date().toLocaleDateString('ar-EG');
     const transactionNumber = `TRX-${transaction.id}`;
-    const logoPath = 'assets/images/mainLogo.jpeg';
-    const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const academyName = ' Olympic Sports Academy ';
     const currentYear = new Date().getFullYear();
 
     const getTypeColor = (typeId: number) => {
@@ -1867,7 +1867,7 @@ export class SalaryIncentiveListComponent implements OnInit, AfterViewInit, OnDe
             ${tableRows}
           </tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
+        <div class="footer">تم التصدير من نظام إدارة  Olympic Sports Academy </div>
         <div class="no-print"><button class="print-btn" onclick="window.print();">🖨️ طباعة / حفظ كـ PDF</button></div>
       </body>
       </html>

@@ -1110,8 +1110,8 @@ printTraineeCard(): void {
     const today = new Date().toLocaleDateString('ar-EG');
     const genderDisplay = this.getGenderDisplay(t.gender);
     const academicYearDisplay = this.getAcademicYearDisplay(t.academicYear);
-    const logoPath = 'assets/images/mainLogo.jpeg';
-    const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const academyName = ' Olympic Sports Academy ';
 
     // Photo section - only shown if image exists
     const photoSection = hasImage
@@ -1420,7 +1420,6 @@ printTraineeCard(): void {
               <img src="${logoPath}" alt="${academyName}" class="card-logo-image" onerror="this.style.display='none'">
               <div class="card-logo-text">
                 <span class="academy-name">${academyName}</span>
-                <span class="card-title">✦ بطاقة هوية متدرب ✦</span>
               </div>
             </div>
             
@@ -1823,11 +1822,11 @@ printTraineeCard(): void {
           </style>
         </head>
         <body>
-          <div class="watermark"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="watermark"> Olympic Sports Academy </div>
           <div class="profile-container">
             <div class="header">
               <h1>ملف المتدرب</h1>
-              <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+              <p>نظام إدارة  Olympic Sports Academy </p>
             </div>
             
             <div class="profile-details">
@@ -1878,7 +1877,7 @@ printTraineeCard(): void {
               <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
             </div>
 
-            <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="footer">تم التصدير من نظام إدارة  Olympic Sports Academy </div>
           </div>
           <div class="no-print" style="text-align: center; margin-top: 20px;">
             <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>

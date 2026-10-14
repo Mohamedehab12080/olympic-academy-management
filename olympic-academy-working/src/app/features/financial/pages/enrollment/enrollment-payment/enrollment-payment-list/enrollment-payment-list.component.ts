@@ -1384,7 +1384,7 @@ export class EnrollmentPaymentListComponent
           <div class="watermark-container">
             ${svgContent}
           </div>
-          <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="watermark-text"> Olympic Sports Academy </div>
         </div>
         
         <div class="content">
@@ -1445,7 +1445,7 @@ export class EnrollmentPaymentListComponent
           </table>
           
           <div class="footer">
-             الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} دفعة
+             Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${dataToPrint.length} دفعة
           </div>
         </div>
       </div>
@@ -1914,7 +1914,7 @@ openRefundWizard(payment: any): void {
   // Add this helper method to read the SVG file
   private async getSvgContent(): Promise<string> {
     try {
-      const response = await fetch('assets/images/mainLogo.jpeg');
+      const response = await fetch('assets/images/simpleLogo.jpeg');
       const svgText = await response.text();
       return svgText;
     } catch (error) {

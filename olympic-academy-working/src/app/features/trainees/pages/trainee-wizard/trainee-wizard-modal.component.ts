@@ -1590,7 +1590,7 @@ private getValidReferralEmployeeId(): number | null {
         <div class="profile-container">
           <div class="header">
             <h1>ملف متدرب</h1>
-            <p>نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة  Olympic Sports Academy </p>
           </div>
           <div class="profile-details">
             <div><strong>رقم الملف:</strong> ${data.isNewTrainee ? 'جديد' : '#' + data.id}</div>
@@ -1623,7 +1623,7 @@ private getValidReferralEmployeeId(): number | null {
             <div class="signature-box"><div class="signature-line"></div><div>توقيع ولي الأمر</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="footer">تم التصدير من نظام إدارة  Olympic Sports Academy </div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>

@@ -1474,9 +1474,9 @@ private setupSearchDebounce(): void {
     const today = new Date().toLocaleDateString('ar-EG');
     const currentYear = new Date().getFullYear();
     let cardsHtml = '';
-    const logoPath = 'assets/images/mainLogo.jpeg';
-    const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
-    const academyAddress = 'الفيوم - حي الجامعة';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
+    const academyName = ' Olympic Sports Academy ';
+    const academyAddress = 'الفيوم';
 
     enrollments.forEach((enrollment, index) => {
       const imageUrl = imageUrls[index] || '';
@@ -1546,7 +1546,6 @@ private setupSearchDebounce(): void {
               <img src="${logoPath}" alt="${academyName}" class="card-logo-image">
               <div class="card-logo-text">
                 <span class="academy-name">${academyName}</span>
-                <span class="card-title">✦ بطاقة تسجيل متدرب ✦</span>
               </div>
             </div>
             
@@ -1962,8 +1961,8 @@ private setupSearchDebounce(): void {
 
     let allPagesHTML = '';
 
-    // Use mainLogo.jpeg for watermark
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    // Use simpleLogo.jpeg for watermark
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     pages.forEach((pageData: EnrollmentListItem[], pageIndex: number) => {
       let tableRows = '';
@@ -2045,9 +2044,9 @@ private setupSearchDebounce(): void {
           <!-- Watermark -->
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="watermark-logo">
+              <img src="${logoPath}" alt=" Olympic Sports Academy " class="watermark-logo">
             </div>
-            <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="watermark-text"> Olympic Sports Academy </div>
           </div>
           
           <div class="content">
@@ -2126,7 +2125,7 @@ private setupSearchDebounce(): void {
             </table>
             
             <div class="footer">
-               الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} تسجيل
+               Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${dataToPrint.length} تسجيل
             </div>
           </div>
         </div>

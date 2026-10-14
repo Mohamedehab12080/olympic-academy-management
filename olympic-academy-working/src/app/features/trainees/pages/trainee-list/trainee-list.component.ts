@@ -1372,7 +1372,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             </table>
             
             <div class="footer">
-               الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} متدرب
+               Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${dataToPrint.length} متدرب
             </div>
           </div>
         </div>
@@ -1388,7 +1388,7 @@ export class TraineeListComponent implements OnInit, OnDestroy {
     printContainer.style.width = '100%';
 
     // Get the logo as base64 for reliable printing
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     printContainer.innerHTML = `
       <!DOCTYPE html>
@@ -1778,13 +1778,13 @@ export class TraineeListComponent implements OnInit, OnDestroy {
             // Create image element
             var img = document.createElement('img');
             img.src = '${logoPath}';
-            img.alt = ' الأكاديمية الأولمبية لعلوم الرياضة';
+            img.alt = ' Olympic Sports Academy ';
             img.onerror = function() { this.style.display = 'none'; };
             
             // Create text element
             var text = document.createElement('div');
             text.className = 'watermark-text';
-            text.textContent = ' الأكاديمية الأولمبية لعلوم الرياضة';
+            text.textContent = ' Olympic Sports Academy ';
             
             wrapper.appendChild(img);
             wrapper.appendChild(text);
@@ -1907,7 +1907,7 @@ private generateCardsPrintOptimized(
 
   const today = new Date().toLocaleDateString('ar-EG');
   let cardsHtml = '';
-  const logoPath = 'assets/images/mainLogo.jpeg';
+  const logoPath = 'assets/images/simpleLogo.jpeg';
 
 trainees.forEach((trainee, index) => {
   const imageUrl = imageUrls[index] || '';
@@ -1961,16 +1961,15 @@ trainees.forEach((trainee, index) => {
       <div class="card-wrapper">
         <div class="card">
           <div class="card-watermark">
-            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+            <img src="${logoPath}" alt=" Olympic Sports Academy ">
           </div>
-          <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="card-watermark-text"> Olympic Sports Academy </div>
           
           <div class="card-content">
             <div class="card-logo-section">
-              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
+              <img src="${logoPath}" alt=" Olympic Sports Academy " class="card-logo-image">
               <div class="card-logo-text">
-                <span class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</span>
-                <span class="card-title">✦ بطاقة هوية متدرب ✦</span>
+                <span class="academy-name"> Olympic Sports Academy </span>
               </div>
             </div>
             

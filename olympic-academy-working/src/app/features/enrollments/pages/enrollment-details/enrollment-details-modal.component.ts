@@ -386,7 +386,7 @@ import * as JsBarcode from 'jsbarcode';
     <div id="thermalPrint" style="display: none;">
       <div class="thermal-card">
         <div class="thermal-header">
-          <div class="thermal-title"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="thermal-title"> Olympic Sports Academy </div>
           <div class="thermal-subtitle">بطاقة تسجيل متدرب</div>
         </div>
         <div class="thermal-divider"></div>
@@ -1279,8 +1279,8 @@ export class EnrollmentDetailsModalComponent
 
       const e = this.enrollment;
       const barcodeValue = e.trainee?.nationalId || e.trainee?.id || '';
-      const logoPath = 'assets/images/mainLogo.jpeg';
-      const academyName = ' الأكاديمية الأولمبية لعلوم الرياضة';
+      const logoPath = 'assets/images/simpleLogo.jpeg';
+      const academyName = ' Olympic Sports Academy ';
       const currentYear = new Date().getFullYear();
 
       // ✅ Check if image exists

@@ -494,7 +494,7 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
   }
 
   private buildEnhancedReceiptHTML(data: any): string {
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     
     return `
 <!DOCTYPE html>
@@ -885,17 +885,17 @@ export class EnrollmentPaymentDetailsModalComponent implements OnDestroy {
   <div class="receipt">
     <!-- ===== WATERMARK - Behind content ===== -->
     <div class="receipt-watermark">
-      <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+      <img src="${logoPath}" alt=" Olympic Sports Academy ">
     </div>
-    <div class="receipt-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+    <div class="receipt-watermark-text"> Olympic Sports Academy </div>
 
     <!-- ===== CONTENT ===== -->
     <div class="receipt-content">
       <!-- LOGO AND ACADEMY NAME -->
       <div class="logo-section">
-        <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
+        <img src="${logoPath}" alt=" Olympic Sports Academy " onerror="this.style.display='none'">
         <div class="logo-text">
-          <span class="academy-name">  الأكاديمية الأولمبية لعلوم الرياضة</span>
+          <span class="academy-name">  Olympic Sports Academy </span>
           <span class="receipt-type">✦ إيصال دفع ✦</span>
         </div>
       </div>

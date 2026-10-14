@@ -745,7 +745,7 @@ const previewData = {
         <div class="container">
           <div class="header">
             <h1>طلب توظيف</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة Olympic Sports Academy </p>
           </div>
           <div class="details">
             <div><strong>رقم الطلب:</strong> ${data.isNewEmployee ? 'جديد' : '#' + this.employeeId}</div>
@@ -800,7 +800,7 @@ const previewData = {
             <div class="signature-box"><div class="signature-line"></div><div>توقيع مدير الموارد البشرية</div></div>
             <div class="signature-box"><div class="signature-line"></div><div>ختم الأكاديمية</div></div>
           </div>
-          <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="footer">تم التصدير من نظام إدارة Olympic Sports Academy </div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>

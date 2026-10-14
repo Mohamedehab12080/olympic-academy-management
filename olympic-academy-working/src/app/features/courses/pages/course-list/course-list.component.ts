@@ -1278,7 +1278,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
           </thead>
           <tbody>${tableRows}</tbody>
         </table>
-        <div class="footer">تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</div>
+        <div class="footer">تم التصدير من نظام إدارة Olympic Sports Academy </div>
         <div class="no-print" style="text-align: center; margin-top: 20px;">
           <button onclick="window.print();" style="padding: 10px 20px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>
@@ -1354,7 +1354,7 @@ export class CourseListComponent implements OnInit, AfterViewInit, OnDestroy {
         <div class="card-wrapper">
           <div class="card">
             <div class="card-header">
-              <div class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+              <div class="academy-name"> Olympic Sports Academy </div>
               <div class="card-title">بطاقة دورة تدريبية</div>
             </div>
             <div class="card-body">

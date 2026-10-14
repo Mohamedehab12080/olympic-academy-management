@@ -1169,7 +1169,7 @@ export class DepartmentDetailsModalComponent implements OnInit {
         <div class="container">
           <div class="header">
             <h1>تفاصيل القسم</h1>
-            <p>نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة</p>
+            <p>نظام إدارة Olympic Sports Academy </p>
             <p style="font-size: 10px; margin-top: 4px;">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
           </div>
           
@@ -1239,7 +1239,7 @@ export class DepartmentDetailsModalComponent implements OnInit {
           ` : ''}
           
           <div class="footer">
-            تم التصدير من نظام إدارة الأكاديمية الأولمبية لعلوم الرياضة<br>
+            تم التصدير من نظام إدارة Olympic Sports Academy <br>
             هذا المستند معتمد ويحتوي على جميع بيانات القسم
           </div>
           

@@ -808,7 +808,7 @@ export class EnrollmentPaymentWizardModalComponent
     const enrollmentDateFormatted = formatDate(enrollmentData.startDate);
     const currentDateFormatted = formatDate(new Date());
     const traineeNationalId = paymentData.traineeNationalId || enrollmentData.trainee?.nationalId || '0000000000';
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     return `
     <!DOCTYPE html>
@@ -877,14 +877,14 @@ export class EnrollmentPaymentWizardModalComponent
       <div class="receipt-wrapper">
         <div class="receipt">
           <div class="receipt-watermark">
-            <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+            <img src="${logoPath}" alt="Olympic Sports Academy ">
           </div>
-          <div class="receipt-watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="receipt-watermark-text">Olympic Sports Academy </div>
           <div class="receipt-content">
             <div class="logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
+              <img src="${logoPath}" alt="Olympic Sports Academy " onerror="this.style.display='none'">
               <div class="logo-text">
-                <span class="academy-name">🏛️ الأكاديمية الأولمبية لعلوم الرياضة</span>
+                <span class="academy-name">🏛️ Olympic Sports Academy </span>
                 <span class="receipt-type">✦ إيصال دفع ✦</span>
               </div>
             </div>
@@ -967,7 +967,7 @@ export class EnrollmentPaymentWizardModalComponent
               </div>
             </div>
             <div class="receipt-footer">
-              <div>🏛️ الأكاديمية الأولمبية لعلوم الرياضة</div>
+              <div>🏛️ Olympic Sports Academy </div>
               <div style="margin-top: 1px;">شكراً لثقتكم بنا</div>
               <div style="margin-top: 1px; font-size: 5pt;">${currentDateFormatted}</div>
             </div>

@@ -1338,9 +1338,9 @@ async exportToPDF(): Promise<void> {
     <div class="page-container">
       <div class="watermark-wrapper">
         <div class="watermark-container">
-          <img src="assets/images/mainLogo.jpeg" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+          <img src="assets/images/simpleLogo.jpeg" alt="Olympic Sports Academy ">
         </div>
-        <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+        <div class="watermark-text">Olympic Sports Academy </div>
       </div>
 
       <div class="content">
@@ -1417,7 +1417,7 @@ async exportToPDF(): Promise<void> {
         </table>
 
         <div class="footer">
-          الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${dataToPrint.length} موظف
+          Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${dataToPrint.length} موظف
         </div>
       </div>
     </div>
@@ -1774,7 +1774,7 @@ async exportToPDF(): Promise<void> {
 
     const today = new Date().toLocaleDateString('ar-EG');
     let cardsHtml = '';
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
 
     employees.forEach((employee, index) => {
       const imageUrl = imageUrls[index] || '';
@@ -1827,16 +1827,15 @@ async exportToPDF(): Promise<void> {
       <div class="card-wrapper">
         <div class="thermal-card">
           <div class="card-watermark">
-            <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+            <img src="${logoPath}" alt=" Olympic Sports Academy ">
           </div>
-          <div class="card-watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+          <div class="card-watermark-text"> Olympic Sports Academy </div>
           
           <div class="card-content">
             <div class="card-logo-section">
-              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة" class="card-logo-image">
+              <img src="${logoPath}" alt=" Olympic Sports Academy " class="card-logo-image">
               <div class="card-logo-text">
-                <span class="academy-name">🏛️  الأكاديمية الأولمبية لعلوم الرياضة</span>
-                <span class="card-type">✦ بطاقة هوية موظف ✦</span>
+                <span class="academy-name">Olympic Sports Academy </span>
               </div>
             </div>
             

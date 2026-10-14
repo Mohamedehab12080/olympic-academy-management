@@ -75,7 +75,7 @@ import { NotificationService } from '../../core/services/notification.service';
             <mat-icon>olympic</mat-icon>
           </div>
           <div class="brand-info">
-            <h1 class="brand-title"> الأكاديمية الأولمبية لعلوم الرياضة</h1>
+            <h1 class="brand-title"> Olympic Sports Academy </h1>
             <span class="brand-subtitle">لوحة التحكم الرئيسية</span>
           </div>
         </div>
@@ -1573,7 +1573,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       <html dir="rtl">
       <head>
         <meta charset="UTF-8">
-        <title>لوحة التحكم -  الأكاديمية الأولمبية لعلوم الرياضة</title>
+        <title>لوحة التحكم -  Olympic Sports Academy </title>
         <style>
           * { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
           body { padding: 20px; background: white; direction: rtl; }
@@ -1605,7 +1605,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       </head>
       <body>
         <div class="print-header">
-          <h1>🏊  الأكاديمية الأولمبية لعلوم الرياضة</h1>
+          <h1>🏊  Olympic Sports Academy </h1>
           <div class="subtitle">لوحة التحكم الرئيسية - تقرير الأداء</div>
           <div class="date">التاريخ: ${today} | وقت الطباعة: ${now}</div>
           <div class="date" style="font-size: 11px; opacity: 0.7;">العام المالي: ${this.selectedYear}</div>
@@ -1655,7 +1655,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           </div>
         </div>
 
-        <div class="print-footer">تم التصدير من نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة | الإصدار 3.0</div>
+        <div class="print-footer">تم التصدير من نظام إدارة  Olympic Sports Academy  | الإصدار 3.0</div>
         <div class="no-print" style="text-align: center; margin-top: 20px; padding: 10px;">
           <button onclick="window.print();" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">🖨️ طباعة / حفظ كـ PDF</button>
         </div>

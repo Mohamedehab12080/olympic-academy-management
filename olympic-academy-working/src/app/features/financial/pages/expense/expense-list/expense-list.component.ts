@@ -474,7 +474,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
   // ==========================================================================
 
   openDetailsModal(expense: any): void {
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const expenseNumber = `EXP-${expense.id}`;
 
@@ -769,17 +769,17 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
       <div class="modal-receipt">
         <!-- Watermark -->
         <div class="watermark-container">
-          <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+          <img src="${logoPath}" alt="Olympic Sports Academy ">
         </div>
-        <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+        <div class="watermark-text">Olympic Sports Academy </div>
         
         <div class="receipt-content">
           <!-- Header -->
           <div class="receipt-header">
             <div class="logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
+              <img src="${logoPath}" alt="Olympic Sports Academy " onerror="this.style.display='none'">
               <div>
-                <div class="academy-name">الأكاديمية الأولمبية لعلوم الرياضة</div>
+                <div class="academy-name">Olympic Sports Academy </div>
                 <span class="receipt-type">✦ إيصال مصروف ✦</span>
               </div>
             </div>
@@ -920,7 +920,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private buildExpenseReceiptHTML(data: any): string {
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     
     return `
 <!DOCTYPE html>
@@ -1258,17 +1258,17 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
   <div class="receipt">
     <!-- ===== WATERMARK - Behind content ===== -->
     <div class="receipt-watermark">
-      <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+      <img src="${logoPath}" alt="Olympic Sports Academy ">
     </div>
-    <div class="receipt-watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+    <div class="receipt-watermark-text">Olympic Sports Academy </div>
 
     <!-- ===== CONTENT ===== -->
     <div class="receipt-content">
       <!-- LOGO AND ACADEMY NAME -->
       <div class="logo-section">
-        <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
+        <img src="${logoPath}" alt="Olympic Sports Academy " onerror="this.style.display='none'">
         <div class="logo-text">
-          <span class="academy-name">الأكاديمية الأولمبية لعلوم الرياضة</span>
+          <span class="academy-name">Olympic Sports Academy </span>
           <span class="receipt-type">✦ إيصال مصروف ✦</span>
         </div>
       </div>
@@ -1398,7 +1398,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
     const avgExpense = this.averageExpense;
     const count = this.allExpenses.length;
 
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     let tableRows = '';
     this.allExpenses.forEach((item: any, index: number) => {
@@ -1770,9 +1770,9 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
           <!-- Watermark -->
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" class="watermark-logo">
+              <img src="${logoPath}" alt="Olympic Sports Academy " class="watermark-logo">
             </div>
-            <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="watermark-text">Olympic Sports Academy </div>
           </div>
           
           <div class="content">
@@ -1816,7 +1816,7 @@ export class ExpenseListComponent implements OnInit, AfterViewInit, OnDestroy {
             </table>
             
             <div class="footer">
-              الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${count} مصروف
+              Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${count} مصروف
             </div>
           </div>
         </div>

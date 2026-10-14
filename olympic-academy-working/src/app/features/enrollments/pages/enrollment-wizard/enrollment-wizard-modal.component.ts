@@ -684,7 +684,7 @@ loadEnrollmentData(): void {
   }
 
   private generatePrintDocument(data: any): void {
-    const logoPath = 'assets/images/mainLogo.jpeg';
+    const logoPath = 'assets/images/simpleLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const applicationNumber = data.isNewEnrollment
       ? `NEW-${Date.now()}`
@@ -1038,9 +1038,9 @@ loadEnrollmentData(): void {
           <!-- Watermark -->
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+              <img src="${logoPath}" alt=" Olympic Sports Academy ">
             </div>
-            <div class="watermark-text"> الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="watermark-text"> Olympic Sports Academy </div>
           </div>
           
           ${data.isNewEnrollment ? '<div class="draft-watermark">مسودة</div>' : ''}
@@ -1048,10 +1048,10 @@ loadEnrollmentData(): void {
           <div class="content">
             <!-- Logo Section -->
             <div class="logo-section">
-              <img src="${logoPath}" alt=" الأكاديمية الأولمبية لعلوم الرياضة">
+              <img src="${logoPath}" alt=" Olympic Sports Academy ">
               <div class="logo-text">
-                <span class="academy-name"> الأكاديمية الأولمبية لعلوم الرياضة</span>
-                <span class="academy-sub">نظام إدارة  الأكاديمية الأولمبية لعلوم الرياضة</span>
+                <span class="academy-name"> Olympic Sports Academy </span>
+                <span class="academy-sub">نظام إدارة  Olympic Sports Academy </span>
               </div>
             </div>
             
@@ -1144,7 +1144,7 @@ loadEnrollmentData(): void {
             
             <!-- Footer -->
             <div class="footer">
-              <strong>🏛️  الأكاديمية الأولمبية لعلوم الرياضة</strong><br>
+              <strong>🏛️  Olympic Sports Academy </strong><br>
               تم التصدير بواسطة النظام الآلي للأكاديمية الأولمبية
             </div>
           </div>

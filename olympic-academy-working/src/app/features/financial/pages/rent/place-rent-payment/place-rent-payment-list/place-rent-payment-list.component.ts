@@ -561,7 +561,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const statusColor = isPaid ? '#065f46' : '#92400e';
     const statusBg = isPaid ? '#d1fae5' : '#fef3c7';
     const paymentStatus = isPaid ? 'مدفوع بالكامل' : 'متبقي';
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     const today = new Date().toLocaleDateString('ar-EG');
     const paymentNumber = `RENT-${payment.id}`;
     const effectLabel = this.getEffectLabel(payment.rentType?.effect);
@@ -874,17 +874,17 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
       <div class="modal-receipt">
         <!-- Watermark -->
         <div class="watermark-container">
-          <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+          <img src="${logoPath}" alt="Olympic Sports Academy ">
         </div>
-        <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+        <div class="watermark-text">Olympic Sports Academy </div>
         
         <div class="receipt-content">
           <!-- Header -->
           <div class="receipt-header">
             <div class="logo-section">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
+              <img src="${logoPath}" alt="Olympic Sports Academy " onerror="this.style.display='none'">
               <div>
-                <div class="academy-name">الأكاديمية الأولمبية لعلوم الرياضة</div>
+                <div class="academy-name">Olympic Sports Academy </div>
                 <span class="receipt-type">✦ إيصال دفع إيجار ✦</span>
               </div>
             </div>
@@ -1061,7 +1061,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   }
 
   private buildRentReceiptHTML(data: any): string {
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
     
     return `
 <!DOCTYPE html>
@@ -1429,17 +1429,17 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
   <div class="receipt">
     <!-- ===== WATERMARK - Behind content ===== -->
     <div class="receipt-watermark">
-      <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة">
+      <img src="${logoPath}" alt="Olympic Sports Academy ">
     </div>
-    <div class="receipt-watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+    <div class="receipt-watermark-text">Olympic Sports Academy </div>
 
     <!-- ===== CONTENT ===== -->
     <div class="receipt-content">
       <!-- LOGO AND ACADEMY NAME -->
       <div class="logo-section">
-        <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" onerror="this.style.display='none'">
+        <img src="${logoPath}" alt="Olympic Sports Academy " onerror="this.style.display='none'">
         <div class="logo-text">
-          <span class="academy-name">الأكاديمية الأولمبية لعلوم الرياضة</span>
+          <span class="academy-name">Olympic Sports Academy </span>
           <span class="receipt-type">✦ إيصال دفع إيجار ✦</span>
         </div>
       </div>
@@ -1620,7 +1620,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
     const incomeTotal = this.incomeTotal;
     const expenseTotal = this.expenseTotal;
 
-    const logoPath = window.location.origin + '/assets/images/mainLogo.jpeg';
+    const logoPath = window.location.origin + '/assets/images/simpleLogo.jpeg';
 
     let tableRows = '';
     this.allPayments.forEach((item: any, index: number) => {
@@ -2055,9 +2055,9 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
           <!-- Watermark -->
           <div class="watermark-wrapper">
             <div class="watermark-container">
-              <img src="${logoPath}" alt="الأكاديمية الأولمبية لعلوم الرياضة" class="watermark-logo">
+              <img src="${logoPath}" alt="Olympic Sports Academy " class="watermark-logo">
             </div>
-            <div class="watermark-text">الأكاديمية الأولمبية لعلوم الرياضة</div>
+            <div class="watermark-text">Olympic Sports Academy </div>
           </div>
           
           <div class="content">
@@ -2120,7 +2120,7 @@ export class PlaceRentPaymentListComponent implements OnInit, AfterViewInit, OnD
             </table>
             
             <div class="footer">
-              الأكاديمية الأولمبية لعلوم الرياضة &copy; ${new Date().getFullYear()} - ${totalPayments} دفعة
+              Olympic Sports Academy  &copy; ${new Date().getFullYear()} - ${totalPayments} دفعة
             </div>
           </div>
         </div>
